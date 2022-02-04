@@ -22,6 +22,10 @@ contract GovernorOLA is Initializable, GovernorUpgradeable, GovernorSettingsUpgr
         __GovernorTimelockControl_init(_timelock);
     }
 
+    function quorum(uint256 blockNumber) public pure override returns (uint256) {
+        return 1e18;
+    }
+
     function votingDelay()
     public
     view
