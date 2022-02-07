@@ -26,33 +26,6 @@ contract GovernorOLA is Initializable, GovernorUpgradeable, GovernorSettingsUpgr
         return 1e18;
     }
 
-    function votingDelay()
-    public
-    view
-    override(IGovernorUpgradeable, GovernorSettingsUpgradeable)
-    returns (uint256)
-    {
-        return super.votingDelay();
-    }
-
-    function votingPeriod()
-    public
-    view
-    override(IGovernorUpgradeable, GovernorSettingsUpgradeable)
-    returns (uint256)
-    {
-        return super.votingPeriod();
-    }
-
-    function getVotes(address account, uint256 blockNumber)
-    public
-    view
-    override(IGovernorUpgradeable, GovernorVotesCompUpgradeable)
-    returns (uint256)
-    {
-        return super.getVotes(account, blockNumber);
-    }
-
     function state(uint256 proposalId)
     public
     view
