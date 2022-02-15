@@ -46,6 +46,17 @@ contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityB
         return super.state(proposalId);
     }
 
+
+    // TODO This is a duplicate of propose() function below and must be deleted after JS side works with "propose" name
+    // Same with queue, execute functions
+    function propose2(address[] memory targets, uint256[] memory values, bytes[] memory calldatas,
+        string memory description)
+        public
+        returns (uint256)
+    {
+        return super.propose(targets, values, calldatas, description);
+    }
+
     /// @dev Create a new proposal to change the protocol / contract parameters.
     /// @param targets The ordered list of target addresses for calls to be made during proposal execution.
     /// @param values The ordered list of values to be passed to the calls made during proposal execution.
@@ -59,6 +70,14 @@ contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityB
         returns (uint256)
     {
         return super.propose(targets, values, calldatas, description);
+    }
+
+    function queue2(address[] memory targets, uint256[] memory values, bytes[] memory calldatas,
+        bytes32 descriptionHash)
+        public
+        returns (uint256)
+    {
+        return super.queue(targets, values, calldatas, descriptionHash);
     }
 
     /// @dev Gets the number of votes.
@@ -84,6 +103,13 @@ contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityB
         override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
     {
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
+    }
+
+    function execute2(uint256 proposalId, address[] memory targets, uint256[] memory values, bytes[] memory calldatas,
+        bytes32 descriptionHash)
+        public
+    {
+        _execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
     /// @dev Cancels a proposal.
