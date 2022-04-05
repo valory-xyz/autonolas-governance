@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../interfaces/IErrors.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 
 /**
 @title Voting Escrow
@@ -58,6 +59,8 @@ struct LockedBalance {
 
 
 contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
+    using SafeCastUpgradeable for uint256;
+
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -653,5 +656,20 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
     function changeController(address _newController) external {
         require(msg.sender == controller, "No access");
         controller = _newController;
+    }
+
+    /// @dev Gets balance / current votes, required for compatibility with Compound token.
+    /// @param account Account address.
+    /// @return balance Voting balance / power.
+    function getCurrentVotes(address account) external view returns (uint96 balance) {
+        balance = SafeCastUpgradeable.toUint96(balanceOf(account));
+    }
+
+    /// @dev Gets balance / current votes at a specific block number, required for compatibility with Compound token.
+    /// @param account Account address.
+    /// @param blockNumber Block number.
+    /// @return balance Voting balance / power.
+    function getPriorVotes(address account, uint256 blockNumber) external view returns (uint96 balance) {
+        balance = SafeCastUpgradeable.toUint96(balanceOfAt(account, blockNumber));
     }
 }

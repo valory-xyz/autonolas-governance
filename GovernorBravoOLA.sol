@@ -3,15 +3,13 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/compatibility/GovernorCompatibilityBravoUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesCompUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
-import "./VotingEscrow.sol";
 
 /// @title Governor Bravo OLA - Smart contract for the governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityBravoUpgradeable, GovernorTimelockControlUpgradeable {
-    address private _escrow;
-
-    constructor(address escrow, TimelockControllerUpgradeable timelock, uint256 initialVotingDelay,
+contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityBravoUpgradeable, GovernorVotesCompUpgradeable, GovernorTimelockControlUpgradeable {
+    constructor(ERC20VotesCompUpgradeable governanceToken, TimelockControllerUpgradeable timelock, uint256 initialVotingDelay,
         uint256 initialVotingPeriod, uint256 initialProposalThreshold) initializer
     {
         // Governor initialization
@@ -21,8 +19,8 @@ contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityB
         __GovernorSettings_init(initialVotingDelay, initialVotingPeriod, initialProposalThreshold);
         // Bravo compatibility module initialization
         __GovernorCompatibilityBravo_init();
-        // Voting weight extraction from voting escrow
-        _escrow = escrow;
+        // Voting weight extraction from a governance token
+        __GovernorVotesComp_init(governanceToken);
         // Timelock related module initialization
         __GovernorTimelockControl_init(timelock);
     }
@@ -36,13 +34,13 @@ contract GovernorBravoOLA is GovernorSettingsUpgradeable, GovernorCompatibilityB
         return 1e18;
     }
 
-    /// @dev Gets the voting power.
-    /// @param account Account address.
-    /// @param blockNumber Block number.
-    /// @return balance Voting balance / power.
-    function getVotes(address account, uint256 blockNumber) public view override returns (uint256 balance) {
-        balance = VotingEscrow(_escrow).balanceOfAt(account, blockNumber);
-    }
+//    /// @dev Gets the voting power.
+//    /// @param account Account address.
+//    /// @param blockNumber Block number.
+//    /// @return balance Voting balance / power.
+//    function getVotes(address account, uint256 blockNumber) private view override returns (uint256 balance) {
+//        balance = IERC20(_governanceToken).balanceOfAt(account, blockNumber);
+//    }
 
     /// @dev Current state of a proposal, following Compound’s convention.
     /// @param proposalId Proposal Id.
