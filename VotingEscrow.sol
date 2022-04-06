@@ -2,10 +2,10 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "./ERC20VotesCustomUpgradeable.sol";
 import "../interfaces/IErrors.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 
 /**
 @title Voting Escrow
@@ -58,9 +58,7 @@ struct LockedBalance {
 }
 
 
-contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
-    using SafeCastUpgradeable for uint256;
-
+contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC20VotesCustomUpgradeable {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -97,51 +95,43 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
     address public controller;
     bool public transfersEnabled;
 
-    string public name;
-    string public symbol;
     string public version;
-    uint256 public decimals;
 
     // Checker for whitelisted (smart contract) wallets which are allowed to deposit
     // The goal is to prevent tokenizing the escrow
     address public futureSmartWalletChecker;
     address public smartWalletChecker;
 
-    /// @notice Contract constructor
+    /// @dev Contract constructor
     /// @param tokenAddr token address
     /// @param _name Token name
     /// @param _symbol Token symbol
     /// @param _version Contract version - required for Aragon compatibility
-    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version) {
+    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version) initializer {
+        __ERC20Permit_init(_name);
+        __ERC20_init(_name, _symbol);
         token = tokenAddr;
         pointHistory[0].blk = block.number;
         pointHistory[0].ts = block.timestamp;
         controller = msg.sender;
         transfersEnabled = true;
-
-        uint256 _decimals = ERC20(tokenAddr).decimals();
-        require(_decimals <= 255, "Decimals overflow");
-        decimals = _decimals;
-
-        name = _name;
-        symbol = _symbol;
         version = _version;
     }
 
-    /// @notice Set an external contract to check for approved smart contract wallets
+    /// @dev Set an external contract to check for approved smart contract wallets
     /// @param addr Address of Smart contract checker
     function commitSmartWalletChecker(address addr) external onlyOwner {
         futureSmartWalletChecker = addr;
     }
 
 
-    /// @notice Apply setting external contract to check approved smart contract wallets
+    /// @dev Apply setting external contract to check approved smart contract wallets
     function applySmartWalletChecker() external onlyOwner {
         smartWalletChecker = futureSmartWalletChecker;
     }
 
 
-    /// @notice Check if the call is from a whitelisted smart contract, revert if not
+    /// @dev Check if the call is from a whitelisted smart contract, revert if not
     /// @param addr Address to be checked
     function assertNotContract(address addr) internal {
         if (addr != tx.origin) {
@@ -151,7 +141,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         }
     }
 
-    /// @notice Get the most recently recorded rate of voting power decrease for `addr`
+    /// @dev Get the most recently recorded rate of voting power decrease for `addr`
     /// @param addr Address of the user wallet
     /// @return Value of the slope
     function getLastUserSlope(address addr) external view returns (int128) {
@@ -160,7 +150,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
     }
 
 
-    /// @notice Get the timestamp for checkpoint `_idx` for `_addr`
+    /// @dev Get the timestamp for checkpoint `_idx` for `_addr`
     /// @param _addr User wallet address
     /// @param _idx User epoch number
     /// @return Epoch time of the checkpoint
@@ -169,14 +159,14 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
     }
 
 
-    /// @notice Get timestamp when `_addr`'s lock finishes
+    /// @dev Get timestamp when `_addr`'s lock finishes
     /// @param _addr User wallet
     /// @return Epoch time of the lock end
     function lockedEnd(address _addr) external view returns (uint256) {
         return locked[_addr].end;
     }
 
-    /// @notice Record global and per-user data to checkpoint
+    /// @dev Record global and per-user data to checkpoint
     /// @param addr User's wallet address. No user checkpoint if 0x0
     /// @param oldLocked Pevious locked amount / end lock time for the user
     /// @param newLocked New locked amount / end lock time for the user
@@ -317,7 +307,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         }
     }
 
-    /// @notice Deposit and lock tokens for a user
+    /// @dev Deposit and lock tokens for a user
     /// @param _addr Address that holds lock
     /// @param _value Amount to deposit
     /// @param unlockTime New time when to unlock the tokens, or 0 if unchanged
@@ -360,12 +350,12 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         emit Supply(supplyBefore, supplyBefore + _value);
     }
 
-    /// @notice Record global data to checkpoint
+    /// @dev Record global data to checkpoint
     function checkpoint() external {
         _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0));
     }
 
-    /// @notice Deposit `_value` tokens for `_addr` and add to the lock
+    /// @dev Deposit `_value` tokens for `_addr` and add to the lock
     /// @dev Anyone (even a smart contract) can deposit for someone else, but
     ///      cannot extend their locktime and deposit for a brand new user
     /// @param _addr User's wallet address
@@ -385,7 +375,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         _depositFor(_addr, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
     }
 
-    /// @notice Deposit `_value` tokens for `msg.sender` and lock until `_unlock_time`
+    /// @dev Deposit `_value` tokens for `msg.sender` and lock until `_unlock_time`
     /// @param _value Amount to deposit
     /// @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     function createLock(uint256 _value, uint256 _unlock_time) external nonReentrant {
@@ -409,7 +399,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         _depositFor(msg.sender, _value, unlockTime, _locked, DepositType.CREATE_LOCK_TYPE);
     }
 
-    /// @notice Deposit `_value` additional tokens for `msg.sender` without modifying the unlock time
+    /// @dev Deposit `_value` additional tokens for `msg.sender` without modifying the unlock time
     /// @param _value Amount of tokens to deposit and add to the lock
     function increaseAmount(uint256 _value) external nonReentrant {
         assertNotContract(msg.sender);
@@ -429,7 +419,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         _depositFor(msg.sender, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
     }
 
-    /// @notice Extend the unlock time for `msg.sender` to `_unlock_time`
+    /// @dev Extend the unlock time for `msg.sender` to `_unlock_time`
     /// @param _unlock_time New number of seconds until tokens unlock
     function increaseUnlockTime(uint256 _unlock_time) external nonReentrant {
         assertNotContract(msg.sender);
@@ -453,7 +443,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         _depositFor(msg.sender, 0, unlockTime, _locked, DepositType.INCREASE_UNLOCK_TIME);
     }
 
-    /// @notice Withdraw all tokens for `msg.sender`
+    /// @dev Withdraw all tokens for `msg.sender`
     /// @dev Only possible if the lock has expired
     function withdraw() external nonReentrant {
         LockedBalance memory _locked = locked[msg.sender];
@@ -481,7 +471,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
     // They measure the weights for the purpose of voting, so they don't represent
     // real coins.
 
-    /// @notice Binary search to estimate timestamp for block number
+    /// @dev Binary search to estimate timestamp for block number
     /// @param _block Block to find
     /// @param maxEpoch Don't go beyond this epoch
     /// @return Approximate timestamp for block
@@ -504,7 +494,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         return _min;
     }
 
-    /// @notice Get the current voting power for `addr` and time `t`
+    /// @dev Get the current voting power for `addr` and time `t`
     /// @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
     /// @param addr User wallet address
     /// @param _t Epoch time to return voting power at
@@ -523,17 +513,17 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         }
     }
 
-    /// @notice Get the current voting power for `addr`
-    function balanceOf(address addr) public view returns (uint256) {
+    /// @dev Get the current voting power for `addr`
+    function balanceOf(address addr) public view override returns (uint256) {
         return _balanceOf(addr, block.timestamp);
     }
 
-    /// @notice Measure voting power of `addr` at block height `_block`
+    /// @dev Measure voting power of `addr` at block height `_block`
     /// @dev Adheres to MiniMe `balanceOfAt` interface: https://github.com/Giveth/minime
     /// @param addr User's wallet address
     /// @param _block Block to calculate the voting power at
     /// @return Voting power
-    function balanceOfAt(address addr, uint256 _block) public view returns (uint256) {
+    function balanceOfAt(address addr, uint256 _block) public view override returns (uint256) {
         if (_block > block.number) {
             revert WrongBlockNumber(_block, block.number);
         }
@@ -582,7 +572,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         }
     }
 
-    /// @notice Calculate total voting power at some point in the past
+    /// @dev Calculate total voting power at some point in the past
     /// @param point The point (bias/slope) to start search from
     /// @param t Time to calculate the total voting power at
     /// @return Total voting power at that time
@@ -611,8 +601,7 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         return uint256(uint128(lastPoint.bias));
     }
 
-    /// @notice Calculate total voting power at time `t`
-    /// @dev Adheres to the ERC20 `totalSupply` interface for Aragon compatibility
+    /// @dev Calculate total voting power at time `t`. Adheres to the ERC20 `totalSupply` for Aragon compatibility
     /// @return Total voting power
     function totalSupplyAtT(uint256 t) public view returns (uint256) {
         uint256 _epoch = epoch;
@@ -620,16 +609,16 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
         return supplyAt(lastPoint, t);
     }
 
-    /// @notice Calculate total voting power
+    /// @dev Calculate total voting power
     /// @return Total voting power
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         return totalSupplyAtT(block.timestamp);
     }
 
-    /// @notice Calculate total voting power at some point in the past
+    /// @dev Calculate total voting power at some point in the past
     /// @param _block Block to calculate the total voting power at
     /// @return Total voting power at `_block`
-    function totalSupplyAt(uint256 _block) external view returns (uint256) {
+    function totalSupplyAt(uint256 _block) public view override returns (uint256) {
         if (_block > block.number) {
             revert WrongBlockNumber(_block, block.number);
         }
@@ -656,20 +645,5 @@ contract VotingEscrow is IErrors, Ownable, ReentrancyGuard {
     function changeController(address _newController) external {
         require(msg.sender == controller, "No access");
         controller = _newController;
-    }
-
-    /// @dev Gets balance / current votes, required for compatibility with Compound token.
-    /// @param account Account address.
-    /// @return balance Voting balance / power.
-    function getCurrentVotes(address account) external view returns (uint96 balance) {
-        balance = SafeCastUpgradeable.toUint96(balanceOf(account));
-    }
-
-    /// @dev Gets balance / current votes at a specific block number, required for compatibility with Compound token.
-    /// @param account Account address.
-    /// @param blockNumber Block number.
-    /// @return balance Voting balance / power.
-    function getPriorVotes(address account, uint256 blockNumber) external view returns (uint96 balance) {
-        balance = SafeCastUpgradeable.toUint96(balanceOfAt(account, blockNumber));
     }
 }
