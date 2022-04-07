@@ -57,7 +57,7 @@ struct LockedBalance {
     uint256 end;
 }
 
-
+/// @notice This token supports the ERC20 interface specifications except for transfers.
 contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC20VotesCustomUpgradeable {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
@@ -95,6 +95,7 @@ contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable
     address public controller;
     bool public transfersEnabled;
 
+    uint8 _decimals;
     string public version;
 
     // Checker for whitelisted (smart contract) wallets which are allowed to deposit
@@ -116,6 +117,26 @@ contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable
         controller = msg.sender;
         transfersEnabled = true;
         version = _version;
+        _decimals = ERC20(tokenAddr).decimals();
+        if (_decimals > 255) {
+            revert Overflow(uint256(_decimals), 255);
+        }
+    }
+
+    /// @dev Defines decimals.
+    /// @return Token decimals.
+    function decimals() public view override returns (uint8) {
+        return _decimals;
+    }
+
+    /// @dev Bans transfers of this token.
+    function _transfer(address sender, address recipient, uint256 amount) internal override {
+        revert NonTransferrable(address(this));
+    }
+
+    /// @dev Bans approval of this token.
+    function _approve(address owner, address spender, uint256 amount) internal override {
+        revert NonTransferrable(address(this));
     }
 
     /// @dev Set an external contract to check for approved smart contract wallets
