@@ -95,7 +95,7 @@ contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable
     address public controller;
     bool public transfersEnabled;
 
-    uint8 _decimals;
+    uint8 private _decimals;
     string public version;
 
     // Checker for whitelisted (smart contract) wallets which are allowed to deposit
