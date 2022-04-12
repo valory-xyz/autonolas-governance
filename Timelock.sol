@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
+import "@openzeppelin/contracts/governance/TimelockController.sol";
 
 /// @title Timelock - Smart contract for the timelock
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-contract Timelock is TimelockControllerUpgradeable {
-    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors) initializer {
-        // Initialize the timelock with minimum delay in number of blocks, list of proposer and executor addresses
-        __TimelockController_init(minDelay, proposers, executors);
-    }
+contract Timelock is TimelockController {
+    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors)
+        TimelockController(minDelay, proposers, executors)
+    {}
 }

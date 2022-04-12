@@ -2,10 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "./ERC20VotesCustomUpgradeable.sol";
-import "../interfaces/IErrors.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./ERC20VotesCustom.sol";
 
 /**
 @title Voting Escrow
@@ -58,7 +57,7 @@ struct LockedBalance {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC20VotesCustomUpgradeable {
+contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -108,9 +107,9 @@ contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable
     /// @param _name Token name
     /// @param _symbol Token symbol
     /// @param _version Contract version - required for Aragon compatibility
-    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version) initializer {
-        __ERC20Permit_init(_name);
-        __ERC20_init(_name, _symbol);
+    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version)
+        ERC20VotesCustom(_name, _symbol)
+    {
         token = tokenAddr;
         pointHistory[0].blk = block.number;
         pointHistory[0].ts = block.timestamp;
@@ -127,16 +126,6 @@ contract VotingEscrow is IErrors, OwnableUpgradeable, ReentrancyGuardUpgradeable
     /// @return Token decimals.
     function decimals() public view override returns (uint8) {
         return _decimals;
-    }
-
-    /// @dev Bans transfers of this token.
-    function _transfer(address sender, address recipient, uint256 amount) internal override {
-        revert NonTransferrable(address(this));
-    }
-
-    /// @dev Bans approval of this token.
-    function _approve(address owner, address spender, uint256 amount) internal override {
-        revert NonTransferrable(address(this));
     }
 
     /// @dev Set an external contract to check for approved smart contract wallets
