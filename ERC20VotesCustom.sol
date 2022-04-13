@@ -3,13 +3,14 @@
 
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
+import "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/IErrors.sol";
 
 /// @title ERC20 Votes Custom Upgradeable - Smart contract that customizes OpenZeppelin's ERC20VotesUpgradeable
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-abstract contract ERC20VotesCustom is IErrors, ERC20Votes {
-    constructor(string memory _name, string memory _symbol) ERC20Permit(_name) ERC20(_name, _symbol)
+abstract contract ERC20VotesCustom is IErrors, IVotes, ERC20 {
+    constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol)
     {}
 
     /// @dev Gets the voting power at a specific block number.
@@ -55,4 +56,17 @@ abstract contract ERC20VotesCustom is IErrors, ERC20Votes {
     function _approve(address owner, address spender, uint256 amount) internal override {
         revert NonTransferrable(address(this));
     }
+
+    /// @dev Compatibility with IVotes.
+    function delegates(address account) external view virtual override returns (address)
+    {}
+
+    /// @dev Compatibility with IVotes.
+    function delegate(address delegatee) external virtual override
+    {}
+
+    /// @dev Compatibility with IVotes.
+    function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+        external virtual override
+    {}
 }

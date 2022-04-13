@@ -26,7 +26,6 @@ contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBr
         GovernorTimelockControl(timelock)
     {}
 
-    // TODO Verify the return quorum value depending on the tokenomics
     /// @dev Gets minimum number of percent from the voting power required for a proposal to be successful.
     /// @param blockNumber The snaphot block used for counting vote. This allows to scale the quroum depending on
     ///                    values such as the totalSupply of an escrow at this block.
