@@ -5,8 +5,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./ERC20VotesCustom.sol";
+import "../interfaces/IDispenser.sol";
 
 /**
 @title Voting Escrow
@@ -60,6 +62,8 @@ struct LockedBalance {
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
 contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
+    using SafeERC20 for IERC20;
+
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -74,17 +78,28 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         DepositType depositType,
         uint256 ts
     );
+
     event Withdraw(address indexed provider, uint256 value, uint256 ts);
     event Supply(uint256 prevSupply, uint256 supply);
+    event DispenserUpdated(address dispenser);
 
     uint256 internal constant WEEK = 1 weeks;
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
     int128 internal constant iMAXTIME = 4 * 365 * 86400;
     uint256 internal constant MULTIPLIER = 1 ether;
 
+    // Token address
     address immutable public token;
+    // Dispenser address
+    address public dispenser;
+    // Total token supply
     uint256 public supply;
+    // Mapping of account address => LockedBalance
     mapping(address => LockedBalance) public locked;
+    // Mapping Id => account address
+    mapping(address => uint256) private _mapAccountIds;
+    // Set of locking accounts
+    address[] private _accounts;
 
     uint256 public epoch;
     mapping(uint256 => Point) public pointHistory; // epoch -> unsigned point
@@ -111,7 +126,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     /// @param _name Token name
     /// @param _symbol Token symbol
     /// @param _version Contract version - required for Aragon compatibility
-    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version)
+    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version, address _dispenser)
     {
         token = tokenAddr;
         pointHistory[0].blk = block.number;
@@ -125,6 +140,14 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         if (decimals > 255) {
             revert Overflow(uint256(decimals), 255);
         }
+        dispenser = _dispenser;
+    }
+
+    /// @dev Changes dispenser address.
+    /// @param newDispenser Address of a new dispenser.
+    function changeDispenser(address newDispenser) external onlyOwner {
+        dispenser = newDispenser;
+        emit DispenserUpdated(newDispenser);
     }
 
     /// @dev Set an external contract to check for approved smart contract wallets
@@ -350,9 +373,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
 
         address from = msg.sender;
         if (_value != 0) {
-            if (!ERC20(token).transferFrom(from, address(this), _value)) {
-                revert TransferFailed(token, from, address(this), _value);
-            }
+            IERC20(token).safeTransferFrom(from, address(this), _value);
         }
 
         emit Deposit(_addr, _value, _locked.end, depositType, block.timestamp);
@@ -406,6 +427,11 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         }
 
         _depositFor(msg.sender, _value, unlockTime, _locked, DepositType.CREATE_LOCK_TYPE);
+
+        // Add to the map for subsequent cleaning during the withdraw
+        uint256 id = _accounts.length;
+        _mapAccountIds[msg.sender] = id;
+        _accounts.push(msg.sender);
     }
 
     /// @dev Deposit `_value` additional tokens for `msg.sender` without modifying the unlock time
@@ -470,10 +496,22 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         // Both can have >= 0 amount
         _checkpoint(msg.sender, _locked, LockedBalance(0,0));
 
-        assert(ERC20(token).transfer(msg.sender, value));
+        // Return value from staking
+        value += IDispenser(dispenser).withdrawStakingReward(msg.sender);
+
+        // Clean up the account information
+        uint256 id = _mapAccountIds[msg.sender];
+        uint256 numAccounts = _accounts.length;
+        _accounts[id] = _accounts[numAccounts - 1];
+        address addr = _accounts[id];
+        _accounts.pop();
+        _mapAccountIds[addr] = id;
+        _mapAccountIds[msg.sender] = 0;
 
         emit Withdraw(msg.sender, value, block.timestamp);
         emit Supply(supplyBefore, supplyBefore - value);
+
+        IERC20(token).safeTransfer(msg.sender, value);
     }
 
     /// @dev Binary search to estimate timestamp for block number
@@ -633,8 +671,8 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
 
     /// @dev Calculate total voting power at some point in the past.
     /// @param blockNumber Block number to calculate the total voting power at.
-    /// @return supply Total voting power.
-    function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256 supply) {
+    /// @return Total voting power.
+    function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256) {
         if (blockNumber > block.number) {
             revert WrongBlockNumber(blockNumber, block.number);
         }
@@ -655,5 +693,10 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         }
         // Now dt contains info on how far are we beyond point
         return supplyLockedAt(point, point.ts + dt);
+    }
+
+    /// @dev Gets the set of current locking accounts
+    function getLockAccounts() external view returns (address[] memory accounts) {
+        accounts = _accounts;
     }
 }
