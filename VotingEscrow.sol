@@ -497,7 +497,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         _checkpoint(msg.sender, _locked, LockedBalance(0,0));
 
         // Return value from staking
-        value += IDispenser(dispenser).withdrawStakingReward(msg.sender);
+        value += IDispenser(dispenser).withdrawStakingRewards(msg.sender);
 
         // Clean up the account information
         uint256 id = _mapAccountIds[msg.sender];
