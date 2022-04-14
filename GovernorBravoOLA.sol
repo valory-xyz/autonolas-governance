@@ -26,40 +26,6 @@ contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBr
         GovernorTimelockControl(timelock)
     {}
 
-    /// @dev Gets minimum number of percent from the voting power required for a proposal to be successful.
-    /// @param blockNumber The snaphot block used for counting vote. This allows to scale the quroum depending on
-    ///                    values such as the totalSupply of an escrow at this block.
-    /// @return Quorum factor.
-    // solhint-disable-next-line
-    function quorum(uint256 blockNumber) public view override(IGovernor, GovernorVotesQuorumFraction) returns (uint256)
-    {
-        return super.quorum(blockNumber);
-    }
-
-    /// @dev Gets voting delay.
-    /// @return Voting delay.
-    function votingDelay() public view override(IGovernor, GovernorSettings) returns (uint256)
-    {
-        return super.votingDelay();
-    }
-
-    /// @dev Gets voting period.
-    /// @return Voting period.
-    function votingPeriod() public view override(IGovernor, GovernorSettings) returns (uint256)
-    {
-        return super.votingPeriod();
-    }
-
-    /// @dev Gets the voting power for a specific block number.
-    /// @param account Account address.
-    /// @param blockNumber Block number.
-    /// @return Voting power.
-    function getVotes(address account, uint256 blockNumber) public view override(IGovernor, GovernorVotes)
-        returns (uint256)
-    {
-        return super.getVotes(account, blockNumber);
-    }
-
     /// @dev Current state of a proposal, following Compound’s convention.
     /// @param proposalId Proposal Id.
     function state(uint256 proposalId) public view override(Governor, IGovernor, GovernorTimelockControl)

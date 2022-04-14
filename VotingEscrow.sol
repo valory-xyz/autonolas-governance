@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./ERC20VotesCustom.sol";
 
@@ -38,7 +40,7 @@ more than `MAXTIME` (4 years).
 //# The check() method is modifying to be able to use caching
 //# for individual wallet addresses
 interface SmartWalletChecker {
-    function check(address addr) external returns (bool);
+    function check(address account) external returns (bool);
 }
 
 struct Point {
@@ -94,7 +96,9 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     address public controller;
     bool public transfersEnabled;
 
-    uint8 private _decimals;
+    uint8 public decimals;
+    string public name;
+    string public symbol;
     string public version;
 
     // Checker for whitelisted (smart contract) wallets which are allowed to deposit
@@ -108,30 +112,25 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     /// @param _symbol Token symbol
     /// @param _version Contract version - required for Aragon compatibility
     constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version)
-        ERC20VotesCustom(_name, _symbol)
     {
         token = tokenAddr;
         pointHistory[0].blk = block.number;
         pointHistory[0].ts = block.timestamp;
         controller = msg.sender;
         transfersEnabled = true;
+        name = _name;
+        symbol = _symbol;
         version = _version;
-        _decimals = ERC20(tokenAddr).decimals();
-        if (_decimals > 255) {
-            revert Overflow(uint256(_decimals), 255);
+        decimals = ERC20(tokenAddr).decimals();
+        if (decimals > 255) {
+            revert Overflow(uint256(decimals), 255);
         }
     }
 
-    /// @dev Defines decimals.
-    /// @return Token decimals.
-    function decimals() public view override returns (uint8) {
-        return _decimals;
-    }
-
     /// @dev Set an external contract to check for approved smart contract wallets
-    /// @param addr Address of Smart contract checker
-    function commitSmartWalletChecker(address addr) external onlyOwner {
-        futureSmartWalletChecker = addr;
+    /// @param account Address of Smart contract checker
+    function commitSmartWalletChecker(address account) external onlyOwner {
+        futureSmartWalletChecker = account;
     }
 
 
@@ -142,21 +141,21 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
 
 
     /// @dev Check if the call is from a whitelisted smart contract, revert if not
-    /// @param addr Address to be checked
-    function assertNotContract(address addr) internal {
-        if (addr != tx.origin) {
+    /// @param account Address to be checked
+    function assertNotContract(address account) internal {
+        if (account != tx.origin) {
             address checker = smartWalletChecker;
-            require(checker != address(0) && SmartWalletChecker(checker).check(addr),
+            require(checker != address(0) && SmartWalletChecker(checker).check(account),
                 "SC depositors not allowed");
         }
     }
 
-    /// @dev Get the most recently recorded rate of voting power decrease for `addr`
-    /// @param addr Address of the user wallet
+    /// @dev Get the most recently recorded rate of voting power decrease for `account`
+    /// @param account Address of the user wallet
     /// @return Value of the slope
-    function getLastUserSlope(address addr) external view returns (int128) {
-        uint256 uepoch = userPointEpoch[addr];
-        return userPointHistory[addr][uepoch].slope;
+    function getLastUserSlope(address account) external view returns (int128) {
+        uint256 uepoch = userPointEpoch[account];
+        return userPointHistory[account][uepoch].slope;
     }
 
 
@@ -177,11 +176,11 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     }
 
     /// @dev Record global and per-user data to checkpoint
-    /// @param addr User's wallet address. No user checkpoint if 0x0
+    /// @param account User's wallet address. No user checkpoint if 0x0
     /// @param oldLocked Pevious locked amount / end lock time for the user
     /// @param newLocked New locked amount / end lock time for the user
     function _checkpoint(
-        address addr,
+        address account,
         LockedBalance memory oldLocked,
         LockedBalance memory newLocked
     ) internal {
@@ -191,7 +190,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         int128 newDSlope = 0;
         uint256 _epoch = epoch;
 
-        if (addr != address(0)) {
+        if (account != address(0)) {
             // Calculate slopes and biases
             // Kept at zero when they have to
             if (oldLocked.end > block.timestamp && oldLocked.amount > 0) {
@@ -271,7 +270,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         epoch = _epoch;
         // Now pointHistory is filled until t=now
 
-        if (addr != address(0)) {
+        if (account != address(0)) {
             // If last point was in this block, the slope change has been applied already
             // But in such case we have 0 slope(s)
             lastPoint.slope += (uNew.slope - uOld.slope);
@@ -287,7 +286,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         // Record the changed point into history
         pointHistory[_epoch] = lastPoint;
 
-        if (addr != address(0)) {
+        if (account != address(0)) {
             // Schedule the slope changes (slope is going down)
             // We subtract new_user_slope from [newLocked.end]
             // and add old_user_slope to [oldLocked.end]
@@ -308,12 +307,12 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
                 // else: we recorded it already in oldDSlope
             }
             // Now handle user history
-            uint256 user_epoch = userPointEpoch[addr] + 1;
+            uint256 user_epoch = userPointEpoch[account] + 1;
 
-            userPointEpoch[addr] = user_epoch;
+            userPointEpoch[account] = user_epoch;
             uNew.ts = block.timestamp;
             uNew.blk = block.number;
-            userPointHistory[addr][user_epoch] = uNew;
+            userPointHistory[account][user_epoch] = uNew;
         }
     }
 
@@ -477,15 +476,11 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         emit Supply(supplyBefore, supplyBefore - value);
     }
 
-    // The following ERC20/minime-compatible methods are not real balanceOf and supply!
-    // They measure the weights for the purpose of voting, so they don't represent
-    // real coins.
-
     /// @dev Binary search to estimate timestamp for block number
-    /// @param _block Block to find
+    /// @param blockNumber Block to find
     /// @param maxEpoch Don't go beyond this epoch
     /// @return Approximate timestamp for block
-    function _findBlockEpoch(uint256 _block, uint256 maxEpoch) internal view returns (uint256) {
+    function _findBlockEpoch(uint256 blockNumber, uint256 maxEpoch) internal view returns (uint256) {
         // Binary search
         uint256 _min = 0;
         uint256 _max = maxEpoch;
@@ -495,7 +490,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
                 break;
             }
             uint256 _mid = (_min + _max + 1) / 2;
-            if (pointHistory[_mid].blk <= _block) {
+            if (pointHistory[_mid].blk <= blockNumber) {
                 _min = _mid;
             } else {
                 _max = _mid - 1;
@@ -504,17 +499,16 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         return _min;
     }
 
-    /// @dev Get the current voting power for `addr` and time `t`
-    /// @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
-    /// @param addr User wallet address
+    /// @dev Get the current voting power for `account` and time `t`
+    /// @param account User wallet address
     /// @param _t Epoch time to return voting power at
     /// @return User voting power
-    function _balanceOf(address addr, uint256 _t) internal view returns (uint256) {
-        uint256 _epoch = userPointEpoch[addr];
+    function _balanceOfLocked(address account, uint256 _t) internal view returns (uint256) {
+        uint256 _epoch = userPointEpoch[account];
         if (_epoch == 0) {
             return 0;
         } else {
-            Point memory lastPoint = userPointHistory[addr][_epoch];
+            Point memory lastPoint = userPointHistory[account][_epoch];
             lastPoint.bias -= lastPoint.slope * int128(int256(_t) - int256(lastPoint.ts));
             if (lastPoint.bias < 0) {
                 lastPoint.bias = 0;
@@ -523,41 +517,47 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         }
     }
 
-    /// @dev Get the current voting power for `addr`
-    function balanceOf(address addr) public view override returns (uint256) {
-        return _balanceOf(addr, block.timestamp);
+    /// @dev Gets the account balance.
+    /// @param account Account address.
+    function balanceOf(address account) public view override returns (uint256 balance) {
+        balance = uint256(int256(locked[account].amount));
     }
 
-    /// @dev Measure voting power of `addr` at block height `_block`
-    /// @dev Adheres to MiniMe `balanceOfAt` interface: https://github.com/Giveth/minime
-    /// @param addr User's wallet address
-    /// @param _block Block to calculate the voting power at
-    /// @return Voting power
-    function balanceOfAt(address addr, uint256 _block) public view override returns (uint256) {
-        if (_block > block.number) {
-            revert WrongBlockNumber(_block, block.number);
+    /// @dev Gets the voting power.
+    /// @param account Account address.
+    function getVotes(address account) public view override returns (uint256) {
+        return _balanceOfLocked(account, block.timestamp);
+    }
+
+    /// @dev Gets voting power at a specific block number.
+    /// @param account Account address.
+    /// @param blockNumber Block number.
+    /// @return balance Voting balance / power.
+    function getPastVotes(address account, uint256 blockNumber) public view override returns (uint256) {
+        if (blockNumber > block.number) {
+            revert WrongBlockNumber(blockNumber, block.number);
         }
 
         // Binary search
         uint256 _min = 0;
-        uint256 _max = userPointEpoch[addr];
+        uint256 _max = userPointEpoch[account];
         for (uint256 i = 0; i < 128; ++i) {
             // Will be always enough for 128-bit numbers
             if (_min >= _max) {
                 break;
             }
             uint256 _mid = (_min + _max + 1) / 2;
-            if (userPointHistory[addr][_mid].blk <= _block) {
+            if (userPointHistory[account][_mid].blk <= blockNumber) {
                 _min = _mid;
             } else {
                 _max = _mid - 1;
             }
         }
 
-        Point memory uPoint = userPointHistory[addr][_min];
+        Point memory uPoint = userPointHistory[account][_min];
 
         uint256 maxEpoch = epoch;
-        uint256 _epoch = _findBlockEpoch(_block, maxEpoch);
+        uint256 _epoch = _findBlockEpoch(blockNumber, maxEpoch);
         Point memory point0 = pointHistory[_epoch];
         uint256 d_block = 0;
         uint256 d_t = 0;
@@ -571,7 +571,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         }
         uint256 block_time = point0.ts;
         if (d_block != 0) {
-            block_time += (d_t * (_block - point0.blk)) / d_block;
+            block_time += (d_t * (blockNumber - point0.blk)) / d_block;
         }
 
         uPoint.bias -= uPoint.slope * int128(int256(block_time - uPoint.ts));
@@ -586,7 +586,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     /// @param point The point (bias/slope) to start search from
     /// @param t Time to calculate the total voting power at
     /// @return Total voting power at that time
-    function supplyAt(Point memory point, uint256 t) internal view returns (uint256) {
+    function supplyLockedAt(Point memory point, uint256 t) internal view returns (uint256) {
         Point memory lastPoint = point;
         uint256 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
@@ -611,49 +611,49 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         return uint256(uint128(lastPoint.bias));
     }
 
-    /// @dev Calculate total voting power at time `t`. Adheres to the ERC20 `totalSupply` for Aragon compatibility
+    /// @dev Calculate total voting power at time `t`. Adheres to the ERC20 `totalSupplyLocked` for Aragon compatibility
     /// @return Total voting power
-    function totalSupplyAtT(uint256 t) public view returns (uint256) {
+    function totalSupplyLockedAtT(uint256 t) public view returns (uint256) {
         uint256 _epoch = epoch;
         Point memory lastPoint = pointHistory[_epoch];
-        return supplyAt(lastPoint, t);
+        return supplyLockedAt(lastPoint, t);
     }
 
+    /// @dev Gets total token supply.
+    /// @return Total token supply.
+    function totalSupply() public view override returns (uint256) {
+        return supply;
+    }
+    
     /// @dev Calculate total voting power
     /// @return Total voting power
-    function totalSupply() public view override returns (uint256) {
-        return totalSupplyAtT(block.timestamp);
+    function totalSupplyLocked() public view returns (uint256) {
+        return totalSupplyLockedAtT(block.timestamp);
     }
 
-    /// @dev Calculate total voting power at some point in the past
-    /// @param _block Block to calculate the total voting power at
-    /// @return Total voting power at `_block`
-    function totalSupplyAt(uint256 _block) public view override returns (uint256) {
-        if (_block > block.number) {
-            revert WrongBlockNumber(_block, block.number);
+    /// @dev Calculate total voting power at some point in the past.
+    /// @param blockNumber Block number to calculate the total voting power at.
+    /// @return supply Total voting power.
+    function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256 supply) {
+        if (blockNumber > block.number) {
+            revert WrongBlockNumber(blockNumber, block.number);
         }
         uint256 _epoch = epoch;
-        uint256 target_epoch = _findBlockEpoch(_block, _epoch);
+        uint256 target_epoch = _findBlockEpoch(blockNumber, _epoch);
 
         Point memory point = pointHistory[target_epoch];
         uint256 dt = 0;
         if (target_epoch < _epoch) {
             Point memory pointNext = pointHistory[target_epoch + 1];
             if (point.blk != pointNext.blk) {
-                dt = ((_block - point.blk) * (pointNext.ts - point.ts)) / (pointNext.blk - point.blk);
+                dt = ((blockNumber - point.blk) * (pointNext.ts - point.ts)) / (pointNext.blk - point.blk);
             }
         } else {
             if (point.blk != block.number) {
-                dt = ((_block - point.blk) * (block.timestamp - point.ts)) / (block.number - point.blk);
+                dt = ((blockNumber - point.blk) * (block.timestamp - point.ts)) / (block.number - point.blk);
             }
         }
         // Now dt contains info on how far are we beyond point
-        return supplyAt(point, point.ts + dt);
-    }
-
-    /// @dev Dummy method required for Aragon compatibility
-    function changeController(address _newController) external {
-        require(msg.sender == controller, "No access");
-        controller = _newController;
+        return supplyLockedAt(point, point.ts + dt);
     }
 }
