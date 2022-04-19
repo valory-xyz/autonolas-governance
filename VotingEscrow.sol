@@ -41,7 +41,7 @@ more than `MAXTIME` (4 years).
 //# When new types are added - the whole contract is changed
 //# The check() method is modifying to be able to use caching
 //# for individual wallet addresses
-interface SmartWalletChecker {
+interface IChecker {
     function check(address account) external returns (bool);
 }
 
@@ -116,9 +116,8 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     string public symbol;
     string public version;
 
-    // Checker for whitelisted (smart contract) wallets which are allowed to deposit
+    // Smart wallet contract checker address for whitelisted (smart contract) wallets which are allowed to deposit
     // The goal is to prevent tokenizing the escrow
-    address public futureSmartWalletChecker;
     address public smartWalletChecker;
 
     /// @dev Contract constructor
@@ -151,25 +150,19 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     }
 
     /// @dev Set an external contract to check for approved smart contract wallets
-    /// @param account Address of Smart contract checker
-    function commitSmartWalletChecker(address account) external onlyOwner {
-        futureSmartWalletChecker = account;
+    /// @param checker Address of Smart contract checker
+    function changeSmartWalletChecker(address checker) external onlyOwner {
+        smartWalletChecker = checker;
     }
-
-
-    /// @dev Apply setting external contract to check approved smart contract wallets
-    function applySmartWalletChecker() external onlyOwner {
-        smartWalletChecker = futureSmartWalletChecker;
-    }
-
 
     /// @dev Check if the call is from a whitelisted smart contract, revert if not
     /// @param account Address to be checked
     function assertNotContract(address account) internal {
         if (account != tx.origin) {
-            address checker = smartWalletChecker;
-            require(checker != address(0) && SmartWalletChecker(checker).check(account),
-                "SC depositors not allowed");
+            // TODO Implement own smart contract checker or use one from oracle-dev
+            if (smartWalletChecker != address(0)) {
+                require(IChecker(smartWalletChecker).check(account), "SC depositors not allowed");
+            }
         }
     }
 
