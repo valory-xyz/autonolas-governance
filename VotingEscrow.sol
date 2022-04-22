@@ -502,7 +502,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         _mapAccountIds[msg.sender] = 0;
 
         emit Withdraw(msg.sender, value, block.timestamp);
-        emit Supply(supplyBefore, supplyBefore - value);
+        emit Supply(supplyBefore, supply);
 
         IERC20(token).safeTransfer(msg.sender, value);
     }
