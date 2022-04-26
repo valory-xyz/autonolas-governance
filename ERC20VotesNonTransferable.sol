@@ -7,9 +7,9 @@ import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IErrors.sol";
 
-/// @title ERC20 Votes Custom Upgradeable - Smart contract that customizes OpenZeppelin's ERC20VotesUpgradeable
+/// @title ERC20 Votes Non Transferable - Smart contract that customizes OpenZeppelin's ERC20Votes
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-abstract contract ERC20VotesCustom is IErrors, IVotes, IERC20 {
+abstract contract ERC20VotesNonTransferable is IErrors, IVotes, IERC20 {
 
     /// @dev Bans the transfer of this token.
     function transfer(address to, uint256 amount) external virtual override returns (bool) {

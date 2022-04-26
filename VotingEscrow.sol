@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./ERC20VotesCustom.sol";
+import "./ERC20VotesNonTransferable.sol";
 import "../interfaces/IDispenser.sol";
 
 /**
@@ -61,7 +61,7 @@ struct LockedBalance {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
+contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesNonTransferable {
     using SafeERC20 for IERC20;
 
     enum DepositType {
@@ -96,10 +96,6 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
     uint256 public supply;
     // Mapping of account address => LockedBalance
     mapping(address => LockedBalance) public locked;
-    // Mapping Id => account address
-    mapping(address => uint256) private _mapAccountIds;
-    // Set of locking accounts
-    address[] private _accounts;
 
     uint256 public epoch;
     mapping(uint256 => Point) public pointHistory; // epoch -> unsigned point
@@ -421,10 +417,7 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
 
         _depositFor(msg.sender, _value, unlockTime, _locked, DepositType.CREATE_LOCK_TYPE);
 
-        // Add to the map for subsequent cleaning during the withdraw
-        uint256 id = _accounts.length;
-        _mapAccountIds[msg.sender] = id;
-        _accounts.push(msg.sender);
+        IDispenser(dispenser).addLockedAccount(msg.sender);
     }
 
     /// @dev Deposit `_value` additional tokens for `msg.sender` without modifying the unlock time
@@ -488,18 +481,6 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         // _locked has only 0 end
         // Both can have >= 0 amount
         _checkpoint(msg.sender, _locked, LockedBalance(0,0));
-
-        // Return value from staking
-        value += IDispenser(dispenser).withdrawStakingRewards(msg.sender);
-
-        // Clean up the account information
-        uint256 id = _mapAccountIds[msg.sender];
-        uint256 numAccounts = _accounts.length;
-        _accounts[id] = _accounts[numAccounts - 1];
-        address addr = _accounts[id];
-        _accounts.pop();
-        _mapAccountIds[addr] = id;
-        _mapAccountIds[msg.sender] = 0;
 
         emit Withdraw(msg.sender, value, block.timestamp);
         emit Supply(supplyBefore, supply);
@@ -686,10 +667,5 @@ contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesCustom {
         }
         // Now dt contains info on how far are we beyond point
         return supplyLockedAt(point, point.ts + dt);
-    }
-
-    /// @dev Gets the set of current locking accounts
-    function getLockAccounts() external view returns (address[] memory accounts) {
-        accounts = _accounts;
     }
 }
