@@ -565,6 +565,33 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         balance = uint256(int256(locked[account].amount));
     }
 
+    /// @dev Gets the account balance at a specific block number.
+    /// @param account Account address.
+    /// @param blockNumber Block number.
+    /// @return balance Token balance.
+    /// @return pointIdx Index of a point with the requested block number balance.
+    function balanceOfAt(address account, uint256 blockNumber) public view returns (uint256 balance, uint256 pointIdx) {
+        // Find point with the closest block number to the provided one
+        pointIdx = _findBlockPointIndexForAccount(account, blockNumber);
+        // If the block number at the point index is bigger than the specified block number, the balance was zero
+        if (userPointHistory[account][pointIdx].blockNumber > blockNumber) {
+            balance = 0;
+        } else {
+            balance = userPointHistory[account][pointIdx].balance;
+        }
+    }
+
+    /// @dev Gets the account block number by the provided point number.
+    /// @param account Account address.
+    /// @param pointNumber Point number.
+    /// @return blockNumber Block number at that point.
+    function getBlockNumberByPoint(address account, uint256 pointNumber) external view returns (uint256 blockNumber) {
+        if (pointNumber >= userPointHistory[account].length) {
+            revert Overflow(pointNumber, userPointHistory[account].length);
+        }
+        blockNumber = userPointHistory[account][pointNumber].blockNumber;
+    }
+
     /// @dev Gets historical points of an account.
     /// @param account Account address.
     /// @param startBlock Starting block.
@@ -575,6 +602,18 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     function getHistoryAccountBalances(address account, uint256 startBlock, uint256 endBlock) external view
         returns (uint256 numBlockCheckpoints, uint256[] memory blocks, uint256[] memory balances)
     {
+        // Get all the user history points
+        PointVoting[] memory points = userPointHistory[account];
+        uint256 maxNumPoints = points.length;
+        // Check if account has any records of locking
+        if (maxNumPoints == 0) {
+            revert ZeroValue();
+        }
+
+        // If it's the very first record, it has to be taken as a block number of a first point record
+        if (startBlock == 0) {
+            startBlock = points[0].blockNumber;
+        }
         // Check provided boundaries
         if (startBlock > endBlock) {
             revert Overflow(startBlock, endBlock);
@@ -584,9 +623,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             revert WrongBlockNumber(endBlock, block.number);
         }
 
-        // Get all the user history points
-        PointVoting[] memory points = userPointHistory[account];
-        uint256 maxNumPoints = points.length;
         console.log("startBlock", startBlock);
         console.log("endBlock", endBlock);
         for (uint256 i = 0; i < maxNumPoints; ++i) {
@@ -594,43 +630,18 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             console.log("block", points[i].blockNumber);
         }
 
+        uint256 lastBlockNumber = startBlock;
         // Find the point number that has a block number equal to a lower block number bound or lower
-        uint256 startPointIdx = _findBlockPointIndexForAccount(account, startBlock);
-        uint256 lastBlockNumber;
-        uint256 lastBalance;
+        (uint256 lastBalance, uint256 startPointIdx) = balanceOfAt(account, startBlock);
         console.log("startPointIdx", startPointIdx);
         console.log("maxNumPoints", maxNumPoints);
-        // If the same block number happens to be in several points, we find the last point
-        for (uint256 i = startPointIdx; i < maxNumPoints; ++i) {
-            if (points[i].blockNumber > startBlock) {
-                console.log("i", i);
-                // We always start from the very first block requested
-                lastBlockNumber = startBlock;
-                if (i == 0) {
-                    lastBalance = 0;
-                } else {
-                    startPointIdx = i - 1;
-                    lastBalance = points[startPointIdx].balance;
-                }
-//                if (i == 0) {
-//                    lastBlockNumber = points[i].blockNumber;
-//                    lastBalance = points[startPointIdx].balance;
-//                } else {
-//                    startPointIdx = i - 1;
-//                    // We always start from the very first block requested
-//                    lastBlockNumber = startBlock;
-//                    lastBalance = points[startPointIdx].balance;
-//                }
-                break;
-            }
-        }
 
         // Check the points limit
-        if (maxNumPoints + 1 < startPointIdx) {
-            revert Overflow(startPointIdx - 1, maxNumPoints);
+        if (maxNumPoints < startPointIdx) {
+            revert Overflow(startPointIdx, maxNumPoints);
         }
         // The number of block checkpoints cannot be more than the number of points we have to traverse
-        maxNumPoints = maxNumPoints - startPointIdx - 1;
+        maxNumPoints = maxNumPoints - startPointIdx;
         uint256[] memory allBlocks = new uint256[](maxNumPoints);
         uint256[] memory allBalances = new uint256[](maxNumPoints);
 
@@ -638,7 +649,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         allBlocks[0] = lastBlockNumber;
         allBalances[0] = lastBalance;
         // Traverse all possible points until we pass the ending block number
-        for (uint256 i = startPointIdx; i < maxNumPoints; ++i) {
+        for (uint256 i = startPointIdx + 1; i < maxNumPoints; ++i) {
             if (points[i].blockNumber > endBlock) {
                 break;
             }
@@ -678,6 +689,17 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     function getHistoryTotalSupply(uint256 startBlock, uint256 endBlock) external view
         returns (uint256 numBlockCheckpoints, uint256[] memory blocks, uint256[] memory balances)
     {
+        // Get all the general history points
+        uint256 maxNumPoints = epoch;
+        // Check if account has any records of locking
+        if (maxNumPoints == 0) {
+            revert ZeroValue();
+        }
+
+        // If it's the very first record, it has to be taken as a block number of a first point record
+        if (startBlock == 0) {
+            startBlock = pointHistory[0].blockNumber;
+        }
         // Check provided boundaries
         if (startBlock > endBlock) {
             revert Overflow(startBlock, endBlock);
@@ -687,33 +709,16 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             revert WrongBlockNumber(endBlock, block.number);
         }
 
-        // Get all the general history points
-        uint256 maxNumPoints = epoch;
         // Find the point number that has a block number equal to a lower block number bound or lower
-        uint256 startPointIdx = _findBlockPointIndex(startBlock, maxNumPoints);
-        uint256 lastBlockNumber;
-        uint256 lastBalance;
-        // If the same block number happens to be in several points, we find the last point
-        for (uint256 i = startPointIdx; i < maxNumPoints; ++i) {
-            if (pointHistory[i].blockNumber > startBlock) {
-                // We always start from the very first block requested
-                lastBlockNumber = startBlock;
-                if (i == 0) {
-                    lastBalance = 0;
-                } else {
-                    startPointIdx = i - 1;
-                    lastBalance = pointHistory[startPointIdx].balance;
-                }
-                break;
-            }
-        }
+        (uint256 lastBalance, uint256 startPointIdx) = totalSupplyAt(startBlock);
+        uint256 lastBlockNumber = startBlock;
 
         // Check the points limit
-        if (maxNumPoints + 1 < startPointIdx) {
-            revert Overflow(startPointIdx - 1, maxNumPoints);
+        if (maxNumPoints < startPointIdx) {
+            revert Overflow(startPointIdx, maxNumPoints);
         }
         // The number of block checkpoints cannot be more than the number of points we have to traverse
-        maxNumPoints = maxNumPoints - startPointIdx - 1;
+        maxNumPoints = maxNumPoints - startPointIdx;
         uint256[] memory allBlocks = new uint256[](maxNumPoints);
         uint256[] memory allBalances = new uint256[](maxNumPoints);
 
@@ -721,7 +726,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         allBlocks[0] = lastBlockNumber;
         allBalances[0] = lastBalance;
         // Traverse all possible points until we pass the ending block number
-        for (uint256 i = startPointIdx; i < maxNumPoints; ++i) {
+        for (uint256 i = startPointIdx + 1; i < maxNumPoints; ++i) {
             if (pointHistory[i].blockNumber > endBlock) {
                 break;
             }
@@ -837,6 +842,21 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @return Total token supply.
     function totalSupply() public view override returns (uint256) {
         return supply;
+    }
+
+    /// @dev Gets total token supply at a specific block number.
+    /// @param blockNumber Block number.
+    /// @return supplyAt Supply at the specified block number.
+    /// @return pointIdx Index of a point with the requested block number balance.
+    function totalSupplyAt(uint256 blockNumber) public view returns (uint256 supplyAt, uint256 pointIdx) {
+        // Find point with the closest block number to the provided one
+        pointIdx = _findBlockPointIndex(blockNumber, epoch);
+        // If the block number at the point index is bigger than the specified block number, the balance was zero
+        if (pointHistory[pointIdx].blockNumber > blockNumber) {
+            supplyAt = 0;
+        } else {
+            supplyAt = pointHistory[pointIdx].balance;
+        }
     }
     
     /// @dev Calculate total voting power
