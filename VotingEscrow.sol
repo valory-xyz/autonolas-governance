@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./ERC20VotesNonTransferable.sol";
 import "../interfaces/IStructs.sol";
-import "hardhat/console.sol";
 
 /**
 @title Voting Escrow
@@ -623,18 +622,9 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             revert WrongBlockNumber(endBlock, block.number);
         }
 
-        console.log("startBlock", startBlock);
-        console.log("endBlock", endBlock);
-        for (uint256 i = 0; i < maxNumPoints; ++i) {
-            console.log("i", i);
-            console.log("block", points[i].blockNumber);
-        }
-
         uint256 lastBlockNumber = startBlock;
         // Find the point number that has a block number equal to a lower block number bound or lower
         (uint256 lastBalance, uint256 startPointIdx) = balanceOfAt(account, startBlock);
-        console.log("startPointIdx", startPointIdx);
-        console.log("maxNumPoints", maxNumPoints);
 
         // Check the points limit
         if (maxNumPoints < startPointIdx) {
