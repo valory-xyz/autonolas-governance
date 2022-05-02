@@ -569,7 +569,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param blockNumber Block number.
     /// @return balance Token balance.
     /// @return pointIdx Index of a point with the requested block number balance.
-    function balanceOfAt(address account, uint256 blockNumber) public view returns (uint256 balance, uint256 pointIdx) {
+    function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance, uint256 pointIdx) {
         // Find point with the closest block number to the provided one
         pointIdx = _findBlockPointIndexForAccount(account, blockNumber);
         // If the block number at the point index is bigger than the specified block number, the balance was zero
@@ -577,171 +577,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             balance = 0;
         } else {
             balance = userPointHistory[account][pointIdx].balance;
-        }
-    }
-
-    /// @dev Gets the account block number by the provided point number.
-    /// @param account Account address.
-    /// @param pointNumber Point number.
-    /// @return blockNumber Block number at that point.
-    function getBlockNumberByPoint(address account, uint256 pointNumber) external view returns (uint256 blockNumber) {
-        if (pointNumber >= userPointHistory[account].length) {
-            revert Overflow(pointNumber, userPointHistory[account].length);
-        }
-        blockNumber = userPointHistory[account][pointNumber].blockNumber;
-    }
-
-    /// @dev Gets historical points of an account.
-    /// @param account Account address.
-    /// @param startBlock Starting block.
-    /// @param endBlock Ending block.
-    /// @return numBlockCheckpoints Number of distinct block numbers where balances change.
-    /// @return blocks Set of block numbers where balances change.
-    /// @return balances Set of balances correspondent to set of block numbers.
-    function getHistoryAccountBalances(address account, uint256 startBlock, uint256 endBlock) external view
-        returns (uint256 numBlockCheckpoints, uint256[] memory blocks, uint256[] memory balances)
-    {
-        // Get all the user history points
-        PointVoting[] memory points = userPointHistory[account];
-        uint256 maxNumPoints = points.length;
-        // Check if account has any records of locking
-        if (maxNumPoints == 0) {
-            revert ZeroValue();
-        }
-
-        // If it's the very first record, it has to be taken as a block number of a first point record
-        if (startBlock == 0) {
-            startBlock = points[0].blockNumber;
-        }
-        // Check provided boundaries
-        if (startBlock > endBlock) {
-            revert Overflow(startBlock, endBlock);
-        }
-        // Check for the last existent block number
-        if (endBlock > block.number) {
-            revert WrongBlockNumber(endBlock, block.number);
-        }
-
-        uint256 lastBlockNumber = startBlock;
-        // Find the point number that has a block number equal to a lower block number bound or lower
-        (uint256 lastBalance, uint256 startPointIdx) = balanceOfAt(account, startBlock);
-
-        // Check the points limit
-        if (maxNumPoints < startPointIdx) {
-            revert Overflow(startPointIdx, maxNumPoints);
-        }
-        // The number of block checkpoints cannot be more than the number of points we have to traverse
-        maxNumPoints = maxNumPoints - startPointIdx;
-        uint256[] memory allBlocks = new uint256[](maxNumPoints);
-        uint256[] memory allBalances = new uint256[](maxNumPoints);
-
-        // Record zero index balance and block number
-        allBlocks[0] = lastBlockNumber;
-        allBalances[0] = lastBalance;
-        // Traverse all possible points until we pass the ending block number
-        for (uint256 i = startPointIdx + 1; i < maxNumPoints; ++i) {
-            if (points[i].blockNumber > endBlock) {
-                break;
-            }
-            uint256 balance = points[i].balance;
-            uint256 blockNumber = points[i].blockNumber;
-            if (balance != lastBalance) {
-                // If block number has changed, we add that block number to the set of block number checkpoints
-                if (blockNumber > lastBlockNumber) {
-                    numBlockCheckpoints++;
-                    allBlocks[numBlockCheckpoints] = blockNumber;
-                }
-                // The balance is overwritten anyway since we need to know the last balance at the end of the block
-                allBalances[numBlockCheckpoints] = balance;
-                lastBalance = balance;
-                lastBlockNumber = blockNumber;
-            }
-        }
-        // Correct the counter to become length
-        numBlockCheckpoints++;
-
-        // Write exact number of values into the returned sets
-        blocks = new uint256[](numBlockCheckpoints);
-        balances = new uint256[](numBlockCheckpoints);
-        for (uint256 i = 0; i < numBlockCheckpoints; ++i) {
-            blocks[i] = allBlocks[i];
-            balances[i] = allBalances[i];
-        }
-    }
-
-    // TODO Refactor with the function above to make a single function. Now they only differe in binary search call
-    /// @dev Gets historical total supply values.
-    /// @param startBlock Starting block.
-    /// @param endBlock Ending block.
-    /// @return numBlockCheckpoints Number of distinct block numbers where balances change.
-    /// @return blocks Set of block numbers where balances change.
-    /// @return balances Set of balances correspondent to set of block numbers.
-    function getHistoryTotalSupply(uint256 startBlock, uint256 endBlock) external view
-        returns (uint256 numBlockCheckpoints, uint256[] memory blocks, uint256[] memory balances)
-    {
-        // Get all the general history points
-        uint256 maxNumPoints = epoch;
-        // Check if account has any records of locking
-        if (maxNumPoints == 0) {
-            revert ZeroValue();
-        }
-
-        // If it's the very first record, it has to be taken as a block number of a first point record
-        if (startBlock == 0) {
-            startBlock = pointHistory[0].blockNumber;
-        }
-        // Check provided boundaries
-        if (startBlock > endBlock) {
-            revert Overflow(startBlock, endBlock);
-        }
-        // Check for the last existent block number
-        if (endBlock > block.number) {
-            revert WrongBlockNumber(endBlock, block.number);
-        }
-
-        // Find the point number that has a block number equal to a lower block number bound or lower
-        (uint256 lastBalance, uint256 startPointIdx) = totalSupplyAt(startBlock);
-        uint256 lastBlockNumber = startBlock;
-
-        // Check the points limit
-        if (maxNumPoints < startPointIdx) {
-            revert Overflow(startPointIdx, maxNumPoints);
-        }
-        // The number of block checkpoints cannot be more than the number of points we have to traverse
-        maxNumPoints = maxNumPoints - startPointIdx;
-        uint256[] memory allBlocks = new uint256[](maxNumPoints);
-        uint256[] memory allBalances = new uint256[](maxNumPoints);
-
-        // Record zero index balance and block number
-        allBlocks[0] = lastBlockNumber;
-        allBalances[0] = lastBalance;
-        // Traverse all possible points until we pass the ending block number
-        for (uint256 i = startPointIdx + 1; i < maxNumPoints; ++i) {
-            if (pointHistory[i].blockNumber > endBlock) {
-                break;
-            }
-            uint256 balance = pointHistory[i].balance;
-            uint256 blockNumber = pointHistory[i].blockNumber;
-            if (balance != lastBalance) {
-                // If block number has changed, we add that block number to the set of block number checkpoints
-                if (blockNumber > lastBlockNumber) {
-                    numBlockCheckpoints++;
-                    allBlocks[numBlockCheckpoints] = blockNumber;
-                }
-                // The balance is overwritten anyway since we need to know the last balance at the end of the block
-                allBalances[numBlockCheckpoints] = balance;
-                lastBalance = balance;
-                lastBlockNumber = blockNumber;
-            }
-        }
-        numBlockCheckpoints++;
-
-        // Write exact number of values into the returned sets
-        blocks = new uint256[](numBlockCheckpoints);
-        balances = new uint256[](numBlockCheckpoints);
-        for (uint256 i = 0; i < numBlockCheckpoints; ++i) {
-            blocks[i] = allBlocks[i];
-            balances[i] = allBalances[i];
         }
     }
 
@@ -838,7 +673,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param blockNumber Block number.
     /// @return supplyAt Supply at the specified block number.
     /// @return pointIdx Index of a point with the requested block number balance.
-    function totalSupplyAt(uint256 blockNumber) public view returns (uint256 supplyAt, uint256 pointIdx) {
+    function totalSupplyAt(uint256 blockNumber) external view returns (uint256 supplyAt, uint256 pointIdx) {
         // Find point with the closest block number to the provided one
         pointIdx = _findBlockPointIndex(blockNumber, epoch);
         // If the block number at the point index is bigger than the specified block number, the balance was zero
