@@ -84,8 +84,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
 
     // Token address
     address immutable public token;
-    // Dispenser address
-    address public dispenser;
     // Total token supply
     uint256 public supply;
     // Mapping of account address => LockedBalance
@@ -119,7 +117,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param _name Token name
     /// @param _symbol Token symbol
     /// @param _version Contract version - required for Aragon compatibility
-    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version, address _dispenser)
+    constructor(address tokenAddr, string memory _name, string memory _symbol, string memory _version)
     {
         token = tokenAddr;
         pointHistory[0].blockNumber = block.number;
@@ -133,14 +131,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (decimals > 255) {
             revert Overflow(uint256(decimals), 255);
         }
-        dispenser = _dispenser;
-    }
-
-    /// @dev Changes dispenser address.
-    /// @param newDispenser Address of a new dispenser.
-    function changeDispenser(address newDispenser) external onlyOwner {
-        dispenser = newDispenser;
-        emit DispenserUpdated(newDispenser);
     }
 
     /// @dev Set an external contract to check for approved smart contract wallets
