@@ -54,21 +54,8 @@ struct LockedBalance {
     uint256 end;
 }
 
-struct PointVoting {
-    // b: y = ax + b
-    int128 bias;
-    // a: dweight / dt
-    int128 slope;
-    // Timestamp
-    uint256 ts;
-    // Block number
-    uint256 blockNumber;
-    // Total balance or account balance
-    uint256 balance;
-}
-
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract VotingEscrow is Ownable, ReentrancyGuard, ERC20VotesNonTransferable {
+contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransferable {
     using SafeERC20 for IERC20;
 
     enum DepositType {
