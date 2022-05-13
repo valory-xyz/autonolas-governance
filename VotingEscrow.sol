@@ -17,7 +17,7 @@ import "../interfaces/IStructs.sol";
 @notice Votes have a weight depending on time, so that users are
 committed to the future of (whatever they are voting for)
 @dev Vote weight decays linearly over time. Lock time cannot be
-more than `maxTime` (4 years).
+more than `MAXTIME` (4 years).
 # Voting escrow to have time-weighted votes
 # Votes have a weight depending on time, so that users are committed
 # to the future of (whatever they are voting for).
@@ -79,6 +79,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
 
     // 1 week time
     uint256 internal constant WEEK = 1 weeks;
+    // Maximum lock time (4 years)
+    uint256 internal constant MAXTIME = 4 * 365 * 86400;
 
     // Token address
     address immutable public token;
@@ -186,7 +188,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (account != address(0)) {
             // Calculate slopes and biases
             // Kept at zero when they have to
-            int128 maxTime = 4 * 365 * 86400;
+            int128 maxTime = int128(int256(MAXTIME));
             if (oldLocked.end > block.timestamp && oldLocked.amount > 0) {
                 uOld.slope = oldLocked.amount / maxTime;
                 uOld.bias = uOld.slope * int128(int256(oldLocked.end - block.timestamp));
@@ -395,9 +397,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (unlockTime <= block.timestamp) {
             revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
         }
-        uint256 maxTime = 4 * 365 * 86400;
-        if (unlockTime > block.timestamp + maxTime) {
-            revert MaxUnlockTimeReached(msg.sender, block.timestamp + maxTime, unlockTime);
+        if (unlockTime > block.timestamp + MAXTIME) {
+            revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
 
         _depositFor(msg.sender, value, unlockTime, _locked, DepositType.CREATE_LOCK_TYPE);
@@ -440,9 +441,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (unlockTime <= _locked.end) {
             revert UnlockTimeIncorrect(msg.sender, _locked.end, unlockTime);
         }
-        uint256 maxTime = 4 * 365 * 86400;
-        if (unlockTime > block.timestamp + maxTime) {
-            revert MaxUnlockTimeReached(msg.sender, block.timestamp + maxTime, unlockTime);
+        if (unlockTime > block.timestamp + MAXTIME) {
+            revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
 
         _depositFor(msg.sender, 0, unlockTime, _locked, DepositType.INCREASE_UNLOCK_TIME);
