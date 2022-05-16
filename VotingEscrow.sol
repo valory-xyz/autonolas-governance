@@ -132,8 +132,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     function assertNotContract(address account) internal {
         if (account != tx.origin) {
             // TODO Implement own smart contract checker or use one from oracle-dev
-            if (smartWalletChecker != address(0)) {
-                require(IChecker(smartWalletChecker).check(account), "SC depositors not allowed");
+            if (smartWalletChecker != address(0) && !IChecker(smartWalletChecker).check(account)) {
+                revert UnauthorizedAccount(account);
             }
         }
     }
