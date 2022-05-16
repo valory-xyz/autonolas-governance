@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./ERC20VotesNonTransferable.sol";
 import "../interfaces/IStructs.sol";
-import "hardhat/console.sol";
 
 /**
 @title Voting Escrow
@@ -244,12 +243,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
                 } else {
                     dSlope = mapSlopeChanges[tStep];
                 }
-                console.log("tStep diff", tStep - lastCheckpoint);
-                console.log("lastPoint.slope");
-                console.logInt(lastPoint.slope);
                 lastPoint.bias -= lastPoint.slope * int128(int256(tStep - lastCheckpoint));
-                console.log("Bias for point", _point);
-                console.logInt(lastPoint.bias);
                 lastPoint.slope += dSlope;
                 if (lastPoint.bias < 0) {
                     // This can happen
@@ -280,13 +274,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (account != address(0)) {
             // If last point was in this block, the slope change has been applied already
             // But in such case we have 0 slope(s)
-            console.log("!!!!!!! bias before recalculation");
-            console.logInt(lastPoint.bias);
-
-            console.log("!!!!!!! uNew bias");
-            console.logInt(uNew.bias);
-            console.log("!!!!!!! uOld bias");
-            console.logInt(uOld.bias);
             lastPoint.slope += (uNew.slope - uOld.slope);
             lastPoint.bias += (uNew.bias - uOld.bias);
             if (lastPoint.slope < 0) {
@@ -297,11 +284,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             }
         }
 
-        console.log("!!!!!!! point", _point);
-        console.log("!!!!!!! slope");
-        console.logInt(lastPoint.slope);
-        console.log("!!!!!!! bias");
-        console.logInt(lastPoint.bias);
         // Record the changed point into history
         mapSupplyPoints[_point] = lastPoint;
 
@@ -601,18 +583,11 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
 
         uint256 maxPoint = numPoints;
         uint256 _point = _findBlockPointIndex(blockNumber, maxPoint);
-        //console.log("balance", _min);
-        //console.log("supply", _point);
-        //console.log("max supply", maxPoint);
         PointVoting memory point0 = mapSupplyPoints[_point];
         uint256 d_block = 0;
         uint256 d_t = 0;
         if (_point < maxPoint) {
             PointVoting memory point1 = mapSupplyPoints[_point + 1];
-            //console.log("point 1 block number", point1.blockNumber);
-            //console.log("point 1 time", point1.ts);
-            //console.log("point 0 block number", point0.blockNumber);
-            //console.log("point 0 time", point0.ts);
             d_block = point1.blockNumber - point0.blockNumber;
             d_t = point1.ts - point0.ts;
         } else {
@@ -623,13 +598,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (d_block != 0) {
             block_time += (d_t * (blockNumber - point0.blockNumber)) / d_block;
         }
-        //console.log("block time", block_time);
-        //console.log("block number", blockNumber);
-        //console.log("upoint ts", uPoint.ts);
 
         uPoint.bias -= uPoint.slope * int128(int256(block_time) - int256(uPoint.ts));
-        //console.logInt(uPoint.slope);
-        //console.logInt(uPoint.bias);
         if (uPoint.bias >= 0) {
             balance = uint256(uint128(uPoint.bias));
         }
@@ -641,25 +611,16 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @return vSupply Total voting power at that time.
     function supplyLockedAt(PointVoting memory pv, uint256 t) internal view returns (uint256 vSupply) {
         PointVoting memory lastPoint = pv;
-//        console.log("t", t);
-//        console.log("lastPoint.ts", pv.ts);
         uint256 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
             tStep += WEEK;
-//            console.log("tStep", tStep);
             int128 dSlope = 0;
             if (tStep > t) {
                 tStep = t;
             } else {
                 dSlope = mapSlopeChanges[tStep];
             }
-//            console.log("dSlope");
-//            console.logInt(dSlope);
             lastPoint.bias -= lastPoint.slope * int128(int256(tStep) - int256(lastPoint.ts));
-//            console.log("last point slope");
-//            console.logInt(lastPoint.slope);
-//            console.log("lastPoint.bias");
-//            console.logInt(lastPoint.bias);
             if (tStep == t) {
                 break;
             }
