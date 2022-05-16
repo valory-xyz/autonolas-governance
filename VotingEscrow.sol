@@ -87,12 +87,12 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     // Total token supply
     uint256 public supply;
     // Mapping of account address => LockedBalance
-    mapping(address => LockedBalance) public locked;
+    mapping(address => LockedBalance) public mapLockedBalance;
 
-    // Economical checkpoint
-    uint256 public numPoints;
+    // Total number of economical checkpoints (starting from zero)
+    uint256 public totalNumPoints;
     // Mapping of point Id => point
-    mapping(uint256 => PointVoting) public pointHistory;
+    PointVoting[] public pointHistory;
     // Mapping of account address => PointVoting[point Id]
     mapping(address => PointVoting[]) public userPointHistory;
     // Mapping of time => signed slope change
@@ -113,11 +113,11 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     constructor(address _token, string memory _name, string memory _symbol)
     {
         token = _token;
-        pointHistory[0].blockNumber = block.number;
-        pointHistory[0].ts = block.timestamp;
         name = _name;
         symbol = _symbol;
         decimals = ERC20(_token).decimals();
+        // Push initial point such that default timestamp and block number are not zero
+        pointHistory.push(PointVoting(0, 0, block.timestamp, block.number, 0));
     }
 
     /// @dev Set an external contract to check for approved smart contract wallets
@@ -128,7 +128,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
 
     /// @dev Check if the call is from a whitelisted smart contract, revert if not
     /// @param account Address to be checked
-    function assertNotContract(address account) internal {
+    function _assertNotContract(address account) internal {
         if (account != tx.origin) {
             // TODO Implement own smart contract checker or use one from oracle-dev
             if (smartWalletChecker != address(0)) {
@@ -167,11 +167,11 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param account User wallet
     /// @return Epoch time of the lock end
     function lockedEnd(address account) external view returns (uint256) {
-        return locked[account].end;
+        return mapLockedBalance[account].end;
     }
 
     /// @dev Record global and per-user data to checkpoint
-    /// @param account User's wallet address. No user checkpoint if 0x0
+    /// @param account User's wallet address. No user checkpoint if the address is zero.
     /// @param oldLocked Pevious locked amount / end lock time for the user
     /// @param newLocked New locked amount / end lock time for the user
     function _checkpoint(
@@ -181,9 +181,9 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     ) internal {
         PointVoting memory uOld;
         PointVoting memory uNew;
-        int128 oldDSlope = 0;
-        int128 newDSlope = 0;
-        uint256 _point = numPoints;
+        int128 oldDSlope;
+        int128 newDSlope;
+        uint256 curNumPoint = totalNumPoints;
 
         if (account != address(0)) {
             // Calculate slopes and biases
@@ -212,17 +212,17 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
 
         PointVoting memory lastPoint;
-        if (_point > 0) {
-            lastPoint = pointHistory[_point];
+        if (curNumPoint > 0) {
+            lastPoint = pointHistory[curNumPoint];
         } else {
-            lastPoint = PointVoting({bias: 0, slope: 0, ts: block.timestamp, blockNumber: block.number, balance: supply});
+            lastPoint = PointVoting(0, 0, block.timestamp, block.number, supply);
         }
         uint256 lastCheckpoint = lastPoint.ts;
-        // initialLastPoint is used for extrapolation to calculate block number
+        // initialPoint is used for extrapolation to calculate block number
         // (approximately, for *At methods) and save them
         // as we cannot figure that out exactly from inside the contract
-        PointVoting memory initialLastPoint = lastPoint;
-        uint256 block_slope = 0; // dblock/dt
+        PointVoting memory initialPoint = lastPoint;
+        uint256 block_slope; // dblock/dt
         if (block.timestamp > lastPoint.ts) {
             block_slope = (1e18 * (block.number - lastPoint.blockNumber)) / (block.timestamp - lastPoint.ts);
         }
@@ -236,7 +236,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
                 // Hopefully it won't happen that this won't get used in 5 years!
                 // If it does, users will be able to withdraw but vote weight will be broken
                 tStep += WEEK;
-                int128 dSlope = 0;
+                int128 dSlope;
                 if (tStep > block.timestamp) {
                     tStep = block.timestamp;
                 } else {
@@ -254,20 +254,20 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
                 }
                 lastCheckpoint = tStep;
                 lastPoint.ts = tStep;
-                lastPoint.blockNumber = initialLastPoint.blockNumber + (block_slope * (tStep - initialLastPoint.ts)) / 1e18;
-                lastPoint.balance = initialLastPoint.balance;
-                _point += 1;
+                lastPoint.blockNumber = initialPoint.blockNumber + (block_slope * (tStep - initialPoint.ts)) / 1e18;
+                lastPoint.balance = initialPoint.balance;
+                curNumPoint += 1;
                 if (tStep == block.timestamp) {
                     lastPoint.blockNumber = block.number;
                     lastPoint.balance = supply;
                     break;
                 } else {
-                    pointHistory[_point] = lastPoint;
+                    pointHistory.push(lastPoint);
                 }
             }
         }
 
-        numPoints = _point;
+        totalNumPoints = curNumPoint;
         // Now pointHistory is filled until t=now
 
         if (account != address(0)) {
@@ -284,7 +284,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
 
         // Record the changed point into history
-        pointHistory[_point] = lastPoint;
+        pointHistory.push(lastPoint);
 
         if (account != address(0)) {
             // Schedule the slope changes (slope is going down)
@@ -327,31 +327,30 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         LockedBalance memory lockedBalance,
         DepositType depositType
     ) internal {
-        LockedBalance memory _locked = lockedBalance;
         uint256 supplyBefore = supply;
 
         supply = supplyBefore + value;
         LockedBalance memory oldLocked;
-        (oldLocked.amount, oldLocked.end) = (_locked.amount, _locked.end);
+        (oldLocked.amount, oldLocked.end) = (lockedBalance.amount, lockedBalance.end);
         // Adding to existing lock, or if a lock is expired - creating a new one
-        _locked.amount += int128(int256(value));
+        lockedBalance.amount += int128(int256(value));
         if (unlockTime != 0) {
-            _locked.end = unlockTime;
+            lockedBalance.end = unlockTime;
         }
-        locked[account] = _locked;
+        mapLockedBalance[account] = lockedBalance;
 
         // Possibilities:
         // Both oldLocked.end could be current or expired (>/< block.timestamp)
         // value == 0 (extend lock) or value > 0 (add to lock or extend lock)
-        // _locked.end > block.timestamp (always)
-        _checkpoint(account, oldLocked, _locked);
+        // lockedBalance.end > block.timestamp (always)
+        _checkpoint(account, oldLocked, lockedBalance);
 
         address from = msg.sender;
         if (value != 0) {
             IERC20(token).safeTransferFrom(from, address(this), value);
         }
 
-        emit Deposit(account, value, _locked.end, depositType, block.timestamp);
+        emit Deposit(account, value, lockedBalance.end, depositType, block.timestamp);
         emit Supply(supplyBefore, supplyBefore + value);
     }
 
@@ -366,33 +365,33 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param account User's wallet address
     /// @param value Amount to add to user's lock
     function depositFor(address account, uint256 value) external nonReentrant {
-        LockedBalance memory _locked = locked[account];
+        LockedBalance memory lockedBalance = mapLockedBalance[account];
 
         if (value == 0) {
             revert ZeroValue();
         }
-        if (_locked.amount == 0) {
+        if (lockedBalance.amount == 0) {
             revert NoValueLocked(account);
         }
-        if (_locked.end <= block.timestamp) {
-            revert LockExpired(msg.sender, _locked.end, block.timestamp);
+        if (lockedBalance.end <= block.timestamp) {
+            revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        _depositFor(account, value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
+        _depositFor(account, value, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
     }
 
     /// @dev Deposit `value` tokens for `msg.sender` and lock until `_unlock_time`
     /// @param value Amount to deposit
     /// @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     function createLock(uint256 value, uint256 _unlock_time) external nonReentrant {
-        assertNotContract(msg.sender);
+        _assertNotContract(msg.sender);
         uint256 unlockTime = (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
-        LockedBalance memory _locked = locked[msg.sender];
+        LockedBalance memory lockedBalance = mapLockedBalance[msg.sender];
 
         if (value == 0) {
             revert ZeroValue();
         }
-        if (_locked.amount != 0) {
-            revert LockedValueNotZero(msg.sender, _locked.amount);
+        if (lockedBalance.amount != 0) {
+            revert LockedValueNotZero(msg.sender, lockedBalance.amount);
         }
         if (unlockTime <= block.timestamp) {
             revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
@@ -401,70 +400,70 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
 
-        _depositFor(msg.sender, value, unlockTime, _locked, DepositType.CREATE_LOCK_TYPE);
+        _depositFor(msg.sender, value, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
     }
 
     /// @dev Deposit `value` additional tokens for `msg.sender` without modifying the unlock time
     /// @param value Amount of tokens to deposit and add to the lock
     function increaseAmount(uint256 value) external nonReentrant {
-        assertNotContract(msg.sender);
+        _assertNotContract(msg.sender);
 
-        LockedBalance memory _locked = locked[msg.sender];
+        LockedBalance memory lockedBalance = mapLockedBalance[msg.sender];
 
         if (value == 0) {
             revert ZeroValue();
         }
-        if (_locked.amount == 0) {
+        if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
         }
-        if (_locked.end <= block.timestamp) {
-            revert LockExpired(msg.sender, _locked.end, block.timestamp);
+        if (lockedBalance.end <= block.timestamp) {
+            revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
 
-        _depositFor(msg.sender, value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
+        _depositFor(msg.sender, value, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
     }
 
     /// @dev Extend the unlock time for `msg.sender` to `_unlock_time`
     /// @param _unlock_time New number of seconds until tokens unlock
     function increaseUnlockTime(uint256 _unlock_time) external nonReentrant {
-        assertNotContract(msg.sender);
+        _assertNotContract(msg.sender);
 
-        LockedBalance memory _locked = locked[msg.sender];
+        LockedBalance memory lockedBalance = mapLockedBalance[msg.sender];
         uint256 unlockTime = (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
 
-        if (_locked.amount == 0) {
+        if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
         }
-        if (_locked.end <= block.timestamp) {
-            revert LockExpired(msg.sender, _locked.end, block.timestamp);
+        if (lockedBalance.end <= block.timestamp) {
+            revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        if (unlockTime <= _locked.end) {
-            revert UnlockTimeIncorrect(msg.sender, _locked.end, unlockTime);
+        if (unlockTime <= lockedBalance.end) {
+            revert UnlockTimeIncorrect(msg.sender, lockedBalance.end, unlockTime);
         }
         if (unlockTime > block.timestamp + MAXTIME) {
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
 
-        _depositFor(msg.sender, 0, unlockTime, _locked, DepositType.INCREASE_UNLOCK_TIME);
+        _depositFor(msg.sender, 0, unlockTime, lockedBalance, DepositType.INCREASE_UNLOCK_TIME);
     }
 
     /// @dev Withdraw all tokens for `msg.sender`
     /// @dev Only possible if the lock has expired
     function withdraw() external nonReentrant {
-        LockedBalance memory _locked = locked[msg.sender];
-        if (_locked.end > block.timestamp) {
-            revert LockNotExpired(msg.sender, _locked.end, block.timestamp);
+        LockedBalance memory lockedBalance = mapLockedBalance[msg.sender];
+        if (lockedBalance.end > block.timestamp) {
+            revert LockNotExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        uint256 value = uint256(int256(_locked.amount));
+        uint256 value = uint256(int256(lockedBalance.amount));
 
-        locked[msg.sender] = LockedBalance(0,0);
+        mapLockedBalance[msg.sender] = LockedBalance(0,0);
         uint256 supplyBefore = supply;
         supply = supplyBefore - value;
 
         // oldLocked can have either expired <= timestamp or zero end
-        // _locked has only 0 end
+        // lockedBalance has only 0 end
         // Both can have >= 0 amount
-        _checkpoint(msg.sender, _locked, LockedBalance(0,0));
+        _checkpoint(msg.sender, lockedBalance, LockedBalance(0,0));
 
         emit Withdraw(msg.sender, value, block.timestamp);
         emit Supply(supplyBefore, supply);
@@ -472,54 +471,42 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         IERC20(token).safeTransfer(msg.sender, value);
     }
 
+    function _binarySearch(PointVoting[] memory pv, uint256 maxPointNumber, uint256 blockNumber) internal view
+        returns (uint256 minPointNumber)
+    {
+        for (uint256 i = 0; i < 128; ++i) {
+            // Will be always enough for 128-bit numbers
+            if (minPointNumber >= maxPointNumber) {
+                break;
+            }
+            uint256 mid = (minPointNumber + maxPointNumber + 1) / 2;
+            if (pv[mid].blockNumber <= blockNumber) {
+                minPointNumber = mid;
+            } else {
+                maxPointNumber = mid - 1;
+            }
+        }
+    }
+
     /// @dev Binary search to estimate point that has a block number out of all the user points.
     /// @param account Account address.
     /// @param blockNumber Block to find.
     /// @return Approximate point number for the specified block.
     function _findBlockPointIndexForAccount(address account, uint256 blockNumber) internal view returns (uint256) {
-        uint256 _min = 0;
-        uint256 _max = userPointHistory[account].length;
-        if (_max > 0) {
-            _max -= 1;
+        uint256 maxPointNumber = userPointHistory[account].length;
+        if (maxPointNumber > 0) {
+            maxPointNumber -= 1;
         }
 
-        for (uint256 i = 0; i < 128; ++i) {
-            // Will be always enough for 128-bit numbers
-            if (_min >= _max) {
-                break;
-            }
-            uint256 _mid = (_min + _max + 1) / 2;
-            if (userPointHistory[account][_mid].blockNumber <= blockNumber) {
-                _min = _mid;
-            } else {
-                _max = _mid - 1;
-            }
-        }
-        return _min;
+        return _binarySearch(userPointHistory[account], maxPointNumber, blockNumber);
     }
 
-    // TODO Refactor with the function above to make a single binary search function.
     /// @dev Binary search to estimate point that has a block number out of all the points.
     /// @param blockNumber Block to find.
     /// @param maxPointNumber Max point number.
     /// @return Approximate point number for the specified block.
     function _findBlockPointIndex(uint256 blockNumber, uint256 maxPointNumber) internal view returns (uint256) {
-        // Binary search
-        uint256 _min = 0;
-        uint256 _max = maxPointNumber;
-        for (uint256 i = 0; i < 128; ++i) {
-            // Will be always enough for 128-bit numbers
-            if (_min >= _max) {
-                break;
-            }
-            uint256 _mid = (_min + _max + 1) / 2;
-            if (pointHistory[_mid].blockNumber <= blockNumber) {
-                _min = _mid;
-            } else {
-                _max = _mid - 1;
-            }
-        }
-        return _min;
+        return _binarySearch(pointHistory, maxPointNumber, blockNumber);
     }
 
 
@@ -528,14 +515,14 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param t Epoch time to return voting power at
     /// @return vBalance User voting power.
     function _balanceOfLocked(address account, uint256 t) internal view returns (uint256 vBalance) {
-        uint256 _point = userPointHistory[account].length;
-        if (_point == 0) {
+        uint256 pointNumber = userPointHistory[account].length;
+        if (pointNumber == 0) {
             return 0;
         } else {
-            PointVoting memory lastPoint = userPointHistory[account][_point - 1];
-            lastPoint.bias -= lastPoint.slope * int128(int256(t) - int256(lastPoint.ts));
-            if (lastPoint.bias > 0) {
-                vBalance = uint256(int256(lastPoint.bias));
+            PointVoting memory uPoint = userPointHistory[account][pointNumber - 1];
+            uPoint.bias -= uPoint.slope * int128(int256(t) - int256(uPoint.ts));
+            if (uPoint.bias > 0) {
+                vBalance = uint256(int256(uPoint.bias));
             }
         }
     }
@@ -543,7 +530,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @dev Gets the account balance.
     /// @param account Account address.
     function balanceOf(address account) public view override returns (uint256 balance) {
-        balance = uint256(int256(locked[account].amount));
+        balance = uint256(int256(mapLockedBalance[account].amount));
     }
 
     /// @dev Gets the account balance at a specific block number.
@@ -555,8 +542,9 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         // Find point with the closest block number to the provided one
         pointIdx = _findBlockPointIndexForAccount(account, blockNumber);
         // If the block number at the point index is bigger than the specified block number, the balance was zero
-        if (userPointHistory[account][pointIdx].blockNumber <= blockNumber) {
-            balance = userPointHistory[account][pointIdx].balance;
+        PointVoting memory uPoint = userPointHistory[account][pointIdx];
+        if (uPoint.blockNumber <= blockNumber) {
+            balance = uPoint.balance;
         }
     }
 
@@ -566,54 +554,58 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         return _balanceOfLocked(account, block.timestamp);
     }
 
+    function _getBlockTime(uint256 blockNumber) internal view returns (PointVoting memory hPoint, uint256 blockTime) {
+        // Check the block number to be in the past or current block
+        if (blockNumber > block.number) {
+            revert WrongBlockNumber(blockNumber, block.number);
+        }
+        // Get the minimum historical point with the provided block number
+        uint256 maxPoint = totalNumPoints;
+        uint256 hMin = _findBlockPointIndex(blockNumber, maxPoint);
+        hPoint = pointHistory[hMin];
+
+        uint256 dBlock;
+        uint256 dt;
+        if (hMin < maxPoint) {
+            PointVoting memory hPointNext = pointHistory[hMin + 1];
+            dBlock = hPointNext.blockNumber - hPoint.blockNumber;
+            dt = hPointNext.ts - hPoint.ts;
+        } else {
+            dBlock = block.number - hPoint.blockNumber;
+            dt = block.timestamp - hPoint.ts;
+        }
+        blockTime = hPoint.ts;
+        if (dBlock > 0) {
+            blockTime += (dt * (blockNumber - hPoint.blockNumber)) / dBlock;
+        }
+    }
+
     /// @dev Gets voting power at a specific block number.
     /// @param account Account address.
     /// @param blockNumber Block number.
     /// @return balance Voting balance / power.
     function getPastVotes(address account, uint256 blockNumber) public view override returns (uint256 balance) {
-        if (blockNumber > block.number) {
-            revert WrongBlockNumber(blockNumber, block.number);
-        }
+        (, uint256 blockTime) = _getBlockTime(blockNumber);
 
-        // Binary search
-        uint256 _min = _findBlockPointIndexForAccount(account, blockNumber);
-
-        PointVoting memory uPoint = userPointHistory[account][_min];
-
-        uint256 maxPoint = numPoints;
-        uint256 _point = _findBlockPointIndex(blockNumber, maxPoint);
-        PointVoting memory point0 = pointHistory[_point];
-        uint256 d_block = 0;
-        uint256 d_t = 0;
-        if (_point < maxPoint) {
-            PointVoting memory point1 = pointHistory[_point + 1];
-            d_block = point1.blockNumber - point0.blockNumber;
-            d_t = point1.ts - point0.ts;
-        } else {
-            d_block = block.number - point0.blockNumber;
-            d_t = block.timestamp - point0.ts;
-        }
-        uint256 block_time = point0.ts;
-        if (d_block != 0) {
-            block_time += (d_t * (blockNumber - point0.blockNumber)) / d_block;
-        }
-
-        uPoint.bias -= uPoint.slope * int128(int256(block_time - uPoint.ts));
-        if (uPoint.bias >= 0) {
+        // Find the user point for the provided block number
+        uint256 uMin = _findBlockPointIndexForAccount(account, blockNumber);
+        PointVoting memory uPoint = userPointHistory[account][uMin];
+        // Calculate bias based on a block time
+        uPoint.bias -= uPoint.slope * int128(int256(blockTime - uPoint.ts));
+        if (uPoint.bias > 0) {
             balance = uint256(uint128(uPoint.bias));
         }
     }
 
     /// @dev Calculate total voting power at some point in the past.
-    /// @param pv The point (bias/slope) to start search from.
+    /// @param lastPoint The point (bias/slope) to start search from.
     /// @param t Time to calculate the total voting power at.
     /// @return vSupply Total voting power at that time.
-    function supplyLockedAt(PointVoting memory pv, uint256 t) internal view returns (uint256 vSupply) {
-        PointVoting memory lastPoint = pv;
+    function _supplyLockedAt(PointVoting memory lastPoint, uint256 t) internal view returns (uint256 vSupply) {
         uint256 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
             tStep += WEEK;
-            int128 dSlope = 0;
+            int128 dSlope;
             if (tStep > t) {
                 tStep = t;
             } else {
@@ -635,9 +627,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @dev Calculate total voting power at time `t`. Adheres to the ERC20 `totalSupplyLocked` for Aragon compatibility
     /// @return Total voting power
     function totalSupplyLockedAtT(uint256 t) public view returns (uint256) {
-        uint256 _point = numPoints;
-        PointVoting memory lastPoint = pointHistory[_point];
-        return supplyLockedAt(lastPoint, t);
+        PointVoting memory lastPoint = pointHistory[totalNumPoints];
+        return _supplyLockedAt(lastPoint, t);
     }
 
     /// @dev Gets total token supply.
@@ -652,10 +643,11 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @return pointIdx Index of a point with the requested block number balance.
     function totalSupplyAt(uint256 blockNumber) external view returns (uint256 supplyAt, uint256 pointIdx) {
         // Find point with the closest block number to the provided one
-        pointIdx = _findBlockPointIndex(blockNumber, numPoints);
+        pointIdx = _findBlockPointIndex(blockNumber, totalNumPoints);
         // If the block number at the point index is bigger than the specified block number, the balance was zero
-        if (pointHistory[pointIdx].blockNumber <= blockNumber) {
-            supplyAt = pointHistory[pointIdx].balance;
+        PointVoting memory pv = pointHistory[pointIdx];
+        if (pv.blockNumber <= blockNumber) {
+            supplyAt = pv.balance;
         }
     }
     
@@ -669,25 +661,9 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param blockNumber Block number to calculate the total voting power at.
     /// @return Total voting power.
     function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256) {
-        if (blockNumber > block.number) {
-            revert WrongBlockNumber(blockNumber, block.number);
-        }
-        uint256 _point = numPoints;
-        uint256 target_point = _findBlockPointIndex(blockNumber, _point);
+        (PointVoting memory hPoint, uint256 blockTime) = _getBlockTime(blockNumber);
 
-        PointVoting memory pv = pointHistory[target_point];
-        uint256 dt = 0;
-        if (target_point < _point) {
-            PointVoting memory pointNext = pointHistory[target_point + 1];
-            if (pv.blockNumber != pointNext.blockNumber) {
-                dt = ((blockNumber - pv.blockNumber) * (pointNext.ts - pv.ts)) / (pointNext.blockNumber - pv.blockNumber);
-            }
-        } else {
-            if (pv.blockNumber != block.number) {
-                dt = ((blockNumber - pv.blockNumber) * (block.timestamp - pv.ts)) / (block.number - pv.blockNumber);
-            }
-        }
-        // Now dt contains info on how far are we beyond point
-        return supplyLockedAt(pv, pv.ts + dt);
+        // Now dt contains info on how far are we beyond the point
+        return _supplyLockedAt(hPoint, blockTime);
     }
 }
