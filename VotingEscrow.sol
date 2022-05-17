@@ -359,11 +359,12 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         _depositFor(account, value, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
     }
 
-    /// @dev Deposit `value` tokens for `msg.sender` and lock until `_unlock_time`
+    /// @dev Deposit `value` tokens for `msg.sender` and lock until `unlockTime`
     /// @param value Amount to deposit
-    /// @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
-    function createLock(uint256 value, uint256 _unlock_time) external nonReentrant {
-        uint256 unlockTime = (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
+    /// @param unlockTime Epoch time when tokens unlock, rounded down to whole weeks
+    function createLock(uint256 value, uint256 unlockTime) external nonReentrant {
+        // Lock time is rounded down to weeks
+        uint256 unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
 
         if (value == 0) {
@@ -400,11 +401,11 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         _depositFor(msg.sender, value, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
     }
 
-    /// @dev Extend the unlock time for `msg.sender` to `_unlock_time`
-    /// @param _unlock_time New number of seconds until tokens unlock
-    function increaseUnlockTime(uint256 _unlock_time) external nonReentrant {
+    /// @dev Extend the unlock time for `msg.sender` to `unlockTime`
+    /// @param unlockTime New number of seconds until tokens unlock
+    function increaseUnlockTime(uint256 unlockTime) external nonReentrant {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        uint256 unlockTime = (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
+        uint256 unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
 
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
