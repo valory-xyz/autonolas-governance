@@ -11,18 +11,11 @@ import "./ERC20VotesNonTransferable.sol";
 import "../interfaces/IStructs.sol";
 
 /**
-@title Voting Escrow
-@author Curve Finance
-@license MIT
-@notice Votes have a weight depending on time, so that users are
-committed to the future of (whatever they are voting for)
-@dev Vote weight decays linearly over time. Lock time cannot be
-more than `MAXTIME` (4 years).
-# Voting escrow to have time-weighted votes
-# Votes have a weight depending on time, so that users are committed
-# to the future of (whatever they are voting for).
-# The weight in this implementation is linear, and lock cannot be more than maxtime:
-# w ^
+Votes have a weight depending on time, so that users are committed to the future of (whatever they are voting for).
+Vote weight decays linearly over time. Lock time cannot be more than `MAXTIME` (4 years).
+Voting escrow has time-weighted votes derived from the amount of tokens locked. The maximum voting power can be
+achieved with the longest lock possible. This way the users are incentivized to lock tokens for more time.
+# w ^ = amount * time_locked / MAXTIME
 # 1 +        /
 #   |      /
 #   |    /
@@ -36,15 +29,6 @@ more than `MAXTIME` (4 years).
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// Code ported from: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/VotingEscrow.vy
 /// and: https://github.com/solidlyexchange/solidly/blob/master/contracts/ve.sol
-
-//# Interface for checking whether address belongs to a whitelisted
-//# type of a smart wallet.
-//# When new types are added - the whole contract is changed
-//# The check() method is modifying to be able to use caching
-//# for individual wallet addresses
-interface IChecker {
-    function check(address account) external returns (bool);
-}
 
 /* We cannot really do block numbers per se b/c slope is per time, not per block
 * and per block could be fairly bad b/c Ethereum changes blocktimes.
@@ -66,17 +50,9 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         INCREASE_UNLOCK_TIME
     }
 
-    event Deposit(
-        address indexed provider,
-        uint256 value,
-        uint256 indexed locktime,
-        DepositType depositType,
-        uint256 ts
-    );
-
-    event Withdraw(address indexed provider, uint256 value, uint256 ts);
+    event Deposit(address provider, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);
+    event Withdraw(address indexed provider, uint256 amount, uint256 ts);
     event Supply(uint256 prevSupply, uint256 supply);
-    event DispenserUpdated(address dispenser);
 
     // 1 week time
     uint256 internal constant WEEK = 1 weeks;
@@ -99,8 +75,11 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     // Mapping of time => signed slope change
     mapping(uint256 => int128) public mapSlopeChanges;
 
+    // Number of decimals
     uint8 public decimals;
+    // Voting token name
     string public name;
+    // Voting token symbol
     string public symbol;
 
     /// @dev Contract constructor
@@ -121,9 +100,9 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param account Account address.
     /// @return pv Last checkpoint.
     function getLastUserPoint(address account) external view returns (PointVoting memory pv) {
-        uint256 uPoint = mapUserPoints[account].length;
-        if (uPoint > 0) {
-            pv = mapUserPoints[account][uPoint - 1];
+        uint256 lastPointNumber = mapUserPoints[account].length;
+        if (lastPointNumber > 0) {
+            pv = mapUserPoints[account][lastPointNumber - 1];
         }
     }
 
@@ -142,18 +121,10 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         return mapUserPoints[account][idx];
     }
 
-
-    /// @dev Get timestamp when `account`'s lock finishes
-    /// @param account User wallet
-    /// @return Epoch time of the lock end
-    function lockedEnd(address account) external view returns (uint256) {
-        return mapLockedBalances[account].end;
-    }
-
-    /// @dev Record global and per-user data to checkpoint
-    /// @param account User's wallet address. No user checkpoint if the address is zero.
-    /// @param oldLocked Pevious locked amount / end lock time for the user
-    /// @param newLocked New locked amount / end lock time for the user
+    /// @dev Record global and per-user data to checkpoint.
+    /// @param account Account address. User checkpoint is skipped if the address is zero.
+    /// @param oldLocked Previous locked amount / end lock time for the user.
+    /// @param newLocked New locked amount / end lock time for the user.
     function _checkpoint(
         address account,
         LockedBalance memory oldLocked,
@@ -198,18 +169,15 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             lastPoint = PointVoting(0, 0, block.timestamp, block.number, supply);
         }
         uint256 lastCheckpoint = lastPoint.ts;
-        // initialPoint is used for extrapolation to calculate block number
-        // (approximately, for *At methods) and save them
-        // as we cannot figure that out exactly from inside the contract
+        // initialPoint is used for extrapolation to calculate the block number and save them
+        // as we cannot figure that out in exact values from inside of the contract
         PointVoting memory initialPoint = lastPoint;
         uint256 block_slope; // dblock/dt
         if (block.timestamp > lastPoint.ts) {
             block_slope = (1e18 * (block.number - lastPoint.blockNumber)) / (block.timestamp - lastPoint.ts);
         }
-        // If last point is already recorded in this block, slope=0
-        // But that's ok b/c we know the block in such case
-
-        // Go over weeks to fill history and calculate what the current point is
+        // If last point is already recorded in this block, slope == 0, but we know the block already in this case
+        // Go over weeks to fill in the history and (or) calculate what the current point is
         {
             uint256 tStep = (lastCheckpoint / WEEK) * WEEK;
             for (uint256 i = 0; i < 255; ++i) {
@@ -225,7 +193,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
                 lastPoint.bias -= lastPoint.slope * int128(int256(tStep - lastCheckpoint));
                 lastPoint.slope += dSlope;
                 if (lastPoint.bias < 0) {
-                    // This can happen
+                    // This could potentially happen
                     lastPoint.bias = 0;
                 }
                 if (lastPoint.slope < 0) {
@@ -248,11 +216,10 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
 
         totalNumPoints = curNumPoint;
-        // Now mapSupplyPoints is filled until t == now
+        // Now mapSupplyPoints is filled until current time
 
         if (account != address(0)) {
-            // If last point was in this block, the slope change has been applied already
-            // But in such case we have 0 slope(s)
+            // If last point was in this block, the slope change has been already applied. In such case we have 0 slope(s)
             lastPoint.slope += (uNew.slope - uOld.slope);
             lastPoint.bias += (uNew.bias - uOld.bias);
             if (lastPoint.slope < 0) {
@@ -263,7 +230,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             }
         }
 
-        // Record the changed point into history
+        // Record the last updated point
         mapSupplyPoints[curNumPoint] = lastPoint;
 
         if (account != address(0)) {
@@ -294,26 +261,26 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
     }
 
-    /// @dev Deposit and lock tokens for a user
-    /// @param account Address that holds lock
-    /// @param value Amount to deposit
-    /// @param unlockTime New time when to unlock the tokens, or 0 if unchanged
-    /// @param lockedBalance Previous locked amount / timestamp
-    /// @param depositType The type of deposit
+    /// @dev Deposits and locks tokens for a specified account.
+    /// @param account Address that already holds the locked amount.
+    /// @param amount Amount to deposit.
+    /// @param unlockTime New time when to unlock the tokens, or 0 if unchanged.
+    /// @param lockedBalance Previous locked amount / end time.
+    /// @param depositType Deposit type.
     function _depositFor(
         address account,
-        uint256 value,
+        uint256 amount,
         uint256 unlockTime,
         LockedBalance memory lockedBalance,
         DepositType depositType
     ) internal {
         uint256 supplyBefore = supply;
-
-        supply = supplyBefore + value;
+        supply = supplyBefore + amount;
+        // Get the old locked data
         LockedBalance memory oldLocked;
         (oldLocked.amount, oldLocked.end) = (lockedBalance.amount, lockedBalance.end);
         // Adding to existing lock, or if a lock is expired - creating a new one
-        lockedBalance.amount += int128(int256(value));
+        lockedBalance.amount += int128(int256(amount));
         if (unlockTime != 0) {
             lockedBalance.end = unlockTime;
         }
@@ -321,101 +288,111 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
 
         // Possibilities:
         // Both oldLocked.end could be current or expired (>/< block.timestamp)
-        // value == 0 (extend lock) or value > 0 (add to lock or extend lock)
+        // amount == 0 (extend lock) or amount > 0 (add to lock or extend lock)
         // lockedBalance.end > block.timestamp (always)
         _checkpoint(account, oldLocked, lockedBalance);
 
         address from = msg.sender;
-        if (value != 0) {
-            IERC20(token).safeTransferFrom(from, address(this), value);
+        if (amount != 0) {
+            IERC20(token).safeTransferFrom(from, address(this), amount);
         }
 
-        emit Deposit(account, value, lockedBalance.end, depositType, block.timestamp);
-        emit Supply(supplyBefore, supplyBefore + value);
+        emit Deposit(account, amount, lockedBalance.end, depositType, block.timestamp);
+        emit Supply(supplyBefore, supplyBefore + amount);
     }
 
-    /// @dev Record global data to checkpoint
+    /// @dev Record global data to checkpoint.
     function checkpoint() external {
         _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0));
     }
 
-    /// @dev Deposit `value` tokens for `account` and add to the lock
+    /// @dev Deposits `amount` tokens for `account` and adds to the lock.
     /// @dev Anyone (even a smart contract) can deposit for someone else, but
-    ///      cannot extend their locktime and deposit for a brand new user
-    /// @param account User's wallet address
-    /// @param value Amount to add to user's lock
-    function depositFor(address account, uint256 value) external nonReentrant {
+    ///      cannot extend their locktime and deposit for a brand new user.
+    /// @param account Account address.
+    /// @param amount Amount to add.
+    function depositFor(address account, uint256 amount) external nonReentrant {
         LockedBalance memory lockedBalance = mapLockedBalances[account];
-
-        if (value == 0) {
+        // Check if the amount is zero
+        if (amount == 0) {
             revert ZeroValue();
         }
+        // The locked balance must already exist
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(account);
         }
+        // Check the lock expiry
         if (lockedBalance.end <= block.timestamp) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        _depositFor(account, value, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
+        _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
     }
 
-    /// @dev Deposit `value` tokens for `msg.sender` and lock until `unlockTime`
-    /// @param value Amount to deposit
-    /// @param unlockTime Epoch time when tokens unlock, rounded down to whole weeks
-    function createLock(uint256 value, uint256 unlockTime) external nonReentrant {
+    /// @dev Deposits `amount` tokens for `msg.sender` and lock until `unlockTime`.
+    /// @param amount Amount to deposit.
+    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    function createLock(uint256 amount, uint256 unlockTime) external nonReentrant {
         // Lock time is rounded down to weeks
         uint256 unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-
-        if (value == 0) {
+        // Check if the amount is zero
+        if (amount == 0) {
             revert ZeroValue();
         }
+        // The locked balance must be zero in order to start the lock
         if (lockedBalance.amount != 0) {
             revert LockedValueNotZero(msg.sender, lockedBalance.amount);
         }
+        // Check for the lock time correctness
         if (unlockTime <= block.timestamp) {
             revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
         }
+        // Check for the lock time not to exceed the MAXTIME
         if (unlockTime > block.timestamp + MAXTIME) {
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
 
-        _depositFor(msg.sender, value, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
+        _depositFor(msg.sender, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
     }
 
-    /// @dev Deposit `value` additional tokens for `msg.sender` without modifying the unlock time
-    /// @param value Amount of tokens to deposit and add to the lock
-    function increaseAmount(uint256 value) external nonReentrant {
+    /// @dev Deposits `amount` additional tokens for `msg.sender` without modifying the unlock time.
+    /// @param amount Amount of tokens to deposit and add to the lock.
+    function increaseAmount(uint256 amount) external nonReentrant {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-
-        if (value == 0) {
+        // Check if the amount is zero
+        if (amount == 0) {
             revert ZeroValue();
         }
+        // The locked balance must already exist
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
         }
+        // Check the lock expiry
         if (lockedBalance.end <= block.timestamp) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
 
-        _depositFor(msg.sender, value, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
+        _depositFor(msg.sender, amount, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
     }
 
-    /// @dev Extend the unlock time for `msg.sender` to `unlockTime`
-    /// @param unlockTime New number of seconds until tokens unlock
+    /// @dev Extends the unlock time.
+    /// @param unlockTime New tokens unlock time.
     function increaseUnlockTime(uint256 unlockTime) external nonReentrant {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         uint256 unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
-
+        // The locked balance must already exist
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
         }
+        // Check the lock expiry
         if (lockedBalance.end <= block.timestamp) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
+        // Check for the lock time correctness
         if (unlockTime <= lockedBalance.end) {
             revert UnlockTimeIncorrect(msg.sender, lockedBalance.end, unlockTime);
         }
+        // Check for the lock time not to exceed the MAXTIME
         if (unlockTime > block.timestamp + MAXTIME) {
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
@@ -423,28 +400,27 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         _depositFor(msg.sender, 0, unlockTime, lockedBalance, DepositType.INCREASE_UNLOCK_TIME);
     }
 
-    /// @dev Withdraw all tokens for `msg.sender`
-    /// @dev Only possible if the lock has expired
+    /// @dev Withdraws all tokens for `msg.sender`. Only possible if the lock has expired.
     function withdraw() external nonReentrant {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         if (lockedBalance.end > block.timestamp) {
             revert LockNotExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        uint256 value = uint256(int256(lockedBalance.amount));
+        uint256 amount = uint256(int256(lockedBalance.amount));
 
         mapLockedBalances[msg.sender] = LockedBalance(0,0);
         uint256 supplyBefore = supply;
-        supply = supplyBefore - value;
+        supply = supplyBefore - amount;
 
         // oldLocked can have either expired <= timestamp or zero end
         // lockedBalance has only 0 end
         // Both can have >= 0 amount
         _checkpoint(msg.sender, lockedBalance, LockedBalance(0,0));
 
-        emit Withdraw(msg.sender, value, block.timestamp);
+        emit Withdraw(msg.sender, amount, block.timestamp);
         emit Supply(supplyBefore, supply);
 
-        IERC20(token).safeTransfer(msg.sender, value);
+        IERC20(token).safeTransfer(msg.sender, amount);
     }
 
     /// @dev Finds a closest point that has a specified block number.
@@ -459,13 +435,13 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         uint256 maxPointNumber;
         if (account != address(0)) {
             maxPointNumber = mapUserPoints[account].length;
-            if (maxPointNumber > 0) {
-                maxPointNumber -= 1;
+            if (maxPointNumber == 0) {
+                return (point, minPointNumber);
             }
+            maxPointNumber -= 1;
         } else {
             maxPointNumber = totalNumPoints;
         }
-
 
         // Binary search that will be always enough for 128-bit numbers
         for (uint256 i = 0; i < 128; ++i) {
@@ -488,6 +464,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             }
         }
 
+        // Get the found point
         if (account != address(0)) {
             point = mapUserPoints[account][minPointNumber];
         } else {
@@ -495,33 +472,41 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
     }
 
-    /// @dev Get the current voting power for `account` and time `t`
-    /// @param account User wallet address
-    /// @param t Epoch time to return voting power at
-    /// @return vBalance User voting power.
-    function _balanceOfLocked(address account, uint256 t) internal view returns (uint256 vBalance) {
+    /// @dev Gets the voting power for an `account` at time `ts`.
+    /// @param account Account address.
+    /// @param ts Time to get voting power at.
+    /// @return vBalance Account voting power.
+    function _balanceOfLocked(address account, uint256 ts) internal view returns (uint256 vBalance) {
         uint256 pointNumber = mapUserPoints[account].length;
         if (pointNumber == 0) {
             return 0;
         } else {
             PointVoting memory uPoint = mapUserPoints[account][pointNumber - 1];
-            uPoint.bias -= uPoint.slope * int128(int256(t) - int256(uPoint.ts));
+            uPoint.bias -= uPoint.slope * int128(int256(ts) - int256(uPoint.ts));
             if (uPoint.bias > 0) {
                 vBalance = uint256(int256(uPoint.bias));
             }
         }
     }
 
-    /// @dev Gets the account balance.
+    /// @dev Gets the account balance in native token.
     /// @param account Account address.
+    /// @return balance Account balance.
     function balanceOf(address account) public view override returns (uint256 balance) {
         balance = uint256(int256(mapLockedBalances[account].amount));
+    }
+
+    /// @dev Gets the `account`'s lock end time.
+    /// @param account Account address.
+    /// @return Lock end time.
+    function lockedEnd(address account) external view returns (uint256) {
+        return mapLockedBalances[account].end;
     }
 
     /// @dev Gets the account balance at a specific block number.
     /// @param account Account address.
     /// @param blockNumber Block number.
-    /// @return balance Token balance.
+    /// @return balance Account balance.
     function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance) {
         // Find point with the closest block number to the provided one
         (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
@@ -571,10 +556,12 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @param blockNumber Block number.
     /// @return balance Voting balance / power.
     function getPastVotes(address account, uint256 blockNumber) public view override returns (uint256 balance) {
-        (, uint256 blockTime) = _getBlockTime(blockNumber);
-
         // Find the user point for the provided block number
         (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
+
+        // Get block time adjustment.
+        (, uint256 blockTime) = _getBlockTime(blockNumber);
+
         // Calculate bias based on a block time
         uPoint.bias -= uPoint.slope * int128(int256(blockTime) - int256(uPoint.ts));
         if (uPoint.bias > 0) {
@@ -583,21 +570,21 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     }
 
     /// @dev Calculate total voting power at some point in the past.
-    /// @param lastPoint The point (bias/slope) to start search from.
-    /// @param t Time to calculate the total voting power at.
+    /// @param lastPoint The point (bias/slope) to start the search from.
+    /// @param ts Time to calculate the total voting power at.
     /// @return vSupply Total voting power at that time.
-    function _supplyLockedAt(PointVoting memory lastPoint, uint256 t) internal view returns (uint256 vSupply) {
+    function _supplyLockedAt(PointVoting memory lastPoint, uint256 ts) internal view returns (uint256 vSupply) {
         uint256 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
             tStep += WEEK;
             int128 dSlope;
-            if (tStep > t) {
-                tStep = t;
+            if (tStep > ts) {
+                tStep = ts;
             } else {
                 dSlope = mapSlopeChanges[tStep];
             }
             lastPoint.bias -= lastPoint.slope * int128(int256(tStep) - int256(lastPoint.ts));
-            if (tStep == t) {
+            if (tStep == ts) {
                 break;
             }
             lastPoint.slope += dSlope;
@@ -607,13 +594,6 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         if (lastPoint.bias > 0) {
             vSupply = uint256(uint128(lastPoint.bias));
         }
-    }
-
-    /// @dev Calculate total voting power at time `t`. Adheres to the ERC20 `totalSupplyLocked` for Aragon compatibility
-    /// @return Total voting power
-    function totalSupplyLockedAtT(uint256 t) public view returns (uint256) {
-        PointVoting memory lastPoint = mapSupplyPoints[totalNumPoints];
-        return _supplyLockedAt(lastPoint, t);
     }
 
     /// @dev Gets total token supply.
@@ -633,9 +613,17 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
             supplyAt = sPoint.balance;
         }
     }
-    
-    /// @dev Calculate total voting power
-    /// @return Total voting power
+
+    /// @dev Calculates total voting power at time `ts`.
+    /// @param ts Time to get total voting power at.
+    /// @return Total voting power.
+    function totalSupplyLockedAtT(uint256 ts) public view returns (uint256) {
+        PointVoting memory lastPoint = mapSupplyPoints[totalNumPoints];
+        return _supplyLockedAt(lastPoint, ts);
+    }
+
+    /// @dev Calculates current total voting power.
+    /// @return Total voting power.
     function totalSupplyLocked() public view returns (uint256) {
         return totalSupplyLockedAtT(block.timestamp);
     }
