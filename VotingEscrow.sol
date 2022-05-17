@@ -93,7 +93,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     // Total number of economical checkpoints (starting from zero)
     uint256 public totalNumPoints;
     // Mapping of point Id => point
-    PointVoting[] public supplyPoints;
+    mapping(uint256 => PointVoting) public mapSupplyPoints;
     // Mapping of account address => PointVoting[point Id]
     mapping(address => PointVoting[]) public mapUserPoints;
     // Mapping of time => signed slope change
@@ -113,8 +113,8 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         name = _name;
         symbol = _symbol;
         decimals = ERC20(_token).decimals();
-        // Push initial point such that default timestamp and block number are not zero
-        supplyPoints.push(PointVoting(0, 0, block.timestamp, block.number, 0));
+        // Create initial point such that default timestamp and block number are not zero
+        mapSupplyPoints[0] = PointVoting(0, 0, block.timestamp, block.number, 0);
     }
 
     /// @dev Gets the most recently recorded user point for `account`.
@@ -193,7 +193,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
 
         PointVoting memory lastPoint;
         if (curNumPoint > 0) {
-            lastPoint = supplyPoints[curNumPoint];
+            lastPoint = mapSupplyPoints[curNumPoint];
         } else {
             lastPoint = PointVoting(0, 0, block.timestamp, block.number, supply);
         }
@@ -242,13 +242,13 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
                     lastPoint.balance = supply;
                     break;
                 } else {
-                    supplyPoints.push(lastPoint);
+                    mapSupplyPoints[curNumPoint] = lastPoint;
                 }
             }
         }
 
         totalNumPoints = curNumPoint;
-        // Now supplyPoints is filled until t == now
+        // Now mapSupplyPoints is filled until t == now
 
         if (account != address(0)) {
             // If last point was in this block, the slope change has been applied already
@@ -264,7 +264,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
 
         // Record the changed point into history
-        supplyPoints.push(lastPoint);
+        mapSupplyPoints[curNumPoint] = lastPoint;
 
         if (account != address(0)) {
             // Schedule the slope changes (slope is going down)
@@ -448,32 +448,50 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     }
 
     /// @dev Finds a closest point that has a specified block number.
-    /// @param points Set of points.
     /// @param blockNumber Block to find.
+    /// @param account Account address for user points.
     /// @return point Point with the approximate index number for the specified block.
     /// @return minPointNumber Point number.
-    function _findPointByBlock(PointVoting[] memory points, uint256 blockNumber) internal view
+    function _findPointByBlock(uint256 blockNumber, address account) internal view
         returns (PointVoting memory point, uint256 minPointNumber)
     {
         // Get the last available point number
-        uint256 maxPointNumber = points.length;
-        if (maxPointNumber > 0) {
-            maxPointNumber -= 1;
-
-            // Binary search that will be always enough for 128-bit numbers
-            for (uint256 i = 0; i < 128; ++i) {
-                if (minPointNumber >= maxPointNumber) {
-                    point  = points[minPointNumber];
-                    break;
-                }
-                uint256 mid = (minPointNumber + maxPointNumber + 1) / 2;
-
-                if (points[mid].blockNumber <= blockNumber) {
-                    minPointNumber = mid;
-                } else {
-                    maxPointNumber = mid - 1;
-                }
+        uint256 maxPointNumber;
+        if (account != address(0)) {
+            maxPointNumber = mapUserPoints[account].length;
+            if (maxPointNumber > 0) {
+                maxPointNumber -= 1;
             }
+        } else {
+            maxPointNumber = totalNumPoints;
+        }
+
+
+        // Binary search that will be always enough for 128-bit numbers
+        for (uint256 i = 0; i < 128; ++i) {
+            if (minPointNumber >= maxPointNumber) {
+                break;
+            }
+            uint256 mid = (minPointNumber + maxPointNumber + 1) / 2;
+
+            // Choose the source of points
+            if (account != address(0)) {
+                point = mapUserPoints[account][mid];
+            } else {
+                point = mapSupplyPoints[mid];
+            }
+
+            if (point.blockNumber <= blockNumber) {
+                minPointNumber = mid;
+            } else {
+                maxPointNumber = mid - 1;
+            }
+        }
+
+        if (account != address(0)) {
+            point = mapUserPoints[account][minPointNumber];
+        } else {
+            point = mapSupplyPoints[minPointNumber];
         }
     }
 
@@ -506,7 +524,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @return balance Token balance.
     function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance) {
         // Find point with the closest block number to the provided one
-        (PointVoting memory uPoint, ) = _findPointByBlock(mapUserPoints[account], blockNumber);
+        (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
         // If the block number at the point index is bigger than the specified block number, the balance was zero
         if (uPoint.blockNumber <= blockNumber) {
             balance = uPoint.balance;
@@ -530,12 +548,12 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         }
         // Get the minimum historical point with the provided block number
         uint256 minPointNumber;
-        (point, minPointNumber) = _findPointByBlock(supplyPoints, blockNumber);
+        (point, minPointNumber) = _findPointByBlock(blockNumber, address(0));
 
         uint256 dBlock;
         uint256 dt;
         if (minPointNumber < totalNumPoints) {
-            PointVoting memory pointNext = supplyPoints[minPointNumber + 1];
+            PointVoting memory pointNext = mapSupplyPoints[minPointNumber + 1];
             dBlock = pointNext.blockNumber - point.blockNumber;
             dt = pointNext.ts - point.ts;
         } else {
@@ -556,7 +574,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
         (, uint256 blockTime) = _getBlockTime(blockNumber);
 
         // Find the user point for the provided block number
-        (PointVoting memory uPoint, ) = _findPointByBlock(mapUserPoints[account], blockNumber);
+        (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
         // Calculate bias based on a block time
         uPoint.bias -= uPoint.slope * int128(int256(blockTime) - int256(uPoint.ts));
         if (uPoint.bias > 0) {
@@ -594,7 +612,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @dev Calculate total voting power at time `t`. Adheres to the ERC20 `totalSupplyLocked` for Aragon compatibility
     /// @return Total voting power
     function totalSupplyLockedAtT(uint256 t) public view returns (uint256) {
-        PointVoting memory lastPoint = supplyPoints[totalNumPoints];
+        PointVoting memory lastPoint = mapSupplyPoints[totalNumPoints];
         return _supplyLockedAt(lastPoint, t);
     }
 
@@ -609,7 +627,7 @@ contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransf
     /// @return supplyAt Supply at the specified block number.
     function totalSupplyAt(uint256 blockNumber) external view returns (uint256 supplyAt) {
         // Find point with the closest block number to the provided one
-        (PointVoting memory sPoint, ) = _findPointByBlock(supplyPoints, blockNumber);
+        (PointVoting memory sPoint, ) = _findPointByBlock(blockNumber, address(0));
         // If the block number at the point index is bigger than the specified block number, the balance was zero
         if (sPoint.blockNumber <= blockNumber) {
             supplyAt = sPoint.balance;
