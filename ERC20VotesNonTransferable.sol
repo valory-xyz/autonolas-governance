@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/ERC20Votes.sol)
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
