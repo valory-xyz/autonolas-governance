@@ -40,7 +40,7 @@ struct LockedBalance {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract VotingEscrow is IStructs, Ownable, ReentrancyGuard, ERC20VotesNonTransferable {
+contract VotingEscrow is IStructs, ReentrancyGuard, ERC20VotesNonTransferable {
     using SafeERC20 for IERC20;
 
     enum DepositType {
