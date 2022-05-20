@@ -333,7 +333,7 @@ contract VotingEscrow is IStructs, ReentrancyGuard, ERC20VotesNonTransferable {
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
     function createLock(uint256 amount, uint256 unlockTime) external nonReentrant {
         // Lock time is rounded down to weeks
-        uint256 unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Check if the amount is zero
         if (amount == 0) {
@@ -379,7 +379,7 @@ contract VotingEscrow is IStructs, ReentrancyGuard, ERC20VotesNonTransferable {
     /// @param unlockTime New tokens unlock time.
     function increaseUnlockTime(uint256 unlockTime) external nonReentrant {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        uint256 unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         // The locked balance must already exist
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
