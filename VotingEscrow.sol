@@ -184,12 +184,12 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         // If last point is already recorded in this block, slope == 0, but we know the block already in this case
         // Go over weeks to fill in the history and (or) calculate what the current point is
         {
-            // The timestamp is always rounded and > 0 and < 2**32-1 before 2037
+            // The timestamp is always rounded and > 0 and < 2^32-1 before 2037
             uint64 tStep = (lastCheckpoint / WEEK) * WEEK;
             for (uint256 i = 0; i < 255; ++i) {
                 // Hopefully it won't happen that this won't get used in 5 years!
                 // If it does, users will be able to withdraw but vote weight will be broken
-                // This is always < 2^256-1
+                // This is always < 2^64-1
                 unchecked {
                     tStep += WEEK;
                 }
@@ -287,7 +287,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     ) internal {
         uint256 supplyBefore = supply;
         uint256 supplyAfter;
-        // Cannot overflow because total supply << 2^256-1
+        // Cannot overflow because the total supply << 2^64-1
         unchecked {
             supplyAfter = supplyBefore + amount;
             supply = supplyAfter;
@@ -367,7 +367,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         }
         locked = 2;
         // Lock time is rounded down to weeks
-        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^256-1
+        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
@@ -429,7 +429,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         locked = 2;
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // The TIMESTAMP op code costs 2 gas, according to the yellow paper
-        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^256-1
+        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
@@ -642,10 +642,10 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @param ts Time to calculate the total voting power at.
     /// @return vSupply Total voting power at that time.
     function _supplyLockedAt(PointVoting memory lastPoint, uint256 ts) internal view returns (uint256 vSupply) {
-        // The timestamp is always rounded and > 0 and < 2**32-1 before 2037
+        // The timestamp is always rounded and > 0 and < 2^32-1 before 2037
         uint64 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
-            // This is always < 2^256-1
+            // This is always < 2^64-1
             unchecked {
                 tStep += WEEK;
             }
