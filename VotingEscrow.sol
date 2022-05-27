@@ -4,7 +4,6 @@ pragma solidity ^0.8.14;
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "./ERC20VotesNonTransferable.sol";
 import "../interfaces/IErrors.sol";
 import "../interfaces/IStructs.sol";
 
