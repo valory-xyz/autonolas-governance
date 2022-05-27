@@ -32,9 +32,10 @@ achieved with the longest lock possible. This way the users are incentivized to 
 * What we can do is to extrapolate ***At functions */
 
 struct LockedBalance {
-    // Token amount. It will never be bigger than 2^128 - 1, since the total supply of OLA is lower
+    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
     uint128 amount;
-    // Unlock time. It will never be bigger than 2^64 - 1, since we reach 2^32 - 1 in the year of 2037
+    // Unlock time. It will never practically be bigger
     uint64 end;
 }
 
@@ -189,7 +190,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             for (uint256 i = 0; i < 255; ++i) {
                 // Hopefully it won't happen that this won't get used in 5 years!
                 // If it does, users will be able to withdraw but vote weight will be broken
-                // This is always < 2^64-1
+                // This is always practically < 2^64-1
                 unchecked {
                     tStep += WEEK;
                 }
@@ -267,7 +268,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             // Now handle user history
             uNew.ts = uint64(block.timestamp);
             uNew.blockNumber = uint64(block.number);
-            uNew.balance = uint128(newLocked.amount);
+            uNew.balance = newLocked.amount;
             mapUserPoints[account].push(uNew);
         }
     }
@@ -287,7 +288,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     ) internal {
         uint256 supplyBefore = supply;
         uint256 supplyAfter;
-        // Cannot overflow because the total supply << 2^64-1
+        // Cannot overflow because the total supply << 2^128-1
         unchecked {
             supplyAfter = supplyBefore + amount;
             supply = supplyAfter;
@@ -340,6 +341,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             revert ReentrancyGuard();
         }
         locked = 2;
+
         LockedBalance memory lockedBalance = mapLockedBalances[account];
         // Check if the amount is zero
         if (amount == 0) {
@@ -366,8 +368,9 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             revert ReentrancyGuard();
         }
         locked = 2;
+
         // Lock time is rounded down to weeks
-        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
+        // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
@@ -401,6 +404,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             revert ReentrancyGuard();
         }
         locked = 2;
+
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Check if the amount is zero
         if (amount == 0) {
@@ -427,9 +431,9 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             revert ReentrancyGuard();
         }
         locked = 2;
+
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        // The TIMESTAMP op code costs 2 gas, according to the yellow paper
-        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
+        // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
@@ -461,6 +465,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             revert ReentrancyGuard();
         }
         locked = 2;
+
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         if (lockedBalance.end > block.timestamp) {
             revert LockNotExpired(msg.sender, lockedBalance.end, block.timestamp);
@@ -546,11 +551,11 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @param ts Time to get voting power at.
     /// @return vBalance Account voting power.
-    function _balanceOfLocked(address account, uint256 ts) internal view returns (uint256 vBalance) {
+    function _balanceOfLocked(address account, uint64 ts) internal view returns (uint256 vBalance) {
         uint256 pointNumber = mapUserPoints[account].length;
         if (pointNumber > 0) {
             PointVoting memory uPoint = mapUserPoints[account][pointNumber - 1];
-            uPoint.bias -= uPoint.slope * int128(int64(uint64(ts)) - int64(uPoint.ts));
+            uPoint.bias -= uPoint.slope * int128(int64(ts) - int64(uPoint.ts));
             if (uPoint.bias > 0) {
                 vBalance = uint256(int256(uPoint.bias));
             }
@@ -587,7 +592,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @dev Gets the voting power.
     /// @param account Account address.
     function getVotes(address account) public view override returns (uint256) {
-        return _balanceOfLocked(account, block.timestamp);
+        return _balanceOfLocked(account, uint64(block.timestamp));
     }
 
     /// @dev Gets the block time adjustment for two neighboring points.
@@ -641,17 +646,17 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @param lastPoint The point (bias/slope) to start the search from.
     /// @param ts Time to calculate the total voting power at.
     /// @return vSupply Total voting power at that time.
-    function _supplyLockedAt(PointVoting memory lastPoint, uint256 ts) internal view returns (uint256 vSupply) {
+    function _supplyLockedAt(PointVoting memory lastPoint, uint64 ts) internal view returns (uint256 vSupply) {
         // The timestamp is always rounded and > 0 and < 2^32-1 before 2037
         uint64 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
-            // This is always < 2^64-1
+            // This is always practically < 2^64-1
             unchecked {
                 tStep += WEEK;
             }
             int128 dSlope;
             if (tStep > ts) {
-                tStep = uint64(ts);
+                tStep = ts;
             } else {
                 dSlope = mapSlopeChanges[tStep];
             }
@@ -691,7 +696,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @return Total voting power.
     function totalSupplyLockedAtT(uint256 ts) public view returns (uint256) {
         PointVoting memory lastPoint = mapSupplyPoints[totalNumPoints];
-        return _supplyLockedAt(lastPoint, ts);
+        return _supplyLockedAt(lastPoint, uint64(ts));
     }
 
     /// @dev Calculates current total voting power.
@@ -706,7 +711,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256) {
         (PointVoting memory sPoint, uint256 blockTime) = _getBlockTime(blockNumber);
         // Now dt contains info on how far are we beyond the point
-        return _supplyLockedAt(sPoint, blockTime);
+        return _supplyLockedAt(sPoint, uint64(blockTime));
     }
 
     /// @dev Gets information about the interface support.
