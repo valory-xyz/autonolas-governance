@@ -3,7 +3,9 @@ pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./ERC20VotesNonTransferable.sol";
+import "../interfaces/IErrors.sol";
 import "../interfaces/IStructs.sol";
 
 /**
@@ -31,15 +33,14 @@ achieved with the longest lock possible. This way the users are incentivized to 
 * What we can do is to extrapolate ***At functions */
 
 struct LockedBalance {
-    // TODO change to uint256
-    int128 amount;
-    uint256 end;
+    // Token amount. It will never be bigger than 2^128 - 1, since the total supply of OLA is lower
+    uint128 amount;
+    // Unlock time. It will never be bigger than 2^64 - 1, since we reach 2^32 - 1 in the year of 2037
+    uint64 end;
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
-    // using SafeERC20 for IERC20;
-
+contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -51,12 +52,14 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     event Withdraw(address indexed provider, uint256 amount, uint256 ts);
     event Supply(uint256 prevSupply, uint256 supply);
 
-    // constants aren't stored in storage anywhere; they're substituted in the bytecode
     // 1 week time
-    uint256 internal constant WEEK = 1 weeks;
+    uint64 internal constant WEEK = 1 weeks;
     // Maximum lock time (4 years)
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
-    // TODO return iMaxTime
+    // Maximum lock time (4 years) in int128
+    int128 internal constant IMAXTIME = 4 * 365 * 86400;
+    // Number of decimals
+    uint8 public constant decimals = 18;
 
     // Token address
     address immutable public token;
@@ -72,17 +75,15 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     // Mapping of account address => PointVoting[point Id]
     mapping(address => PointVoting[]) public mapUserPoints;
     // Mapping of time => signed slope change
-    mapping(uint256 => int128) public mapSlopeChanges;
+    mapping(uint64 => int128) public mapSlopeChanges;
 
-    // Number of decimals
-    // Fixed to immutable
-    uint8 public immutable decimals;
     // Voting token name
     string public name;
     // Voting token symbol
     string public symbol;
 
     // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/security/ReentrancyGuard.sol
+    // Reentrancy lock
     uint256 private locked = 1;
 
     /// @dev Contract constructor
@@ -94,11 +95,9 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         token = _token;
         name = _name;
         symbol = _symbol;
-        // decimals = ERC20(_token).decimals();
-        // We know this number because we launch the tokens (OLA/veOLA) at the same time and will not change it.
-        decimals = 18;
         // Create initial point such that default timestamp and block number are not zero
-        mapSupplyPoints[0] = PointVoting(0, 0, block.timestamp, block.number, 0);
+        // See cast specification in the PointVoting structure
+        mapSupplyPoints[0] = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);
     }
 
     /// @dev Gets the most recently recorded user point for `account`.
@@ -130,10 +129,12 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @param account Account address. User checkpoint is skipped if the address is zero.
     /// @param oldLocked Previous locked amount / end lock time for the user.
     /// @param newLocked New locked amount / end lock time for the user.
+    /// @param curSupply Current totl supply.
     function _checkpoint(
         address account,
         LockedBalance memory oldLocked,
-        LockedBalance memory newLocked
+        LockedBalance memory newLocked,
+        uint128 curSupply
     ) internal {
         PointVoting memory uOld;
         PointVoting memory uNew;
@@ -144,21 +145,20 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         if (account != address(0)) {
             // Calculate slopes and biases
             // Kept at zero when they have to
-            int128 maxTime = int128(int256(MAXTIME));
             if (oldLocked.end > block.timestamp && oldLocked.amount > 0) {
-                uOld.slope = oldLocked.amount / maxTime;
-                uOld.bias = uOld.slope * int128(int256(oldLocked.end - block.timestamp));
+                uOld.slope = int128(oldLocked.amount) / IMAXTIME;
+                uOld.bias = uOld.slope * int128(oldLocked.end - uint128(block.timestamp));
             }
             if (newLocked.end > block.timestamp && newLocked.amount > 0) {
-                uNew.slope = newLocked.amount / maxTime;
-                uNew.bias = uNew.slope * int128(int256(newLocked.end - block.timestamp));
+                uNew.slope = int128(newLocked.amount) / IMAXTIME;
+                uNew.bias = uNew.slope * int128(newLocked.end - uint128(block.timestamp));
             }
 
             // Read values of scheduled changes in the slope
             // oldLocked.end can be in the past and in the future
             // newLocked.end can ONLY be in the FUTURE unless everything expired: than zeros
             oldDSlope = mapSlopeChanges[oldLocked.end];
-            if (newLocked.end != 0) {
+            if (newLocked.end > 0) {
                 if (newLocked.end == oldLocked.end) {
                     newDSlope = oldDSlope;
                 } else {
@@ -171,54 +171,57 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         if (curNumPoint > 0) {
             lastPoint = mapSupplyPoints[curNumPoint];
         } else {
-            lastPoint = PointVoting(0, 0, block.timestamp, block.number, supply);
+            // If no point is created yet, we take the actual time and block parameters
+            lastPoint = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);
         }
-        uint256 lastCheckpoint = lastPoint.ts;
+        uint64 lastCheckpoint = lastPoint.ts;
         // initialPoint is used for extrapolation to calculate the block number and save them
         // as we cannot figure that out in exact values from inside of the contract
         PointVoting memory initialPoint = lastPoint;
         uint256 block_slope; // dblock/dt
         if (block.timestamp > lastPoint.ts) {
-            block_slope = (1e18 * (block.number - lastPoint.blockNumber)) / (block.timestamp - lastPoint.ts);
+            block_slope = (1e18 * uint256(block.number - lastPoint.blockNumber)) / uint256(block.timestamp - lastPoint.ts);
         }
         // If last point is already recorded in this block, slope == 0, but we know the block already in this case
         // Go over weeks to fill in the history and (or) calculate what the current point is
         {
-            uint256 tStep = (lastCheckpoint / WEEK) * WEEK;
+            // The timestamp is always rounded and > 0 and < 2**32-1 before 2037
+            uint64 tStep = (lastCheckpoint / WEEK) * WEEK;
             for (uint256 i = 0; i < 255; ++i) {
                 // Hopefully it won't happen that this won't get used in 5 years!
                 // If it does, users will be able to withdraw but vote weight will be broken
-                // No overflow
+                // This is always < 2^256-1
                 unchecked {
                     tStep += WEEK;
                 }
                 int128 dSlope;
                 if (tStep > block.timestamp) {
-                    tStep = block.timestamp;
+                    tStep = uint64(block.timestamp);
                 } else {
                     dSlope = mapSlopeChanges[tStep];
                 }
-                lastPoint.bias -= lastPoint.slope * int128(int256(tStep - lastCheckpoint));
+                lastPoint.bias -= lastPoint.slope * int128(int64(tStep - lastCheckpoint));
                 lastPoint.slope += dSlope;
                 if (lastPoint.bias < 0) {
-                    // This could potentially happen
+                    // This could potentially happen, but fuzzer didn't find available "real" combinations
                     lastPoint.bias = 0;
                 }
                 if (lastPoint.slope < 0) {
-                    // This cannot happen - just in case
+                    // This cannot happen - just in case. Again, fuzzer didn't reach this
                     lastPoint.slope = 0;
                 }
                 lastCheckpoint = tStep;
                 lastPoint.ts = tStep;
-                lastPoint.blockNumber = initialPoint.blockNumber + (block_slope * (tStep - initialPoint.ts)) / 1e18;
+                lastPoint.blockNumber = initialPoint.blockNumber + uint64((block_slope * uint256(tStep - initialPoint.ts)) / 1e18);
                 lastPoint.balance = initialPoint.balance;
-                // No overflow
+                // In order for the overflow of total number of economical checkpoints (starting from zero)
+                // the _checkpoint() call must happen n >(2**256 -1)/255 or n > ~1e77/255 > ~1e74 times
                 unchecked {
                     curNumPoint += 1;    
                 }
                 if (tStep == block.timestamp) {
-                    lastPoint.blockNumber = block.number;
-                    lastPoint.balance = supply;
+                    lastPoint.blockNumber = uint64(block.number);
+                    lastPoint.balance = curSupply;
                     break;
                 } else {
                     mapSupplyPoints[curNumPoint] = lastPoint;
@@ -227,8 +230,8 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         }
 
         totalNumPoints = curNumPoint;
-        // Now mapSupplyPoints is filled until current time
 
+        // Now mapSupplyPoints is filled until current time
         if (account != address(0)) {
             // If last point was in this block, the slope change has been already applied. In such case we have 0 slope(s)
             lastPoint.slope += (uNew.slope - uOld.slope);
@@ -257,17 +260,15 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
                 mapSlopeChanges[oldLocked.end] = oldDSlope;
             }
 
-            if (newLocked.end > block.timestamp) {
-                if (newLocked.end > oldLocked.end) {
-                    newDSlope -= uNew.slope; // old slope disappeared at this point
-                    mapSlopeChanges[newLocked.end] = newDSlope;
-                }
+            if (newLocked.end > block.timestamp && newLocked.end > oldLocked.end) {
+                newDSlope -= uNew.slope; // old slope disappeared at this point
+                mapSlopeChanges[newLocked.end] = newDSlope;
                 // else: we recorded it already in oldDSlope
             }
             // Now handle user history
-            uNew.ts = block.timestamp;
-            uNew.blockNumber = block.number;
-            uNew.balance = uint256(uint128(newLocked.amount));
+            uNew.ts = uint64(block.timestamp);
+            uNew.blockNumber = uint64(block.number);
+            uNew.balance = uint128(newLocked.amount);
             mapUserPoints[account].push(uNew);
         }
     }
@@ -286,19 +287,22 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         DepositType depositType
     ) internal {
         uint256 supplyBefore = supply;
-        // Cannot overflow because supply << 2^255
+        uint256 supplyAfter;
+        // Cannot overflow because total supply << 2^256-1
         unchecked {
-            supply = supplyBefore + amount;
+            supplyAfter = supplyBefore + amount;
+            supply = supplyAfter;
         }
         // Get the old locked data
         LockedBalance memory oldLocked;
         (oldLocked.amount, oldLocked.end) = (lockedBalance.amount, lockedBalance.end);
-        // Adding to existing lock, or if a lock is expired - creating a new one
+        // Adding to the existing lock, or if a lock is expired - creating a new one
+        // This cannot be larger than the total supply
         unchecked {
-            lockedBalance.amount += int128(int256(amount));
+            lockedBalance.amount += uint128(amount);
         }
-        if (unlockTime != 0) {
-            lockedBalance.end = unlockTime;
+        if (unlockTime > 0) {
+            lockedBalance.end = uint64(unlockTime);
         }
         mapLockedBalances[account] = lockedBalance;
 
@@ -306,23 +310,24 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         // Both oldLocked.end could be current or expired (>/< block.timestamp)
         // amount == 0 (extend lock) or amount > 0 (add to lock or extend lock)
         // lockedBalance.end > block.timestamp (always)
-        _checkpoint(account, oldLocked, lockedBalance);
+        _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));
         if (amount > 0) {
             // OLA is full standard token 
             // with correct function transfer(address to, uint256 amount) public virtual returns (bool)
             // we can avoid https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/utils/SafeERC20.sol#L29
-            // TODO add check of success
             bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
-            // TODO revert if fail
+            if (!success) {
+                revert TransferFailed(token, msg.sender, address(this), amount);
+            }
         }
 
         emit Deposit(account, amount, lockedBalance.end, depositType, block.timestamp);
-        emit Supply(supplyBefore, supplyBefore + amount);
+        emit Supply(supplyBefore, supplyAfter);
     }
 
     /// @dev Record global data to checkpoint.
     function checkpoint() external {
-        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0));
+        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));
     }
 
     /// @dev Deposits `amount` tokens for `account` and adds to the lock.
@@ -331,24 +336,22 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @param account Account address.
     /// @param amount Amount to add.
     function depositFor(address account, uint256 amount) external {
-        if(locked > 1) {
+        // Reentrancy guard
+        if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
         LockedBalance memory lockedBalance = mapLockedBalances[account];
         // Check if the amount is zero
-        // not optimized by logic
         if (amount == 0) {
             revert ZeroValue();
         }
         // The locked balance must already exist
-        // not optimized by logic
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(account);
         }
         // Check the lock expiry
-        // probably optimized
-        if (lockedBalance.end < (block.timestamp +1)) {
+        if (lockedBalance.end < (block.timestamp + 1)) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
         _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
@@ -359,23 +362,27 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
     function createLock(uint256 amount, uint256 unlockTime) external  {
-        if(locked > 1) {
+        // Reentrancy guard
+        if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
         // Lock time is rounded down to weeks
-        unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^256-1
+        unchecked {
+            unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        }
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Check if the amount is zero
         if (amount == 0) {
             revert ZeroValue();
         }
         // The locked balance must be zero in order to start the lock
-        if (lockedBalance.amount != 0) {
-            revert LockedValueNotZero(msg.sender, lockedBalance.amount);
+        if (lockedBalance.amount > 0) {
+            revert LockedValueNotZero(msg.sender, uint256(lockedBalance.amount));
         }
         // Check for the lock time correctness
-        if (unlockTime <= block.timestamp) {
+        if (unlockTime < (block.timestamp + 1)) {
             revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
         }
         // Check for the lock time not to exceed the MAXTIME
@@ -390,7 +397,8 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @dev Deposits `amount` additional tokens for `msg.sender` without modifying the unlock time.
     /// @param amount Amount of tokens to deposit and add to the lock.
     function increaseAmount(uint256 amount) external {
-        if(locked > 1) {
+        // Reentrancy guard
+        if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
@@ -415,14 +423,17 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @dev Extends the unlock time.
     /// @param unlockTime New tokens unlock time.
     function increaseUnlockTime(uint256 unlockTime) external {
-        if(locked > 1) {
+        // Reentrancy guard
+        if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // The TIMESTAMP op code costs 2 gas, according to the yellow paper
-        // optimal as is
-        unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        // Cannot overflow because block.timestamp + unlockTime (max 4 years) << 2^256-1
+        unchecked {
+            unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        }
         // The locked balance must already exist
         if (lockedBalance.amount == 0) {
             revert NoValueLocked(msg.sender);
@@ -446,7 +457,8 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
 
     /// @dev Withdraws all tokens for `msg.sender`. Only possible if the lock has expired.
     function withdraw() external {
-        if(locked > 1) {
+        // Reentrancy guard
+        if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
@@ -454,23 +466,28 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         if (lockedBalance.end > block.timestamp) {
             revert LockNotExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        uint256 amount = uint256(int256(lockedBalance.amount));
+        uint256 amount = uint256(lockedBalance.amount);
 
         mapLockedBalances[msg.sender] = LockedBalance(0,0);
         uint256 supplyBefore = supply;
+        uint256 supplyAfter;
+        // The amount cannot be less than the total supply
         unchecked {
-            supply = supplyBefore - amount;
+            supplyAfter = supplyBefore - amount;
+            supply = supplyAfter;
         }
         // oldLocked can have either expired <= timestamp or zero end
         // lockedBalance has only 0 end
         // Both can have >= 0 amount
-        _checkpoint(msg.sender, lockedBalance, LockedBalance(0,0));
+        _checkpoint(msg.sender, lockedBalance, LockedBalance(0,0), uint128(supplyAfter));
 
         emit Withdraw(msg.sender, amount, block.timestamp);
-        emit Supply(supplyBefore, (supplyBefore - amount));
+        emit Supply(supplyBefore, supplyAfter);
 
-        // IERC20(token).safeTransfer(msg.sender, amount);
-        IERC20(token).transfer(msg.sender, amount);
+        bool success = IERC20(token).transfer(msg.sender, amount);
+        if (!success) {
+            revert TransferFailed(token, address(this), msg.sender, amount);
+        }
         locked = 1;
     }
 
@@ -484,33 +501,34 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     {
         // Get the last available point number
         uint256 maxPointNumber;
-        if (account != address(0)) {
+        if (account == address(0)) {
+            maxPointNumber = totalNumPoints;
+        } else {
             maxPointNumber = mapUserPoints[account].length;
             if (maxPointNumber == 0) {
                 return (point, minPointNumber);
             }
+            // Already checked for > 0 in this case
             unchecked {
                 maxPointNumber -= 1;
             }
-        } else {
-            maxPointNumber = totalNumPoints;
         }
 
         // Binary search that will be always enough for 128-bit numbers
         for (uint256 i = 0; i < 128; ++i) {
-            if (minPointNumber >= maxPointNumber) {
+            if ((minPointNumber + 1) > maxPointNumber) {
                 break;
             }
             uint256 mid = (minPointNumber + maxPointNumber + 1) / 2;
 
             // Choose the source of points
-            if (account != address(0)) {
-                point = mapUserPoints[account][mid];
-            } else {
+            if (account == address(0)) {
                 point = mapSupplyPoints[mid];
+            } else {
+                point = mapUserPoints[account][mid];
             }
 
-            if (point.blockNumber <= blockNumber) {
+            if (point.blockNumber < (blockNumber + 1)) {
                 minPointNumber = mid;
             } else {
                 maxPointNumber = mid - 1;
@@ -518,11 +536,10 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         }
 
         // Get the found point
-        // TODO change != to ==
-        if (account != address(0)) {
-            point = mapUserPoints[account][minPointNumber];
-        } else {
+        if (account == address(0)) {
             point = mapSupplyPoints[minPointNumber];
+        } else {
+            point = mapUserPoints[account][minPointNumber];
         }
     }
 
@@ -532,12 +549,9 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @return vBalance Account voting power.
     function _balanceOfLocked(address account, uint256 ts) internal view returns (uint256 vBalance) {
         uint256 pointNumber = mapUserPoints[account].length;
-        // TODO change to pointNumber > 0
-        if (pointNumber == 0) {
-            return 0;
-        } else {
+        if (pointNumber > 0) {
             PointVoting memory uPoint = mapUserPoints[account][pointNumber - 1];
-            uPoint.bias -= uPoint.slope * int128(int256(ts) - int256(uPoint.ts));
+            uPoint.bias -= uPoint.slope * int128(int64(uint64(ts)) - int64(uPoint.ts));
             if (uPoint.bias > 0) {
                 vBalance = uint256(int256(uPoint.bias));
             }
@@ -548,14 +562,14 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @param account Account address.
     /// @return balance Account balance.
     function balanceOf(address account) public view override returns (uint256 balance) {
-        balance = uint256(int256(mapLockedBalances[account].amount));
+        balance = mapLockedBalances[account].amount;
     }
 
     /// @dev Gets the `account`'s lock end time.
     /// @param account Account address.
-    /// @return Lock end time.
-    function lockedEnd(address account) external view returns (uint256) {
-        return mapLockedBalances[account].end;
+    /// @return unlockTime Lock end time.
+    function lockedEnd(address account) external view returns (uint256 unlockTime) {
+        unlockTime = mapLockedBalances[account].end;
     }
 
     /// @dev Gets the account balance at a specific block number.
@@ -618,7 +632,7 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         (, uint256 blockTime) = _getBlockTime(blockNumber);
 
         // Calculate bias based on a block time
-        uPoint.bias -= uPoint.slope * int128(int256(blockTime) - int256(uPoint.ts));
+        uPoint.bias -= uPoint.slope * int128(int64(uint64(blockTime)) - int64(uPoint.ts));
         if (uPoint.bias > 0) {
             balance = uint256(uint128(uPoint.bias));
         }
@@ -629,18 +643,20 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
     /// @param ts Time to calculate the total voting power at.
     /// @return vSupply Total voting power at that time.
     function _supplyLockedAt(PointVoting memory lastPoint, uint256 ts) internal view returns (uint256 vSupply) {
-        uint256 tStep = (lastPoint.ts / WEEK) * WEEK;
+        // The timestamp is always rounded and > 0 and < 2**32-1 before 2037
+        uint64 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
+            // This is always < 2^256-1
             unchecked {
                 tStep += WEEK;
             }
             int128 dSlope;
             if (tStep > ts) {
-                tStep = ts;
+                tStep = uint64(ts);
             } else {
                 dSlope = mapSlopeChanges[tStep];
             }
-            lastPoint.bias -= lastPoint.slope * int128(int256(tStep) - int256(lastPoint.ts));
+            lastPoint.bias -= lastPoint.slope * int128(int64(tStep) - int64(lastPoint.ts));
             if (tStep == ts) {
                 break;
             }
@@ -692,5 +708,52 @@ contract VotingEscrow is IStructs, ERC20VotesNonTransferable {
         (PointVoting memory sPoint, uint256 blockTime) = _getBlockTime(blockNumber);
         // Now dt contains info on how far are we beyond the point
         return _supplyLockedAt(sPoint, blockTime);
+    }
+
+    /// @dev Gets information about the interface support.
+    /// @param interfaceId A specified interface Id.
+    /// @return True if this contract implements the interface defined by interfaceId.
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IVotes).interfaceId;
+    }
+
+    /// @dev Bans the transfer of this token.
+    function transfer(address to, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+
+    /// @dev Bans the approval of this token.
+    function approve(address spender, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+
+    /// @dev Bans the transferFrom of this token.
+    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+
+    /// @dev Compatibility with IERC20.
+    function allowance(address owner, address spender) external view virtual override returns (uint256)
+    {
+        revert NonTransferable(address(this));
+    }
+
+    /// @dev Compatibility with IVotes.
+    function delegates(address account) external view virtual override returns (address)
+    {
+        revert NonDelegatable(address(this));
+    }
+
+    /// @dev Compatibility with IVotes.
+    function delegate(address delegatee) external virtual override
+    {
+        revert NonDelegatable(address(this));
+    }
+
+    /// @dev Compatibility with IVotes.
+    function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    external virtual override
+    {
+        revert NonDelegatable(address(this));
     }
 }
