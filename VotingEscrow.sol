@@ -31,6 +31,8 @@ achieved with the longest lock possible. This way the users are incentivized to 
 * and per block could be fairly bad b/c Ethereum changes blocktimes.
 * What we can do is to extrapolate ***At functions */
 
+// Struct for storing balance and unlock time
+// The struct size is now one storage slot of uint256 (128 + 64 + padding)
 struct LockedBalance {
     // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
     // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
@@ -147,11 +149,11 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
             // Kept at zero when they have to
             if (oldLocked.end > block.timestamp && oldLocked.amount > 0) {
                 uOld.slope = int128(oldLocked.amount) / IMAXTIME;
-                uOld.bias = uOld.slope * int128(oldLocked.end - uint128(block.timestamp));
+                uOld.bias = uOld.slope * int128(uint128(oldLocked.end - uint64(block.timestamp)));
             }
             if (newLocked.end > block.timestamp && newLocked.amount > 0) {
                 uNew.slope = int128(newLocked.amount) / IMAXTIME;
-                uNew.bias = uNew.slope * int128(newLocked.end - uint128(block.timestamp));
+                uNew.bias = uNew.slope * int128(uint128(newLocked.end - uint64(block.timestamp)));
             }
 
             // Read values of scheduled changes in the slope
@@ -215,7 +217,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
                 lastPoint.blockNumber = initialPoint.blockNumber + uint64((block_slope * uint256(tStep - initialPoint.ts)) / 1e18);
                 lastPoint.balance = initialPoint.balance;
                 // In order for the overflow of total number of economical checkpoints (starting from zero)
-                // the _checkpoint() call must happen n >(2**256 -1)/255 or n > ~1e77/255 > ~1e74 times
+                // The _checkpoint() call must happen n >(2^256 -1)/255 or n > ~1e77/255 > ~1e74 times
                 unchecked {
                     curNumPoint += 1;    
                 }
@@ -312,9 +314,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         // lockedBalance.end > block.timestamp (always)
         _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));
         if (amount > 0) {
-            // OLA is full standard token 
-            // with correct function transfer(address to, uint256 amount) public virtual returns (bool)
-            // we can avoid https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/utils/SafeERC20.sol#L29
+            // OLA is a standard ERC20 token with a original function transfer() that returns bool
             bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
             if (!success) {
                 revert TransferFailed(token, msg.sender, address(this), amount);
@@ -579,14 +579,14 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @return balance Account balance.
     function balanceOf(address account) public view override returns (uint256 balance) {
-        balance = mapLockedBalances[account].amount;
+        balance = uint256(mapLockedBalances[account].amount);
     }
 
     /// @dev Gets the `account`'s lock end time.
     /// @param account Account address.
     /// @return unlockTime Lock end time.
     function lockedEnd(address account) external view returns (uint256 unlockTime) {
-        unlockTime = mapLockedBalances[account].end;
+        unlockTime = uint256(mapLockedBalances[account].end);
     }
 
     /// @dev Gets the account balance at a specific block number.
