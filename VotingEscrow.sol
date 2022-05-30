@@ -355,6 +355,11 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         if (lockedBalance.end < (block.timestamp + 1)) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
+        // Check the max possible amount to add for the next 220 years
+        if (amount > type(uint96).max) {
+            revert Overflow(amount, type(uint96).max);
+        }
+
         _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
         locked = 1;
     }
@@ -391,6 +396,10 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         if (unlockTime > block.timestamp + MAXTIME) {
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
+        // Check the max possible amount to add for the next 220 years
+        if (amount > type(uint96).max) {
+            revert Overflow(amount, type(uint96).max);
+        }
 
         _depositFor(msg.sender, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
         locked = 1;
@@ -417,6 +426,10 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         // Check the lock expiry
         if (lockedBalance.end < (block.timestamp + 1)) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
+        }
+        // Check the max possible amount to add for the next 220 years
+        if (amount > type(uint96).max) {
+            revert Overflow(amount, type(uint96).max);
         }
 
         _depositFor(msg.sender, amount, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
