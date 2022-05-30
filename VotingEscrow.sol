@@ -64,7 +64,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     uint8 public constant decimals = 18;
 
     // Token address
-    address immutable public token;
+    address public immutable token;
     // Total token supply
     uint256 public supply;
     // Mapping of account address => LockedBalance
@@ -84,7 +84,6 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     // Voting token symbol
     string public symbol;
 
-    // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/security/ReentrancyGuard.sol
     // Reentrancy lock
     uint256 private locked = 1;
 
@@ -156,9 +155,9 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
                 uNew.bias = uNew.slope * int128(uint128(newLocked.end - uint64(block.timestamp)));
             }
 
-            // Read values of scheduled changes in the slope
+            // Reads values of scheduled changes in the slope
             // oldLocked.end can be in the past and in the future
-            // newLocked.end can ONLY be in the FUTURE unless everything expired: than zeros
+            // newLocked.end can ONLY be in the FUTURE unless everything is expired: then zeros
             oldDSlope = mapSlopeChanges[oldLocked.end];
             if (newLocked.end > 0) {
                 if (newLocked.end == oldLocked.end) {
@@ -187,7 +186,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         // If last point is already recorded in this block, slope == 0, but we know the block already in this case
         // Go over weeks to fill in the history and (or) calculate what the current point is
         {
-            // The timestamp is always rounded and > 0 and < 2^32-1 before 2037
+            // The timestamp is rounded and < 2^64-1
             uint64 tStep = (lastCheckpoint / WEEK) * WEEK;
             for (uint256 i = 0; i < 255; ++i) {
                 // Hopefully it won't happen that this won't get used in 5 years!
@@ -660,7 +659,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @param ts Time to calculate the total voting power at.
     /// @return vSupply Total voting power at that time.
     function _supplyLockedAt(PointVoting memory lastPoint, uint64 ts) internal view returns (uint256 vSupply) {
-        // The timestamp is always rounded and > 0 and < 2^32-1 before 2037
+        // The timestamp is rounded and < 2^64-1
         uint64 tStep = (lastPoint.ts / WEEK) * WEEK;
         for (uint256 i = 0; i < 255; ++i) {
             // This is always practically < 2^64-1
