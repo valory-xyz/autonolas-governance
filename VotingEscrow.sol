@@ -63,6 +63,9 @@ struct LockedBalance {
 *
 * These specified limits allowed us to have storage-added structs to be bound by 2*256 and 1*256 bit sizes
 * respectively, thus limiting the gas amount compared to using bigger variable sizes.
+*
+* Note that after 220 years it is no longer possible to deposit / increase the locked amount to be bigger than 2^96 - 1.
+* It is going to be not safe to use this contract for governance after 1340 years.
 */
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
@@ -154,7 +157,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
     /// @param account Account address. User checkpoint is skipped if the address is zero.
     /// @param oldLocked Previous locked amount / end lock time for the user.
     /// @param newLocked New locked amount / end lock time for the user.
-    /// @param curSupply Current totl supply.
+    /// @param curSupply Current total supply (to avoid using a storage total supply variable)
     function _checkpoint(
         address account,
         LockedBalance memory oldLocked,
@@ -205,6 +208,8 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         PointVoting memory initialPoint = lastPoint;
         uint256 block_slope; // dblock/dt
         if (block.timestamp > lastPoint.ts) {
+            // This 1e18 multiplier is needed for the numerator to be bigger than the denominator
+            // We need to calculate this in > uint64 size (1e18 is > 2^59 multiplied by 2^64).
             block_slope = (1e18 * uint256(block.number - lastPoint.blockNumber)) / uint256(block.timestamp - lastPoint.ts);
         }
         // If last point is already recorded in this block, slope == 0, but we know the block already in this case
@@ -237,6 +242,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
                 }
                 lastCheckpoint = tStep;
                 lastPoint.ts = tStep;
+                // After division by 1e18 the uint64 size can be reclaimed
                 lastPoint.blockNumber = initialPoint.blockNumber + uint64((block_slope * uint256(tStep - initialPoint.ts)) / 1e18);
                 lastPoint.balance = initialPoint.balance;
                 // In order for the overflow of total number of economical checkpoints (starting from zero)
@@ -378,7 +384,8 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         if (lockedBalance.end < (block.timestamp + 1)) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        // Check the max possible amount to add for the next 220 years
+        // Since in the _depositFor() we have the unchecked sum of amounts, this is needed to prevent unsafe behavior.
+        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
         if (amount > type(uint96).max) {
             revert Overflow(amount, type(uint96).max);
         }
@@ -419,7 +426,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         if (unlockTime > block.timestamp + MAXTIME) {
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
-        // Check the max possible amount to add for the next 220 years
+        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
         if (amount > type(uint96).max) {
             revert Overflow(amount, type(uint96).max);
         }
