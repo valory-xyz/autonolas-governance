@@ -32,7 +32,7 @@ achieved with the longest lock possible. This way the users are incentivized to 
 * What we can do is to extrapolate ***At functions */
 
 // Struct for storing balance and unlock time
-// The struct size is now one storage slot of uint256 (128 + 64 + padding)
+// The struct size is one storage slot of uint256 (128 + 64 + padding)
 struct LockedBalance {
     // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
     // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
@@ -40,6 +40,30 @@ struct LockedBalance {
     // Unlock time. It will never practically be bigger
     uint64 end;
 }
+
+/* This VotingEscrow is based on the OLA token that has the following specifications:
+*  - For the first 10 years there will be the cap of 1 billion (1e27) tokens;
+*  - After 10 years, the inflation rate is 2% per year.
+* The maximum number of tokens for each year then can be calculated from the formula: 2^n = 1e27 * (1.02)^x,
+* where n is the specified number of bits that is sufficient to store and not overflow the total supply,
+* and x is the number of years. We limit n by 128, thus it would take 1340+ years to reach that total supply.
+* The amount for each locker is eventually cannot overcome this number as well, and thus uint128 is sufficient.
+*
+* We then limit the time in seconds to last until the value of 2^64 - 1, or for the next 583+ billion years.
+* The number of blocks is essentially cannot be bigger than the number of seconds, and thus it is safe to assume
+* that uint64 for the number of blocks is also sufficient.
+*
+* We also limit the individual deposit amount to be no bigger than 2^96 - 1, or the value of total supply in 220+ years.
+* This limitation is dictated by the fact that there will be at least several accounts with locked tokens, and the
+* sum of all of them cannot be bigger than the total supply. Checking the limit of deposited / increased amount
+* allows us to perform the unchecked operation on adding the amounts.
+*
+* The rest of calculations throughout the contract do not go beyond specified limitations. The contract was checked
+* by echidna and the results can be found in the audit section of the repository.
+*
+* These specified limits allowed us to have storage-added structs to be bound by 2*256 and 1*256 bit sizes
+* respectively, thus limiting the gas amount compared to using bigger variable sizes.
+*/
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
 contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
@@ -426,7 +450,8 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         if (lockedBalance.end < (block.timestamp + 1)) {
             revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
         }
-        // Check the max possible amount to add for the next 220 years
+        // Check the max possible amount to add, that must be less than the total supply
+        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
         if (amount > type(uint96).max) {
             revert Overflow(amount, type(uint96).max);
         }
@@ -597,7 +622,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
         // If the block number at the point index is bigger than the specified block number, the balance was zero
         if (uPoint.blockNumber < (blockNumber + 1)) {
-            balance = uPoint.balance;
+            balance = uint256(uPoint.balance);
         }
     }
 
@@ -699,7 +724,7 @@ contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
         (PointVoting memory sPoint, ) = _findPointByBlock(blockNumber, address(0));
         // If the block number at the point index is bigger than the specified block number, the balance was zero
         if (sPoint.blockNumber < (blockNumber + 1)) {
-            supplyAt = sPoint.balance;
+            supplyAt = uint256(sPoint.balance);
         }
     }
 
