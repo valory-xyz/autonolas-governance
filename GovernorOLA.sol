@@ -19,7 +19,7 @@ contract GovernorOLA is Governor, GovernorSettings, GovernorCompatibilityBravo, 
         uint256 initialProposalThreshold,
         uint256 quorumFraction
     )
-        Governor("GovernorBravoOLA")
+        Governor("Governor OLA")
         GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
         GovernorVotes(governanceToken)
         GovernorVotesQuorumFraction(quorumFraction)
