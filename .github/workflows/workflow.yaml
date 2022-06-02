@@ -12,6 +12,8 @@ jobs:
     steps:
       # Clone the code and install required modules
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Install modules
         run: yarn
 
