@@ -4,8 +4,7 @@ pragma solidity ^0.8.14;
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "../interfaces/IErrors.sol";
-import "../interfaces/IStructs.sol";
+import "./interfaces/IErrors.sol";
 
 /**
 Votes have a weight depending on time, so that users are committed to the future of (whatever they are voting for).
@@ -41,6 +40,22 @@ struct LockedBalance {
     uint64 end;
 }
 
+// Structure for voting escrow points
+// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
+struct PointVoting {
+    // w(i) = at + b (bias)
+    int128 bias;
+    // dw / dt = a (slope)
+    int128 slope;
+    // Timestamp. It will never practically be bigger than 2^64 - 1
+    uint64 ts;
+    // Block number. It will not be bigger than the timestamp
+    uint64 blockNumber;
+    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
+    uint128 balance;
+}
+
 /* This VotingEscrow is based on the OLA token that has the following specifications:
 *  - For the first 10 years there will be the cap of 1 billion (1e27) tokens;
 *  - After 10 years, the inflation rate is 2% per year.
@@ -69,7 +84,7 @@ struct LockedBalance {
 */
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract VotingEscrow is IErrors, IStructs, IVotes, IERC20, IERC165 {
+contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,

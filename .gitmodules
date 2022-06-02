@@ -1,0 +1,3 @@
+[submodule "lib/autonolas-token"]
+	path = lib/autonolas-token
+	url = git@github.com:valory-xyz/autonolas-token.git
