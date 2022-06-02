@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.so
 
 /// @title Governor Bravo OLA - Smart contract for the governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
+contract GovernorOLA is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(
         IVotes governanceToken,
         TimelockController timelock,
@@ -19,7 +19,7 @@ contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBr
         uint256 initialProposalThreshold,
         uint256 quorumFraction
     )
-        Governor("GovernorBravoOLA")
+        Governor("Governor OLA")
         GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
         GovernorVotes(governanceToken)
         GovernorVotesQuorumFraction(quorumFraction)
@@ -28,7 +28,7 @@ contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBr
 
     /// @dev Current state of a proposal, following Compound’s convention.
     /// @param proposalId Proposal Id.
-    function state(uint256 proposalId) public view override(Governor, IGovernor, GovernorTimelockControl)
+    function state(uint256 proposalId) public view override(IGovernor, Governor, GovernorTimelockControl)
         returns (ProposalState)
     {
         return super.state(proposalId);
@@ -45,7 +45,7 @@ contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBr
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) public override(Governor, GovernorCompatibilityBravo, IGovernor) returns (uint256)
+    ) public override(IGovernor, Governor, GovernorCompatibilityBravo) returns (uint256)
     {
         return super.propose(targets, values, calldatas, description);
     }
@@ -100,7 +100,7 @@ contract GovernorBravoOLA is Governor, GovernorSettings, GovernorCompatibilityBr
     /// @dev Gets information about the interface support.
     /// @param interfaceId A specified interface Id.
     /// @return True if this contract implements the interface defined by interfaceId.
-    function supportsInterface(bytes4 interfaceId) public view override(Governor, IERC165, GovernorTimelockControl)
+    function supportsInterface(bytes4 interfaceId) public view override(IERC165, Governor, GovernorTimelockControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
