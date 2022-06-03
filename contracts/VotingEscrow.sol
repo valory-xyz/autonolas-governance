@@ -92,9 +92,9 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         INCREASE_UNLOCK_TIME
     }
 
-    event Deposit(address provider, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);
-    event Withdraw(address indexed provider, uint256 amount, uint256 ts);
-    event Supply(uint256 prevSupply, uint256 supply);
+    event Deposit(address indexed account, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);
+    event Withdraw(address indexed account, uint256 amount, uint256 ts);
+    event Supply(uint256 prevSupply, uint256 curSupply);
 
     // 1 week time
     uint64 internal constant WEEK = 1 weeks;
@@ -120,6 +120,8 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     mapping(address => PointVoting[]) public mapUserPoints;
     // Mapping of time => signed slope change
     mapping(uint64 => int128) public mapSlopeChanges;
+    // Allowance mapping
+    mapping(address => mapping(address => uint256)) private _allowance;
 
     // Voting token name
     string public name;
@@ -141,6 +143,26 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         // Create initial point such that default timestamp and block number are not zero
         // See cast specification in the PointVoting structure
         mapSupplyPoints[0] = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);
+    }
+
+    /// @dev Approves spender to use tokens.
+    /// @param spender Spender address.
+    /// @param amount Token amount.
+    /// @return True if successful.
+    function approve(address spender, uint256 amount) external returns (bool) {
+        _allowance[msg.sender][spender] = amount;
+
+        emit Approval(msg.sender, spender, amount);
+
+        return true;
+    }
+
+    /// @dev Gets the allowance of the account.
+    /// @param account Account address.
+    /// @param spender Spender address.
+    function allowance(address account, address spender) external view override returns (uint256)
+    {
+        return _allowance[account][spender];
     }
 
     /// @dev Gets the most recently recorded user point for `account`.
@@ -320,17 +342,19 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Deposits and locks tokens for a specified account.
-    /// @param account Address that already holds the locked amount.
+    /// @param target Target address for the locked amount.
     /// @param amount Amount to deposit.
     /// @param unlockTime New time when to unlock the tokens, or 0 if unchanged.
     /// @param lockedBalance Previous locked amount / end time.
     /// @param depositType Deposit type.
+    /// @param from Address to have transfer from.
     function _depositFor(
-        address account,
+        address target,
         uint256 amount,
         uint256 unlockTime,
         LockedBalance memory lockedBalance,
-        DepositType depositType
+        DepositType depositType,
+        address from
     ) internal {
         uint256 supplyBefore = supply;
         uint256 supplyAfter;
@@ -350,22 +374,22 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         if (unlockTime > 0) {
             lockedBalance.end = uint64(unlockTime);
         }
-        mapLockedBalances[account] = lockedBalance;
+        mapLockedBalances[target] = lockedBalance;
 
         // Possibilities:
         // Both oldLocked.end could be current or expired (>/< block.timestamp)
         // amount == 0 (extend lock) or amount > 0 (add to lock or extend lock)
         // lockedBalance.end > block.timestamp (always)
-        _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));
+        _checkpoint(target, oldLocked, lockedBalance, uint128(supplyAfter));
         if (amount > 0) {
             // OLA is a standard ERC20 token with a original function transfer() that returns bool
-            bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
+            bool success = IERC20(token).transferFrom(from, address(this), amount);
             if (!success) {
-                revert TransferFailed(token, msg.sender, address(this), amount);
+                revert TransferFailed(token, from, address(this), amount);
             }
         }
 
-        emit Deposit(account, amount, lockedBalance.end, depositType, block.timestamp);
+        emit Deposit(target, amount, lockedBalance.end, depositType, block.timestamp);
         emit Supply(supplyBefore, supplyAfter);
     }
 
@@ -405,30 +429,30 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
             revert Overflow(amount, type(uint96).max);
         }
 
-        _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
+        _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE, msg.sender);
         locked = 1;
     }
 
     /// @dev Deposits `amount` tokens for `msg.sender` and lock until `unlockTime`.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
-    function createLock(uint256 amount, uint256 unlockTime) external  {
+    function createLock(uint256 amount, uint256 unlockTime) external {
         // Reentrancy guard
         if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
 
+        // Check if the amount is zero
+        if (amount == 0) {
+            revert ZeroValue();
+        }
         // Lock time is rounded down to weeks
         // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        // Check if the amount is zero
-        if (amount == 0) {
-            revert ZeroValue();
-        }
         // The locked balance must be zero in order to start the lock
         if (lockedBalance.amount > 0) {
             revert LockedValueNotZero(msg.sender, uint256(lockedBalance.amount));
@@ -446,7 +470,62 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
             revert Overflow(amount, type(uint96).max);
         }
 
-        _depositFor(msg.sender, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
+        _depositFor(msg.sender, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE, msg.sender);
+        locked = 1;
+    }
+
+    /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @param account Account address.
+    /// @param amount Amount to deposit.
+    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    function createLockFor(address account, uint256 amount, uint256 unlockTime) external {
+        // Reentrancy guard
+        if (locked > 1) {
+            revert ReentrancyGuard();
+        }
+        locked = 2;
+
+        // Check if the account address is zero
+        if (account == address(0)) {
+            revert ZeroAddress();
+        }
+        // Check if the amount is zero
+        if (amount == 0) {
+            revert ZeroValue();
+        }
+        // Lock time is rounded down to weeks
+        // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
+        unchecked {
+            unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
+        }
+        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
+        // The locked balance must be zero in order to start the lock
+        if (lockedBalance.amount > 0) {
+            revert LockedValueNotZero(msg.sender, uint256(lockedBalance.amount));
+        }
+        // Check for the lock time correctness
+        if (unlockTime < (block.timestamp + 1)) {
+            revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
+        }
+        // Check for the lock time not to exceed the MAXTIME
+        if (unlockTime > block.timestamp + MAXTIME) {
+            revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
+        }
+        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
+        if (amount > type(uint96).max) {
+            revert Overflow(amount, type(uint96).max);
+        }
+
+        // Check the allowance of the account
+        uint256 allowed = _allowance[account][msg.sender];
+        if (allowed > amount) {
+            revert AmountLowerThan(allowed, amount);
+        }
+        // Bring down allowance to the specified amount
+        _allowance[account][msg.sender] -= amount;
+
+        _depositFor(account, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE, account);
+
         locked = 1;
     }
 
@@ -478,7 +557,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
             revert Overflow(amount, type(uint96).max);
         }
 
-        _depositFor(msg.sender, amount, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
+        _depositFor(msg.sender, amount, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT, msg.sender);
         locked = 1;
     }
 
@@ -513,7 +592,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
             revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
         }
 
-        _depositFor(msg.sender, 0, unlockTime, lockedBalance, DepositType.INCREASE_UNLOCK_TIME);
+        _depositFor(msg.sender, 0, unlockTime, lockedBalance, DepositType.INCREASE_UNLOCK_TIME, msg.sender);
         locked = 1;
     }
 
@@ -531,7 +610,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         }
         uint256 amount = uint256(lockedBalance.amount);
 
-        mapLockedBalances[msg.sender] = LockedBalance(0,0);
+        mapLockedBalances[msg.sender] = LockedBalance(0, 0);
         uint256 supplyBefore = supply;
         uint256 supplyAfter;
         // The amount cannot be less than the total supply
@@ -542,7 +621,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         // oldLocked can have either expired <= timestamp or zero end
         // lockedBalance has only 0 end
         // Both can have >= 0 amount
-        _checkpoint(msg.sender, lockedBalance, LockedBalance(0,0), uint128(supplyAfter));
+        _checkpoint(msg.sender, lockedBalance, LockedBalance(0, 0), uint128(supplyAfter));
 
         emit Withdraw(msg.sender, amount, block.timestamp);
         emit Supply(supplyBefore, supplyAfter);
@@ -785,19 +864,8 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Bans the approval of this token.
-    function approve(address spender, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
     /// @dev Bans the transferFrom of this token.
     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Compatibility with IERC20.
-    function allowance(address owner, address spender) external view virtual override returns (uint256)
-    {
         revert NonTransferable(address(this));
     }
 

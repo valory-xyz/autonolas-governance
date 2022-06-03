@@ -80,6 +80,41 @@ describe("VotingEscrow", function () {
             expect(balanceDeployer).to.equal(balanceOwner);
         });
 
+        it("Create lock for", async function () {
+            // Transfer 10 OLA to deployer
+            const owner = signers[0];
+            const account = signers[1];
+            await ola.transfer(account.address, oneOLABalance);
+
+            // Approve account for 1 OLA by buOLA
+            await ola.connect(account).approve(ve.address, oneOLABalance);
+            // Approve buOLA for 1 OLA by owner
+            await ve.connect(account).approve(owner.address, oneOLABalance);
+
+            // Define 1 week for the lock duration
+            const lockDuration = oneWeek; // 1 week from now
+
+            // Balance should be zero before the lock
+            expect(await ve.getVotes(account.address)).to.equal(0);
+            await ve.connect(owner).createLockFor(account.address, oneOLABalance, lockDuration);
+
+            // Lock end is rounded by 1 week, as implemented by design
+            const lockEnd = await ve.lockedEnd(account.address);
+            const blockNumber = await ethers.provider.getBlockNumber();
+            const block = await ethers.provider.getBlock(blockNumber);
+            expect(Math.floor((block.timestamp + lockDuration) / oneWeek) * oneWeek).to.equal(lockEnd);
+
+            // Get the account of the last user point
+            const pv = await ve.getLastUserPoint(account.address);
+            expect(pv.balance).to.equal(oneOLABalance);
+
+            // Get the number of user points for owner and compare the balance of the last point
+            const numAccountPoints = await ve.getNumUserPoints(account.address);
+            expect(numAccountPoints).to.equal(1);
+            const pvLast = await ve.getUserPoint(account.address, numAccountPoints - 1);
+            expect(pvLast.balance).to.equal(pv.balance);
+        });
+
         it("Deposit for", async function () {
             const deployer = signers[0];
             // Transfer 10 OLA to signers[1]
@@ -332,7 +367,7 @@ describe("VotingEscrow", function () {
         });
     });
 
-    context("ERC20VotesNonTransferable", async function () {
+    context("IERC20 and IVotes functions", async function () {
         it("Check all the related functions", async function () {
             const deployer = signers[0].address;
             const user = signers[1].address;
@@ -349,12 +384,6 @@ describe("VotingEscrow", function () {
             await ve.createLock(oneOLABalance, lockDuration);
 
             // Try to call transfer-related functions for veOLA
-            await expect(
-                ve.approve(user, oneOLABalance)
-            ).to.be.revertedWith("NonTransferable");
-            await expect(
-                ve.allowance(deployer, user)
-            ).to.be.revertedWith("NonTransferable");
             await expect(
                 ve.transfer(user, oneOLABalance)
             ).to.be.revertedWith("NonTransferable");
