@@ -51,7 +51,7 @@ describe("buOLA", function () {
         });
 
         it("Create lock for", async function () {
-            // Transfer 10 OLA to deployer
+            // Transfer 10 OLA to account
             const owner = signers[0];
             const account = signers[1];
             await ola.transfer(account.address, tenOLABalance);
@@ -99,7 +99,7 @@ describe("buOLA", function () {
 
     context("Withdraw", async function () {
         it("Withdraw", async function () {
-            // Transfer 10 OLA to deployer
+            // Transfer 1 OLA to account
             const owner = signers[0];
             const account = signers[1];
             await ola.transfer(account.address, oneOLABalance);
@@ -133,6 +133,45 @@ describe("buOLA", function () {
             // Now withdraw must get us the rest
             await bu.connect(account).withdraw();
             expect(await ola.balanceOf(account.address)).to.equal(oneOLABalance);
+        });
+
+        it("Withdraw with revoke", async function () {
+            // Transfer 1 OLA to account
+            const owner = signers[0];
+            const account = signers[1];
+            await ola.transfer(account.address, oneOLABalance);
+
+            // Approve account for 1 OLA by buOLA
+            await ola.connect(account).approve(bu.address, oneOLABalance);
+            // Approve buOLA for 1 OLA by owner
+            await bu.connect(account).approve(owner.address, oneOLABalance);
+
+            // Define 4 years for the lock duration
+            const numSteps = 4;
+            await bu.connect(owner).createLockFor(account.address, oneOLABalance, numSteps);
+
+            // Move one year in time
+            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
+            ethers.provider.send("evm_mine");
+            // Revoke at this point of time
+            await bu.connect(owner).revoke([account.address]);
+
+            // Move time after the full lock duration
+            ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
+            ethers.provider.send("evm_mine");
+
+            // The releasable amount must be the 1/4 amount
+            let amount = await bu.releasableAmount(account.address);
+            expect(amount).to.equal(quarterOLABalance);
+
+            // Withdraw must be equal to 1/4 of the total amount since another 3/4 has been revoked
+            expect(await ola.balanceOf(account.address)).to.equal(0);
+            await bu.connect(account).withdraw();
+            expect(await ola.balanceOf(account.address)).to.equal(quarterOLABalance);
+
+            // Now there is no releasable amount left
+            amount = await bu.releasableAmount(account.address);
+            expect(amount).to.equal(0);
         });
     });
 
