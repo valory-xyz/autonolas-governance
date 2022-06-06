@@ -7,18 +7,14 @@ on:
 
 jobs:
   build:
-    continue-on-error: True
+    continue-on-error: False
     runs-on: ubuntu-latest
     steps:
       # Clone the code and install required modules
       - uses: actions/checkout@v2
-#      - name: Checkout submodules
-#        shell: bash
-#        run: |
-#          git config --global url."https://github.com/".insteadOf "git@github.com:"
-#          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-#          git submodule sync --recursive
-#          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      with:
+        submodules: recursive
+      # Install modules
       - name: Install modules
         run: yarn
 
@@ -29,12 +25,12 @@ jobs:
         run: ./node_modules/.bin/solhint contracts/interfaces/*.sol contracts/*.sol contracts/test/*.sol
 
       # Compile the code and run tests and deploy script(s)
-#      - name: Run tests
-#        run: ./node_modules/.bin/hardhat test
+      - name: Run tests
+        run: ./node_modules/.bin/hardhat test
 
       # Run hardhat coverage and upload codecov report
-#      - name: Solidity coverage summary
-#        run: ./node_modules/.bin/hardhat coverage
+      - name: Solidity coverage summary
+        run: ./node_modules/.bin/hardhat coverage
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
 #        with:
