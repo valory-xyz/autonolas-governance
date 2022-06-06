@@ -12,6 +12,7 @@ describe("VotingEscrow", function () {
     const oneOLABalance = ethers.utils.parseEther("1");
     const twoOLABalance = ethers.utils.parseEther("2");
     const tenOLABalance = ethers.utils.parseEther("10");
+    const AddressZero = "0x" + "0".repeat(40);
 
     beforeEach(async function () {
         const OLA = await ethers.getContractFactory("OLA");
@@ -92,6 +93,11 @@ describe("VotingEscrow", function () {
 
             // Balance should be zero before the lock
             expect(await ve.getVotes(account.address)).to.equal(0);
+            // Try to create lock for the zero address
+            await expect(
+                ve.connect(owner).createLockFor(AddressZero, oneOLABalance, lockDuration)
+            ).to.be.revertedWith("ZeroAddress");
+
             // Lock for the account from the funds of the owner (approved for veOLA)
             await ve.connect(owner).createLockFor(account.address, oneOLABalance, lockDuration);
 
