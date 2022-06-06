@@ -312,22 +312,22 @@ contract buOLA is IErrors, IERC20, IERC165 {
         return interfaceId == type(IERC20).interfaceId;
     }
 
-    /// @dev Bans the transfer of this token.
+    /// @dev Reverts the transfer of this token.
     function transfer(address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Bans the approval of this token.
+    /// @dev Reverts the approval of this token.
     function approve(address spender, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Bans the transferFrom of this token.
+    /// @dev Reverts the transferFrom of this token.
     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Compatibility with IERC20.
+    /// @dev Reverts the allowance of this token.
     function allowance(address owner, address spender) external view virtual override returns (uint256)
     {
         revert NonTransferable(address(this));
