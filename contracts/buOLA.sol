@@ -255,10 +255,13 @@ contract buOLA is IErrors, IERC20, IERC165 {
     /// @return balance Account balance.
     function balanceOf(address account) public view override returns (uint256 balance) {
         LockedBalance memory lockedBalance = mapLockedBalances[account];
+        // If the end is equal 0, this balance is either left after revoke or expired
         if (lockedBalance.end == 0) {
-            balance = uint256(mapLockedBalances[account].amountReleased);
+            // The maximum balance in this case is the released amount value
+            balance = uint256(lockedBalance.amountReleased);
         } else {
-            balance = uint256(mapLockedBalances[account].amountLocked - mapLockedBalances[account].amountReleased);
+            // Otherwise the balance is the difference between locked and released amounts
+            balance = uint256(lockedBalance.amountLocked - lockedBalance.amountReleased);
         }
     }
 
