@@ -90,6 +90,7 @@ contract buOLA is IErrors, IERC20, IERC165 {
     }
 
     /// @dev Deposits `amount` tokens for the `account` and locks for the `numSteps` time periods.
+    /// @notice Tokens are taken from `msg.sender`'s balance.
     /// @param account Target account address.
     /// @param amount Amount to deposit.
     /// @param numSteps Number of locking steps.
@@ -253,7 +254,12 @@ contract buOLA is IErrors, IERC20, IERC165 {
     /// @param account Account address.
     /// @return balance Account balance.
     function balanceOf(address account) public view override returns (uint256 balance) {
-        balance = uint256(mapLockedBalances[account].amountLocked - mapLockedBalances[account].amountReleased);
+        LockedBalance memory lockedBalance = mapLockedBalances[account];
+        if (lockedBalance.end == 0) {
+            balance = uint256(mapLockedBalances[account].amountReleased);
+        } else {
+            balance = uint256(mapLockedBalances[account].amountLocked - mapLockedBalances[account].amountReleased);
+        }
     }
 
     /// @dev Gets total token supply.

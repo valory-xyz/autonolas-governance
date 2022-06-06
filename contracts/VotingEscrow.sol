@@ -83,7 +83,7 @@ struct PointVoting {
 * It is going to be not safe to use this contract for governance after 1340 years.
 */
 
-/// @notice This token supports the ERC20 interface specifications except for transfers.
+/// @notice This token supports the ERC20 interface specifications except for transfers and approvals.
 contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
@@ -417,6 +417,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @notice Tokens are taken from `msg.sender`'s balance.
     /// @param account Account address.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
@@ -440,18 +441,18 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
-        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
+        LockedBalance memory lockedBalance = mapLockedBalances[account];
         // The locked balance must be zero in order to start the lock
         if (lockedBalance.amount > 0) {
-            revert LockedValueNotZero(msg.sender, uint256(lockedBalance.amount));
+            revert LockedValueNotZero(account, uint256(lockedBalance.amount));
         }
         // Check for the lock time correctness
         if (unlockTime < (block.timestamp + 1)) {
-            revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
+            revert UnlockTimeIncorrect(account, block.timestamp, unlockTime);
         }
         // Check for the lock time not to exceed the MAXTIME
         if (unlockTime > block.timestamp + MAXTIME) {
-            revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
+            revert MaxUnlockTimeReached(account, block.timestamp + MAXTIME, unlockTime);
         }
         // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
         if (amount > type(uint96).max) {
