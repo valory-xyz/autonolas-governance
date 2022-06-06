@@ -10,9 +10,10 @@ jobs:
     continue-on-error: False
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       # Install modules
       - name: Install modules
