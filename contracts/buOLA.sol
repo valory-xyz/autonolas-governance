@@ -295,13 +295,18 @@ contract buOLA is IErrors, IERC20, IERC165 {
         }
 
         // If the number of release steps is greater than the number of steps, all the available tokens are unlocked
-        if (releasedSteps > numSteps) {
-            releasedSteps = numSteps;
+        if ((releasedSteps + 1) > numSteps) {
+            // Return the remainder from the last release since it's the last one
+            unchecked {
+                amount = uint256(lockedBalance.amountLocked - lockedBalance.amountReleased);
+            }
+        } else {
+            // Calculate the amount to release
+            unchecked {
+                amount = uint256(lockedBalance.amountLocked * releasedSteps / numSteps);
+                amount -= uint256(lockedBalance.amountReleased);
+            }
         }
-
-        // Calculate the amount to release
-        amount = uint256(lockedBalance.amountLocked * releasedSteps / numSteps);
-        amount -= uint256(lockedBalance.amountReleased);
     }
 
     /// @dev Gets the `account`'s locking end time.

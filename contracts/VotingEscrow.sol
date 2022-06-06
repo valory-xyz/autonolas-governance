@@ -413,7 +413,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
     function createLock(uint256 amount, uint256 unlockTime) external {
-        createLockFor(msg.sender, amount, unlockTime);
+        _createLockFor(msg.sender, amount, unlockTime);
     }
 
     /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
@@ -421,17 +421,27 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
-    function createLockFor(address account, uint256 amount, uint256 unlockTime) public {
+    function createLockFor(address account, uint256 amount, uint256 unlockTime) external {
+        // Check if the account address is zero
+        if (account == address(0)) {
+            revert ZeroAddress();
+        }
+
+        _createLockFor(account, amount, unlockTime);
+    }
+
+    /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @notice Tokens are taken from `msg.sender`'s balance.
+    /// @param account Account address.
+    /// @param amount Amount to deposit.
+    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    function _createLockFor(address account, uint256 amount, uint256 unlockTime) private {
         // Reentrancy guard
         if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
 
-        // Check if the account address is zero
-        if (account == address(0)) {
-            revert ZeroAddress();
-        }
         // Check if the amount is zero
         if (amount == 0) {
             revert ZeroValue();
