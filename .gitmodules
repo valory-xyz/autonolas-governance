@@ -1,3 +1,4 @@
-[submodule "lib/autonolas-token"]
-	path = lib/autonolas-token
-	url = git@github.com:valory-xyz/autonolas-token.git
+[submodule "lib/solmate"]
+	path = lib/solmate
+	url = https://github.com/rari-capital/solmate
+	branch = v7
