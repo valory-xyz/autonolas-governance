@@ -10,10 +10,10 @@ jobs:
     continue-on-error: False
     runs-on: ubuntu-latest
     steps:
-      # Clone the code and install required modules
       - uses: actions/checkout@v2
       with:
         submodules: recursive
+
       # Install modules
       - name: Install modules
         run: yarn
