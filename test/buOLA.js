@@ -29,7 +29,7 @@ describe("buOLA", function () {
     });
 
     context("Locks", async function () {
-        it("Should fail when creating a lock with zero value or wrong numebr of steps", async function () {
+        it("Should fail when creating a lock with zero value or wrong number of steps", async function () {
             const account = signers[1].address;
             await ola.approve(bu.address, oneOLABalance);
 
@@ -51,22 +51,18 @@ describe("buOLA", function () {
         });
 
         it("Create lock for", async function () {
-            // Transfer 10 OLA to account
             const owner = signers[0];
             const account = signers[1];
-            await ola.transfer(account.address, tenOLABalance);
 
-            // Approve account for 1 OLA by buOLA
-            await ola.connect(account).approve(bu.address, oneOLABalance);
-            // Approve buOLA for 1 OLA by owner
-            await bu.connect(account).approve(owner.address, oneOLABalance);
+            // Approve owner for 1 OLA by buOLA
+            await ola.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
             const numSteps = 4;
 
             // Balance should be zero before the lock
             expect(await bu.balanceOf(account.address)).to.equal(0);
-            // Create lock for is called by the owner
+            // Create lock for the account address, which is called by the owner (approved for buOLA)
             await bu.connect(owner).createLockFor(account.address, oneOLABalance, numSteps);
 
             // Lock end is rounded by 1 week, as implemented by design
@@ -74,6 +70,15 @@ describe("buOLA", function () {
             const blockNumber = await ethers.provider.getBlockNumber();
             const block = await ethers.provider.getBlock(blockNumber);
             expect(Math.floor(block.timestamp + oneYear * numSteps)).to.equal(lockEnd);
+
+            // Try to create an additional lock to the account address that already has a lock
+            await expect(
+                bu.connect(owner).createLockFor(account.address, oneOLABalance, numSteps)
+            ).to.be.revertedWith("LockedValueNotZero");
+
+            // Check the total supply to be equal to the account locked balance
+            let supply = await bu.totalSupply();
+            expect(supply).to.equal(oneOLABalance);
 
             // Release amount must be zero at the very beginning
             let amount = await bu.releasableAmount(account.address);
@@ -94,20 +99,20 @@ describe("buOLA", function () {
             // The releasable amount must be the full amount
             amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(oneOLABalance);
+
+            // Check the balance that is still the same as the locked one
+            supply = await bu.totalSupply();
+            expect(supply).to.equal(oneOLABalance);
         });
     });
 
     context("Withdraw", async function () {
         it("Withdraw", async function () {
-            // Transfer 1 OLA to account
             const owner = signers[0];
             const account = signers[1];
-            await ola.transfer(account.address, oneOLABalance);
 
-            // Approve account for 1 OLA by buOLA
-            await ola.connect(account).approve(bu.address, oneOLABalance);
-            // Approve buOLA for 1 OLA by owner
-            await bu.connect(account).approve(owner.address, oneOLABalance);
+            // Approve owner for 1 OLA by buOLA that will be locked for account
+            await ola.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
             const numSteps = 4;
@@ -136,15 +141,11 @@ describe("buOLA", function () {
         });
 
         it("Withdraw with revoke", async function () {
-            // Transfer 1 OLA to account
             const owner = signers[0];
             const account = signers[1];
-            await ola.transfer(account.address, oneOLABalance);
 
-            // Approve account for 1 OLA by buOLA
-            await ola.connect(account).approve(bu.address, oneOLABalance);
-            // Approve buOLA for 1 OLA by owner
-            await bu.connect(account).approve(owner.address, oneOLABalance);
+            // Approve owner for 1 OLA by buOLA that will be locked for account
+            await ola.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
             const numSteps = 4;
@@ -179,7 +180,13 @@ describe("buOLA", function () {
         it("Check all the related functions", async function () {
             const deployer = signers[0].address;
             const user = signers[1].address;
-            // Try to call transfer-related functions for veOLA
+            // Try to call transfer-related functions for buOLA
+            await expect(
+                bu.approve(user, oneOLABalance)
+            ).to.be.revertedWith("NonTransferable");
+            await expect(
+                bu.allowance(deployer, user)
+            ).to.be.revertedWith("NonTransferable");
             await expect(
                 bu.transfer(user, oneOLABalance)
             ).to.be.revertedWith("NonTransferable");

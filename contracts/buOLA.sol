@@ -56,8 +56,6 @@ contract buOLA is IErrors, IERC20, IERC165 {
     address public owner;
     // Mapping of account address => LockedBalance
     mapping(address => LockedBalance) public mapLockedBalances;
-    // Allowance mapping
-    mapping(address => mapping(address => uint256)) private _allowance;
 
     // Voting token name
     string public name;
@@ -91,27 +89,7 @@ contract buOLA is IErrors, IERC20, IERC165 {
         emit OwnerUpdated(newOwner);
     }
 
-    /// @dev Approves spender to use tokens.
-    /// @param spender Spender address.
-    /// @param amount Token amount.
-    /// @return True if successful.
-    function approve(address spender, uint256 amount) external returns (bool) {
-        _allowance[msg.sender][spender] = amount;
-
-        emit Approval(msg.sender, spender, amount);
-
-        return true;
-    }
-
-    /// @dev Gets the allowance of the account.
-    /// @param account Account address.
-    /// @param spender Spender address.
-    function allowance(address account, address spender) external view override returns (uint256)
-    {
-        return _allowance[account][spender];
-    }
-
-    /// @dev Deposits `amount` tokens for the `account` and lock for `totalLockTime`.
+    /// @dev Deposits `amount` tokens for the `account` and locks for the `numSteps` time periods.
     /// @param account Target account address.
     /// @param amount Amount to deposit.
     /// @param numSteps Number of locking steps.
@@ -149,14 +127,6 @@ contract buOLA is IErrors, IERC20, IERC165 {
             revert Overflow(amount, type(uint96).max);
         }
 
-        // Check the allowance of the account
-        uint256 allowed = _allowance[account][msg.sender];
-        if (amount > allowed) {
-            revert AmountLowerThan(amount, allowed);
-        }
-        // We get the gas back by assigning to zero
-        _allowance[account][msg.sender] = 0;
-
         LockedBalance memory lockedBalance = mapLockedBalances[account];
         // The locked balance must be zero in order to start the lock
         if (lockedBalance.amountLocked > 0) {
@@ -179,7 +149,7 @@ contract buOLA is IErrors, IERC20, IERC165 {
         }
 
         // OLA is a standard ERC20 token with a original function transfer() that returns bool
-        bool success = IERC20(token).transferFrom(account, address(this), amount);
+        bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
         if (!success) {
             revert TransferFailed(token, msg.sender, address(this), amount);
         }
@@ -347,8 +317,19 @@ contract buOLA is IErrors, IERC20, IERC165 {
         revert NonTransferable(address(this));
     }
 
+    /// @dev Bans the approval of this token.
+    function approve(address spender, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+
     /// @dev Bans the transferFrom of this token.
     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+
+    /// @dev Compatibility with IERC20.
+    function allowance(address owner, address spender) external view virtual override returns (uint256)
+    {
         revert NonTransferable(address(this));
     }
 }
