@@ -13,7 +13,7 @@ We follow the standard governance setup by OpenZeppelin. Our governance token is
 An overview of the design is provided [here](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/Audit_Governance.pdf?raw=true).
 
 - [OLAS](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/OLAS.sol)
-- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/VotingEscrow.sol)
+- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/veOLAS.sol)
 - [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol)
 - [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol)
 
