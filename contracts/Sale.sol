@@ -34,14 +34,12 @@ contract Sale is IErrors {
     event ClaimBU(address indexed account, uint256 amount, uint256 numSteps);
     event OwnerUpdated(address indexed owner);
 
-    // Locking step time (synced with buOLAS `STEP_TIME`)
-    uint32 internal constant STEP_TIME = 365 * 86400;
-
+    // Maximum number of steps for buOLAS (synced with buOLAS `MAX_NUM_STEPS`)
+    uint256 internal constant MAX_NUM_STEPS = 10;
+    // Maximum lock time for veOLAS (synced with veOLAS `MAXTIME`)
+    uint256 internal constant MAXTIME = 4 * 365 * 86400;
     // Reentrancy lock
     uint256 private locked = 1;
-    // Number of decimals
-    uint8 public constant decimals = 18;
-
     // veOLAS token address
     address public immutable veToken;
     // buOLAS token address
@@ -53,22 +51,13 @@ contract Sale is IErrors {
     // Mapping of account address => LockedBalance to lock for buOLAS
     mapping(address => LockedBalance) public mapBU;
 
-    // Token name
-    string public name;
-    // Token symbol
-    string public symbol;
-
     /// @dev Contract constructor
     /// @param _veToken veOLAS token address.
     /// @param _buToken buOLAS token address.
-    /// @param _name Token name.
-    /// @param _symbol Token symbol.
-    constructor(address _veToken, address _buToken, string memory _name, string memory _symbol)
+    constructor(address _veToken, address _buToken)
     {
         veToken = _veToken;
         buToken = _buToken;
-        name = _name;
-        symbol = _symbol;
         owner = msg.sender;
     }
 
@@ -122,9 +111,8 @@ contract Sale is IErrors {
                 revert ZeroAddress();
             }
             // Check the end of a lock time
-            uint256 unlockTime = block.timestamp + veLockTimes[i];
-            if (unlockTime > type(uint64).max) {
-                revert Overflow(unlockTime, type(uint64).max);
+            if (veLockTimes[i] > MAXTIME) {
+                revert Overflow(veLockTimes[i], MAXTIME);
             }
             // Check for the amount bounds
             if (veAmounts[i] > type(uint128).max) {
@@ -150,11 +138,9 @@ contract Sale is IErrors {
             if (buAccounts[i] == address(0)) {
                 revert ZeroAddress();
             }
-            // Lock time is equal to the number of fixed steps multiply on a step time
-            uint256 unlockTime = block.timestamp + uint256(STEP_TIME) * buNumSteps[i];
-            // Check for the time lock bounds
-            if (unlockTime > type(uint64).max) {
-                revert Overflow(unlockTime, type(uint64).max);
+            // Check for the number of lock steps
+            if (buNumSteps[i] > MAX_NUM_STEPS) {
+                revert Overflow(buNumSteps[i], MAX_NUM_STEPS);
             }
             // Check for the amount bounds
             if (buAmounts[i] > type(uint128).max) {
@@ -165,7 +151,7 @@ contract Sale is IErrors {
             if (lockedBalance.amount > 0) {
                 revert NonZeroValue();
             }
-            
+
             // Push values to the dedicated locking slot
             lockedBalance.amount = uint128(buAmounts[i]);
             lockedBalance.period = uint64(buNumSteps[i]);
