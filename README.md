@@ -2,23 +2,23 @@
 
 ## Introduction
 
-This repository contains the Autonolas OLA token and the governance part of the on-chain protocol.
+This repository contains the Autonolas OLAS token and the governance part of the on-chain protocol.
 
 A graphical overview of the whole on-chain architecture is available here:
 
 ![architecture](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/On-chain_architecture_v2.png?raw=true)
 
-We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (veOLA) created by locking OLA.
+We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (veOLAS) created by locking OLAS.
 
 An overview of the design is provided [here](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/Audit_Governance.pdf?raw=true).
 
-- [OLA](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/OLA.sol)
-- [VotingEscrow (veOLA)](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/VotingEscrow.sol)
-- [GovernorOLA](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLA.sol)
+- [OLAS](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/OLAS.sol)
+- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/VotingEscrow.sol)
+- [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol)
 - [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol)
 
-For team incentivisation we have a burnable locked OLA token - buOLA:
-- [buOLA](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/buOLA.sol)
+For team incentivisation we have a burnable locked OLAS token - buOLAS:
+- [buOLAS](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/buOLAS.sol)
 
 ## Development
 
@@ -55,6 +55,7 @@ npx hardhat test
 
 ### Internal audit
 The audit is provided internally as development matures. The latest audit report can be found here: [audit](https://github.com/valory-xyz/onchain-protocol/blob/main/audit).
+Records of audit related materials of contracts the Autonolas token is based on can be found here: [token audit](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/token).
 
 ### Linters
 - [`ESLint`](https://eslint.org) is used for JS code.
@@ -71,7 +72,7 @@ several steps in order to be verified. Those include:
 
 ## Acknowledgements
 
-The Autonolas OLA contract was inspired and based on in parts by the following sources:
+The Autonolas OLAS contract was inspired and based on in parts by the following sources:
 - [Rari-Capital](https://github.com/Rari-Capital/solmate). Last known audited version: `a9e3ea26a2dc73bfa87f0cb189687d029028e0c5`;
 - [Maple Finance](https://github.com/maple-labs/erc20). Last known audited version: `756c110ddc3c96c596a52bce43553477a19ee3aa`;
 - [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts). Last known audited version: `136710cdd4a7b10e93b1774f086a89133f719ebe`.

@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 const { expect } = require("chai");
 const { signERC2612Permit } = require("eth-permit");
 
-describe("OLA", () => {
+describe("OLAS", () => {
     let deployer;
     let treasury;
     let bob;
@@ -19,7 +19,7 @@ describe("OLA", () => {
 
     beforeEach(async () => {
         [deployer, treasury, bob, alice] = await ethers.getSigners();
-        olaFactory = await ethers.getContractFactory("OLA");
+        olaFactory = await ethers.getContractFactory("OLAS");
         // Treasury address is deployer by default
         ola = await olaFactory.deploy(initSupply);
         // Changing the treasury address
@@ -29,7 +29,7 @@ describe("OLA", () => {
     context("Initialization", () => {
         it("correctly constructs an ERC20", async () => {
             expect(await ola.name()).to.equal("Autonolas");
-            expect(await ola.symbol()).to.equal("OLA");
+            expect(await ola.symbol()).to.equal("OLAS");
             expect(await ola.decimals()).to.equal(18);
         });
     });

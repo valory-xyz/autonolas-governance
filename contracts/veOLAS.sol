@@ -24,12 +24,12 @@ We cannot really do block numbers per se because slope is per time, not per bloc
 because Ethereum changes its block times. What we can do is to extrapolate ***At functions.
 */
 
-/// @title Voting Escrow - the workflow is ported from Curve Finance Vyper implementation
+/// @title Voting Escrow OLAS - the workflow is ported from Curve Finance Vyper implementation
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// Code ported from: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/VotingEscrow.vy
 /// and: https://github.com/solidlyexchange/solidly/blob/master/contracts/ve.sol
 
-/* This VotingEscrow is based on the OLA token that has the following specifications:
+/* This VotingEscrow is based on the OLAS token that has the following specifications:
 *  - For the first 10 years there will be the cap of 1 billion (1e27) tokens;
 *  - After 10 years, the inflation rate is 2% per year.
 * The maximum number of tokens for each year then can be calculated from the formula: 2^n = 1e27 * (1.02)^x,
@@ -59,7 +59,7 @@ because Ethereum changes its block times. What we can do is to extrapolate ***At
 // Struct for storing balance and unlock time
 // The struct size is one storage slot of uint256 (128 + 64 + padding)
 struct LockedBalance {
-    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.
     // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
     uint128 amount;
     // Unlock time. It will never practically be bigger
@@ -77,13 +77,13 @@ struct PointVoting {
     uint64 ts;
     // Block number. It will not be bigger than the timestamp
     uint64 blockNumber;
-    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.
     // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
     uint128 balance;
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers and approvals.
-contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
+contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -362,7 +362,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         // lockedBalance.end > block.timestamp (always)
         _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));
         if (amount > 0) {
-            // OLA is a standard ERC20 token with a original function transfer() that returns bool
+            // OLAS is a standard ERC20 token with a original function transfer() that returns bool
             bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
             if (!success) {
                 revert TransferFailed(token, msg.sender, address(this), amount);

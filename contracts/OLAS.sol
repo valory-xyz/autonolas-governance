@@ -11,16 +11,16 @@ error ManagerOnly(address sender, address manager);
 /// @dev Provided zero address.
 error ZeroAddress();
 
-/// @title OLA - Smart contract for the main OLA token.
+/// @title OLAS - Smart contract for the main OLAS token.
 /// @author AL
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-contract OLA is ERC20 {
+contract OLAS is ERC20 {
     event MinterUpdated(address indexed minter);
     event OwnerUpdated(address indexed owner);
 
     // One year interval
     uint256 public constant oneYear = 1 days * 365;
-    // Total supply cap for the first ten years (one billion OLA tokens)
+    // Total supply cap for the first ten years (one billion OLAS tokens)
     uint256 public constant tenYearSupplyCap = 1_000_000_000e18;
     // Maximum annual inflation after first ten years
     uint256 public constant maxMintCapFraction = 2;
@@ -32,7 +32,7 @@ contract OLA is ERC20 {
     // Minter address
     address public minter;
 
-    constructor(uint256 _supply) ERC20("Autonolas", "OLA", 18) {
+    constructor(uint256 _supply) ERC20("Autonolas", "OLAS", 18) {
         owner = msg.sender;
         minter = msg.sender;
         timeLaunch = block.timestamp;
@@ -67,9 +67,9 @@ contract OLA is ERC20 {
         emit MinterUpdated(newMinter);
     }
 
-    /// @dev Mints OLA tokens.
+    /// @dev Mints OLAS tokens.
     /// @param account Account address.
-    /// @param amount OLA token amount.
+    /// @param amount OLAS token amount.
     function mint(address account, uint256 amount) external {
         // Access control
         if (msg.sender != minter) {
@@ -83,15 +83,15 @@ contract OLA is ERC20 {
     }
 
     /// @dev Provides various checks for the inflation control.
-    /// @param amount Amount of OLA to mint.
+    /// @param amount Amount of OLAS to mint.
     /// @return True if the amount request is within inflation boundaries.
     function inflationControl(uint256 amount) public view returns (bool) {
         uint256 remainder = inflationRemainder();
         return (amount <= remainder);
     }
 
-    /// @dev Gets the reminder of OLA possible for the mint.
-    /// @return remainder OLA token remainder.
+    /// @dev Gets the reminder of OLAS possible for the mint.
+    /// @return remainder OLAS token remainder.
     function inflationRemainder() public view returns (uint256 remainder) {
         uint256 _totalSupply = totalSupply;
         // Current year
@@ -110,8 +110,8 @@ contract OLA is ERC20 {
         remainder = supplyCap - _totalSupply;
     }
 
-    /// @dev Burns OLA tokens.
-    /// @param amount OLA token amount to burn.
+    /// @dev Burns OLAS tokens.
+    /// @param amount OLAS token amount to burn.
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }
