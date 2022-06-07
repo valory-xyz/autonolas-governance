@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("VotingEscrow", function () {
+describe("Voting Escrow OLAS", function () {
     let ola;
     let ve;
     let signers;
@@ -15,14 +15,14 @@ describe("VotingEscrow", function () {
     const AddressZero = "0x" + "0".repeat(40);
 
     beforeEach(async function () {
-        const OLA = await ethers.getContractFactory("OLA");
-        ola = await OLA.deploy(0);
+        const OLAS = await ethers.getContractFactory("OLAS");
+        ola = await OLAS.deploy(0);
         await ola.deployed();
 
         signers = await ethers.getSigners();
         await ola.mint(signers[0].address, initialMint);
 
-        const VE = await ethers.getContractFactory("VotingEscrow");
+        const VE = await ethers.getContractFactory("veOLAS");
         ve = await VE.deploy(ola.address, "name", "symbol");
         await ve.deployed();
     });
@@ -41,11 +41,11 @@ describe("VotingEscrow", function () {
         });
 
         it("Create lock", async function () {
-            // Transfer 10 OLA to signers[1]
+            // Transfer 10 OLAS to signers[1]
             const owner = signers[1];
             await ola.transfer(owner.address, tenOLABalance);
 
-            // Approve signers[0] and signers[1] for 1 OLA by voting escrow
+            // Approve signers[0] and signers[1] for 1 OLAS by voting escrow
             await ola.approve(ve.address, oneOLABalance);
             await ola.connect(owner).approve(ve.address, oneOLABalance);
 
@@ -85,7 +85,7 @@ describe("VotingEscrow", function () {
             const owner = signers[0];
             const account = signers[1];
 
-            // Approve owner for 1 OLA by veOLA
+            // Approve owner for 1 OLAS by veOLAS
             await ola.connect(owner).approve(ve.address, oneOLABalance);
 
             // Define 1 week for the lock duration
@@ -98,7 +98,7 @@ describe("VotingEscrow", function () {
                 ve.connect(owner).createLockFor(AddressZero, oneOLABalance, lockDuration)
             ).to.be.revertedWith("ZeroAddress");
 
-            // Lock for the account from the funds of the owner (approved for veOLA)
+            // Lock for the account from the funds of the owner (approved for veOLAS)
             await ve.connect(owner).createLockFor(account.address, oneOLABalance, lockDuration);
 
             // Lock end is rounded by 1 week, as implemented by design
@@ -120,18 +120,18 @@ describe("VotingEscrow", function () {
 
         it("Deposit for", async function () {
             const deployer = signers[0];
-            // Transfer 10 OLA to signers[1]
+            // Transfer 10 OLAS to signers[1]
             const owner = signers[1];
             await ola.transfer(owner.address, tenOLABalance);
 
-            // Approve deployer owner for 1 OLA by voting escrow
+            // Approve deployer owner for 1 OLAS by voting escrow
             await ola.approve(ve.address, oneOLABalance);
             await ola.connect(owner).approve(ve.address, oneOLABalance);
 
             // Define 1 week for the lock duration
             const lockDuration = oneWeek; // 1 week from now
 
-            // Try to deposit 1 OLA for deployer without initially locked balance
+            // Try to deposit 1 OLAS for deployer without initially locked balance
             await expect(
                 ve.depositFor(deployer.address, oneOLABalance)
             ).to.be.revertedWith("NoValueLocked");
@@ -151,7 +151,7 @@ describe("VotingEscrow", function () {
             const balanceDeployer = await ve.balanceOf(deployer.address);
             expect(balanceDeployer).to.equal(twoOLABalance);
 
-            // Try to deposit 1 OLA for deployer after its lock time hase expired
+            // Try to deposit 1 OLAS for deployer after its lock time hase expired
             ethers.provider.send("evm_increaseTime", [oneWeek + 1000]);
             ethers.provider.send("evm_mine");
             await expect(
@@ -190,14 +190,14 @@ describe("VotingEscrow", function () {
                 ve.increaseAmount(oneOLABalance)
             ).to.be.revertedWith("NoValueLocked");
 
-            // Now lock 1 OLA
+            // Now lock 1 OLAS
             ve.createLock(oneOLABalance, lockDuration);
             // Increase by more than a zero
             await expect(
                 ve.increaseAmount(0)
             ).to.be.revertedWith("ZeroValue");
 
-            // Add 1 OLA more
+            // Add 1 OLAS more
             await ve.increaseAmount(oneOLABalance);
 
             // Time forward to the lock expiration
@@ -220,7 +220,7 @@ describe("VotingEscrow", function () {
                 ve.increaseUnlockTime(oneWeek)
             ).to.be.revertedWith("NoValueLocked");
 
-            // Lock 1 OLA
+            // Lock 1 OLAS
             await ve.createLock(oneOLABalance, lockDuration);
             // Try to decrease the unlock time
             await expect(
@@ -247,12 +247,12 @@ describe("VotingEscrow", function () {
 
     context("Withdraw", async function () {
         it("Withdraw", async function () {
-            // Transfer 2 OLA to signers[1] and approve the voting escrow for 1 OLA
+            // Transfer 2 OLAS to signers[1] and approve the voting escrow for 1 OLAS
             const owner = signers[1];
             await ola.transfer(owner.address, tenOLABalance);
             await ola.connect(owner).approve(ve.address, oneOLABalance);
 
-            // Lock 1 OLA
+            // Lock 1 OLAS
             const lockDuration = 2 * oneWeek;
             await ve.connect(owner).createLock(oneOLABalance, lockDuration);
 
@@ -281,12 +281,12 @@ describe("VotingEscrow", function () {
 
     context("Balance and supply", async function () {
         it("Supply at", async function () {
-            // Transfer 10 OLA worth of OLA to signers[1]
+            // Transfer 10 OLAS worth of OLAS to signers[1]
             const deployer = signers[0];
             const account = signers[1];
             await ola.transfer(account.address, tenOLABalance);
 
-            // Approve deployer and account for 1 OLA by voting escrow
+            // Approve deployer and account for 1 OLAS by voting escrow
             await ola.approve(ve.address, oneOLABalance);
             await ola.connect(account).approve(ve.address, tenOLABalance);
 
@@ -309,7 +309,7 @@ describe("VotingEscrow", function () {
             expect(supply).to.equal(sumBalance.toString());
 
             const blockNumber = await ethers.provider.getBlockNumber();
-            // Check the total supply in pure OLA against the locked balance in OLA as well (not veOLA)
+            // Check the total supply in pure OLAS against the locked balance in OLAS as well (not veOLAS)
             balanceDeployer = await ve.balanceOfAt(deployer.address, blockNumber);
             balanceAccount = await ve.balanceOfAt(account.address, blockNumber);
             supply = await ve.totalSupplyAt(blockNumber);
@@ -341,12 +341,12 @@ describe("VotingEscrow", function () {
         });
 
         it("Getting past votes and supply", async function () {
-            // Transfer 10 OLA worth of OLA to signers[1]
+            // Transfer 10 OLAS worth of OLAS to signers[1]
             const deployer = signers[0];
             const owner = signers[1];
             await ola.transfer(owner.address, tenOLABalance);
 
-            // Approve signers[0] and signers[1] for 1 OLA by voting escrow
+            // Approve signers[0] and signers[1] for 1 OLAS by voting escrow
             await ola.approve(ve.address, tenOLABalance);
             await ola.connect(owner).approve(ve.address, tenOLABalance);
 
@@ -383,7 +383,7 @@ describe("VotingEscrow", function () {
         it("Check all the related functions", async function () {
             const deployer = signers[0].address;
             const user = signers[1].address;
-            // Approve signers[0] for 1 OLA by voting escrow
+            // Approve signers[0] for 1 OLAS by voting escrow
             await ola.approve(ve.address, oneOLABalance);
 
             // Initial total supply must be 0
@@ -395,7 +395,7 @@ describe("VotingEscrow", function () {
             // Create locks for both addresses signers[0] and signers[1]
             await ve.createLock(oneOLABalance, lockDuration);
 
-            // Try to call transfer-related functions for veOLA
+            // Try to call transfer-related functions for veOLAS
             await expect(
                 ve.approve(user, oneOLABalance)
             ).to.be.revertedWith("NonTransferable");
@@ -409,7 +409,7 @@ describe("VotingEscrow", function () {
                 ve.transferFrom(deployer, user, oneOLABalance)
             ).to.be.revertedWith("NonTransferable");
 
-            // Try to call delegate-related functions for veOLA
+            // Try to call delegate-related functions for veOLAS
             await expect(
                 ve.delegates(user)
             ).to.be.revertedWith("NonDelegatable");

@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("buOLA", function () {
+describe("buOLAS", function () {
     let ola;
     let bu;
     let signers;
@@ -16,14 +16,14 @@ describe("buOLA", function () {
     const AddressZero = "0x" + "0".repeat(40);
 
     beforeEach(async function () {
-        const OLA = await ethers.getContractFactory("OLA");
-        ola = await OLA.deploy(0);
+        const OLAS = await ethers.getContractFactory("OLAS");
+        ola = await OLAS.deploy(0);
         await ola.deployed();
 
         signers = await ethers.getSigners();
         await ola.mint(signers[0].address, initialMint);
 
-        const BU = await ethers.getContractFactory("buOLA");
+        const BU = await ethers.getContractFactory("buOLAS");
         bu = await BU.deploy(ola.address, "name", "symbol");
         await bu.deployed();
     });
@@ -54,7 +54,7 @@ describe("buOLA", function () {
             const owner = signers[0];
             const account = signers[1];
 
-            // Approve owner for 1 OLA by buOLA
+            // Approve owner for 1 OLAS by buOLAS
             await ola.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
@@ -62,7 +62,7 @@ describe("buOLA", function () {
 
             // Balance should be zero before the lock
             expect(await bu.balanceOf(account.address)).to.equal(0);
-            // Create lock for the account address, which is called by the owner (approved for buOLA)
+            // Create lock for the account address, which is called by the owner (approved for buOLAS)
             await bu.connect(owner).createLockFor(account.address, oneOLABalance, numSteps);
 
             // Lock end is rounded by 1 week, as implemented by design
@@ -111,7 +111,7 @@ describe("buOLA", function () {
             const owner = signers[0];
             const account = signers[1];
 
-            // Approve owner for 1 OLA by buOLA that will be locked for account
+            // Approve owner for 1 OLAS by buOLAS that will be locked for account
             await ola.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
@@ -144,7 +144,7 @@ describe("buOLA", function () {
             const owner = signers[0];
             const account = signers[1];
 
-            // Approve owner for 1 OLA by buOLA that will be locked for account
+            // Approve owner for 1 OLAS by buOLAS that will be locked for account
             await ola.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
@@ -159,7 +159,7 @@ describe("buOLA", function () {
             ethers.provider.send("evm_mine");
             // Revoke at this point of time
             await bu.connect(owner).revoke([account.address]);
-            // The buOLA balanceOf must be equal to the releasable amount after the revoke
+            // The buOLAS balanceOf must be equal to the releasable amount after the revoke
             balance = await bu.balanceOf(account.address);
             expect(balance).to.equal(quarterOLABalance);
 
@@ -193,7 +193,7 @@ describe("buOLA", function () {
         it("Check all the related functions", async function () {
             const deployer = signers[0].address;
             const user = signers[1].address;
-            // Try to call transfer-related functions for buOLA
+            // Try to call transfer-related functions for buOLAS
             await expect(
                 bu.approve(user, oneOLABalance)
             ).to.be.revertedWith("NonTransferable");

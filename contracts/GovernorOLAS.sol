@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
-/// @title Governor Bravo OLA - Smart contract for the governance
+/// @title Governor OLAS - Smart contract for Autonolas governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-contract GovernorOLA is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
+contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(
         IVotes governanceToken,
         TimelockController timelock,
@@ -19,7 +19,7 @@ contract GovernorOLA is Governor, GovernorSettings, GovernorCompatibilityBravo, 
         uint256 initialProposalThreshold,
         uint256 quorumFraction
     )
-        Governor("Governor OLA")
+        Governor("Governor OLAS")
         GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
         GovernorVotes(governanceToken)
         GovernorVotesQuorumFraction(quorumFraction)

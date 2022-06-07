@@ -5,20 +5,20 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./interfaces/IErrors.sol";
 
-/// @title Burnable Locked OLA Token - OLA burnable contract
+/// @title Burnable Locked OLAS Token - OLAS burnable contract
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 
-// Interface for IOLA burn functionality
-interface IOLA {
-    /// @dev Burns OLA tokens.
-    /// @param amount OLA token amount to burn.
+// Interface for IOLAS burn functionality
+interface IOLAS {
+    /// @dev Burns OLAS tokens.
+    /// @param amount OLAS token amount to burn.
     function burn(uint256 amount) external;
 }
 
 // Struct for storing balance, lock and unlock time
 // The struct size is one storage slot of uint256 (96 + 96 + 32 + 32)
 struct LockedBalance {
-    // Token amount locked. Initial OLA cap is 1 bn tokens, or 1e27.
+    // Token amount locked. Initial OLAS cap is 1 bn tokens, or 1e27.
     // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1
     uint96 amountLocked;
     // Token amount released
@@ -31,7 +31,7 @@ struct LockedBalance {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract buOLA is IErrors, IERC20, IERC165 {
+contract buOLAS is IErrors, IERC20, IERC165 {
     event Lock(address indexed account, uint256 amount, uint256 start, uint256 end);
     event Withdraw(address indexed account, uint256 amount, uint256 ts);
     event Revoke(address indexed account, uint256 amount, uint256 ts);
@@ -143,13 +143,13 @@ contract buOLA is IErrors, IERC20, IERC165 {
         // Calculate total supply
         uint256 supplyBefore = supply;
         uint256 supplyAfter;
-        // Cannot overflow because we do not add more tokens than the OLA supply
+        // Cannot overflow because we do not add more tokens than the OLAS supply
         unchecked {
             supplyAfter = supplyBefore + amount;
             supply = supplyAfter;
         }
 
-        // OLA is a standard ERC20 token with a original function transfer() that returns bool
+        // OLAS is a standard ERC20 token with a original function transfer() that returns bool
         bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
         if (!success) {
             revert TransferFailed(token, msg.sender, address(this), amount);
@@ -203,7 +203,7 @@ contract buOLA is IErrors, IERC20, IERC165 {
                 }
 
                 // Burn revoked tokens and set all the data to zero
-                IOLA(token).burn(amountBurn);
+                IOLAS(token).burn(amountBurn);
                 mapLockedBalances[msg.sender] = LockedBalance(0, 0, 0, 0);
                 emit Burn(msg.sender, amountBurn, block.timestamp);
             }

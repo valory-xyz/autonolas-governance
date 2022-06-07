@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Governance unit", function () {
+describe("Governance OLAS", function () {
     let gnosisSafeL2;
     let gnosisSafeProxyFactory;
     let token;
@@ -33,18 +33,18 @@ describe("Governance unit", function () {
         gnosisSafeProxyFactory = await GnosisSafeProxyFactory.deploy();
         await gnosisSafeProxyFactory.deployed();
 
-        const Token = await ethers.getContractFactory("OLA");
+        const Token = await ethers.getContractFactory("OLAS");
         token = await Token.deploy(0);
         await token.deployed();
 
         // Dispenser address is irrelevant in these tests, so its contract is passed as a zero address
-        const VotingEscrow = await ethers.getContractFactory("VotingEscrow");
-        ve = await VotingEscrow.deploy(token.address, "Voting Escrow OLA", "veOLA");
+        const VotingEscrow = await ethers.getContractFactory("veOLAS");
+        ve = await VotingEscrow.deploy(token.address, "Voting Escrow OLAS", "veOLAS");
         await ve.deployed();
 
         signers = await ethers.getSigners();
 
-        // Mint 10 OLA worth of OLA tokens by default
+        // Mint 10 OLAS worth of OLAS tokens by default
         await token.mint(signers[0].address, tenOLABalance);
         const balance = await token.balanceOf(signers[0].address);
         expect(ethers.utils.formatEther(balance) == 10).to.be.true;
@@ -82,7 +82,7 @@ describe("Governance unit", function () {
             // console.log("Timelock deployed to", timelock.address);
 
             // Deploy Governance Bravo
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLA");
+            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governorBravo = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
             await governorBravo.deployed();
@@ -106,14 +106,14 @@ describe("Governance unit", function () {
 
         it("Changes the ownership of a governance contract and a timelock", async function () {
             const deployer = signers[0];
-            // Approve signers[0] for 10 OLA by voting ve
+            // Approve signers[0] for 10 OLAS by voting ve
             await token.approve(ve.address, tenOLABalance);
             // Define 4 years for the lock duration in Voting Escrow.
-            // This will result in voting power being almost exactly as OLA amount locked:
+            // This will result in voting power being almost exactly as OLAS amount locked:
             // voting power = amount * t_left_before_unlock / t_max
             const lockDuration = 4 * 365 * 86400;
 
-            // Lock 10 OLA, which is enough to cover the 5 OLA of initial proposal threshold voting power
+            // Lock 10 OLAS, which is enough to cover the 5 OLAS of initial proposal threshold voting power
             await ve.createLock(tenOLABalance, lockDuration);
 
             // Deploy first timelock
@@ -127,7 +127,7 @@ describe("Governance unit", function () {
             await timelock2.deployed();
 
             // Deploy Governance Bravo with a deployer being a timelock address
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLA");
+            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governorBravo = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
             await governorBravo.deployed();
@@ -193,19 +193,19 @@ describe("Governance unit", function () {
             ).to.be.revertedWith("TimelockController: underlying transaction reverted");
         });
 
-        it("Deposit for voting power: deposit 10 OLA worth of ve to address 1", async function () {
+        it("Deposit for voting power: deposit 10 OLAS worth of ve to address 1", async function () {
             // Get the list of delegators and a delegatee address
             const numDelegators = 10;
             const delegatee = signers[1].address;
 
-            // Transfer initial balances to all the gelegators: 1 OLA to each
+            // Transfer initial balances to all the gelegators: 1 OLAS to each
             for (let i = 1; i <= numDelegators; i++) {
                 await token.transfer(signers[i].address, oneOLABalance);
                 const balance = await token.balanceOf(signers[i].address);
                 expect(ethers.utils.formatEther(balance) == 1).to.be.true;
             }
 
-            // Approve signers[1]-signers[10] for 1 OLA by voting ve
+            // Approve signers[1]-signers[10] for 1 OLAS by voting ve
             for (let i = 1; i <= numDelegators; i++) {
                 await token.connect(signers[i]).approve(ve.address, oneOLABalance);
             }
@@ -219,7 +219,7 @@ describe("Governance unit", function () {
                 await ve.connect(signers[i]).depositFor(delegatee, oneOLABalance);
             }
 
-            // Given 1 OLA worth of voting power from every address, the cumulative voting power must be 10
+            // Given 1 OLAS worth of voting power from every address, the cumulative voting power must be 10
             const vPower = await ve.getVotes(delegatee);
             expect(ethers.utils.formatEther(vPower) > 0).to.be.true;
 
@@ -233,16 +233,16 @@ describe("Governance unit", function () {
             const balance = await token.balanceOf(signers[0].address);
             expect(ethers.utils.formatEther(balance) == 10).to.be.true;
 
-            // Approve signers[0] for 10 OLA by voting ve
+            // Approve signers[0] for 10 OLAS by voting ve
             await token.connect(signers[0]).approve(ve.address, tenOLABalance);
 
             // Define 4 years for the lock duration.
-            // This will result in voting power being almost exactly as OLA amount locked:
+            // This will result in voting power being almost exactly as OLAS amount locked:
             // voting power = amount * t_left_before_unlock / t_max
             const fourYears = 4 * 365 * oneWeek / 7;
             const lockDuration = fourYears;
 
-            // Lock 5 OLA, which is lower than the initial proposal threshold by a bit
+            // Lock 5 OLAS, which is lower than the initial proposal threshold by a bit
             await ve.connect(signers[0]).createLock(fiveOLABalance, lockDuration);
 
             // Deploy simple version of a timelock
@@ -253,19 +253,19 @@ describe("Governance unit", function () {
             await timelock.deployed();
 
             // Deploy Governance Bravo
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLA");
+            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governorBravo = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
             await governorBravo.deployed();
 
-            // Initial proposal threshold is 10 OLA, our delegatee voting power is almost 5 OLA
+            // Initial proposal threshold is 10 OLAS, our delegatee voting power is almost 5 OLAS
             await expect(
                 // Solidity overridden functions must be explicitly declared
                 governorBravo.connect(signers[0])["propose(address[],uint256[],bytes[],string)"]([AddressZero], [0],
                     ["0x"], proposalDescription)
             ).to.be.revertedWith("Governor: proposer votes below proposal threshold");
 
-            // Adding voting power, and the proposal must go through, 4 + 2 of OLA in voting power is almost 6 > 5 required
+            // Adding voting power, and the proposal must go through, 4 + 2 of OLAS in voting power is almost 6 > 5 required
             await ve.connect(signers[0]).increaseAmount(twoOLABalance);
             await governorBravo.connect(signers[0])["propose(address[],uint256[],bytes[],string)"]([AddressZero], [0],
                 ["0x"], proposalDescription);
