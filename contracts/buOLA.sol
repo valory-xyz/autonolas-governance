@@ -179,8 +179,8 @@ contract buOLA is IErrors, IERC20, IERC165 {
             }
 
             uint256 supplyBefore = supply;
-            uint256 supplyAfter;
-            // This end time is greater than zero is withdraw was not fully completed
+            uint256 supplyAfter = supplyBefore;
+            // End time is greater than zero if withdraw was not fully completed and `revoke` was not called on the account
             if (lockedBalance.end > 0) {
                 unchecked {
                     // Update the account locked amount.
@@ -194,12 +194,12 @@ contract buOLA is IErrors, IERC20, IERC165 {
                     mapLockedBalances[msg.sender] = lockedBalance;
                 }
             } else {
-                // This means revoke has been called on this account and the tokens must be burned
+                // This means revoke has been called on this account and some tokens must be burned
                 uint256 amountBurn;
                 unchecked {
                     // Locked amount cannot be smaller than the released amount
                     amountBurn = uint256(lockedBalance.amountLocked - lockedBalance.amountReleased);
-                    supplyAfter = supplyAfter - amountBurn;
+                    supplyAfter = supplyBefore - amountBurn;
                 }
 
                 // Burn revoked tokens and set all the data to zero
@@ -210,7 +210,7 @@ contract buOLA is IErrors, IERC20, IERC165 {
 
             // The amount cannot be less than the total supply
             unchecked {
-                supplyAfter = supplyBefore - amount;
+                supplyAfter -= amount;
                 supply = supplyAfter;
             }
 

@@ -150,25 +150,38 @@ describe("buOLA", function () {
             // Define 4 years for the lock duration
             const numSteps = 4;
             await bu.connect(owner).createLockFor(account.address, oneOLABalance, numSteps);
+            // Check the balanceOf that must be equal to the full locked amount
+            let balance = await bu.balanceOf(account.address);
+            expect(balance).to.equal(oneOLABalance);
 
             // Move one year in time
             ethers.provider.send("evm_increaseTime", [oneYear + 100]);
             ethers.provider.send("evm_mine");
             // Revoke at this point of time
             await bu.connect(owner).revoke([account.address]);
+            // The buOLA balanceOf must be equal to the releasable amount after the revoke
+            balance = await bu.balanceOf(account.address);
+            expect(balance).to.equal(quarterOLABalance);
 
             // Move time after the full lock duration
             ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
             ethers.provider.send("evm_mine");
 
-            // The releasable amount must be the 1/4 amount
+            // The releasable amount must still be the 1/4 amount, since the rest was revoked
             let amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(quarterOLABalance);
 
             // Withdraw must be equal to 1/4 of the total amount since another 3/4 has been revoked
             expect(await ola.balanceOf(account.address)).to.equal(0);
+            // Before the withdraw the total supply is still equal to the full balance
+            let supply = await bu.totalSupply();
+            expect(supply).to.equal(oneOLABalance);
+            // Withdraw what we can for the account
             await bu.connect(account).withdraw();
             expect(await ola.balanceOf(account.address)).to.equal(quarterOLABalance);
+            // Now the balance is zero, since the rest of 3/4 tokens were burned
+            supply = await bu.totalSupply();
+            expect(supply).to.equal(0);
 
             // Now there is no releasable amount left
             amount = await bu.releasableAmount(account.address);

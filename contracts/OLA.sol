@@ -32,7 +32,7 @@ contract OLA is ERC20 {
     // Minter address
     address public minter;
 
-    constructor(uint256 _supply) ERC20("OLA Token", "OLA", 18) {
+    constructor(uint256 _supply) ERC20("Autonolas", "OLA", 18) {
         owner = msg.sender;
         minter = msg.sender;
         timeLaunch = block.timestamp;

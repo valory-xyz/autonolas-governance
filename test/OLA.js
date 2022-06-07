@@ -28,7 +28,7 @@ describe("OLA", () => {
 
     context("Initialization", () => {
         it("correctly constructs an ERC20", async () => {
-            expect(await ola.name()).to.equal("OLA Token");
+            expect(await ola.name()).to.equal("Autonolas");
             expect(await ola.symbol()).to.equal("OLA");
             expect(await ola.decimals()).to.equal(18);
         });

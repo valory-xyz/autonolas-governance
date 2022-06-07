@@ -19,42 +19,15 @@ achieved with the longest lock possible. This way the users are incentivized to 
 #   |/
 # 0 +--------+------> time
 #       maxtime (4 years?)
+
+We cannot really do block numbers per se because slope is per time, not per block, and per block could be fairly bad
+because Ethereum changes its block times. What we can do is to extrapolate ***At functions.
 */
 
 /// @title Voting Escrow - the workflow is ported from Curve Finance Vyper implementation
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// Code ported from: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/VotingEscrow.vy
 /// and: https://github.com/solidlyexchange/solidly/blob/master/contracts/ve.sol
-
-/* We cannot really do block numbers per se b/c slope is per time, not per block
-* and per block could be fairly bad b/c Ethereum changes blocktimes.
-* What we can do is to extrapolate ***At functions */
-
-// Struct for storing balance and unlock time
-// The struct size is one storage slot of uint256 (128 + 64 + padding)
-struct LockedBalance {
-    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
-    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
-    uint128 amount;
-    // Unlock time. It will never practically be bigger
-    uint64 end;
-}
-
-// Structure for voting escrow points
-// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
-struct PointVoting {
-    // w(i) = at + b (bias)
-    int128 bias;
-    // dw / dt = a (slope)
-    int128 slope;
-    // Timestamp. It will never practically be bigger than 2^64 - 1
-    uint64 ts;
-    // Block number. It will not be bigger than the timestamp
-    uint64 blockNumber;
-    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
-    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
-    uint128 balance;
-}
 
 /* This VotingEscrow is based on the OLA token that has the following specifications:
 *  - For the first 10 years there will be the cap of 1 billion (1e27) tokens;
@@ -82,6 +55,32 @@ struct PointVoting {
 * Note that after 220 years it is no longer possible to deposit / increase the locked amount to be bigger than 2^96 - 1.
 * It is going to be not safe to use this contract for governance after 1340 years.
 */
+
+// Struct for storing balance and unlock time
+// The struct size is one storage slot of uint256 (128 + 64 + padding)
+struct LockedBalance {
+    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
+    uint128 amount;
+    // Unlock time. It will never practically be bigger
+    uint64 end;
+}
+
+// Structure for voting escrow points
+// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
+struct PointVoting {
+    // w(i) = at + b (bias)
+    int128 bias;
+    // dw / dt = a (slope)
+    int128 slope;
+    // Timestamp. It will never practically be bigger than 2^64 - 1
+    uint64 ts;
+    // Block number. It will not be bigger than the timestamp
+    uint64 blockNumber;
+    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
+    uint128 balance;
+}
 
 /// @notice This token supports the ERC20 interface specifications except for transfers and approvals.
 contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
@@ -319,6 +318,11 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         }
     }
 
+    /// @dev Record global data to checkpoint.
+    function checkpoint() external {
+        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));
+    }
+
     /// @dev Deposits and locks tokens for a specified account.
     /// @param account Target address for the locked amount.
     /// @param amount Amount to deposit.
@@ -367,11 +371,6 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
 
         emit Deposit(account, amount, lockedBalance.end, depositType, block.timestamp);
         emit Supply(supplyBefore, supplyAfter);
-    }
-
-    /// @dev Record global data to checkpoint.
-    function checkpoint() external {
-        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));
     }
 
     /// @dev Deposits `amount` tokens for `account` and adds to the lock.

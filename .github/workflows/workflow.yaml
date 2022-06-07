@@ -32,11 +32,11 @@ jobs:
       # Run hardhat coverage and upload codecov report
       - name: Solidity coverage summary
         run: ./node_modules/.bin/hardhat coverage
-#      - name: Upload coverage to Codecov
-#        uses: codecov/codecov-action@v1
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          directory: ./coverage
-#          flags: unittests
-#          name: codecov-umbrella
-#          fail_ci_if_error: false
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
