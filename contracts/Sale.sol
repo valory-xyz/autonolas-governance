@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.14;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./interfaces/IErrors.sol";
 
 /// @title Sale - OLAS sale contract
@@ -29,12 +27,11 @@ struct LockedBalance {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract Sale is IErrors, IERC20, IERC165 {
+contract Sale is IErrors {
     event LockVE(address indexed account, uint256 amount, uint256 timePeriod);
     event LockBU(address indexed account, uint256 amount, uint256 numSteps);
     event ClaimVE(address indexed account, uint256 amount, uint256 timePeriod);
     event ClaimBU(address indexed account, uint256 amount, uint256 numSteps);
-    event Supply(uint256 prevSupply, uint256 curSupply);
     event OwnerUpdated(address indexed owner);
 
     // Locking step time (synced with buOLAS `STEP_TIME`)
@@ -42,8 +39,6 @@ contract Sale is IErrors, IERC20, IERC165 {
 
     // Reentrancy lock
     uint256 private locked = 1;
-    // Total token supply
-    uint256 public supply;
     // Number of decimals
     uint8 public constant decimals = 18;
 
@@ -120,8 +115,6 @@ contract Sale is IErrors, IERC20, IERC165 {
             revert WrongArrayLength(buAccounts.length, buAmounts.length);
         }
 
-        uint256 supplyBefore = supply;
-        uint256 supplyAfter = supplyBefore;
         // Create lock-ready structures for veOLAS
         for (uint256 i = 0; i < veAccounts.length; ++i) {
             // Check for the zero addresses
@@ -142,13 +135,12 @@ contract Sale is IErrors, IERC20, IERC165 {
             if (lockedBalance.amount > 0) {
                 revert NonZeroValue();
             }
+
             // Push values to the dedicated locking slot
             lockedBalance.amount = uint128(veAmounts[i]);
             lockedBalance.period = uint64(veLockTimes[i]);
             mapVE[veAccounts[i]] = lockedBalance;
 
-            // Update supply and emit the lock
-            supplyAfter += veAmounts[i];
             emit LockVE(veAccounts[i], veAmounts[i], veLockTimes[i]);
         }
 
@@ -173,21 +165,18 @@ contract Sale is IErrors, IERC20, IERC165 {
             if (lockedBalance.amount > 0) {
                 revert NonZeroValue();
             }
+            
             // Push values to the dedicated locking slot
             lockedBalance.amount = uint128(buAmounts[i]);
             lockedBalance.period = uint64(buNumSteps[i]);
             mapBU[buAccounts[i]] = lockedBalance;
 
-            // Update supply and emit the lock
-            supplyAfter += buAmounts[i];
             emit LockBU(buAccounts[i], buAmounts[i], buNumSteps[i]);
         }
-
-        emit Supply(supplyBefore, supplyAfter);
     }
 
-    /// @dev Claims token lock for `msg.sender` into veOLAS contract.
-    function claimVE() external {
+    /// @dev Claims token lock for `msg.sender` into veOLAS and / or buOLAS contract(s).
+    function claim() external {
         // Reentrancy guard
         if (locked > 1) {
             revert ReentrancyGuard();
@@ -198,94 +187,17 @@ contract Sale is IErrors, IERC20, IERC165 {
         LockedBalance memory lockedBalance = mapVE[msg.sender];
         if (lockedBalance.amount > 0) {
             ILOCK(veToken).createLockFor(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
-            uint256 supplyBefore = supply;
-            uint256 supplyAfter = supplyBefore - uint256(lockedBalance.amount);
-
+            mapVE[msg.sender] = LockedBalance(0, 0);
             emit ClaimVE(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
-            emit Supply(supplyBefore, supplyAfter);
         }
 
-        locked = 1;
-    }
-
-    /// @dev Claims token lock for `msg.sender` into buOLAS contract.
-    function claimBU() external {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
-        // Get the balance, lock time and call the veOLAS locking function
-        LockedBalance memory lockedBalance = mapBU[msg.sender];
+        lockedBalance = mapBU[msg.sender];
         if (lockedBalance.amount > 0) {
             ILOCK(buToken).createLockFor(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
-            uint256 supplyBefore = supply;
-            uint256 supplyAfter = supplyBefore - uint256(lockedBalance.amount);
-
+            mapBU[msg.sender] = LockedBalance(0, 0);
             emit ClaimBU(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
-            emit Supply(supplyBefore, supplyAfter);
         }
 
         locked = 1;
-    }
-
-    /// @dev Gets the account locking balance.
-    /// @param account Account address.
-    /// @return balance Account balance.
-    function balanceOf(address account) public view override returns (uint256 balance) {
-        balance = uint256(mapVE[account].amount);
-        // If there is no balance in veOLAS lock, check the buOLAS one
-        if (balance == 0) {
-            balance = uint256(mapBU[account].amount);
-        }
-    }
-
-    /// @dev Gets total token supply.
-    /// @return Total token supply.
-    function totalSupply() public view override returns (uint256) {
-        return supply;
-    }
-
-    /// @dev Gets the `account`'s locking time period for veOLAS.
-    /// @param account Account address.
-    /// @return period Lock time period.
-    function lockedTimePeriod(address account) external view returns (uint256 period) {
-        period = uint256(mapVE[account].period);
-    }
-
-    /// @dev Gets the `account`'s locking number of steps for buOLAS.
-    /// @param account Account address.
-    /// @return numSteps Lock number of steps.
-    function lockedNumSteps(address account) external view returns (uint256 numSteps) {
-        numSteps = uint256(mapBU[account].period);
-    }
-
-    /// @dev Gets information about the interface support.
-    /// @param interfaceId A specified interface Id.
-    /// @return True if this contract implements the interface defined by interfaceId.
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC20).interfaceId;
-    }
-
-    /// @dev Reverts the transfer of this token.
-    function transfer(address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the approval of this token.
-    function approve(address spender, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the transferFrom of this token.
-    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the allowance of this token.
-    function allowance(address owner, address spender) external view virtual override returns (uint256)
-    {
-        revert NonTransferable(address(this));
     }
 }
