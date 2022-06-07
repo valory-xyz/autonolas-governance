@@ -1,4 +1,4 @@
-# Autonolas Governance
+# Autonolas Governance & Tokens
 
 ## Introduction
 
@@ -8,7 +8,7 @@ A graphical overview of the whole on-chain architecture is available here:
 
 ![architecture](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/On-chain_architecture_v2.png?raw=true)
 
-We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token.
+We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (veOLA) created by locking OLA.
 
 An overview of the design is provided [here](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/Audit_Governance.pdf?raw=true).
 
@@ -16,6 +16,8 @@ An overview of the design is provided [here](https://github.com/valory-xyz/oncha
 - [VotingEscrow (veOLA)](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/VotingEscrow.sol)
 - [GovernorOLA](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLA.sol)
 - [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol)
+
+For team incentivisation we have a burnable locked OLA token - buOLA:
 - [buOLA](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/buOLA.sol)
 
 ## Development
