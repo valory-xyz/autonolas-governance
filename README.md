@@ -20,6 +20,9 @@ An overview of the design is provided [here](https://github.com/valory-xyz/oncha
 For team incentivisation we have a burnable locked OLAS token - buOLAS:
 - [buOLAS](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/buOLAS.sol)
 
+  For initial incentivised locking of OLAS tokens we have a Sale contract - Sale:
+- [Sale](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/Sale.sol)
+
 ## Development
 
 ### Prerequisites

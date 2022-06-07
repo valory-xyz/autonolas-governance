@@ -6,7 +6,7 @@ import "../lib/solmate/src/tokens/ERC20.sol";
 /// @dev Only `manager` has a privilege, but the `sender` was provided.
 /// @param sender Sender address.
 /// @param manager Required sender address as a manager.
-error ManagerOnly(address sender, address manager);
+error OwnerOnly(address sender, address manager);
 
 /// @dev Provided zero address.
 error ZeroAddress();
@@ -49,7 +49,7 @@ contract OLAS is ERC20 {
         }
 
         if (msg.sender != owner) {
-            revert ManagerOnly(msg.sender, owner);
+            revert OwnerOnly(msg.sender, owner);
         }
 
         owner = newOwner;
@@ -60,7 +60,7 @@ contract OLAS is ERC20 {
     /// @param newMinter Address of a new minter.
     function changeMinter(address newMinter) external {
         if (msg.sender != owner) {
-            revert ManagerOnly(msg.sender, owner);
+            revert OwnerOnly(msg.sender, owner);
         }
 
         minter = newMinter;
@@ -73,7 +73,7 @@ contract OLAS is ERC20 {
     function mint(address account, uint256 amount) external {
         // Access control
         if (msg.sender != minter) {
-            revert ManagerOnly(msg.sender, minter);
+            revert OwnerOnly(msg.sender, minter);
         }
 
         // Check the inflation schedule and mint

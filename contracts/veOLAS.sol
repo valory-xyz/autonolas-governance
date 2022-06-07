@@ -408,14 +408,14 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         locked = 1;
     }
 
-    /// @dev Deposits `amount` tokens for `msg.sender` and lock until `unlockTime`.
+    /// @dev Deposits `amount` tokens for `msg.sender` and locks for `unlockTime`.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
     function createLock(uint256 amount, uint256 unlockTime) external {
         _createLockFor(msg.sender, amount, unlockTime);
     }
 
-    /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @dev Deposits `amount` tokens for `account` and locks for `unlockTime`.
     /// @notice Tokens are taken from `msg.sender`'s balance.
     /// @param account Account address.
     /// @param amount Amount to deposit.
@@ -429,7 +429,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         _createLockFor(account, amount, unlockTime);
     }
 
-    /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @dev Deposits `amount` tokens for `account` and locks for `unlockTime`.
     /// @notice Tokens are taken from `msg.sender`'s balance.
     /// @param account Account address.
     /// @param amount Amount to deposit.
