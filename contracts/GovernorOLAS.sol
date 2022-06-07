@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
-/// @title Governor Bravo OLAS - Smart contract for the governance
+/// @title Governor OLAS - Smart contract for Autonolas governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(

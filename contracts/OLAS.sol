@@ -11,7 +11,7 @@ error ManagerOnly(address sender, address manager);
 /// @dev Provided zero address.
 error ZeroAddress();
 
-/// @title OLAS - Smart contract for the main OLAS token.
+/// @title OLAS - Smart contract for the OLAS token.
 /// @author AL
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 contract OLAS is ERC20 {
