@@ -19,42 +19,15 @@ achieved with the longest lock possible. This way the users are incentivized to 
 #   |/
 # 0 +--------+------> time
 #       maxtime (4 years?)
+
+We cannot really do block numbers per se because slope is per time, not per block, and per block could be fairly bad
+because Ethereum changes its block times. What we can do is to extrapolate ***At functions.
 */
 
 /// @title Voting Escrow - the workflow is ported from Curve Finance Vyper implementation
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// Code ported from: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/VotingEscrow.vy
 /// and: https://github.com/solidlyexchange/solidly/blob/master/contracts/ve.sol
-
-/* We cannot really do block numbers per se b/c slope is per time, not per block
-* and per block could be fairly bad b/c Ethereum changes blocktimes.
-* What we can do is to extrapolate ***At functions */
-
-// Struct for storing balance and unlock time
-// The struct size is one storage slot of uint256 (128 + 64 + padding)
-struct LockedBalance {
-    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
-    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
-    uint128 amount;
-    // Unlock time. It will never practically be bigger
-    uint64 end;
-}
-
-// Structure for voting escrow points
-// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
-struct PointVoting {
-    // w(i) = at + b (bias)
-    int128 bias;
-    // dw / dt = a (slope)
-    int128 slope;
-    // Timestamp. It will never practically be bigger than 2^64 - 1
-    uint64 ts;
-    // Block number. It will not be bigger than the timestamp
-    uint64 blockNumber;
-    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
-    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
-    uint128 balance;
-}
 
 /* This VotingEscrow is based on the OLA token that has the following specifications:
 *  - For the first 10 years there will be the cap of 1 billion (1e27) tokens;
@@ -83,7 +56,33 @@ struct PointVoting {
 * It is going to be not safe to use this contract for governance after 1340 years.
 */
 
-/// @notice This token supports the ERC20 interface specifications except for transfers.
+// Struct for storing balance and unlock time
+// The struct size is one storage slot of uint256 (128 + 64 + padding)
+struct LockedBalance {
+    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
+    uint128 amount;
+    // Unlock time. It will never practically be bigger
+    uint64 end;
+}
+
+// Structure for voting escrow points
+// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
+struct PointVoting {
+    // w(i) = at + b (bias)
+    int128 bias;
+    // dw / dt = a (slope)
+    int128 slope;
+    // Timestamp. It will never practically be bigger than 2^64 - 1
+    uint64 ts;
+    // Block number. It will not be bigger than the timestamp
+    uint64 blockNumber;
+    // Token amount. It will never practically be bigger. Initial OLA cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
+    uint128 balance;
+}
+
+/// @notice This token supports the ERC20 interface specifications except for transfers and approvals.
 contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
@@ -92,9 +91,9 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         INCREASE_UNLOCK_TIME
     }
 
-    event Deposit(address provider, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);
-    event Withdraw(address indexed provider, uint256 amount, uint256 ts);
-    event Supply(uint256 prevSupply, uint256 supply);
+    event Deposit(address indexed account, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);
+    event Withdraw(address indexed account, uint256 amount, uint256 ts);
+    event Supply(uint256 prevSupply, uint256 curSupply);
 
     // 1 week time
     uint64 internal constant WEEK = 1 weeks;
@@ -319,8 +318,13 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         }
     }
 
+    /// @dev Record global data to checkpoint.
+    function checkpoint() external {
+        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));
+    }
+
     /// @dev Deposits and locks tokens for a specified account.
-    /// @param account Address that already holds the locked amount.
+    /// @param account Target address for the locked amount.
     /// @param amount Amount to deposit.
     /// @param unlockTime New time when to unlock the tokens, or 0 if unchanged.
     /// @param lockedBalance Previous locked amount / end time.
@@ -369,11 +373,6 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         emit Supply(supplyBefore, supplyAfter);
     }
 
-    /// @dev Record global data to checkpoint.
-    function checkpoint() external {
-        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));
-    }
-
     /// @dev Deposits `amount` tokens for `account` and adds to the lock.
     /// @dev Anyone (even a smart contract) can deposit for someone else, but
     ///      cannot extend their locktime and deposit for a brand new user.
@@ -412,41 +411,65 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
     /// @dev Deposits `amount` tokens for `msg.sender` and lock until `unlockTime`.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
-    function createLock(uint256 amount, uint256 unlockTime) external  {
+    function createLock(uint256 amount, uint256 unlockTime) external {
+        _createLockFor(msg.sender, amount, unlockTime);
+    }
+
+    /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @notice Tokens are taken from `msg.sender`'s balance.
+    /// @param account Account address.
+    /// @param amount Amount to deposit.
+    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    function createLockFor(address account, uint256 amount, uint256 unlockTime) external {
+        // Check if the account address is zero
+        if (account == address(0)) {
+            revert ZeroAddress();
+        }
+
+        _createLockFor(account, amount, unlockTime);
+    }
+
+    /// @dev Deposits `amount` tokens for `account` and lock until `unlockTime`.
+    /// @notice Tokens are taken from `msg.sender`'s balance.
+    /// @param account Account address.
+    /// @param amount Amount to deposit.
+    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    function _createLockFor(address account, uint256 amount, uint256 unlockTime) private {
         // Reentrancy guard
         if (locked > 1) {
             revert ReentrancyGuard();
         }
         locked = 2;
 
+        // Check if the amount is zero
+        if (amount == 0) {
+            revert ZeroValue();
+        }
         // Lock time is rounded down to weeks
         // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
             unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;
         }
-        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        // Check if the amount is zero
-        if (amount == 0) {
-            revert ZeroValue();
-        }
+        LockedBalance memory lockedBalance = mapLockedBalances[account];
         // The locked balance must be zero in order to start the lock
         if (lockedBalance.amount > 0) {
-            revert LockedValueNotZero(msg.sender, uint256(lockedBalance.amount));
+            revert LockedValueNotZero(account, uint256(lockedBalance.amount));
         }
         // Check for the lock time correctness
         if (unlockTime < (block.timestamp + 1)) {
-            revert UnlockTimeIncorrect(msg.sender, block.timestamp, unlockTime);
+            revert UnlockTimeIncorrect(account, block.timestamp, unlockTime);
         }
         // Check for the lock time not to exceed the MAXTIME
         if (unlockTime > block.timestamp + MAXTIME) {
-            revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);
+            revert MaxUnlockTimeReached(account, block.timestamp + MAXTIME, unlockTime);
         }
         // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
         if (amount > type(uint96).max) {
             revert Overflow(amount, type(uint96).max);
         }
 
-        _depositFor(msg.sender, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
+        _depositFor(account, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
+
         locked = 1;
     }
 
@@ -531,7 +554,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         }
         uint256 amount = uint256(lockedBalance.amount);
 
-        mapLockedBalances[msg.sender] = LockedBalance(0,0);
+        mapLockedBalances[msg.sender] = LockedBalance(0, 0);
         uint256 supplyBefore = supply;
         uint256 supplyAfter;
         // The amount cannot be less than the total supply
@@ -542,7 +565,7 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         // oldLocked can have either expired <= timestamp or zero end
         // lockedBalance has only 0 end
         // Both can have >= 0 amount
-        _checkpoint(msg.sender, lockedBalance, LockedBalance(0,0), uint128(supplyAfter));
+        _checkpoint(msg.sender, lockedBalance, LockedBalance(0, 0), uint128(supplyAfter));
 
         emit Withdraw(msg.sender, amount, block.timestamp);
         emit Supply(supplyBefore, supplyAfter);
@@ -780,40 +803,40 @@ contract VotingEscrow is IErrors, IVotes, IERC20, IERC165 {
         return interfaceId == type(IERC20).interfaceId || interfaceId == type(IVotes).interfaceId;
     }
 
-    /// @dev Bans the transfer of this token.
+    /// @dev Reverts the transfer of this token.
     function transfer(address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Bans the approval of this token.
+    /// @dev Reverts the approval of this token.
     function approve(address spender, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Bans the transferFrom of this token.
+    /// @dev Reverts the transferFrom of this token.
     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Compatibility with IERC20.
+    /// @dev Reverts the allowance of this token.
     function allowance(address owner, address spender) external view virtual override returns (uint256)
     {
         revert NonTransferable(address(this));
     }
 
-    /// @dev Compatibility with IVotes.
+    /// @dev Reverts delegates of this token.
     function delegates(address account) external view virtual override returns (address)
     {
         revert NonDelegatable(address(this));
     }
 
-    /// @dev Compatibility with IVotes.
+    /// @dev Reverts delegate for this token.
     function delegate(address delegatee) external virtual override
     {
         revert NonDelegatable(address(this));
     }
 
-    /// @dev Compatibility with IVotes.
+    /// @dev Reverts delegateBySig for this token.
     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
     external virtual override
     {

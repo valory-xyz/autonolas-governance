@@ -12,6 +12,7 @@ describe("VotingEscrow", function () {
     const oneOLABalance = ethers.utils.parseEther("1");
     const twoOLABalance = ethers.utils.parseEther("2");
     const tenOLABalance = ethers.utils.parseEther("10");
+    const AddressZero = "0x" + "0".repeat(40);
 
     beforeEach(async function () {
         const OLA = await ethers.getContractFactory("OLA");
@@ -78,6 +79,43 @@ describe("VotingEscrow", function () {
             const balanceOwner = await ve.getVotes(owner.address);
             expect(balanceDeployer > 0).to.be.true;
             expect(balanceDeployer).to.equal(balanceOwner);
+        });
+
+        it("Create lock for", async function () {
+            const owner = signers[0];
+            const account = signers[1];
+
+            // Approve owner for 1 OLA by veOLA
+            await ola.connect(owner).approve(ve.address, oneOLABalance);
+
+            // Define 1 week for the lock duration
+            const lockDuration = oneWeek; // 1 week from now
+
+            // Balance should be zero before the lock
+            expect(await ve.getVotes(account.address)).to.equal(0);
+            // Try to create lock for the zero address
+            await expect(
+                ve.connect(owner).createLockFor(AddressZero, oneOLABalance, lockDuration)
+            ).to.be.revertedWith("ZeroAddress");
+
+            // Lock for the account from the funds of the owner (approved for veOLA)
+            await ve.connect(owner).createLockFor(account.address, oneOLABalance, lockDuration);
+
+            // Lock end is rounded by 1 week, as implemented by design
+            const lockEnd = await ve.lockedEnd(account.address);
+            const blockNumber = await ethers.provider.getBlockNumber();
+            const block = await ethers.provider.getBlock(blockNumber);
+            expect(Math.floor((block.timestamp + lockDuration) / oneWeek) * oneWeek).to.equal(lockEnd);
+
+            // Get the account of the last user point
+            const pv = await ve.getLastUserPoint(account.address);
+            expect(pv.balance).to.equal(oneOLABalance);
+
+            // Get the number of user points for owner and compare the balance of the last point
+            const numAccountPoints = await ve.getNumUserPoints(account.address);
+            expect(numAccountPoints).to.equal(1);
+            const pvLast = await ve.getUserPoint(account.address, numAccountPoints - 1);
+            expect(pvLast.balance).to.equal(pv.balance);
         });
 
         it("Deposit for", async function () {
@@ -244,12 +282,13 @@ describe("VotingEscrow", function () {
     context("Balance and supply", async function () {
         it("Supply at", async function () {
             // Transfer 10 OLA worth of OLA to signers[1]
-            const owner = signers[1];
-            await ola.transfer(owner.address, tenOLABalance);
+            const deployer = signers[0];
+            const account = signers[1];
+            await ola.transfer(account.address, tenOLABalance);
 
-            // Approve signers[0] and signers[1] for 1 OLA by voting escrow
+            // Approve deployer and account for 1 OLA by voting escrow
             await ola.approve(ve.address, oneOLABalance);
-            await ola.connect(owner).approve(ve.address, tenOLABalance);
+            await ola.connect(account).approve(ve.address, tenOLABalance);
 
             // Initial total supply must be 0
             expect(await ve.totalSupply()).to.equal(0);
@@ -257,16 +296,24 @@ describe("VotingEscrow", function () {
             // Define 1 week for the lock duration
             const lockDuration = oneWeek; // 1 week from now
 
-            // Create locks for both addresses signers[0] and signers[1]
+            // Create locks for both addresses deployer and account
             await ve.createLock(oneOLABalance, lockDuration);
-            await ve.connect(owner).createLock(twoOLABalance, lockDuration);
+            await ve.connect(account).createLock(twoOLABalance, lockDuration);
 
             // Balance is time-based, it changes slightly every fraction of a time
             // Use both balances to check for the supply
-            const balanceDeployer = await ve.getVotes(signers[0].address);
-            const balanceOwner = await ve.getVotes(owner.address);
-            const supply = await ve.totalSupplyLocked();
-            const sumBalance = BigInt(balanceOwner) + BigInt(balanceDeployer);
+            let balanceDeployer = await ve.getVotes(deployer.address);
+            let balanceAccount = await ve.getVotes(account.address);
+            let supply = await ve.totalSupplyLocked();
+            let sumBalance = BigInt(balanceAccount) + BigInt(balanceDeployer);
+            expect(supply).to.equal(sumBalance.toString());
+
+            const blockNumber = await ethers.provider.getBlockNumber();
+            // Check the total supply in pure OLA against the locked balance in OLA as well (not veOLA)
+            balanceDeployer = await ve.balanceOfAt(deployer.address, blockNumber);
+            balanceAccount = await ve.balanceOfAt(account.address, blockNumber);
+            supply = await ve.totalSupplyAt(blockNumber);
+            sumBalance = BigInt(balanceAccount) + BigInt(balanceDeployer);
             expect(supply).to.equal(sumBalance.toString());
         });
 
@@ -332,7 +379,7 @@ describe("VotingEscrow", function () {
         });
     });
 
-    context("ERC20VotesNonTransferable", async function () {
+    context("IERC20 and IVotes functions", async function () {
         it("Check all the related functions", async function () {
             const deployer = signers[0].address;
             const user = signers[1].address;
