@@ -193,6 +193,74 @@ describe("Governance OLAS", function () {
             ).to.be.revertedWith("TimelockController: underlying transaction reverted");
         });
 
+        it("Cancel the proposal that was setup via delegator proposal", async function () {
+            const deployer = signers[0];
+            const balance = await token.balanceOf(deployer.address);
+            expect(ethers.utils.formatEther(balance) == 10).to.be.true;
+
+            // Approve signers[0] for 10 OLA by voting ve
+            await token.connect(deployer).approve(ve.address, tenOLABalance);
+
+            // Define 4 years for the lock duration.
+            // This will result in voting power being almost exactly as OLA amount locked:
+            // voting power = amount * t_left_before_unlock / t_max
+            const fourYears = 4 * 365 * 86400;
+            const lockDuration = fourYears;
+
+            // Lock 5 OLA, which is lower than the initial proposal threshold by a bit
+            await ve.connect(deployer).createLock(fiveOLABalance, lockDuration);
+            // Add a bit more
+            await ve.connect(deployer).increaseAmount(oneOLABalance);
+
+            // Deploy Timelock
+            const executors = [];
+            const proposers = [];
+            const Timelock = await ethers.getContractFactory("Timelock");
+            const timelock = await Timelock.deploy(minDelay, proposers, executors);
+            await timelock.deployed();
+
+            // Deploy Governance Bravo
+            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
+            const governorBravo = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
+                initialVotingPeriod, initialProposalThreshold, quorum);
+            await governorBravo.deployed();
+
+            // Grand governorBravo an admin, proposer, executor and canceller role in the timelock
+            const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
+            await timelock.grantRole(adminRole, governorBravo.address);
+            const proposerRole = ethers.utils.id("PROPOSER_ROLE");
+            await timelock.grantRole(proposerRole, governorBravo.address);
+            const executorRole = ethers.utils.id("EXECUTOR_ROLE");
+            await timelock.grantRole(executorRole, governorBravo.address);
+            const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
+            await timelock.grantRole(cancellerRole, governorBravo.address);
+
+            // Schedule an operation from timelock via a proposer (deployer by default)
+            const callData = "0x";
+            // Solidity overridden functions must be explicitly declared
+            // https://github.com/ethers-io/ethers.js/issues/407
+            await governorBravo["propose(address[],uint256[],bytes[],string)"]([AddressZero], [0],
+                [callData], proposalDescription);
+
+            // Get the proposalId
+            const descriptionHash = ethers.utils.id(proposalDescription);
+            const proposalId = await governorBravo.hashProposal([AddressZero], [0], [callData],
+                descriptionHash);
+
+            // If initialVotingDelay is greater than 0 we have to wait that many blocks before the voting starts
+            // Casting votes for the proposalId: 0 - Against, 1 - For, 2 - Abstain
+            await governorBravo.castVote(proposalId, 1);
+            await governorBravo["queue(address[],uint256[],bytes[],bytes32)"]([AddressZero], [0],
+                [callData], descriptionHash);
+
+            // Cancel the proposal
+            await governorBravo["cancel(uint256)"](proposalId);
+
+            // Check that the proposal was cancelled: enum value of ProposalState.Canceled == 2
+            const proposalState = await governorBravo.state(proposalId);
+            expect(proposalState).to.equal(2);
+        });
+
         it("Deposit for voting power: deposit 10 OLAS worth of ve to address 1", async function () {
             // Get the list of delegators and a delegatee address
             const numDelegators = 10;

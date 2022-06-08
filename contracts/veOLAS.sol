@@ -800,7 +800,8 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param interfaceId A specified interface Id.
     /// @return True if this contract implements the interface defined by interfaceId.
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IVotes).interfaceId;
+        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IVotes).interfaceId ||
+            interfaceId == type(IERC165).interfaceId;
     }
 
     /// @dev Reverts the transfer of this token.
