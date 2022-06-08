@@ -146,20 +146,24 @@ describe("Sale contract", function () {
             const account = signers[1].address;
 
             // Check the account possibility to claim
-            let status = await sale.isClaimableVE(account);
-            expect(status).to.equal(false);
+            let balances = await sale.claimableBalances(account);
+            expect(balances.veBalance).to.equal(0);
+            expect(balances.buBalance).to.equal(0);
 
-            status = await sale.isClaimableBU(account);
-            expect(status).to.equal(false);
+            // Trying to create balances without any Sale balance
+            await expect(
+                sale.createBalancesFor([account], [oneOLABalance], [oneYear], [account], [oneOLABalance], [numSteps])
+            ).to.be.revertedWith("InsufficientAllowance");
+
+            // Mint OLAS for the Sale contract
+            olas.mint(sale.address, twoOLABalance);
 
             // Create balances for veOLAS and buOLAS and check statuses
-            sale.createBalancesFor([account], [oneOLABalance], [oneYear], [account], [oneOLABalance], [numSteps]);
+            await sale.createBalancesFor([account], [oneOLABalance], [oneYear], [account], [oneOLABalance], [numSteps]);
 
-            status = await sale.isClaimableVE(account);
-            expect(status).to.equal(true);
-
-            status = await sale.isClaimableBU(account);
-            expect(status).to.equal(true);
+            balances = await sale.claimableBalances(account);
+            expect(balances.veBalance).to.equal(oneOLABalance);
+            expect(balances.buBalance).to.equal(oneOLABalance);
 
             // Try to create additional balance after the existent one
             await expect(
@@ -169,6 +173,11 @@ describe("Sale contract", function () {
             await expect(
                 sale.createBalancesFor([], [], [], [account], [oneOLABalance], [numSteps])
             ).to.be.revertedWith("NonZeroValue");
+
+            // Trying to create more balances without sufficient amount
+            await expect(
+                sale.createBalancesFor([signers[2].address], [oneOLABalance], [oneYear], [], [], [])
+            ).to.be.revertedWith("InsufficientAllowance");
         });
     });
 
@@ -186,11 +195,14 @@ describe("Sale contract", function () {
             await sale.connect(account).claim();
             // Record the current block (needed for checking the unlock time)
             const block = await ethers.provider.getBlock("latest");
+            // Check the claimable balance after the claim
+            const claimableBalances = await sale.claimableBalances(account.address);
+            expect(claimableBalances.veBalance).to.equal(0);
 
-            // Trying to claim more will not do anything
-            let status = await sale.isClaimableVE(account.address);
-            expect(status).to.equal(false);
-            await sale.connect(account).claim();
+            // Trying to claim more
+            await expect(
+                sale.connect(account).claim()
+            ).to.be.revertedWith("ZeroValue");
 
             // Check the status of the lock in veOLAS
             // Check the balance
@@ -214,11 +226,14 @@ describe("Sale contract", function () {
             await sale.connect(account).claim();
             // Record the current block (needed for checking the unlock time)
             const block = await ethers.provider.getBlock("latest");
+            // Check the claimable balance after the claim
+            const claimableBalances = await sale.claimableBalances(account.address);
+            expect(claimableBalances.buBalance).to.equal(0);
 
-            // Trying to claim more will not do anything
-            let status = await sale.isClaimableBU(account.address);
-            expect(status).to.equal(false);
-            await sale.connect(account).claim();
+            // Trying to claim more
+            await expect(
+                sale.connect(account).claim()
+            ).to.be.revertedWith("ZeroValue");
 
             // Check the status of the lock in buOLAS
             // Check the balance
@@ -244,11 +259,10 @@ describe("Sale contract", function () {
             // Record the current block (needed for checking the unlock time)
             const block = await ethers.provider.getBlock("latest");
 
-            // Check the claim status for both tokens
-            let status = await sale.isClaimableVE(account.address);
-            expect(status).to.equal(false);
-            status = await sale.isClaimableBU(account.address);
-            expect(status).to.equal(false);
+            // Check the claimable balance after the claim for both tokens
+            const claimableBalances = await sale.claimableBalances(account.address);
+            expect(claimableBalances.veBalance).to.equal(0);
+            expect(claimableBalances.buBalance).to.equal(0);
 
             // Check the status of the locks
             // Check the balance
@@ -279,11 +293,11 @@ describe("Sale contract", function () {
             // Record the current block (needed for checking the unlock time)
             const block = await ethers.provider.getBlock("latest");
 
-            // Check the claim status for both tokens
-            let status = await sale.isClaimableVE(accounts[0].address);
-            expect(status).to.equal(false);
-            status = await sale.isClaimableVE(accounts[1].address);
-            expect(status).to.equal(false);
+            // Check the claimable balance after the claim for both tokens
+            let claimableBalances = await sale.claimableBalances(accounts[0].address);
+            expect(claimableBalances.veBalance).to.equal(0);
+            claimableBalances = await sale.claimableBalances(accounts[1].address);
+            expect(claimableBalances.veBalance).to.equal(0);
 
             // Check the status of the locks
             // Check the balance
