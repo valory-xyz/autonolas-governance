@@ -3,10 +3,10 @@ pragma solidity ^0.8.14;
 
 /// @dev Errors.
 interface IErrors {
-    /// @dev Only `manager` has a privilege, but the `sender` was provided.
+    /// @dev Only `owner` has a privilege, but the `sender` was provided.
     /// @param sender Sender address.
-    /// @param manager Required sender address as a manager.
-    error ManagerOnly(address sender, address manager);
+    /// @param owner Required sender address as an owner.
+    error OwnerOnly(address sender, address owner);
 
     /// @dev Wrong hash format.
     /// @param hashFunctionProvided Hash function classification provided.

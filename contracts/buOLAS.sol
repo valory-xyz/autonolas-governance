@@ -57,9 +57,9 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     // Mapping of account address => LockedBalance
     mapping(address => LockedBalance) public mapLockedBalances;
 
-    // Voting token name
+    // Token name
     string public name;
-    // Voting token symbol
+    // Token symbol
     string public symbol;
 
     /// @dev Contract constructor
@@ -82,7 +82,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
         }
 
         if (msg.sender != owner) {
-            revert ManagerOnly(msg.sender, owner);
+            revert OwnerOnly(msg.sender, owner);
         }
 
         owner = newOwner;
@@ -230,7 +230,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     function revoke(address[] memory accounts) external {
         // Check for the ownership
         if (owner != msg.sender) {
-            revert ManagerOnly(msg.sender, owner);
+            revert OwnerOnly(msg.sender, owner);
         }
 
         for (uint256 i = 0; i < accounts.length; ++i) {

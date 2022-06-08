@@ -35,7 +35,7 @@ describe("OLAS", () => {
     });
 
     context("Mint", () => {
-        it("Must be done by treasury", async () => {
+        it("Mint must be done by manager", async () => {
             await expect(ola.connect(bob).mint(bob.address, 100)).to.be.revertedWith(
                 "ManagerOnly"
             );
