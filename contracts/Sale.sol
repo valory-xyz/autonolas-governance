@@ -54,7 +54,7 @@ contract Sale is IErrors {
     uint256 internal constant MINTIME = 365 * 86400;
     // Maximum lock time for veOLAS (synced with veOLAS `MAXTIME`)
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
-    // Overall balance that has will be claimed
+    // Overall balance that is claimable
     uint256 public balance;
     // Reentrancy lock
     uint256 private locked = 1;
@@ -102,7 +102,6 @@ contract Sale is IErrors {
     }
 
     /// @dev Creates schedules of locks for provided accounts depending on the lock time.
-    /// @notice Do not call this
     /// @param veAccounts Accounts for veOLAS locks.
     /// @param veAmounts Amounts for `veAccounts`.
     /// @param veLockTimes Lock time for `veAccounts`.
