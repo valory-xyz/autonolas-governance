@@ -17,11 +17,16 @@ interface ILOCK {
 
 // Interface for the OLAS token allowance increase
 interface IOLAS {
-    /// @dev Increases the allowance of another account over their tokens.
+    /// @dev Approves allowance of another account over their tokens.
     /// @param spender Account that tokens are approved for.
-    /// @param amount Amount to increase approval by.
+    /// @param amount Amount to approve.
     /// @return True if the operation succeeded.
-    function increaseAllowance(address spender, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /// @dev Gets the amount of tokens owned by `account`.
+    /// @param account Account address.
+    /// @return Account balance.
+    function balanceOf(address account) external returns (uint256);
 }
 
 // Struct for storing claimable balance, lock and unlock time
@@ -49,6 +54,8 @@ contract Sale is IErrors {
     uint256 internal constant MINTIME = 365 * 86400;
     // Maximum lock time for veOLAS (synced with veOLAS `MAXTIME`)
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
+    // Overall balance that has will be claimed
+    uint256 public balance;
     // Reentrancy lock
     uint256 private locked = 1;
     // OLAS token address
@@ -74,6 +81,9 @@ contract Sale is IErrors {
         veToken = _veToken;
         buToken = _buToken;
         owner = msg.sender;
+        // Issue allowance for veOLAS and buOLAS. These contracts are always trusted
+        IOLAS(_olasToken).approve(address(_veToken), type(uint256).max);
+        IOLAS(_olasToken).approve(address(_buToken), type(uint256).max);
     }
 
     /// @dev Changes the owner address.
@@ -92,6 +102,7 @@ contract Sale is IErrors {
     }
 
     /// @dev Creates schedules of locks for provided accounts depending on the lock time.
+    /// @notice Do not call this
     /// @param veAccounts Accounts for veOLAS locks.
     /// @param veAmounts Amounts for `veAccounts`.
     /// @param veLockTimes Lock time for `veAccounts`.
@@ -119,8 +130,9 @@ contract Sale is IErrors {
             revert WrongArrayLength(buAccounts.length, buAmounts.length);
         }
 
-        uint256 allowanceVE;
-        uint256 allowanceBU;
+        // Get the overall amount balances
+        uint256 veBalance;
+        uint256 buBalance;
 
         // Create lock-ready structures for veOLAS
         for (uint256 i = 0; i < veAccounts.length; ++i) {
@@ -150,7 +162,7 @@ contract Sale is IErrors {
             }
 
             // Update allowance, push values to the dedicated locking slot
-            allowanceVE += veAmounts[i];
+            veBalance += veAmounts[i];
             lockedBalance.amount = uint128(veAmounts[i]);
             lockedBalance.period = uint64(veLockTimes[i]);
             mapVE[veAccounts[i]] = lockedBalance;
@@ -183,7 +195,7 @@ contract Sale is IErrors {
             }
 
             // Update allowance, push values to the dedicated locking slot
-            allowanceBU += buAmounts[i];
+            buBalance += buAmounts[i];
             lockedBalance.amount = uint128(buAmounts[i]);
             lockedBalance.period = uint64(buNumSteps[i]);
             mapBU[buAccounts[i]] = lockedBalance;
@@ -191,13 +203,13 @@ contract Sale is IErrors {
             emit CreateBU(buAccounts[i], buAmounts[i], buNumSteps[i]);
         }
 
-        // Increase allowances
-        if (allowanceVE > 0) {
-            IOLAS(olasToken).increaseAllowance(address(veToken), allowanceVE);
+        // Own balance cannot be smaller than the sum of balances for all the accounts plus the previous balance
+        uint256 curBalance = IOLAS(olasToken).balanceOf(address(this));
+        uint256 balanceAfter = balance + buBalance + veBalance;
+        if (curBalance < balanceAfter) {
+            revert InsufficientAllowance(balanceAfter, curBalance);
         }
-        if (allowanceBU > 0) {
-            IOLAS(olasToken).increaseAllowance(address(buToken), allowanceBU);
-        }
+        balance = balanceAfter;
     }
 
     /// @dev Claims token lock for `msg.sender` into veOLAS and / or buOLAS contract(s).
@@ -208,9 +220,12 @@ contract Sale is IErrors {
         }
         locked = 2;
 
+        uint256 balanceClaim;
         // Get the balance, lock time and call the veOLAS locking function
         ClaimableBalance memory lockedBalance = mapVE[msg.sender];
         if (lockedBalance.amount > 0) {
+            // We need to update the balance tracker
+            balanceClaim = uint256(lockedBalance.amount);
             ILOCK(veToken).createLockFor(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
             mapVE[msg.sender] = ClaimableBalance(0, 0);
             emit ClaimVE(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
@@ -218,31 +233,31 @@ contract Sale is IErrors {
 
         lockedBalance = mapBU[msg.sender];
         if (lockedBalance.amount > 0) {
+            balanceClaim += uint256(lockedBalance.amount);
             ILOCK(buToken).createLockFor(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
             mapBU[msg.sender] = ClaimableBalance(0, 0);
             emit ClaimBU(msg.sender, uint256(lockedBalance.amount), uint256(lockedBalance.period));
         }
 
+        // Check if anything was claimed
+        if (balanceClaim == 0) {
+            revert ZeroValue();
+        }
+
+        // The overall balance can not be smaller than the claimable balance, since createBalancesFor would revert before
+        unchecked {
+            balance -= balanceClaim;
+        }
+
         locked = 1;
     }
 
-    /// @dev Gets the veOLAS claim status.
+    /// @dev Gets veOLAS and buOLAS claimable balances.
     /// @param account Account address.
-    /// @return status True if the balance is not zero.
-    function isClaimableVE(address account) external view returns (bool status) {
-        uint256 balance = uint256(mapVE[account].amount);
-        if (balance > 0) {
-            status = true;
-        }
-    }
-
-    /// @dev Gets the buOLAS claim status.
-    /// @param account Account address.
-    /// @return status True if the balance is not zero.
-    function isClaimableBU(address account) external view returns (bool status) {
-        uint256 balance = uint256(mapBU[account].amount);
-        if (balance > 0) {
-            status = true;
-        }
+    /// @return veBalance veOLAS claimable balance.
+    /// @return buBalance buOLAS claimable balance.
+    function claimableBalances(address account) external view returns (uint256 veBalance, uint256 buBalance) {
+        veBalance = uint256(mapVE[account].amount);
+        buBalance = uint256(mapBU[account].amount);
     }
 }
