@@ -14,6 +14,7 @@ describe("buOLAS", function () {
     const twoOLABalance = ethers.utils.parseEther("2");
     const tenOLABalance = ethers.utils.parseEther("10");
     const AddressZero = "0x" + "0".repeat(40);
+    const overflowNum96 = "8" + "0".repeat(28);
 
     beforeEach(async function () {
         const OLAS = await ethers.getContractFactory("OLAS");
@@ -26,6 +27,38 @@ describe("buOLAS", function () {
         const BU = await ethers.getContractFactory("buOLAS");
         bu = await BU.deploy(ola.address, "name", "symbol");
         await bu.deployed();
+    });
+
+    context("Initialization", async function () {
+        it("Changing owner", async function () {
+            const owner = signers[0];
+            const account = signers[1];
+
+            // Trying to change owner from a non-owner account address
+            await expect(
+                bu.connect(account).changeOwner(account.address)
+            ).to.be.revertedWith("OwnerOnly");
+
+            // Trying to change owner for the zero address
+            await expect(
+                bu.connect(owner).changeOwner(AddressZero)
+            ).to.be.revertedWith("ZeroAddress");
+
+            // Changing the owner
+            await bu.connect(owner).changeOwner(account.address);
+
+            // Trying to change owner from the previous owner address
+            await expect(
+                bu.connect(owner).changeOwner(owner.address)
+            ).to.be.revertedWith("OwnerOnly");
+        });
+
+        it("Interface support", async function () {
+            // Checks for the compatibility with IERC165
+            const interfaceIdIERC165 = "0x01ffc9a7";
+            const checkInterfaceId = await bu.supportsInterface(interfaceIdIERC165);
+            expect(checkInterfaceId).to.equal(true);
+        });
     });
 
     context("Locks", async function () {
@@ -44,6 +77,10 @@ describe("buOLAS", function () {
             await expect(
                 bu.createLockFor(account, oneOLABalance, 0)
             ).to.be.revertedWith("ZeroValue");
+
+            await expect(
+                bu.createLockFor(account, overflowNum96, 1)
+            ).to.be.revertedWith("Overflow");
 
             await expect(
                 bu.createLockFor(account, oneOLABalance, 11)
@@ -67,8 +104,7 @@ describe("buOLAS", function () {
 
             // Lock end is rounded by 1 week, as implemented by design
             const lockEnd = await bu.lockedEnd(account.address);
-            const blockNumber = await ethers.provider.getBlockNumber();
-            const block = await ethers.provider.getBlock(blockNumber);
+            const block = await ethers.provider.getBlock("latest");
             expect(Math.floor(block.timestamp + oneYear * numSteps)).to.equal(lockEnd);
 
             // Try to create an additional lock to the account address that already has a lock
@@ -129,7 +165,9 @@ describe("buOLAS", function () {
             expect(await ola.balanceOf(account.address)).to.equal(quarterOLABalance);
 
             // Try to withdraw more now
-            await expect(bu.connect(account).withdraw()).to.be.revertedWith("LockNotExpired");
+            await expect(
+                bu.connect(account).withdraw()
+            ).to.be.revertedWith("LockNotExpired");
 
             // Move time after the lock duration
             ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
@@ -153,6 +191,11 @@ describe("buOLAS", function () {
             // Check the balanceOf that must be equal to the full locked amount
             let balance = await bu.balanceOf(account.address);
             expect(balance).to.equal(oneOLABalance);
+
+            // Try to revoke not by the owner
+            await expect(
+                bu.connect(account).revoke([account.address])
+            ).to.be.revertedWith("OwnerOnly");
 
             // Move one year in time
             ethers.provider.send("evm_increaseTime", [oneYear + 100]);

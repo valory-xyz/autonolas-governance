@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0;
+pragma solidity ^0.8.14;
 
 import "../lib/solmate/src/tokens/ERC20.sol";
 
@@ -44,12 +44,12 @@ contract OLAS is ERC20 {
     /// @dev Changes the owner address.
     /// @param newOwner Address of a new owner.
     function changeOwner(address newOwner) external {
-        if (newOwner == address(0)) {
-            revert ZeroAddress();
-        }
-
         if (msg.sender != owner) {
             revert ManagerOnly(msg.sender, owner);
+        }
+
+        if (newOwner == address(0)) {
+            revert ZeroAddress();
         }
 
         owner = newOwner;
@@ -61,6 +61,10 @@ contract OLAS is ERC20 {
     function changeMinter(address newMinter) external {
         if (msg.sender != owner) {
             revert ManagerOnly(msg.sender, owner);
+        }
+
+        if (newMinter == address(0)) {
+            revert ZeroAddress();
         }
 
         minter = newMinter;

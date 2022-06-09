@@ -13,6 +13,7 @@ describe("Voting Escrow OLAS", function () {
     const twoOLABalance = ethers.utils.parseEther("2");
     const tenOLABalance = ethers.utils.parseEther("10");
     const AddressZero = "0x" + "0".repeat(40);
+    const overflowNum96 = "8" + "0".repeat(28);
 
     beforeEach(async function () {
         const OLAS = await ethers.getContractFactory("OLAS");
@@ -28,6 +29,13 @@ describe("Voting Escrow OLAS", function () {
     });
 
     context("Locks", async function () {
+        it("Interface support", async function () {
+            // Checks for the compatibility with IERC165
+            const interfaceIdIERC165 = "0x01ffc9a7";
+            const checkInterfaceId = await ve.supportsInterface(interfaceIdIERC165);
+            expect(checkInterfaceId).to.equal(true);
+        });
+
         it("Should fail when creating a lock with zero value or wrong duration", async function () {
             await ola.approve(ve.address, oneOLABalance);
 
@@ -38,6 +46,10 @@ describe("Voting Escrow OLAS", function () {
             await expect(
                 ve.createLock(oneOLABalance, 0)
             ).to.be.revertedWith("UnlockTimeIncorrect");
+
+            await expect(
+                ve.createLock(overflowNum96, oneWeek)
+            ).to.be.revertedWith("Overflow");
         });
 
         it("Create lock", async function () {
@@ -144,6 +156,11 @@ describe("Voting Escrow OLAS", function () {
                 ve.depositFor(deployer.address, 0)
             ).to.be.revertedWith("ZeroValue");
 
+            // Try to deposit a huge number
+            await expect(
+                ve.depositFor(deployer.address, overflowNum96)
+            ).to.be.revertedWith("Overflow");
+
             // Deposit for the deployer from the
             await ve.connect(owner).depositFor(deployer.address, oneOLABalance);
 
@@ -196,6 +213,11 @@ describe("Voting Escrow OLAS", function () {
             await expect(
                 ve.increaseAmount(0)
             ).to.be.revertedWith("ZeroValue");
+
+            // Try to deposit a huge number
+            await expect(
+                ve.increaseAmount(overflowNum96)
+            ).to.be.revertedWith("Overflow");
 
             // Add 1 OLAS more
             await ve.increaseAmount(oneOLABalance);
