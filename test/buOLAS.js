@@ -146,7 +146,7 @@ describe("buOLAS", function () {
             const account = signers[1];
 
             // Try to withdraw without any locks
-            await bu.connect(account).withdraw()
+            await bu.connect(account).withdraw();
             expect(await olas.balanceOf(account.address)).to.equal(0);
 
             // Approve owner for 1 OLAS by buOLAS that will be locked for account
