@@ -56,8 +56,6 @@ contract Sale is IErrors {
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
     // Overall balance that is claimable
     uint256 public balance;
-    // Reentrancy lock
-    uint256 private locked = 1;
     // OLAS token address
     address public immutable olasToken;
     // veOLAS token address
@@ -213,12 +211,6 @@ contract Sale is IErrors {
 
     /// @dev Claims token lock for `msg.sender` into veOLAS and / or buOLAS contract(s).
     function claim() external {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
         uint256 balanceClaim;
         // Get the balance, lock time and call the veOLAS locking function
         ClaimableBalance memory lockedBalance = mapVE[msg.sender];
@@ -247,8 +239,6 @@ contract Sale is IErrors {
         unchecked {
             balance -= balanceClaim;
         }
-
-        locked = 1;
     }
 
     /// @dev Gets veOLAS and buOLAS claimable balances.

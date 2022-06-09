@@ -1,0 +1,445 @@
+'npx hardhat compile --force' running
+Compiled 54 Solidity files successfully
+
+Solidity 0.8.14 is not fully supported yet. You can still use Hardhat, but some features, like stack traces, might not work correctly.
+
+Learn more at https://hardhat.org/reference/solidity-support
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLA.sol:345:24:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLA.sol:56:5:
+   |
+56 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:807:23:
+    |
+807 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:807:35:
+    |
+807 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:812:22:
+    |
+812 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:812:39:
+    |
+812 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:27:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:41:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:53:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:822:24:
+    |
+822 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:822:39:
+    |
+822 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:828:24:
+    |
+828 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:834:23:
+    |
+834 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:28:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:47:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:62:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:78:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:87:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:98:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:330:23:
+    |
+330 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:330:35:
+    |
+330 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:335:22:
+    |
+335 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:335:39:
+    |
+335 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:27:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:41:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:53:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:345:24:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:345:39:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+
+###################
+####### OLA #######
+###################
+
+## Constructor Call Sequence
+	- ERC20
+	- OLA
+
+## Constructor Definitions
+
+### ERC20
+
+     constructor(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+
+        INITIAL_CHAIN_ID = block.chainid;
+        INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
+    }
+
+### OLA
+
+     constructor(uint256 _supply) ERC20("Autonolas", "OLA", 18) {
+        owner = msg.sender;
+        minter = msg.sender;
+        timeLaunch = block.timestamp;
+        if (_supply > 0) {
+            _mint(msg.sender, _supply);
+        }
+    }
+
+############################
+####### GnosisSafeL2 #######
+############################
+
+## Constructor Call Sequence
+	- GnosisSafe
+
+## Constructor Definitions
+
+### GnosisSafe
+
+     constructor() {
+        // By setting the threshold it is not possible to call setup anymore,
+        // so we create a Safe with 0 owners and threshold 1.
+        // This is an unusable Safe, perfect for the singleton
+        threshold = 1;
+    }
+
+###############################
+####### GnosisSafeProxy #######
+###############################
+
+## Constructor Call Sequence
+	- GnosisSafeProxy
+
+## Constructor Definitions
+
+### GnosisSafeProxy
+
+     constructor(address _singleton) {
+        require(_singleton != address(0), "Invalid singleton address provided");
+        singleton = _singleton;
+    }
+
+###########################
+####### GovernorOLA #######
+###########################
+
+## Constructor Call Sequence
+	- EIP712
+	- Governor
+	- GovernorSettings
+	- GovernorVotes
+	- GovernorVotesQuorumFraction
+	- GovernorTimelockControl
+	- GovernorOLA
+
+## Constructor Definitions
+
+### EIP712
+
+     constructor(string memory name, string memory version) {
+        bytes32 hashedName = keccak256(bytes(name));
+        bytes32 hashedVersion = keccak256(bytes(version));
+        bytes32 typeHash = keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
+        _HASHED_NAME = hashedName;
+        _HASHED_VERSION = hashedVersion;
+        _CACHED_CHAIN_ID = block.chainid;
+        _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(typeHash, hashedName, hashedVersion);
+        _CACHED_THIS = address(this);
+        _TYPE_HASH = typeHash;
+    }
+
+### Governor
+
+     constructor(string memory name_) EIP712(name_, version()) {
+        _name = name_;
+    }
+
+### GovernorSettings
+
+     constructor(
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold
+    ) {
+        _setVotingDelay(initialVotingDelay);
+        _setVotingPeriod(initialVotingPeriod);
+        _setProposalThreshold(initialProposalThreshold);
+    }
+
+### GovernorVotes
+
+     constructor(IVotes tokenAddress) {
+        token = tokenAddress;
+    }
+
+### GovernorVotesQuorumFraction
+
+     constructor(uint256 quorumNumeratorValue) {
+        _updateQuorumNumerator(quorumNumeratorValue);
+    }
+
+### GovernorTimelockControl
+
+     constructor(TimelockController timelockAddress) {
+        _updateTimelock(timelockAddress);
+    }
+
+### GovernorOLA
+
+     constructor(
+        IVotes governanceToken,
+        TimelockController timelock,
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold,
+        uint256 quorumFraction
+    )
+        Governor("Governor OLA")
+        GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
+        GovernorVotes(governanceToken)
+        GovernorVotesQuorumFraction(quorumFraction)
+        GovernorTimelockControl(timelock)
+    {}
+
+########################
+####### Timelock #######
+########################
+
+## Constructor Call Sequence
+	- TimelockController
+	- Timelock
+
+## Constructor Definitions
+
+### TimelockController
+
+     constructor(
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors
+    ) {
+        _setRoleAdmin(TIMELOCK_ADMIN_ROLE, TIMELOCK_ADMIN_ROLE);
+        _setRoleAdmin(PROPOSER_ROLE, TIMELOCK_ADMIN_ROLE);
+        _setRoleAdmin(EXECUTOR_ROLE, TIMELOCK_ADMIN_ROLE);
+        _setRoleAdmin(CANCELLER_ROLE, TIMELOCK_ADMIN_ROLE);
+
+        // deployer + self administration
+        _setupRole(TIMELOCK_ADMIN_ROLE, _msgSender());
+        _setupRole(TIMELOCK_ADMIN_ROLE, address(this));
+
+        // register proposers and cancellers
+        for (uint256 i = 0; i < proposers.length; ++i) {
+            _setupRole(PROPOSER_ROLE, proposers[i]);
+            _setupRole(CANCELLER_ROLE, proposers[i]);
+        }
+
+        // register executors
+        for (uint256 i = 0; i < executors.length; ++i) {
+            _setupRole(EXECUTOR_ROLE, executors[i]);
+        }
+
+        _minDelay = minDelay;
+        emit MinDelayChange(0, minDelay);
+    }
+
+### Timelock
+
+     constructor(uint256 minDelay, address[] memory proposers, address[] memory executors)
+        TimelockController(minDelay, proposers, executors)
+    {}
+
+############################
+####### VotingEscrow #######
+############################
+
+## Constructor Call Sequence
+	- VotingEscrow
+
+## Constructor Definitions
+
+### VotingEscrow
+
+     constructor(address _token, string memory _name, string memory _symbol)
+    {
+        token = _token;
+        name = _name;
+        symbol = _symbol;
+        // Create initial point such that default timestamp and block number are not zero
+        // See cast specification in the PointVoting structure
+        mapSupplyPoints[0] = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);
+    }
+
+#####################
+####### buOLA #######
+#####################
+
+## Constructor Call Sequence
+	- buOLA
+
+## Constructor Definitions
+
+### buOLA
+
+     constructor(address _token, string memory _name, string memory _symbol)
+    {
+        token = _token;
+        name = _name;
+        symbol = _symbol;
+        owner = msg.sender;
+    }
+
+. analyzed (57 contracts)

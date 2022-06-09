@@ -1,0 +1,134 @@
+
+False positive:
+
+[93m
+VotingEscrow._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/VotingEscrow.sol#175-319) performs a multiplication on the result of a division:
+	-tStep = (lastCheckpoint / WEEK) * WEEK (contracts/VotingEscrow.sol#233)
+VotingEscrow._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/VotingEscrow.sol#175-319) performs a multiplication on the result of a division:
+	-block_slope = (1e18 * uint256(block.number - lastPoint.blockNumber)) / uint256(block.timestamp - lastPoint.ts) (contracts/VotingEscrow.sol#227)
+	-lastPoint.blockNumber = initialPoint.blockNumber + uint64((block_slope * uint256(tStep - initialPoint.ts)) / 1e18) (contracts/VotingEscrow.sol#260)
+VotingEscrow._createLockFor(address,uint256,uint256) (contracts/VotingEscrow.sol#437-474) performs a multiplication on the result of a division:
+	-unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK (contracts/VotingEscrow.sol#451)
+VotingEscrow.increaseUnlockTime(uint256) (contracts/VotingEscrow.sol#510-541) performs a multiplication on the result of a division:
+	-unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK (contracts/VotingEscrow.sol#520)
+VotingEscrow._supplyLockedAt(PointVoting,uint64) (contracts/VotingEscrow.sol#731-756) performs a multiplication on the result of a division:
+	-tStep = (lastPoint.ts / WEEK) * WEEK (contracts/VotingEscrow.sol#733)
+buOLA._releasableAmount(LockedBalance) (contracts/buOLA.sol#285-313) performs a multiplication on the result of a division:
+	-releasedSteps = (uint32(block.timestamp) - lockedBalance.start) / STEP_TIME (contracts/buOLA.sol#297)
+	-amount = uint256(lockedBalance.amountLocked * releasedSteps / numSteps) (contracts/buOLA.sol#309)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply[0m
+
+False positive:
+
+[93m
+TimelockController.isOperationDone(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#155-157) uses a dangerous strict equality:
+	- getTimestamp(id) == _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#156)
+VotingEscrow._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/VotingEscrow.sol#175-319) uses a dangerous strict equality:
+	- newLocked.end == oldLocked.end (contracts/VotingEscrow.sol#204)
+VotingEscrow._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/VotingEscrow.sol#175-319) uses a dangerous strict equality:
+	- tStep == block.timestamp (contracts/VotingEscrow.sol#267)
+VotingEscrow._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/VotingEscrow.sol#175-319) uses a dangerous strict equality:
+	- newLocked.end == oldLocked.end (contracts/VotingEscrow.sol#302)
+VotingEscrow._supplyLockedAt(PointVoting,uint64) (contracts/VotingEscrow.sol#731-756) uses a dangerous strict equality:
+	- tStep == ts (contracts/VotingEscrow.sol#746)
+VotingEscrow.depositFor(address,uint256) (contracts/VotingEscrow.sol#381-409) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/VotingEscrow.sol#394)
+VotingEscrow.increaseAmount(uint256) (contracts/VotingEscrow.sol#478-506) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/VotingEscrow.sol#491)
+VotingEscrow.increaseUnlockTime(uint256) (contracts/VotingEscrow.sol#510-541) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/VotingEscrow.sol#523)
+buOLA._releasableAmount(LockedBalance) (contracts/buOLA.sol#285-313) uses a dangerous strict equality:
+	- lockedBalance.end == 0 (contracts/buOLA.sol#287)
+buOLA.balanceOf(address) (contracts/buOLA.sol#256-266) uses a dangerous strict equality:
+	- lockedBalance.end == 0 (contracts/buOLA.sol#259)
+buOLA.withdraw() (contracts/buOLA.sol#165-226) uses a dangerous strict equality:
+	- amount == 0 (contracts/buOLA.sol#177)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities[0m
+
+False positive:
+
+[93m
+Reentrancy in VotingEscrow._createLockFor(address,uint256,uint256) (contracts/VotingEscrow.sol#437-474):
+	External calls:
+	- _depositFor(account,amount,unlockTime,lockedBalance,DepositType.CREATE_LOCK_TYPE) (contracts/VotingEscrow.sol#471)
+		- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/VotingEscrow.sol#366)
+	State variables written after the call(s):
+	- locked = 1 (contracts/VotingEscrow.sol#473)
+Reentrancy in buOLA.createLockFor(address,uint256,uint256) (contracts/buOLA.sol#97-162):
+	External calls:
+	- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/buOLA.sol#153)
+	State variables written after the call(s):
+	- locked = 1 (contracts/buOLA.sol#161)
+Reentrancy in VotingEscrow.depositFor(address,uint256) (contracts/VotingEscrow.sol#381-409):
+	External calls:
+	- _depositFor(account,amount,0,lockedBalance,DepositType.DEPOSIT_FOR_TYPE) (contracts/VotingEscrow.sol#407)
+		- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/VotingEscrow.sol#366)
+	State variables written after the call(s):
+	- locked = 1 (contracts/VotingEscrow.sol#408)
+Reentrancy in VotingEscrow.increaseAmount(uint256) (contracts/VotingEscrow.sol#478-506):
+	External calls:
+	- _depositFor(msg.sender,amount,0,lockedBalance,DepositType.INCREASE_LOCK_AMOUNT) (contracts/VotingEscrow.sol#504)
+		- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/VotingEscrow.sol#366)
+	State variables written after the call(s):
+	- locked = 1 (contracts/VotingEscrow.sol#505)
+Reentrancy in VotingEscrow.increaseUnlockTime(uint256) (contracts/VotingEscrow.sol#510-541):
+	External calls:
+	- _depositFor(msg.sender,0,unlockTime,lockedBalance,DepositType.INCREASE_UNLOCK_TIME) (contracts/VotingEscrow.sol#539)
+		- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/VotingEscrow.sol#366)
+	State variables written after the call(s):
+	- locked = 1 (contracts/VotingEscrow.sol#540)
+Reentrancy in VotingEscrow.withdraw() (contracts/VotingEscrow.sol#544-578):
+	External calls:
+	- success = IERC20(token).transfer(msg.sender,amount) (contracts/VotingEscrow.sol#573)
+	State variables written after the call(s):
+	- locked = 1 (contracts/VotingEscrow.sol#577)
+Reentrancy in buOLA.withdraw() (contracts/buOLA.sol#165-226):
+	External calls:
+	- IOLA(token).burn(amountBurn) (contracts/buOLA.sol#206)
+	State variables written after the call(s):
+	- mapLockedBalances[msg.sender] = LockedBalance(0,0,0,0) (contracts/buOLA.sol#207)
+	- supply = supplyAfter (contracts/buOLA.sol#214)
+Reentrancy in buOLA.withdraw() (contracts/buOLA.sol#165-226):
+	External calls:
+	- IOLA(token).burn(amountBurn) (contracts/buOLA.sol#206)
+	- success = IERC20(token).transfer(msg.sender,amount) (contracts/buOLA.sol#220)
+	State variables written after the call(s):
+	- locked = 1 (contracts/buOLA.sol#225)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1[0m
+
+False positive:
+[92m
+buOLA.allowance(address,address).owner (contracts/buOLA.sol#345) shadows:
+	- buOLA.owner (contracts/buOLA.sol#56) (state variable)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing[0m
+
+Add zero-validation:
+[92m
+OLA.changeMinter(address).newMinter (contracts/OLA.sol#61) lacks a zero-check on :
+		- minter = newMinter (contracts/OLA.sol#66)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation[0m
+
+False positive:
+
+Reentrancy in VotingEscrow._depositFor(address,uint256,uint256,LockedBalance,VotingEscrow.DepositType) (contracts/VotingEscrow.sol#332-374):
+	External calls:
+	- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/VotingEscrow.sol#366)
+	Event emitted after the call(s):
+	- Deposit(account,amount,lockedBalance.end,depositType,block.timestamp) (contracts/VotingEscrow.sol#372)
+	- Supply(supplyBefore,supplyAfter) (contracts/VotingEscrow.sol#373)
+Reentrancy in buOLA.createLockFor(address,uint256,uint256) (contracts/buOLA.sol#97-162):
+	External calls:
+	- success = IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/buOLA.sol#153)
+	Event emitted after the call(s):
+	- Lock(account,amount,block.timestamp,unlockTime) (contracts/buOLA.sol#158)
+	- Supply(supplyBefore,supplyAfter) (contracts/buOLA.sol#159)
+Reentrancy in buOLA.withdraw() (contracts/buOLA.sol#165-226):
+	External calls:
+	- IOLA(token).burn(amountBurn) (contracts/buOLA.sol#206)
+	Event emitted after the call(s):
+	- Burn(msg.sender,amountBurn,block.timestamp) (contracts/buOLA.sol#208)
+	- Supply(supplyBefore,supplyAfter) (contracts/buOLA.sol#218)
+	- Withdraw(msg.sender,amount,block.timestamp) (contracts/buOLA.sol#217)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3[0m
+
+

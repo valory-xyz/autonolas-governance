@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("Voting Escrow OLAS", function () {
-    let ola;
+    let olas;
     let ve;
     let signers;
     const initialMint = "1000000000000000000000000"; // 1000000
@@ -17,18 +17,38 @@ describe("Voting Escrow OLAS", function () {
 
     beforeEach(async function () {
         const OLAS = await ethers.getContractFactory("OLAS");
-        ola = await OLAS.deploy(0);
-        await ola.deployed();
+        olas = await OLAS.deploy(0);
+        await olas.deployed();
 
         signers = await ethers.getSigners();
-        await ola.mint(signers[0].address, initialMint);
+        await olas.mint(signers[0].address, initialMint);
 
         const VE = await ethers.getContractFactory("veOLAS");
-        ve = await VE.deploy(ola.address, "name", "symbol");
+        ve = await VE.deploy(olas.address, "name", "symbol");
         await ve.deployed();
     });
 
     context("Locks", async function () {
+        it("Check that never-supposed-to-happen zero parameter calls do not break anything", async function () {
+            let result = await ve.getPastVotes(AddressZero, 0);
+            expect(result).to.equal(0);
+
+            result = await ve.getVotes(AddressZero);
+            expect(result).to.equal(0);
+
+            result = await ve.getPastTotalSupply(0);
+            expect(result).to.equal(0);
+
+            result = await ve.balanceOfAt(AddressZero, 0);
+            expect(result).to.equal(0);
+
+            result = await ve.totalSupplyAt(0);
+            expect(result).to.equal(0);
+
+            result = await ve.totalSupplyLockedAtT(0);
+            expect(result).to.equal(0);
+        });
+
         it("Interface support", async function () {
             // Checks for the compatibility with IERC165
             const interfaceIdIERC165 = "0x01ffc9a7";
@@ -37,7 +57,7 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Should fail when creating a lock with zero value or wrong duration", async function () {
-            await ola.approve(ve.address, oneOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
 
             await expect(
                 ve.createLock(0, 0)
@@ -55,11 +75,11 @@ describe("Voting Escrow OLAS", function () {
         it("Create lock", async function () {
             // Transfer 10 OLAS to signers[1]
             const owner = signers[1];
-            await ola.transfer(owner.address, tenOLABalance);
+            await olas.transfer(owner.address, tenOLABalance);
 
             // Approve signers[0] and signers[1] for 1 OLAS by voting escrow
-            await ola.approve(ve.address, oneOLABalance);
-            await ola.connect(owner).approve(ve.address, oneOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
+            await olas.connect(owner).approve(ve.address, oneOLABalance);
 
             // Define 1 week for the lock duration
             const lockDuration = oneWeek; // 1 week from now
@@ -98,7 +118,7 @@ describe("Voting Escrow OLAS", function () {
             const account = signers[1];
 
             // Approve owner for 1 OLAS by veOLAS
-            await ola.connect(owner).approve(ve.address, oneOLABalance);
+            await olas.connect(owner).approve(ve.address, oneOLABalance);
 
             // Define 1 week for the lock duration
             const lockDuration = oneWeek; // 1 week from now
@@ -134,11 +154,11 @@ describe("Voting Escrow OLAS", function () {
             const deployer = signers[0];
             // Transfer 10 OLAS to signers[1]
             const owner = signers[1];
-            await ola.transfer(owner.address, tenOLABalance);
+            await olas.transfer(owner.address, tenOLABalance);
 
             // Approve deployer owner for 1 OLAS by voting escrow
-            await ola.approve(ve.address, oneOLABalance);
-            await ola.connect(owner).approve(ve.address, oneOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
+            await olas.connect(owner).approve(ve.address, oneOLABalance);
 
             // Define 1 week for the lock duration
             const lockDuration = oneWeek; // 1 week from now
@@ -178,7 +198,7 @@ describe("Voting Escrow OLAS", function () {
 
         it("Should fail when creating a lock for more than 4 years", async function () {
             const fourYears = 4 * 365 * oneWeek / 7;
-            await ola.approve(ve.address, oneOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
 
             const lockDuration = fourYears + oneWeek; // 4 years and 1 week
 
@@ -188,7 +208,7 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Should fail when creating a lock with already locked value", async function () {
-            await ola.approve(ve.address, oneOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
             const lockDuration = oneWeek;
 
             ve.createLock(oneOLABalance, lockDuration);
@@ -198,7 +218,7 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Increase amount of lock", async function () {
-            await ola.approve(ve.address, tenOLABalance);
+            await olas.approve(ve.address, tenOLABalance);
             const lockDuration = oneWeek;
 
             // Should fail if requires are not satisfied
@@ -233,7 +253,7 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Increase amount of unlock time", async function () {
-            await ola.approve(ve.address, tenOLABalance);
+            await olas.approve(ve.address, tenOLABalance);
             const lockDuration = oneWeek;
 
             // Should fail if requires are not satisfied
@@ -271,8 +291,8 @@ describe("Voting Escrow OLAS", function () {
         it("Withdraw", async function () {
             // Transfer 2 OLAS to signers[1] and approve the voting escrow for 1 OLAS
             const owner = signers[1];
-            await ola.transfer(owner.address, tenOLABalance);
-            await ola.connect(owner).approve(ve.address, oneOLABalance);
+            await olas.transfer(owner.address, tenOLABalance);
+            await olas.connect(owner).approve(ve.address, oneOLABalance);
 
             // Lock 1 OLAS
             const lockDuration = 2 * oneWeek;
@@ -297,7 +317,7 @@ describe("Voting Escrow OLAS", function () {
 
             // Now withdraw must work
             await ve.connect(owner).withdraw();
-            expect(await ola.balanceOf(owner.address)).to.equal(tenOLABalance);
+            expect(await olas.balanceOf(owner.address)).to.equal(tenOLABalance);
         });
     });
 
@@ -306,11 +326,11 @@ describe("Voting Escrow OLAS", function () {
             // Transfer 10 OLAS worth of OLAS to signers[1]
             const deployer = signers[0];
             const account = signers[1];
-            await ola.transfer(account.address, tenOLABalance);
+            await olas.transfer(account.address, tenOLABalance);
 
             // Approve deployer and account for 1 OLAS by voting escrow
-            await ola.approve(ve.address, oneOLABalance);
-            await ola.connect(account).approve(ve.address, tenOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
+            await olas.connect(account).approve(ve.address, tenOLABalance);
 
             // Initial total supply must be 0
             expect(await ve.totalSupply()).to.equal(0);
@@ -366,11 +386,11 @@ describe("Voting Escrow OLAS", function () {
             // Transfer 10 OLAS worth of OLAS to signers[1]
             const deployer = signers[0];
             const owner = signers[1];
-            await ola.transfer(owner.address, tenOLABalance);
+            await olas.transfer(owner.address, tenOLABalance);
 
             // Approve signers[0] and signers[1] for 1 OLAS by voting escrow
-            await ola.approve(ve.address, tenOLABalance);
-            await ola.connect(owner).approve(ve.address, tenOLABalance);
+            await olas.approve(ve.address, tenOLABalance);
+            await olas.connect(owner).approve(ve.address, tenOLABalance);
 
             // Define 1 week for the lock duration
             let lockDuration = oneWeek;
@@ -406,7 +426,7 @@ describe("Voting Escrow OLAS", function () {
             const deployer = signers[0].address;
             const user = signers[1].address;
             // Approve signers[0] for 1 OLAS by voting escrow
-            await ola.approve(ve.address, oneOLABalance);
+            await olas.approve(ve.address, oneOLABalance);
 
             // Initial total supply must be 0
             expect(await ve.totalSupply()).to.equal(0);
