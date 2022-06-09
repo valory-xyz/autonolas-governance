@@ -56,9 +56,8 @@ Run the tests:
 npx hardhat test
 ```
 
-### Internal audit
-The audit is provided internally as development matures. The latest audit report can be found here: [audit](https://github.com/valory-xyz/onchain-protocol/blob/main/audit).
-Records of audit related materials of contracts the Autonolas token is based on can be found here: [token audit](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/token).
+### Audits
+The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
 
 ### Linters
 - [`ESLint`](https://eslint.org) is used for JS code.

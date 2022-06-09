@@ -1,0 +1,535 @@
+'npx hardhat compile --force' running
+Compiled 54 Solidity files successfully
+
+Solidity 0.8.14 is not fully supported yet. You can still use Hardhat, but some features, like stack traces, might not work correctly.
+
+Learn more at https://hardhat.org/reference/solidity-support
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLA.sol:345:24:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLA.sol:56:5:
+   |
+56 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:807:23:
+    |
+807 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:807:35:
+    |
+807 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:812:22:
+    |
+812 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:812:39:
+    |
+812 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:27:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:41:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:53:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:822:24:
+    |
+822 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:822:39:
+    |
+822 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:828:24:
+    |
+828 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:834:23:
+    |
+834 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:28:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:47:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:62:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:78:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:87:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:98:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:330:23:
+    |
+330 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:330:35:
+    |
+330 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:335:22:
+    |
+335 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:335:39:
+    |
+335 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:27:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:41:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:53:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:345:24:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:345:39:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+Inheritance
+[94mChild_Contract -> [0m[92mImmediate_Base_Contracts[0m[92m [Not_Immediate_Base_Contracts][0m[94m
++ OLA
+[0m -> [92mERC20[0m
+[94m
++ ERC20
+[0m[94m
++ GnosisSafe
+[0m -> [92mEtherPaymentFallback, Singleton, ModuleManager, OwnerManager, SignatureDecoder, SecuredTokenTransfer, ISignatureValidatorConstants, FallbackManager, StorageAccessible, GuardManager[0m
+, [[92mExecutor, SelfAuthorized[0m]
+[94m
++ GnosisSafeL2
+[0m -> [92mGnosisSafe[0m
+, [[92mGuardManager, StorageAccessible, FallbackManager, ISignatureValidatorConstants, SecuredTokenTransfer, SignatureDecoder, OwnerManager, ModuleManager, Executor, SelfAuthorized, Singleton, EtherPaymentFallback[0m]
+[94m
++ Executor
+[0m[94m
++ FallbackManager
+[0m -> [92mSelfAuthorized[0m
+[94m
++ Guard
+[0m[94m
++ GuardManager
+[0m -> [92mSelfAuthorized[0m
+[94m
++ ModuleManager
+[0m -> [92mSelfAuthorized, Executor[0m
+[94m
++ OwnerManager
+[0m -> [92mSelfAuthorized[0m
+[94m
++ Enum
+[0m[94m
++ EtherPaymentFallback
+[0m[94m
++ SecuredTokenTransfer
+[0m[94m
++ SelfAuthorized
+[0m[94m
++ SignatureDecoder
+[0m[94m
++ Singleton
+[0m[94m
++ StorageAccessible
+[0m[94m
++ GnosisSafeMath
+[0m[94m
++ ISignatureValidatorConstants
+[0m[94m
++ ISignatureValidator
+[0m -> [92mISignatureValidatorConstants[0m
+[94m
++ IProxy
+[0m[94m
++ GnosisSafeProxy
+[0m[94m
++ GnosisSafeProxyFactory
+[0m[94m
++ IProxyCreationCallback
+[0m[94m
++ AccessControl
+[0m -> [92mContext, IAccessControl, ERC165[0m
+, [[92mIERC165[0m]
+[94m
++ IAccessControl
+[0m[94m
++ Governor
+[0m -> [92mContext, ERC165, EIP712, IGovernor, IERC721Receiver, IERC1155Receiver[0m
+, [[92mIERC165[0m]
+[94m
++ IGovernor
+[0m -> [92mIERC165[0m
+[94m
++ TimelockController
+[0m -> [92mAccessControl, IERC721Receiver, IERC1155Receiver[0m
+, [[92mERC165, IERC165, IAccessControl, Context[0m]
+[94m
++ GovernorCompatibilityBravo
+[0m -> [92mIGovernorTimelock, IGovernorCompatibilityBravo, Governor[0m
+, [[92mIERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context[0m]
+[94m
++ IGovernorCompatibilityBravo
+[0m -> [92mIGovernor[0m
+, [[92mIERC165[0m]
+[94m
++ GovernorSettings
+[0m -> [92mGovernor[0m
+, [[92mIERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context[0m]
+[94m
++ GovernorTimelockControl
+[0m -> [92mIGovernorTimelock, Governor[0m
+, [[92mIERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context[0m]
+[94m
++ GovernorVotes
+[0m -> [92mGovernor[0m
+, [[92mIERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context[0m]
+[94m
++ GovernorVotesQuorumFraction
+[0m -> [92mGovernorVotes[0m
+, [[92mGovernor, IERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context[0m]
+[94m
++ IGovernorTimelock
+[0m -> [92mIGovernor[0m
+, [[92mIERC165[0m]
+[94m
++ IVotes
+[0m[94m
++ IERC1155Receiver
+[0m -> [92mIERC165[0m
+[94m
++ IERC20
+[0m[94m
++ IERC721Receiver
+[0m[94m
++ Address
+[0m[94m
++ Context
+[0m[94m
++ Counters
+[0m[94m
++ Strings
+[0m[94m
++ Timers
+[0m[94m
++ ECDSA
+[0m[94m
++ EIP712
+[0m[94m
++ ERC165
+[0m -> [92mIERC165[0m
+[94m
++ IERC165
+[0m[94m
++ SafeCast
+[0m[94m
++ DoubleEndedQueue
+[0m[94m
++ GovernorOLA
+[0m -> [92mGovernor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl[0m
+, [[92mIERC1155Receiver, IERC721Receiver, IGovernorCompatibilityBravo, IGovernorTimelock, IGovernor, EIP712, ERC165, IERC165, Context[0m]
+[94m
++ Timelock
+[0m -> [92mTimelockController[0m
+, [[92mIERC1155Receiver, IERC721Receiver, AccessControl, ERC165, IERC165, IAccessControl, Context[0m]
+[94m
++ VotingEscrow
+[0m -> [92mIErrors, IVotes, IERC20, IERC165[0m
+[94m
++ IOLA
+[0m[94m
++ buOLA
+[0m -> [92mIErrors, IERC20, IERC165[0m
+[94m
++ IErrors
+[0m[92m
+
+Base_Contract -> [0m[94mImmediate_Child_Contracts[0m
+[94m [Not_Immediate_Child_Contracts][0m
+[92m
++ OLA[0m
+[92m
++ ERC20[0m
+ -> [94mOLA[0m
+[92m
++ GnosisSafe[0m
+ -> [94mGnosisSafeL2[0m
+[92m
++ GnosisSafeL2[0m
+[92m
++ Executor[0m
+ -> [94mModuleManager[0m
+, [[94mGnosisSafe, GnosisSafeL2[0m]
+[92m
++ FallbackManager[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ Guard[0m
+[92m
++ GuardManager[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ ModuleManager[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ OwnerManager[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ Enum[0m
+[92m
++ EtherPaymentFallback[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ SecuredTokenTransfer[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ SelfAuthorized[0m
+ -> [94mFallbackManager, GuardManager, ModuleManager, OwnerManager[0m
+, [[94mGnosisSafe, GnosisSafeL2[0m]
+[92m
++ SignatureDecoder[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ Singleton[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ StorageAccessible[0m
+ -> [94mGnosisSafe[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ GnosisSafeMath[0m
+[92m
++ ISignatureValidatorConstants[0m
+ -> [94mGnosisSafe, ISignatureValidator[0m
+, [[94mGnosisSafeL2[0m]
+[92m
++ ISignatureValidator[0m
+[92m
++ IProxy[0m
+[92m
++ GnosisSafeProxy[0m
+[92m
++ GnosisSafeProxyFactory[0m
+[92m
++ IProxyCreationCallback[0m
+[92m
++ AccessControl[0m
+ -> [94mTimelockController[0m
+, [[94mTimelock[0m]
+[92m
++ IAccessControl[0m
+ -> [94mAccessControl[0m
+, [[94mTimelockController, Timelock[0m]
+[92m
++ Governor[0m
+ -> [94mGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorOLA[0m
+, [[94mGovernorVotesQuorumFraction[0m]
+[92m
++ IGovernor[0m
+ -> [94mGovernor, IGovernorCompatibilityBravo, IGovernorTimelock[0m
+, [[94mGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLA[0m]
+[92m
++ TimelockController[0m
+ -> [94mTimelock[0m
+[92m
++ GovernorCompatibilityBravo[0m
+ -> [94mGovernorOLA[0m
+[92m
++ IGovernorCompatibilityBravo[0m
+ -> [94mGovernorCompatibilityBravo[0m
+, [[94mGovernorOLA[0m]
+[92m
++ GovernorSettings[0m
+ -> [94mGovernorOLA[0m
+[92m
++ GovernorTimelockControl[0m
+ -> [94mGovernorOLA[0m
+[92m
++ GovernorVotes[0m
+ -> [94mGovernorVotesQuorumFraction, GovernorOLA[0m
+[92m
++ GovernorVotesQuorumFraction[0m
+ -> [94mGovernorOLA[0m
+[92m
++ IGovernorTimelock[0m
+ -> [94mGovernorCompatibilityBravo, GovernorTimelockControl[0m
+, [[94mGovernorOLA[0m]
+[92m
++ IVotes[0m
+ -> [94mVotingEscrow[0m
+[92m
++ IERC1155Receiver[0m
+ -> [94mGovernor, TimelockController[0m
+, [[94mGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLA, Timelock[0m]
+[92m
++ IERC20[0m
+ -> [94mVotingEscrow, buOLA[0m
+[92m
++ IERC721Receiver[0m
+ -> [94mGovernor, TimelockController[0m
+, [[94mGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLA, Timelock[0m]
+[92m
++ Address[0m
+[92m
++ Context[0m
+ -> [94mAccessControl, Governor[0m
+, [[94mTimelockController, GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLA, Timelock[0m]
+[92m
++ Counters[0m
+[92m
++ Strings[0m
+[92m
++ Timers[0m
+[92m
++ ECDSA[0m
+[92m
++ EIP712[0m
+ -> [94mGovernor[0m
+, [[94mGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLA[0m]
+[92m
++ ERC165[0m
+ -> [94mAccessControl, Governor[0m
+, [[94mTimelockController, GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLA, Timelock[0m]
+[92m
++ IERC165[0m
+ -> [94mIGovernor, IERC1155Receiver, ERC165, VotingEscrow, buOLA[0m
+, [[94mAccessControl, Governor, TimelockController, GovernorCompatibilityBravo, IGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, IGovernorTimelock, GovernorOLA, Timelock[0m]
+[92m
++ SafeCast[0m
+[92m
++ DoubleEndedQueue[0m
+[92m
++ GovernorOLA[0m
+[92m
++ Timelock[0m
+[92m
++ VotingEscrow[0m
+[92m
++ IOLA[0m
+[92m
++ buOLA[0m
+[92m
++ IErrors[0m
+ -> [94mVotingEscrow, buOLA[0m
+
+. analyzed (57 contracts)

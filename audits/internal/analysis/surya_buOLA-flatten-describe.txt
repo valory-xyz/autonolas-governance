@@ -1,0 +1,37 @@
+ + [34m[Int][39m IERC20 
+    - [34m[Ext][39m totalSupply
+    - [34m[Ext][39m balanceOf
+    - [34m[Ext][39m transfer[31m #[39m
+    - [34m[Ext][39m allowance
+    - [34m[Ext][39m approve[31m #[39m
+    - [34m[Ext][39m transferFrom[31m #[39m
+
+ + [34m[Int][39m IERC165 
+    - [34m[Ext][39m supportsInterface
+
+ + [34m[Int][39m IErrors 
+
+ + [34m[Int][39m IOLA 
+    - [34m[Ext][39m burn[31m #[39m
+
+ +  buOLA [90m(IErrors, IERC20, IERC165)[39m
+    - [32m[Pub][39m [90m<Constructor>[39m[31m #[39m
+    - [34m[Ext][39m changeOwner[31m #[39m
+    - [34m[Ext][39m createLockFor[31m #[39m
+    - [34m[Ext][39m withdraw[31m #[39m
+    - [34m[Ext][39m revoke[31m #[39m
+    - [32m[Pub][39m balanceOf
+    - [32m[Pub][39m totalSupply
+    - [34m[Ext][39m releasableAmount
+    - [31m[Prv][39m _releasableAmount
+    - [34m[Ext][39m lockedEnd
+    - [32m[Pub][39m supportsInterface
+    - [34m[Ext][39m transfer[31m #[39m
+    - [34m[Ext][39m approve[31m #[39m
+    - [34m[Ext][39m transferFrom[31m #[39m
+    - [34m[Ext][39m allowance
+
+
+[33m ($)[39m = payable function
+[31m #[39m = non-constant function
+  

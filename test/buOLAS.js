@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("buOLAS", function () {
-    let ola;
+    let olas;
     let bu;
     let signers;
     const initialMint = "1000000000000000000000000"; // 1000000
@@ -16,14 +16,14 @@ describe("buOLAS", function () {
 
     beforeEach(async function () {
         const OLAS = await ethers.getContractFactory("OLAS");
-        ola = await OLAS.deploy(0);
-        await ola.deployed();
+        olas = await OLAS.deploy(0);
+        await olas.deployed();
 
         signers = await ethers.getSigners();
-        await ola.mint(signers[0].address, initialMint);
+        await olas.mint(signers[0].address, initialMint);
 
         const BU = await ethers.getContractFactory("buOLAS");
-        bu = await BU.deploy(ola.address, "name", "symbol");
+        bu = await BU.deploy(olas.address, "name", "symbol");
         await bu.deployed();
     });
 
@@ -62,7 +62,7 @@ describe("buOLAS", function () {
     context("Locks", async function () {
         it("Should fail when creating a lock with zero value or wrong number of steps", async function () {
             const account = signers[1].address;
-            await ola.approve(bu.address, oneOLABalance);
+            await olas.approve(bu.address, oneOLABalance);
 
             await expect(
                 bu.createLockFor(AddressZero, 0, 0)
@@ -90,7 +90,7 @@ describe("buOLAS", function () {
             const account = signers[1];
 
             // Approve owner for 1 OLAS by buOLAS
-            await ola.connect(owner).approve(bu.address, oneOLABalance);
+            await olas.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
             const numSteps = 4;
@@ -145,8 +145,12 @@ describe("buOLAS", function () {
             const owner = signers[0];
             const account = signers[1];
 
+            // Try to withdraw without any locks
+            await bu.connect(account).withdraw();
+            expect(await olas.balanceOf(account.address)).to.equal(0);
+
             // Approve owner for 1 OLAS by buOLAS that will be locked for account
-            await ola.connect(owner).approve(bu.address, oneOLABalance);
+            await olas.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
             const numSteps = 4;
@@ -158,9 +162,9 @@ describe("buOLAS", function () {
             ethers.provider.send("evm_increaseTime", [oneYear + 100]);
             ethers.provider.send("evm_mine");
             // Withdraw must be equal to 1/4 of the total amount
-            expect(await ola.balanceOf(account.address)).to.equal(0);
+            expect(await olas.balanceOf(account.address)).to.equal(0);
             await bu.connect(account).withdraw();
-            expect(await ola.balanceOf(account.address)).to.equal(quarterOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(quarterOLABalance);
 
             // Try to withdraw more now
             await expect(
@@ -173,7 +177,7 @@ describe("buOLAS", function () {
 
             // Now withdraw must get us the rest
             await bu.connect(account).withdraw();
-            expect(await ola.balanceOf(account.address)).to.equal(oneOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(oneOLABalance);
         });
 
         it("Withdraw with not divisible remainder", async function () {
@@ -181,7 +185,7 @@ describe("buOLAS", function () {
             const account = signers[1];
 
             // Approve owner for 1 OLAS by buOLAS that will be locked for account
-            await ola.connect(owner).approve(bu.address, oneOLABalance);
+            await olas.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 3 years for the lock duration
             const numSteps = 3;
@@ -194,7 +198,7 @@ describe("buOLAS", function () {
             const thirdOLABalance = new ethers.BigNumber.from(oneOLABalance).div(numSteps);
             await bu.connect(account).withdraw();
             const recoveredFullBalance = thirdOLABalance.mul(numSteps);
-            expect(await ola.balanceOf(account.address)).to.equal(thirdOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(thirdOLABalance);
             // This proves that we can potentially lose only 1e(-18) tokens if we call revoke on non divisible remainder
             expect(recoveredFullBalance.add(1)).to.equal(oneOLABalance);
 
@@ -204,7 +208,7 @@ describe("buOLAS", function () {
 
             // At the end we withdraw the remainder that gets the rest with 1e(-18) tokens that were not partitioned
             await bu.connect(account).withdraw();
-            expect(await ola.balanceOf(account.address)).to.equal(oneOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(oneOLABalance);
         });
 
         it("Withdraw with revoke", async function () {
@@ -212,7 +216,7 @@ describe("buOLAS", function () {
             const account = signers[1];
 
             // Approve owner for 1 OLAS by buOLAS that will be locked for account
-            await ola.connect(owner).approve(bu.address, oneOLABalance);
+            await olas.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 4 years for the lock duration
             const numSteps = 4;
@@ -244,13 +248,13 @@ describe("buOLAS", function () {
             expect(amount).to.equal(quarterOLABalance);
 
             // Withdraw must be equal to 1/4 of the total amount since another 3/4 has been revoked
-            expect(await ola.balanceOf(account.address)).to.equal(0);
+            expect(await olas.balanceOf(account.address)).to.equal(0);
             // Before the withdraw the total supply is still equal to the full balance
             let supply = await bu.totalSupply();
             expect(supply).to.equal(oneOLABalance);
             // Withdraw what we can for the account
             await bu.connect(account).withdraw();
-            expect(await ola.balanceOf(account.address)).to.equal(quarterOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(quarterOLABalance);
             // Now the balance is zero, since the rest of 3/4 tokens were burned
             supply = await bu.totalSupply();
             expect(supply).to.equal(0);
@@ -265,7 +269,7 @@ describe("buOLAS", function () {
             const account = signers[1];
 
             // Approve owner for 1 OLAS by buOLAS that will be locked for account
-            await ola.connect(owner).approve(bu.address, oneOLABalance);
+            await olas.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 3 years for the lock duration
             const numSteps = 3;
@@ -297,7 +301,7 @@ describe("buOLAS", function () {
             expect(supply).to.equal(twoThirdsOLABalance.add(1));
             // Withdraw what we can for the account, after which the balance is 2/3 of the initial balance
             await bu.connect(account).withdraw();
-            expect(await ola.balanceOf(account.address)).to.equal(twoThirdsOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(twoThirdsOLABalance);
             // Now the balance is zero, since the rest of 1/3 tokens were burned
             supply = await bu.totalSupply();
             expect(supply).to.equal(0);
@@ -312,7 +316,7 @@ describe("buOLAS", function () {
             const account = signers[1];
 
             // Approve owner for 1 OLAS by buOLAS that will be locked for account
-            await ola.connect(owner).approve(bu.address, oneOLABalance);
+            await olas.connect(owner).approve(bu.address, oneOLABalance);
 
             // Define 3 years for the lock duration
             const numSteps = 3;
@@ -333,7 +337,7 @@ describe("buOLAS", function () {
             // Withdraw must return all the initially locked amount
             await bu.connect(account).withdraw();
             // The buOLAS balanceOf must be equal to the full initial amount after revoke
-            expect(await ola.balanceOf(account.address)).to.equal(oneOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(oneOLABalance);
 
             // The supply must also be zero at this point of time
             const supply = await bu.totalSupply();

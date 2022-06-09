@@ -63,7 +63,7 @@ struct LockedBalance {
     // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
     uint128 amount;
     // Unlock time. It will never practically be bigger
-    uint64 end;
+    uint64 endTime;
 }
 
 // Structure for voting escrow points
@@ -93,7 +93,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
     event Deposit(address indexed account, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);
     event Withdraw(address indexed account, uint256 amount, uint256 ts);
-    event Supply(uint256 prevSupply, uint256 curSupply);
+    event Supply(uint256 previousSupply, uint256 currentSupply);
 
     // 1 week time
     uint64 internal constant WEEK = 1 weeks;
@@ -124,9 +124,6 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     string public name;
     // Voting token symbol
     string public symbol;
-
-    // Reentrancy lock
-    uint256 private locked = 1;
 
     /// @dev Contract constructor
     /// @param _token Token address.
@@ -187,24 +184,24 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         if (account != address(0)) {
             // Calculate slopes and biases
             // Kept at zero when they have to
-            if (oldLocked.end > block.timestamp && oldLocked.amount > 0) {
+            if (oldLocked.endTime > block.timestamp && oldLocked.amount > 0) {
                 uOld.slope = int128(oldLocked.amount) / IMAXTIME;
-                uOld.bias = uOld.slope * int128(uint128(oldLocked.end - uint64(block.timestamp)));
+                uOld.bias = uOld.slope * int128(uint128(oldLocked.endTime - uint64(block.timestamp)));
             }
-            if (newLocked.end > block.timestamp && newLocked.amount > 0) {
+            if (newLocked.endTime > block.timestamp && newLocked.amount > 0) {
                 uNew.slope = int128(newLocked.amount) / IMAXTIME;
-                uNew.bias = uNew.slope * int128(uint128(newLocked.end - uint64(block.timestamp)));
+                uNew.bias = uNew.slope * int128(uint128(newLocked.endTime - uint64(block.timestamp)));
             }
 
             // Reads values of scheduled changes in the slope
-            // oldLocked.end can be in the past and in the future
-            // newLocked.end can ONLY be in the FUTURE unless everything is expired: then zeros
-            oldDSlope = mapSlopeChanges[oldLocked.end];
-            if (newLocked.end > 0) {
-                if (newLocked.end == oldLocked.end) {
+            // oldLocked.endTime can be in the past and in the future
+            // newLocked.endTime can ONLY be in the FUTURE unless everything is expired: then zeros
+            oldDSlope = mapSlopeChanges[oldLocked.endTime];
+            if (newLocked.endTime > 0) {
+                if (newLocked.endTime == oldLocked.endTime) {
                     newDSlope = oldDSlope;
                 } else {
-                    newDSlope = mapSlopeChanges[newLocked.end];
+                    newDSlope = mapSlopeChanges[newLocked.endTime];
                 }
             }
         }
@@ -294,20 +291,20 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
         if (account != address(0)) {
             // Schedule the slope changes (slope is going down)
-            // We subtract new_user_slope from [newLocked.end]
-            // and add old_user_slope to [oldLocked.end]
-            if (oldLocked.end > block.timestamp) {
+            // We subtract new_user_slope from [newLocked.endTime]
+            // and add old_user_slope to [oldLocked.endTime]
+            if (oldLocked.endTime > block.timestamp) {
                 // oldDSlope was <something> - uOld.slope, so we cancel that
                 oldDSlope += uOld.slope;
-                if (newLocked.end == oldLocked.end) {
+                if (newLocked.endTime == oldLocked.endTime) {
                     oldDSlope -= uNew.slope; // It was a new deposit, not extension
                 }
-                mapSlopeChanges[oldLocked.end] = oldDSlope;
+                mapSlopeChanges[oldLocked.endTime] = oldDSlope;
             }
 
-            if (newLocked.end > block.timestamp && newLocked.end > oldLocked.end) {
+            if (newLocked.endTime > block.timestamp && newLocked.endTime > oldLocked.endTime) {
                 newDSlope -= uNew.slope; // old slope disappeared at this point
-                mapSlopeChanges[newLocked.end] = newDSlope;
+                mapSlopeChanges[newLocked.endTime] = newDSlope;
                 // else: we recorded it already in oldDSlope
             }
             // Now handle user history
@@ -345,28 +342,28 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         }
         // Get the old locked data
         LockedBalance memory oldLocked;
-        (oldLocked.amount, oldLocked.end) = (lockedBalance.amount, lockedBalance.end);
+        (oldLocked.amount, oldLocked.endTime) = (lockedBalance.amount, lockedBalance.endTime);
         // Adding to the existing lock, or if a lock is expired - creating a new one
         // This cannot be larger than the total supply
         unchecked {
             lockedBalance.amount += uint128(amount);
         }
         if (unlockTime > 0) {
-            lockedBalance.end = uint64(unlockTime);
+            lockedBalance.endTime = uint64(unlockTime);
         }
         mapLockedBalances[account] = lockedBalance;
 
         // Possibilities:
-        // Both oldLocked.end could be current or expired (>/< block.timestamp)
+        // Both oldLocked.endTime could be current or expired (>/< block.timestamp)
         // amount == 0 (extend lock) or amount > 0 (add to lock or extend lock)
-        // lockedBalance.end > block.timestamp (always)
+        // lockedBalance.endTime > block.timestamp (always)
         _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));
         if (amount > 0) {
             // OLAS is a solmate-based ERC20 token with optimized transferFrom() that either returns true or reverts
             IERC20(token).transferFrom(msg.sender, address(this), amount);
         }
 
-        emit Deposit(account, amount, lockedBalance.end, depositType, block.timestamp);
+        emit Deposit(account, amount, lockedBalance.endTime, depositType, block.timestamp);
         emit Supply(supplyBefore, supplyAfter);
     }
 
@@ -376,12 +373,6 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @param amount Amount to add.
     function depositFor(address account, uint256 amount) external {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
         LockedBalance memory lockedBalance = mapLockedBalances[account];
         // Check if the amount is zero
         if (amount == 0) {
@@ -392,8 +383,8 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
             revert NoValueLocked(account);
         }
         // Check the lock expiry
-        if (lockedBalance.end < (block.timestamp + 1)) {
-            revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
+        if (lockedBalance.endTime < (block.timestamp + 1)) {
+            revert LockExpired(msg.sender, lockedBalance.endTime, block.timestamp);
         }
         // Since in the _depositFor() we have the unchecked sum of amounts, this is needed to prevent unsafe behavior.
         // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
@@ -402,7 +393,6 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         }
 
         _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);
-        locked = 1;
     }
 
     /// @dev Deposits `amount` tokens for `msg.sender` and locks for `unlockTime`.
@@ -432,12 +422,6 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
     function _createLockFor(address account, uint256 amount, uint256 unlockTime) private {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
         // Check if the amount is zero
         if (amount == 0) {
             revert ZeroValue();
@@ -466,19 +450,11 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         }
 
         _depositFor(account, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);
-
-        locked = 1;
     }
 
     /// @dev Deposits `amount` additional tokens for `msg.sender` without modifying the unlock time.
     /// @param amount Amount of tokens to deposit and add to the lock.
     function increaseAmount(uint256 amount) external {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Check if the amount is zero
         if (amount == 0) {
@@ -489,8 +465,8 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
             revert NoValueLocked(msg.sender);
         }
         // Check the lock expiry
-        if (lockedBalance.end < (block.timestamp + 1)) {
-            revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
+        if (lockedBalance.endTime < (block.timestamp + 1)) {
+            revert LockExpired(msg.sender, lockedBalance.endTime, block.timestamp);
         }
         // Check the max possible amount to add, that must be less than the total supply
         // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
@@ -499,18 +475,11 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         }
 
         _depositFor(msg.sender, amount, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);
-        locked = 1;
     }
 
     /// @dev Extends the unlock time.
     /// @param unlockTime New tokens unlock time.
     function increaseUnlockTime(uint256 unlockTime) external {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
         unchecked {
@@ -521,12 +490,12 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
             revert NoValueLocked(msg.sender);
         }
         // Check the lock expiry
-        if (lockedBalance.end < (block.timestamp + 1)) {
-            revert LockExpired(msg.sender, lockedBalance.end, block.timestamp);
+        if (lockedBalance.endTime < (block.timestamp + 1)) {
+            revert LockExpired(msg.sender, lockedBalance.endTime, block.timestamp);
         }
         // Check for the lock time correctness
-        if (unlockTime < (lockedBalance.end + 1)) {
-            revert UnlockTimeIncorrect(msg.sender, lockedBalance.end, unlockTime);
+        if (unlockTime < (lockedBalance.endTime + 1)) {
+            revert UnlockTimeIncorrect(msg.sender, lockedBalance.endTime, unlockTime);
         }
         // Check for the lock time not to exceed the MAXTIME
         if (unlockTime > block.timestamp + MAXTIME) {
@@ -534,20 +503,13 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         }
 
         _depositFor(msg.sender, 0, unlockTime, lockedBalance, DepositType.INCREASE_UNLOCK_TIME);
-        locked = 1;
     }
 
     /// @dev Withdraws all tokens for `msg.sender`. Only possible if the lock has expired.
     function withdraw() external {
-        // Reentrancy guard
-        if (locked > 1) {
-            revert ReentrancyGuard();
-        }
-        locked = 2;
-
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        if (lockedBalance.end > block.timestamp) {
-            revert LockNotExpired(msg.sender, lockedBalance.end, block.timestamp);
+        if (lockedBalance.endTime > block.timestamp) {
+            revert LockNotExpired(msg.sender, lockedBalance.endTime, block.timestamp);
         }
         uint256 amount = uint256(lockedBalance.amount);
 
@@ -569,8 +531,6 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
         // OLAS is a solmate-based ERC20 token with optimized transfer() that either returns true or reverts
         IERC20(token).transfer(msg.sender, amount);
-
-        locked = 1;
     }
 
     /// @dev Finds a closest point that has a specified block number.
@@ -651,7 +611,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @return unlockTime Lock end time.
     function lockedEnd(address account) external view returns (uint256 unlockTime) {
-        unlockTime = uint256(mapLockedBalances[account].end);
+        unlockTime = uint256(mapLockedBalances[account].endTime);
     }
 
     /// @dev Gets the account balance at a specific block number.

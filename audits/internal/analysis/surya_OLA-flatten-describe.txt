@@ -1,0 +1,27 @@
+ +  ERC20 
+    - [32m[Pub][39m [90m<Constructor>[39m[31m #[39m
+    - [32m[Pub][39m approve[31m #[39m
+    - [32m[Pub][39m transfer[31m #[39m
+    - [32m[Pub][39m transferFrom[31m #[39m
+    - [32m[Pub][39m permit[31m #[39m
+    - [32m[Pub][39m DOMAIN_SEPARATOR
+    - [90m[Int][39m computeDomainSeparator
+    - [90m[Int][39m _mint[31m #[39m
+    - [90m[Int][39m _burn[31m #[39m
+
+ +  OLA [90m(ERC20)[39m
+    - [32m[Pub][39m [90m<Constructor>[39m[31m #[39m
+       - modifiers: ERC20
+    - [34m[Ext][39m changeOwner[31m #[39m
+    - [34m[Ext][39m changeMinter[31m #[39m
+    - [34m[Ext][39m mint[31m #[39m
+    - [32m[Pub][39m inflationControl
+    - [32m[Pub][39m inflationRemainder
+    - [34m[Ext][39m burn[31m #[39m
+    - [34m[Ext][39m decreaseAllowance[31m #[39m
+    - [34m[Ext][39m increaseAllowance[31m #[39m
+
+
+[33m ($)[39m = payable function
+[31m #[39m = non-constant function
+  

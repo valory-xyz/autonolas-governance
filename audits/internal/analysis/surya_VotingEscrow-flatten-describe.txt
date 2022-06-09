@@ -1,0 +1,63 @@
+ + [34m[Int][39m IVotes 
+    - [34m[Ext][39m getVotes
+    - [34m[Ext][39m getPastVotes
+    - [34m[Ext][39m getPastTotalSupply
+    - [34m[Ext][39m delegates
+    - [34m[Ext][39m delegate[31m #[39m
+    - [34m[Ext][39m delegateBySig[31m #[39m
+
+ + [34m[Int][39m IERC20 
+    - [34m[Ext][39m totalSupply
+    - [34m[Ext][39m balanceOf
+    - [34m[Ext][39m transfer[31m #[39m
+    - [34m[Ext][39m allowance
+    - [34m[Ext][39m approve[31m #[39m
+    - [34m[Ext][39m transferFrom[31m #[39m
+
+ + [34m[Int][39m IERC165 
+    - [34m[Ext][39m supportsInterface
+
+ + [34m[Int][39m IErrors 
+
+ +  VotingEscrow [90m(IErrors, IVotes, IERC20, IERC165)[39m
+    - [32m[Pub][39m [90m<Constructor>[39m[31m #[39m
+    - [34m[Ext][39m getLastUserPoint
+    - [34m[Ext][39m getNumUserPoints
+    - [34m[Ext][39m getUserPoint
+    - [90m[Int][39m _checkpoint[31m #[39m
+    - [34m[Ext][39m checkpoint[31m #[39m
+    - [90m[Int][39m _depositFor[31m #[39m
+    - [34m[Ext][39m depositFor[31m #[39m
+    - [34m[Ext][39m createLock[31m #[39m
+    - [34m[Ext][39m createLockFor[31m #[39m
+    - [31m[Prv][39m _createLockFor[31m #[39m
+    - [34m[Ext][39m increaseAmount[31m #[39m
+    - [34m[Ext][39m increaseUnlockTime[31m #[39m
+    - [34m[Ext][39m withdraw[31m #[39m
+    - [90m[Int][39m _findPointByBlock
+    - [90m[Int][39m _balanceOfLocked
+    - [32m[Pub][39m balanceOf
+    - [34m[Ext][39m lockedEnd
+    - [34m[Ext][39m balanceOfAt
+    - [32m[Pub][39m getVotes
+    - [90m[Int][39m _getBlockTime
+    - [32m[Pub][39m getPastVotes
+    - [90m[Int][39m _supplyLockedAt
+    - [32m[Pub][39m totalSupply
+    - [34m[Ext][39m totalSupplyAt
+    - [32m[Pub][39m totalSupplyLockedAtT
+    - [32m[Pub][39m totalSupplyLocked
+    - [32m[Pub][39m getPastTotalSupply
+    - [32m[Pub][39m supportsInterface
+    - [34m[Ext][39m transfer[31m #[39m
+    - [34m[Ext][39m approve[31m #[39m
+    - [34m[Ext][39m transferFrom[31m #[39m
+    - [34m[Ext][39m allowance
+    - [34m[Ext][39m delegates
+    - [34m[Ext][39m delegate[31m #[39m
+    - [34m[Ext][39m delegateBySig[31m #[39m
+
+
+[33m ($)[39m = payable function
+[31m #[39m = non-constant function
+  

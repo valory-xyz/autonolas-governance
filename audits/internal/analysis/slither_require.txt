@@ -1,0 +1,888 @@
+'npx hardhat compile --force' running
+Compiled 54 Solidity files successfully
+
+Solidity 0.8.14 is not fully supported yet. You can still use Hardhat, but some features, like stack traces, might not work correctly.
+
+Learn more at https://hardhat.org/reference/solidity-support
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLA.sol:345:24:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLA.sol:56:5:
+   |
+56 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:807:23:
+    |
+807 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:807:35:
+    |
+807 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:812:22:
+    |
+812 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:812:39:
+    |
+812 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:27:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:41:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:817:53:
+    |
+817 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:822:24:
+    |
+822 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:822:39:
+    |
+822 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:828:24:
+    |
+828 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:834:23:
+    |
+834 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:28:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:47:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:62:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:78:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:87:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/VotingEscrow.sol:840:98:
+    |
+840 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:330:23:
+    |
+330 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:330:35:
+    |
+330 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:335:22:
+    |
+335 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:335:39:
+    |
+335 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:27:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:41:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:340:53:
+    |
+340 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:345:24:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLA.sol:345:39:
+    |
+345 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+
+Contract OLA
++-------------------------------------+--------------------------------------------------------------------------------------------------+
+|               Function              |                                        require or assert                                         |
++-------------------------------------+--------------------------------------------------------------------------------------------------+
+|             constructor             |                                                                                                  |
+|               approve               |                                                                                                  |
+|               transfer              |                                                                                                  |
+|             transferFrom            |                                                                                                  |
+|                permit               |            require(bool,string)(deadline >= block.timestamp,PERMIT_DEADLINE_EXPIRED)             |
+|                                     | require(bool,string)(recoveredAddress != address(0) && recoveredAddress == owner,INVALID_SIGNER) |
+|           DOMAIN_SEPARATOR          |                                                                                                  |
+|        computeDomainSeparator       |                                                                                                  |
+|                _mint                |                                                                                                  |
+|                _burn                |                                                                                                  |
+|             constructor             |                                                                                                  |
+|             changeOwner             |                                                                                                  |
+|             changeMinter            |                                                                                                  |
+|                 mint                |                                                                                                  |
+|           inflationControl          |                                                                                                  |
+|          inflationRemainder         |                                                                                                  |
+|                 burn                |                                                                                                  |
+|          decreaseAllowance          |                                                                                                  |
+|          increaseAllowance          |                                                                                                  |
+| slitherConstructorConstantVariables |                                                                                                  |
++-------------------------------------+--------------------------------------------------------------------------------------------------+
+
+Contract GnosisSafeL2
++-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|               Function              |                                                       require or assert                                                        |
++-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|             constructor             |                                                                                                                                |
+|                setup                | require(bool,string)(owner != address(0) && owner != SENTINEL_OWNERS && owner != address(this) && currentOwner != owner,GS203) |
+|                                     |                                           require(bool,string)(threshold == 0,GS200)                                           |
+|                                     |                                    require(bool,string)(_threshold <= _owners.length,GS201)                                    |
+|                                     |                                       require(bool,string)(receiver.send(payment),GS011)                                       |
+|                                     |                                    require(bool,string)(owners[owner] == address(0),GS204)                                     |
+|                                     |                                                   require(bool)(c / a == b)                                                    |
+|                                     |                                          require(bool,string)(_threshold >= 1,GS202)                                           |
+|                                     |                                                     require(bool)(c >= a)                                                      |
+|                                     |                              require(bool,string)(transferToken(gasToken,receiver,payment),GS012)                              |
+|                                     |                              require(bool,string)(modules[SENTINEL_MODULES] == address(0),GS100)                               |
+|                                     |                     require(bool,string)(execute(to,0,data,Enum.Operation.DelegateCall,gasleft()()),GS000)                     |
+|           execTransaction           |                              require(bool,string)(uint256(s).add(32) <= signatures.length,GS022)                               |
+|                                     |                 require(bool,string)(uint256(s).add(32).add(contractSignatureLen) <= signatures.length,GS023)                  |
+|                                     |                                                     require(bool)(b <= a)                                                      |
+|                                     |                                       require(bool,string)(receiver.send(payment),GS011)                                       |
+|                                     |                          require(bool,string)(signatures.length >= requiredSignatures.mul(65),GS020)                           |
+|                                     |                 require(bool,string)(gasleft()() >= ((safeTxGas * 64) / 63).max(safeTxGas + 2500) + 500,GS010)                 |
+|                                     | require(bool,string)(currentOwner > lastOwner && owners[currentOwner] != address(0) && currentOwner != SENTINEL_OWNERS,GS026)  |
+|                                     |                                                   require(bool)(c / a == b)                                                    |
+|                                     |             require(bool,string)(msg.sender == currentOwner || approvedHashes[currentOwner][dataHash] != 0,GS025)              |
+|                                     |                                                     require(bool)(c >= a)                                                      |
+|                                     |                              require(bool,string)(transferToken(gasToken,receiver,payment),GS012)                              |
+|                                     | require(bool,string)(ISignatureValidator(currentOwner).isValidSignature(data,contractSignature) == EIP1271_MAGIC_VALUE,GS024)  |
+|                                     |                              require(bool,string)(uint256(s) >= requiredSignatures.mul(65),GS021)                              |
+|                                     |                                           require(bool,string)(_threshold > 0,GS001)                                           |
+|                                     |                             require(bool,string)(success || safeTxGas != 0 || gasPrice != 0,GS013)                             |
+|            handlePayment            |                                                   require(bool)(c / a == b)                                                    |
+|                                     |                                       require(bool,string)(receiver.send(payment),GS011)                                       |
+|                                     |                                                     require(bool)(c >= a)                                                      |
+|                                     |                              require(bool,string)(transferToken(gasToken,receiver,payment),GS012)                              |
+|           checkSignatures           |                              require(bool,string)(uint256(s).add(32) <= signatures.length,GS022)                               |
+|                                     |                 require(bool,string)(uint256(s).add(32).add(contractSignatureLen) <= signatures.length,GS023)                  |
+|                                     |                          require(bool,string)(signatures.length >= requiredSignatures.mul(65),GS020)                           |
+|                                     | require(bool,string)(currentOwner > lastOwner && owners[currentOwner] != address(0) && currentOwner != SENTINEL_OWNERS,GS026)  |
+|                                     |                                                   require(bool)(c / a == b)                                                    |
+|                                     |             require(bool,string)(msg.sender == currentOwner || approvedHashes[currentOwner][dataHash] != 0,GS025)              |
+|                                     |                                                     require(bool)(c >= a)                                                      |
+|                                     | require(bool,string)(ISignatureValidator(currentOwner).isValidSignature(data,contractSignature) == EIP1271_MAGIC_VALUE,GS024)  |
+|                                     |                              require(bool,string)(uint256(s) >= requiredSignatures.mul(65),GS021)                              |
+|                                     |                                           require(bool,string)(_threshold > 0,GS001)                                           |
+|           checkNSignatures          |                              require(bool,string)(uint256(s).add(32) <= signatures.length,GS022)                               |
+|                                     |                 require(bool,string)(uint256(s).add(32).add(contractSignatureLen) <= signatures.length,GS023)                  |
+|                                     |                          require(bool,string)(signatures.length >= requiredSignatures.mul(65),GS020)                           |
+|                                     | require(bool,string)(currentOwner > lastOwner && owners[currentOwner] != address(0) && currentOwner != SENTINEL_OWNERS,GS026)  |
+|                                     |                                                   require(bool)(c / a == b)                                                    |
+|                                     |             require(bool,string)(msg.sender == currentOwner || approvedHashes[currentOwner][dataHash] != 0,GS025)              |
+|                                     |                                                     require(bool)(c >= a)                                                      |
+|                                     | require(bool,string)(ISignatureValidator(currentOwner).isValidSignature(data,contractSignature) == EIP1271_MAGIC_VALUE,GS024)  |
+|                                     |                              require(bool,string)(uint256(s) >= requiredSignatures.mul(65),GS021)                              |
+|            requiredTxGas            |                                  require(bool)(execute(to,value,data,operation,gasleft()()))                                   |
+|             approveHash             |                                  require(bool,string)(owners[msg.sender] != address(0),GS030)                                  |
+|              getChainId             |                                                                                                                                |
+|           domainSeparator           |                                                                                                                                |
+|        encodeTransactionData        |                                                                                                                                |
+|          getTransactionHash         |                                                                                                                                |
+|               setGuard              |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|               getGuard              |                                                                                                                                |
+|           requireSelfCall           |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|             getStorageAt            |                                                                                                                                |
+|          simulateAndRevert          |                                                                                                                                |
+|      internalSetFallbackHandler     |                                                                                                                                |
+|          setFallbackHandler         |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|               fallback              |                                                                                                                                |
+|            transferToken            |                                                                                                                                |
+|            signatureSplit           |                                                                                                                                |
+|             setupOwners             | require(bool,string)(owner != address(0) && owner != SENTINEL_OWNERS && owner != address(this) && currentOwner != owner,GS203) |
+|                                     |                                           require(bool,string)(threshold == 0,GS200)                                           |
+|                                     |                                    require(bool,string)(_threshold <= _owners.length,GS201)                                    |
+|                                     |                                    require(bool,string)(owners[owner] == address(0),GS204)                                     |
+|                                     |                                          require(bool,string)(_threshold >= 1,GS202)                                           |
+|        addOwnerWithThreshold        |                                      require(bool,string)(_threshold <= ownerCount,GS201)                                      |
+|                                     |                                          require(bool,string)(_threshold >= 1,GS202)                                           |
+|                                     |             require(bool,string)(owner != address(0) && owner != SENTINEL_OWNERS && owner != address(this),GS203)              |
+|                                     |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|                                     |                                    require(bool,string)(owners[owner] == address(0),GS204)                                     |
+|             removeOwner             |                          require(bool,string)(owner != address(0) && owner != SENTINEL_OWNERS,GS203)                           |
+|                                     |                                      require(bool,string)(_threshold <= ownerCount,GS201)                                      |
+|                                     |                                     require(bool,string)(owners[prevOwner] == owner,GS205)                                     |
+|                                     |                                          require(bool,string)(_threshold >= 1,GS202)                                           |
+|                                     |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|                                     |                                    require(bool,string)(ownerCount - 1 >= _threshold,GS201)                                    |
+|              swapOwner              |                       require(bool,string)(oldOwner != address(0) && oldOwner != SENTINEL_OWNERS,GS203)                        |
+|                                     |                                   require(bool,string)(owners[prevOwner] == oldOwner,GS205)                                    |
+|                                     |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|                                     |         require(bool,string)(newOwner != address(0) && newOwner != SENTINEL_OWNERS && newOwner != address(this),GS203)         |
+|                                     |                                   require(bool,string)(owners[newOwner] == address(0),GS204)                                   |
+|           changeThreshold           |                                      require(bool,string)(_threshold <= ownerCount,GS201)                                      |
+|                                     |                                          require(bool,string)(_threshold >= 1,GS202)                                           |
+|                                     |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|             getThreshold            |                                                                                                                                |
+|               isOwner               |                                                                                                                                |
+|              getOwners              |                                                                                                                                |
+|             setupModules            |                              require(bool,string)(modules[SENTINEL_MODULES] == address(0),GS100)                               |
+|                                     |                     require(bool,string)(execute(to,0,data,Enum.Operation.DelegateCall,gasleft()()),GS000)                     |
+|             enableModule            |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|                                     |                                   require(bool,string)(modules[module] == address(0),GS102)                                    |
+|                                     |                         require(bool,string)(module != address(0) && module != SENTINEL_MODULES,GS101)                         |
+|            disableModule            |                                    require(bool,string)(msg.sender == address(this),GS031)                                     |
+|                                     |                         require(bool,string)(module != address(0) && module != SENTINEL_MODULES,GS101)                         |
+|                                     |                                   require(bool,string)(modules[prevModule] == module,GS103)                                    |
+|      execTransactionFromModule      |                require(bool,string)(msg.sender != SENTINEL_MODULES && modules[msg.sender] != address(0),GS104)                 |
+| execTransactionFromModuleReturnData |                require(bool,string)(msg.sender != SENTINEL_MODULES && modules[msg.sender] != address(0),GS104)                 |
+|           isModuleEnabled           |                                                                                                                                |
+|         getModulesPaginated         |                                                                                                                                |
+|               execute               |                                                                                                                                |
+|               receive               |                                                                                                                                |
+|           execTransaction           |                              require(bool,string)(uint256(s).add(32) <= signatures.length,GS022)                               |
+|                                     |                 require(bool,string)(uint256(s).add(32).add(contractSignatureLen) <= signatures.length,GS023)                  |
+|                                     |                                                     require(bool)(b <= a)                                                      |
+|                                     |                                       require(bool,string)(receiver.send(payment),GS011)                                       |
+|                                     |                          require(bool,string)(signatures.length >= requiredSignatures.mul(65),GS020)                           |
+|                                     |                 require(bool,string)(gasleft()() >= ((safeTxGas * 64) / 63).max(safeTxGas + 2500) + 500,GS010)                 |
+|                                     | require(bool,string)(currentOwner > lastOwner && owners[currentOwner] != address(0) && currentOwner != SENTINEL_OWNERS,GS026)  |
+|                                     |                                                   require(bool)(c / a == b)                                                    |
+|                                     |             require(bool,string)(msg.sender == currentOwner || approvedHashes[currentOwner][dataHash] != 0,GS025)              |
+|                                     |                                                     require(bool)(c >= a)                                                      |
+|                                     |                              require(bool,string)(transferToken(gasToken,receiver,payment),GS012)                              |
+|                                     | require(bool,string)(ISignatureValidator(currentOwner).isValidSignature(data,contractSignature) == EIP1271_MAGIC_VALUE,GS024)  |
+|                                     |                              require(bool,string)(uint256(s) >= requiredSignatures.mul(65),GS021)                              |
+|                                     |                                           require(bool,string)(_threshold > 0,GS001)                                           |
+|                                     |                             require(bool,string)(success || safeTxGas != 0 || gasPrice != 0,GS013)                             |
+|      execTransactionFromModule      |                require(bool,string)(msg.sender != SENTINEL_MODULES && modules[msg.sender] != address(0),GS104)                 |
+| slitherConstructorConstantVariables |                                                                                                                                |
++-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+
+Contract Guard
++---------------------+-------------------+
+|       Function      | require or assert |
++---------------------+-------------------+
+|   checkTransaction  |                   |
+| checkAfterExecution |                   |
++---------------------+-------------------+
+
+Contract Enum
++----------+-------------------+
+| Function | require or assert |
++----------+-------------------+
++----------+-------------------+
+
+Contract GnosisSafeMath
++----------+---------------------------+
+| Function |     require or assert     |
++----------+---------------------------+
+|   mul    | require(bool)(c / a == b) |
+|   sub    |   require(bool)(b <= a)   |
+|   add    |   require(bool)(c >= a)   |
+|   max    |                           |
++----------+---------------------------+
+
+Contract ISignatureValidator
++-------------------------------------+-------------------+
+|               Function              | require or assert |
++-------------------------------------+-------------------+
+|           isValidSignature          |                   |
+| slitherConstructorConstantVariables |                   |
++-------------------------------------+-------------------+
+
+Contract IProxy
++------------+-------------------+
+|  Function  | require or assert |
++------------+-------------------+
+| masterCopy |                   |
++------------+-------------------+
+
+Contract GnosisSafeProxy
++-------------+-----------------------------------------------------------------------------------+
+|   Function  |                                 require or assert                                 |
++-------------+-----------------------------------------------------------------------------------+
+| constructor | require(bool,string)(_singleton != address(0),Invalid singleton address provided) |
+|   fallback  |                                                                                   |
++-------------+-----------------------------------------------------------------------------------+
+
+Contract GnosisSafeProxyFactory
++--------------------------------------+------------------------------------------------------------------------+
+|               Function               |                           require or assert                            |
++--------------------------------------+------------------------------------------------------------------------+
+|             createProxy              |                                                                        |
+|           proxyRuntimeCode           |                                                                        |
+|          proxyCreationCode           |                                                                        |
+|         deployProxyWithNonce         | require(bool,string)(address(proxy) != address(0),Create2 call failed) |
+|         createProxyWithNonce         | require(bool,string)(address(proxy) != address(0),Create2 call failed) |
+|       createProxyWithCallback        | require(bool,string)(address(proxy) != address(0),Create2 call failed) |
+| calculateCreateProxyWithNonceAddress | require(bool,string)(address(proxy) != address(0),Create2 call failed) |
++--------------------------------------+------------------------------------------------------------------------+
+
+Contract IProxyCreationCallback
++--------------+-------------------+
+|   Function   | require or assert |
++--------------+-------------------+
+| proxyCreated |                   |
++--------------+-------------------+
+
+Contract Address
++-----------------------+---------------------------------------------------------------------------------------------+
+|        Function       |                                      require or assert                                      |
++-----------------------+---------------------------------------------------------------------------------------------+
+|       isContract      |                                                                                             |
+|       sendValue       |     require(bool,string)(address(this).balance >= amount,Address: insufficient balance)     |
+|                       |   require(bool,string)(success,Address: unable to send value, recipient may have reverted)  |
+|      functionCall     | require(bool,string)(address(this).balance >= value,Address: insufficient balance for call) |
+|                       |            require(bool,string)(isContract(target),Address: call to non-contract)           |
+|      functionCall     | require(bool,string)(address(this).balance >= value,Address: insufficient balance for call) |
+|                       |            require(bool,string)(isContract(target),Address: call to non-contract)           |
+| functionCallWithValue | require(bool,string)(address(this).balance >= value,Address: insufficient balance for call) |
+|                       |            require(bool,string)(isContract(target),Address: call to non-contract)           |
+| functionCallWithValue | require(bool,string)(address(this).balance >= value,Address: insufficient balance for call) |
+|                       |            require(bool,string)(isContract(target),Address: call to non-contract)           |
+|   functionStaticCall  |        require(bool,string)(isContract(target),Address: static call to non-contract)        |
+|   functionStaticCall  |        require(bool,string)(isContract(target),Address: static call to non-contract)        |
+|  functionDelegateCall |       require(bool,string)(isContract(target),Address: delegate call to non-contract)       |
+|  functionDelegateCall |       require(bool,string)(isContract(target),Address: delegate call to non-contract)       |
+|    verifyCallResult   |                                                                                             |
++-----------------------+---------------------------------------------------------------------------------------------+
+
+Contract Counters
++-----------+-------------------------------------------------------------+
+|  Function |                      require or assert                      |
++-----------+-------------------------------------------------------------+
+|  current  |                                                             |
+| increment |                                                             |
+| decrement | require(bool,string)(value > 0,Counter: decrement overflow) |
+|   reset   |                                                             |
++-----------+-------------------------------------------------------------+
+
+Contract Strings
++-------------------------------------+-------------------------------------------------------------------+
+|               Function              |                         require or assert                         |
++-------------------------------------+-------------------------------------------------------------------+
+|               toString              |                                                                   |
+|             toHexString             | require(bool,string)(value == 0,Strings: hex length insufficient) |
+|             toHexString             | require(bool,string)(value == 0,Strings: hex length insufficient) |
+| slitherConstructorConstantVariables |                                                                   |
++-------------------------------------+-------------------------------------------------------------------+
+
+Contract Timers
++-------------+-------------------+
+|   Function  | require or assert |
++-------------+-------------------+
+| getDeadline |                   |
+| setDeadline |                   |
+|    reset    |                   |
+|   isUnset   |                   |
+|  isStarted  |                   |
+|  isPending  |                   |
+|  isExpired  |                   |
+| getDeadline |                   |
+| setDeadline |                   |
+|    reset    |                   |
+|   isUnset   |                   |
+|  isStarted  |                   |
+|  isPending  |                   |
+|  isExpired  |                   |
++-------------+-------------------+
+
+Contract ECDSA
++------------------------+-------------------+
+|        Function        | require or assert |
++------------------------+-------------------+
+|      _throwError       |                   |
+|       tryRecover       |                   |
+|        recover         |                   |
+|       tryRecover       |                   |
+|        recover         |                   |
+|       tryRecover       |                   |
+|        recover         |                   |
+| toEthSignedMessageHash |                   |
+| toEthSignedMessageHash |                   |
+|    toTypedDataHash     |                   |
++------------------------+-------------------+
+
+Contract SafeCast
++-----------+--------------------------------------------------------------------------------------------------------------------------+
+|  Function |                                                    require or assert                                                     |
++-----------+--------------------------------------------------------------------------------------------------------------------------+
+| toUint224 |                require(bool,string)(value <= type()(uint224).max,SafeCast: value doesn't fit in 224 bits)                |
+| toUint128 |                require(bool,string)(value <= type()(uint128).max,SafeCast: value doesn't fit in 128 bits)                |
+|  toUint96 |                 require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                 |
+|  toUint64 |                 require(bool,string)(value <= type()(uint64).max,SafeCast: value doesn't fit in 64 bits)                 |
+|  toUint32 |                 require(bool,string)(value <= type()(uint32).max,SafeCast: value doesn't fit in 32 bits)                 |
+|  toUint16 |                 require(bool,string)(value <= type()(uint16).max,SafeCast: value doesn't fit in 16 bits)                 |
+|  toUint8  |                  require(bool,string)(value <= type()(uint8).max,SafeCast: value doesn't fit in 8 bits)                  |
+| toUint256 |                            require(bool,string)(value >= 0,SafeCast: value must be positive)                             |
+|  toInt128 | require(bool,string)(value >= type()(int128).min && value <= type()(int128).max,SafeCast: value doesn't fit in 128 bits) |
+|  toInt64  |  require(bool,string)(value >= type()(int64).min && value <= type()(int64).max,SafeCast: value doesn't fit in 64 bits)   |
+|  toInt32  |  require(bool,string)(value >= type()(int32).min && value <= type()(int32).max,SafeCast: value doesn't fit in 32 bits)   |
+|  toInt16  |  require(bool,string)(value >= type()(int16).min && value <= type()(int16).max,SafeCast: value doesn't fit in 16 bits)   |
+|   toInt8  |    require(bool,string)(value >= type()(int8).min && value <= type()(int8).max,SafeCast: value doesn't fit in 8 bits)    |
+|  toInt256 |           require(bool,string)(value <= uint256(type()(int256).max),SafeCast: value doesn't fit in an int256)            |
++-----------+--------------------------------------------------------------------------------------------------------------------------+
+
+Contract DoubleEndedQueue
++-----------+--------------------------------------------------------------------------------------------------------------------------+
+|  Function |                                                    require or assert                                                     |
++-----------+--------------------------------------------------------------------------------------------------------------------------+
+|  pushBack |                                                                                                                          |
+|  popBack  |                                                                                                                          |
+| pushFront |                                                                                                                          |
+|  popFront |                                                                                                                          |
+|   front   |                                                                                                                          |
+|    back   |                                                                                                                          |
+|     at    |           require(bool,string)(value <= uint256(type()(int256).max),SafeCast: value doesn't fit in an int256)            |
+|           | require(bool,string)(value >= type()(int128).min && value <= type()(int128).max,SafeCast: value doesn't fit in 128 bits) |
+|   clear   |                                                                                                                          |
+|   length  |                                                                                                                          |
+|   empty   |                                                                                                                          |
++-----------+--------------------------------------------------------------------------------------------------------------------------+
+
+Contract GovernorOLA
++-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|               Function              |                                                                          require or assert                                                                          |
++-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|             constructor             |                                                                                                                                                                     |
+|          supportsInterface          |                                                                                                                                                                     |
+|                state                |                                                                                                                                                                     |
+|               timelock              |                                                                                                                                                                     |
+|             proposalEta             |                                                                                                                                                                     |
+|                queue                |                                 require(bool,string)(state(proposalId) == ProposalState.Succeeded,Governor: proposal not successful)                                |
+|               _execute              |                                                                                                                                                                     |
+|               _cancel               |     require(bool,string)(status != ProposalState.Canceled && status != ProposalState.Expired && status != ProposalState.Executed,Governor: proposal not active)     |
+|              _executor              |                                                                                                                                                                     |
+|            updateTimelock           |                                              require(bool,string)(_msgSender() == _executor(),Governor: onlyGovernance)                                             |
+|           _updateTimelock           |                                                                                                                                                                     |
+|             constructor             |                                                                                                                                                                     |
+|               receive               |                                                             require(bool)(_executor() == address(this))                                                             |
+|          supportsInterface          |                                                                                                                                                                     |
+|                 name                |                                                                                                                                                                     |
+|               version               |                                                                                                                                                                     |
+|             hashProposal            |                                                                                                                                                                     |
+|                state                |                                                                                                                                                                     |
+|           proposalSnapshot          |                                                                                                                                                                     |
+|           proposalDeadline          |                                                                                                                                                                     |
+|          proposalThreshold          |                                                                                                                                                                     |
+|            _quorumReached           |                                                                                                                                                                     |
+|            _voteSucceeded           |                                                                                                                                                                     |
+|              _getVotes              |                                                                                                                                                                     |
+|              _countVote             |                                                                                                                                                                     |
+|            _defaultParams           |                                                                                                                                                                     |
+|               propose               |                                       require(bool,string)(targets.length == values.length,Governor: invalid proposal length)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint64).max,SafeCast: value doesn't fit in 64 bits)                                      |
+|                                     |                require(bool,string)(getVotes(_msgSender(),block.number - 1) >= proposalThreshold(),Governor: proposer votes below proposal threshold)               |
+|                                     |                                      require(bool,string)(targets.length == calldatas.length,Governor: invalid proposal length)                                     |
+|                                     |                                         require(bool,string)(proposal.voteStart.isUnset(),Governor: proposal already exists)                                        |
+|                                     |                                                  require(bool,string)(targets.length > 0,Governor: empty proposal)                                                  |
+|               execute               |                     require(bool,string)(status == ProposalState.Succeeded || status == ProposalState.Queued,Governor: proposal not successful)                     |
+|               _execute              |                                                                                                                                                                     |
+|            _beforeExecute           |                                                                                                                                                                     |
+|            _afterExecute            |                                                                                                                                                                     |
+|               _cancel               |     require(bool,string)(status != ProposalState.Canceled && status != ProposalState.Expired && status != ProposalState.Executed,Governor: proposal not active)     |
+|               getVotes              |                                                                                                                                                                     |
+|          getVotesWithParams         |                                                                                                                                                                     |
+|               castVote              |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|          castVoteWithReason         |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|     castVoteWithReasonAndParams     |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|            castVoteBySig            |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|   castVoteWithReasonAndParamsBySig  |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|              _castVote              |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|              _castVote              |                                 require(bool,string)(state(proposalId) == ProposalState.Active,Governor: vote not currently active)                                 |
+|                                     |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|                relay                |                                     require(bool,string)(address(this).balance >= value,Address: insufficient balance for call)                                     |
+|                                     |                                                require(bool,string)(isContract(target),Address: call to non-contract)                                               |
+|                                     |                                              require(bool,string)(_msgSender() == _executor(),Governor: onlyGovernance)                                             |
+|              _executor              |                                                                                                                                                                     |
+|           onERC721Received          |                                                                                                                                                                     |
+|          onERC1155Received          |                                                                                                                                                                     |
+|        onERC1155BatchReceived       |                                                                                                                                                                     |
+|          onERC1155Received          |                                                                                                                                                                     |
+|        onERC1155BatchReceived       |                                                                                                                                                                     |
+|          supportsInterface          |                                                                                                                                                                     |
+|           onERC721Received          |                                                                                                                                                                     |
+|                 name                |                                                                                                                                                                     |
+|               version               |                                                                                                                                                                     |
+|            COUNTING_MODE            |                                                                                                                                                                     |
+|             hashProposal            |                                                                                                                                                                     |
+|                state                |                                                                                                                                                                     |
+|           proposalSnapshot          |                                                                                                                                                                     |
+|           proposalDeadline          |                                                                                                                                                                     |
+|             votingDelay             |                                                                                                                                                                     |
+|             votingPeriod            |                                                                                                                                                                     |
+|                quorum               |                                                                                                                                                                     |
+|               getVotes              |                                                                                                                                                                     |
+|          getVotesWithParams         |                                                                                                                                                                     |
+|               hasVoted              |                                                                                                                                                                     |
+|               propose               |                                                                                                                                                                     |
+|               execute               |                                                                                                                                                                     |
+|               castVote              |                                                                                                                                                                     |
+|          castVoteWithReason         |                                                                                                                                                                     |
+|     castVoteWithReasonAndParams     |                                                                                                                                                                     |
+|            castVoteBySig            |                                                                                                                                                                     |
+|   castVoteWithReasonAndParamsBySig  |                                                                                                                                                                     |
+|             constructor             |                                                                                                                                                                     |
+|          _domainSeparatorV4         |                                                                                                                                                                     |
+|        _buildDomainSeparator        |                                                                                                                                                                     |
+|           _hashTypedDataV4          |                                                                                                                                                                     |
+|          supportsInterface          |                                                                                                                                                                     |
+|              _msgSender             |                                                                                                                                                                     |
+|               _msgData              |                                                                                                                                                                     |
+|               timelock              |                                                                                                                                                                     |
+|             proposalEta             |                                                                                                                                                                     |
+|                queue                |                                                                                                                                                                     |
+|             constructor             |                 require(bool,string)(newQuorumNumerator <= quorumDenominator(),GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator)                 |
+|           quorumNumerator           |                                                                                                                                                                     |
+|          quorumDenominator          |                                                                                                                                                                     |
+|                quorum               |                                                                                                                                                                     |
+|        updateQuorumNumerator        |                 require(bool,string)(newQuorumNumerator <= quorumDenominator(),GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator)                 |
+|                                     |                                              require(bool,string)(_msgSender() == _executor(),Governor: onlyGovernance)                                             |
+|        _updateQuorumNumerator       |                 require(bool,string)(newQuorumNumerator <= quorumDenominator(),GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator)                 |
+|             constructor             |                                                                                                                                                                     |
+|              _getVotes              |                                                                                                                                                                     |
+|            COUNTING_MODE            |                                                                                                                                                                     |
+|               propose               |                                       require(bool,string)(targets.length == values.length,Governor: invalid proposal length)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint64).max,SafeCast: value doesn't fit in 64 bits)                                      |
+|                                     |                require(bool,string)(getVotes(_msgSender(),block.number - 1) >= proposalThreshold(),Governor: proposer votes below proposal threshold)               |
+|                                     |                                      require(bool,string)(targets.length == calldatas.length,Governor: invalid proposal length)                                     |
+|                                     |                                         require(bool,string)(proposal.voteStart.isUnset(),Governor: proposal already exists)                                        |
+|                                     |                                                  require(bool,string)(targets.length > 0,Governor: empty proposal)                                                  |
+|               propose               |                                       require(bool,string)(targets.length == values.length,Governor: invalid proposal length)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint64).max,SafeCast: value doesn't fit in 64 bits)                                      |
+|                                     |                require(bool,string)(getVotes(_msgSender(),block.number - 1) >= proposalThreshold(),Governor: proposer votes below proposal threshold)               |
+|                                     |                                      require(bool,string)(targets.length == calldatas.length,Governor: invalid proposal length)                                     |
+|                                     |                                         require(bool,string)(proposal.voteStart.isUnset(),Governor: proposal already exists)                                        |
+|                                     |                                                  require(bool,string)(targets.length > 0,Governor: empty proposal)                                                  |
+|                queue                |                                 require(bool,string)(state(proposalId) == ProposalState.Succeeded,Governor: proposal not successful)                                |
+|               execute               |                     require(bool,string)(status == ProposalState.Succeeded || status == ProposalState.Queued,Governor: proposal not successful)                     |
+|                cancel               | require(bool,string)(_msgSender() == details.proposer || getVotes(details.proposer,block.number - 1) < proposalThreshold(),GovernorBravo: proposer above threshold) |
+|                                     |     require(bool,string)(status != ProposalState.Canceled && status != ProposalState.Expired && status != ProposalState.Executed,Governor: proposal not active)     |
+|           _encodeCalldata           |                                                                                                                                                                     |
+|            _storeProposal           |                                                                                                                                                                     |
+|              proposals              |                                                                                                                                                                     |
+|              getActions             |                                                                                                                                                                     |
+|              getReceipt             |                                                                                                                                                                     |
+|             quorumVotes             |                                                                                                                                                                     |
+|               hasVoted              |                                                                                                                                                                     |
+|            _quorumReached           |                                                                                                                                                                     |
+|            _voteSucceeded           |                                                                                                                                                                     |
+|              _countVote             |                                        require(bool,string)(! receipt.hasVoted,GovernorCompatibilityBravo: vote already cast)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint96).max,SafeCast: value doesn't fit in 96 bits)                                      |
+|             quorumVotes             |                                                                                                                                                                     |
+|              proposals              |                                                                                                                                                                     |
+|               propose               |                                                                                                                                                                     |
+|                queue                |                                                                                                                                                                     |
+|               execute               |                                                                                                                                                                     |
+|                cancel               |                                                                                                                                                                     |
+|              getActions             |                                                                                                                                                                     |
+|              getReceipt             |                                                                                                                                                                     |
+|             constructor             |                                          require(bool,string)(newVotingPeriod > 0,GovernorSettings: voting period too low)                                          |
+|             votingDelay             |                                                                                                                                                                     |
+|             votingPeriod            |                                                                                                                                                                     |
+|          proposalThreshold          |                                                                                                                                                                     |
+|            setVotingDelay           |                                              require(bool,string)(_msgSender() == _executor(),Governor: onlyGovernance)                                             |
+|           setVotingPeriod           |                                          require(bool,string)(newVotingPeriod > 0,GovernorSettings: voting period too low)                                          |
+|                                     |                                              require(bool,string)(_msgSender() == _executor(),Governor: onlyGovernance)                                             |
+|         setProposalThreshold        |                                              require(bool,string)(_msgSender() == _executor(),Governor: onlyGovernance)                                             |
+|           _setVotingDelay           |                                                                                                                                                                     |
+|           _setVotingPeriod          |                                          require(bool,string)(newVotingPeriod > 0,GovernorSettings: voting period too low)                                          |
+|        _setProposalThreshold        |                                                                                                                                                                     |
+|             constructor             |                                          require(bool,string)(newVotingPeriod > 0,GovernorSettings: voting period too low)                                          |
+|                                     |                 require(bool,string)(newQuorumNumerator <= quorumDenominator(),GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator)                 |
+|                state                |                                                                                                                                                                     |
+|               propose               |                                       require(bool,string)(targets.length == values.length,Governor: invalid proposal length)                                       |
+|                                     |                                       require(bool,string)(value <= type()(uint64).max,SafeCast: value doesn't fit in 64 bits)                                      |
+|                                     |                require(bool,string)(getVotes(_msgSender(),block.number - 1) >= proposalThreshold(),Governor: proposer votes below proposal threshold)               |
+|                                     |                                      require(bool,string)(targets.length == calldatas.length,Governor: invalid proposal length)                                     |
+|                                     |                                         require(bool,string)(proposal.voteStart.isUnset(),Governor: proposal already exists)                                        |
+|                                     |                                                  require(bool,string)(targets.length > 0,Governor: empty proposal)                                                  |
+|          proposalThreshold          |                                                                                                                                                                     |
+|               _execute              |                                                                                                                                                                     |
+|               _cancel               |     require(bool,string)(status != ProposalState.Canceled && status != ProposalState.Expired && status != ProposalState.Executed,Governor: proposal not active)     |
+|              _executor              |                                                                                                                                                                     |
+|          supportsInterface          |                                                                                                                                                                     |
+| slitherConstructorConstantVariables |                                                                                                                                                                     |
++-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Contract Timelock
++-------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+|               Function              |                                                   require or assert                                                    |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+|             constructor             |                                                                                                                        |
+|               receive               |                                                                                                                        |
+|          supportsInterface          |                                                                                                                        |
+|             isOperation             |                                                                                                                        |
+|          isOperationPending         |                                                                                                                        |
+|           isOperationReady          |                                                                                                                        |
+|           isOperationDone           |                                                                                                                        |
+|             getTimestamp            |                                                                                                                        |
+|             getMinDelay             |                                                                                                                        |
+|            hashOperation            |                                                                                                                        |
+|          hashOperationBatch         |                                                                                                                        |
+|               schedule              |                  require(bool,string)(delay >= getMinDelay(),TimelockController: insufficient delay)                   |
+|                                     |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|                                     |                require(bool,string)(! isOperation(id),TimelockController: operation already scheduled)                 |
+|            scheduleBatch            |                  require(bool,string)(delay >= getMinDelay(),TimelockController: insufficient delay)                   |
+|                                     |               require(bool,string)(targets.length == values.length,TimelockController: length mismatch)                |
+|                                     |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|                                     |              require(bool,string)(targets.length == payloads.length,TimelockController: length mismatch)               |
+|                                     |                require(bool,string)(! isOperation(id),TimelockController: operation already scheduled)                 |
+|              _schedule              |                  require(bool,string)(delay >= getMinDelay(),TimelockController: insufficient delay)                   |
+|                                     |                require(bool,string)(! isOperation(id),TimelockController: operation already scheduled)                 |
+|                cancel               |             require(bool,string)(isOperationPending(id),TimelockController: operation cannot be cancelled)             |
+|                                     |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|               execute               |                 require(bool,string)(isOperationReady(id),TimelockController: operation is not ready)                  |
+|                                     |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|                                     |                 require(bool,string)(isOperationReady(id),TimelockController: operation is not ready)                  |
+|                                     |                   require(bool,string)(success,TimelockController: underlying transaction reverted)                    |
+|                                     | require(bool,string)(predecessor == bytes32(0) || isOperationDone(predecessor),TimelockController: missing dependency) |
+|             executeBatch            |                 require(bool,string)(isOperationReady(id),TimelockController: operation is not ready)                  |
+|                                     |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|                                     |                   require(bool,string)(success,TimelockController: underlying transaction reverted)                    |
+|                                     |                 require(bool,string)(isOperationReady(id),TimelockController: operation is not ready)                  |
+|                                     |               require(bool,string)(targets.length == values.length,TimelockController: length mismatch)                |
+|                                     | require(bool,string)(predecessor == bytes32(0) || isOperationDone(predecessor),TimelockController: missing dependency) |
+|                                     |              require(bool,string)(targets.length == payloads.length,TimelockController: length mismatch)               |
+|             _beforeCall             | require(bool,string)(predecessor == bytes32(0) || isOperationDone(predecessor),TimelockController: missing dependency) |
+|                                     |                 require(bool,string)(isOperationReady(id),TimelockController: operation is not ready)                  |
+|              _afterCall             |                 require(bool,string)(isOperationReady(id),TimelockController: operation is not ready)                  |
+|                _call                |                   require(bool,string)(success,TimelockController: underlying transaction reverted)                    |
+|             updateDelay             |             require(bool,string)(msg.sender == address(this),TimelockController: caller must be timelock)              |
+|           onERC721Received          |                                                                                                                        |
+|          onERC1155Received          |                                                                                                                        |
+|        onERC1155BatchReceived       |                                                                                                                        |
+|          onERC1155Received          |                                                                                                                        |
+|        onERC1155BatchReceived       |                                                                                                                        |
+|          supportsInterface          |                                                                                                                        |
+|           onERC721Received          |                                                                                                                        |
+|          supportsInterface          |                                                                                                                        |
+|               hasRole               |                                                                                                                        |
+|              _checkRole             |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|              _checkRole             |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|             getRoleAdmin            |                                                                                                                        |
+|              grantRole              |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|              revokeRole             |                           require(bool,string)(value == 0,Strings: hex length insufficient)                            |
+|             renounceRole            |             require(bool,string)(account == _msgSender(),AccessControl: can only renounce roles for self)              |
+|              _setupRole             |                                                                                                                        |
+|            _setRoleAdmin            |                                                                                                                        |
+|              _grantRole             |                                                                                                                        |
+|             _revokeRole             |                                                                                                                        |
+|          supportsInterface          |                                                                                                                        |
+|               hasRole               |                                                                                                                        |
+|             getRoleAdmin            |                                                                                                                        |
+|              grantRole              |                                                                                                                        |
+|              revokeRole             |                                                                                                                        |
+|             renounceRole            |                                                                                                                        |
+|              _msgSender             |                                                                                                                        |
+|               _msgData              |                                                                                                                        |
+|             constructor             |                                                                                                                        |
+| slitherConstructorConstantVariables |                                                                                                                        |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+
+Contract VotingEscrow
++-------------------------------------+-------------------+
+|               Function              | require or assert |
++-------------------------------------+-------------------+
+|          supportsInterface          |                   |
+|             totalSupply             |                   |
+|              balanceOf              |                   |
+|               transfer              |                   |
+|              allowance              |                   |
+|               approve               |                   |
+|             transferFrom            |                   |
+|               getVotes              |                   |
+|             getPastVotes            |                   |
+|          getPastTotalSupply         |                   |
+|              delegates              |                   |
+|               delegate              |                   |
+|            delegateBySig            |                   |
+|             constructor             |                   |
+|           getLastUserPoint          |                   |
+|           getNumUserPoints          |                   |
+|             getUserPoint            |                   |
+|             _checkpoint             |                   |
+|              checkpoint             |                   |
+|             _depositFor             |                   |
+|              depositFor             |                   |
+|              createLock             |                   |
+|            createLockFor            |                   |
+|            _createLockFor           |                   |
+|            increaseAmount           |                   |
+|          increaseUnlockTime         |                   |
+|               withdraw              |                   |
+|          _findPointByBlock          |                   |
+|           _balanceOfLocked          |                   |
+|              balanceOf              |                   |
+|              lockedEnd              |                   |
+|             balanceOfAt             |                   |
+|               getVotes              |                   |
+|            _getBlockTime            |                   |
+|             getPastVotes            |                   |
+|           _supplyLockedAt           |                   |
+|             totalSupply             |                   |
+|            totalSupplyAt            |                   |
+|         totalSupplyLockedAtT        |                   |
+|          totalSupplyLocked          |                   |
+|          getPastTotalSupply         |                   |
+|          supportsInterface          |                   |
+|               transfer              |                   |
+|               approve               |                   |
+|             transferFrom            |                   |
+|              allowance              |                   |
+|              delegates              |                   |
+|               delegate              |                   |
+|            delegateBySig            |                   |
+|     slitherConstructorVariables     |                   |
+| slitherConstructorConstantVariables |                   |
++-------------------------------------+-------------------+
+
+Contract IOLA
++----------+-------------------+
+| Function | require or assert |
++----------+-------------------+
+|   burn   |                   |
++----------+-------------------+
+
+Contract buOLA
++-------------------------------------+-------------------+
+|               Function              | require or assert |
++-------------------------------------+-------------------+
+|          supportsInterface          |                   |
+|             totalSupply             |                   |
+|              balanceOf              |                   |
+|               transfer              |                   |
+|              allowance              |                   |
+|               approve               |                   |
+|             transferFrom            |                   |
+|             constructor             |                   |
+|             changeOwner             |                   |
+|            createLockFor            |                   |
+|               withdraw              |                   |
+|                revoke               |                   |
+|              balanceOf              |                   |
+|             totalSupply             |                   |
+|           releasableAmount          |                   |
+|          _releasableAmount          |                   |
+|              lockedEnd              |                   |
+|          supportsInterface          |                   |
+|               transfer              |                   |
+|               approve               |                   |
+|             transferFrom            |                   |
+|              allowance              |                   |
+|     slitherConstructorVariables     |                   |
+| slitherConstructorConstantVariables |                   |
++-------------------------------------+-------------------+
+. analyzed (57 contracts)
