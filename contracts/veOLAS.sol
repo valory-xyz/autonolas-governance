@@ -362,11 +362,8 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         // lockedBalance.end > block.timestamp (always)
         _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));
         if (amount > 0) {
-            // OLAS is a standard ERC20 token with a original function transfer() that returns bool
-            bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
-            if (!success) {
-                revert TransferFailed(token, msg.sender, address(this), amount);
-            }
+            // OLAS is a solmate-based ERC20 token with optimized transferFrom() that either returns true or reverts
+            IERC20(token).transferFrom(msg.sender, address(this), amount);
         }
 
         emit Deposit(account, amount, lockedBalance.end, depositType, block.timestamp);
@@ -570,10 +567,9 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         emit Withdraw(msg.sender, amount, block.timestamp);
         emit Supply(supplyBefore, supplyAfter);
 
-        bool success = IERC20(token).transfer(msg.sender, amount);
-        if (!success) {
-            revert TransferFailed(token, address(this), msg.sender, amount);
-        }
+        // OLAS is a solmate-based ERC20 token with optimized transfer() that either returns true or reverts
+        IERC20(token).transfer(msg.sender, amount);
+
         locked = 1;
     }
 

@@ -149,11 +149,8 @@ contract buOLAS is IErrors, IERC20, IERC165 {
             supply = supplyAfter;
         }
 
-        // OLAS is a standard ERC20 token with a original function transfer() that returns bool
-        bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
-        if (!success) {
-            revert TransferFailed(token, msg.sender, address(this), amount);
-        }
+        // OLAS is a solmate-based ERC20 token with optimized transferFrom() that either returns true or reverts
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
 
         emit Lock(account, amount, block.timestamp, unlockTime);
         emit Supply(supplyBefore, supplyAfter);
@@ -170,7 +167,8 @@ contract buOLAS is IErrors, IERC20, IERC165 {
         locked = 2;
 
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
-        if (lockedBalance.amountLocked > 0) {
+        // If the balances are still active and not fully withdrawn, start can not be zero
+        if (lockedBalance.start > 0) {
             // Calculate the amount to release
             uint256 amount = _releasableAmount(lockedBalance);
             // Check if at least one locking step has passed
@@ -195,17 +193,19 @@ contract buOLAS is IErrors, IERC20, IERC165 {
                 }
             } else {
                 // This means revoke has been called on this account and some tokens must be burned
-                uint256 amountBurn;
-                unchecked {
-                    // Locked amount cannot be smaller than the released amount
-                    amountBurn = uint256(lockedBalance.amountLocked - lockedBalance.amountReleased);
-                    supplyAfter = supplyBefore - amountBurn;
+                uint256 amountBurn = uint256(lockedBalance.amountLocked);
+                // Burn revoked tokens
+                if (amountBurn > 0) {
+                    IOLAS(token).burn(amountBurn);
+                    // Update total supply
+                    unchecked {
+                        // Amount to burn cannot be bigger than the supply before the burn
+                        supplyAfter = supplyBefore - amountBurn;
+                    }
+                    emit Burn(msg.sender, amountBurn, block.timestamp);
                 }
-
-                // Burn revoked tokens and set all the data to zero
-                IOLAS(token).burn(amountBurn);
+                // Set all the data to zero
                 mapLockedBalances[msg.sender] = LockedBalance(0, 0, 0, 0);
-                emit Burn(msg.sender, amountBurn, block.timestamp);
             }
 
             // The amount cannot be less than the total supply
@@ -217,10 +217,8 @@ contract buOLAS is IErrors, IERC20, IERC165 {
             emit Withdraw(msg.sender, amount, block.timestamp);
             emit Supply(supplyBefore, supplyAfter);
 
-            bool success = IERC20(token).transfer(msg.sender, amount);
-            if (!success) {
-                revert TransferFailed(token, address(this), msg.sender, amount);
-            }
+            // OLAS is a solmate-based ERC20 token with optimized transfer() that either returns true or reverts
+            IERC20(token).transfer(msg.sender, amount);
         }
         locked = 1;
     }
@@ -239,6 +237,10 @@ contract buOLAS is IErrors, IERC20, IERC165 {
 
             // Get the amount to release
             uint256 amountRelease = _releasableAmount(lockedBalance);
+            // Amount locked now represents the burn amount, which can not become less than zero
+            unchecked {
+                lockedBalance.amountLocked -= (uint96(amountRelease) + lockedBalance.amountReleased);
+            }
             // This is the release amount that will be transferred to the account when they withdraw
             lockedBalance.amountReleased = uint96(amountRelease);
             // Termination state of the revoke procedure
@@ -246,7 +248,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
             // Update the account data
             mapLockedBalances[account] = lockedBalance;
 
-            emit Revoke(account, uint256(lockedBalance.amountLocked) - amountRelease, block.timestamp);
+            emit Revoke(account, uint256(lockedBalance.amountLocked), block.timestamp);
         }
     }
 
