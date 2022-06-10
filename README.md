@@ -65,17 +65,21 @@ The audit is provided as development matures. The latest audit report can be fou
 - [`solhint`](https://github.com/protofire/solhint) is used for Solidity linting.
 
 
-### Github workflows
+### Github Workflows
 The PR process is managed by github workflows, where the code undergoes
 several steps in order to be verified. Those include:
-- code isntallation
+- code installation
 - running linters
 - running tests
 
 
 ## Acknowledgements
-
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
 - [Rari-Capital](https://github.com/Rari-Capital/solmate). Last known audited version: `a9e3ea26a2dc73bfa87f0cb189687d029028e0c5`;
 - [Maple Finance](https://github.com/maple-labs/erc20). Last known audited version: `756c110ddc3c96c596a52bce43553477a19ee3aa`;
-- [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts). Last known audited version: `136710cdd4a7b10e93b1774f086a89133f719ebe`.
+
+The `veOLAS` contract was inspired and based on the following sources:
+- [Curve DAO](https://github.com/curvefi/curve-dao-contracts).
+
+The governance contracts and the rest was inspired and based on the following sources:
+- [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts).
