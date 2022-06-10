@@ -17,7 +17,7 @@ describe("Voting Escrow OLAS", function () {
 
     beforeEach(async function () {
         const OLAS = await ethers.getContractFactory("OLAS");
-        olas = await OLAS.deploy(0);
+        olas = await OLAS.deploy();
         await olas.deployed();
 
         signers = await ethers.getSigners();
