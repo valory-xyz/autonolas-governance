@@ -2,14 +2,14 @@
 
 ## Introduction
 
-This repository contains the Autonolas OLAS token and the governance part of the on-chain protocol.
+This repository contains the Autonolas `OLAS` token and the governance part of the on-chain protocol.
 
 A graphical overview of the whole on-chain architecture is available here:
 
 ![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v2.png?raw=true)
 Please note that `buOLAS` and `Sale` contracts are not part on the diagram.
 
-We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (veOLAS) created by locking OLAS.
+We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
 
 An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Audit_Governance.pdf?raw=true).
 
@@ -18,10 +18,10 @@ An overview of the design is provided [here](https://github.com/valory-xyz/auton
 - [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol)
 - [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol)
 
-For team incentivisation we have a burnable locked OLAS token - buOLAS:
+For team incentivisation we have a burnable locked `OLAS` token - `buOLAS`:
 - [buOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol)
 
-For initial incentivised locking of OLAS tokens we have a Sale contract - Sale:
+For initial incentivised locking of `OLAS` tokens we have a `Sale` contract - `Sale`:
 - [Sale](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Sale.sol)
 
 ## Development
@@ -75,7 +75,7 @@ several steps in order to be verified. Those include:
 
 ## Acknowledgements
 
-The Autonolas OLAS contract was inspired and based on in parts by the following sources:
+The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
 - [Rari-Capital](https://github.com/Rari-Capital/solmate). Last known audited version: `a9e3ea26a2dc73bfa87f0cb189687d029028e0c5`;
 - [Maple Finance](https://github.com/maple-labs/erc20). Last known audited version: `756c110ddc3c96c596a52bce43553477a19ee3aa`;
 - [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts). Last known audited version: `136710cdd4a7b10e93b1774f086a89133f719ebe`.
