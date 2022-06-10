@@ -13,7 +13,7 @@ tar xvf echidna-test-2.0.1-Ubuntu-18.04.tar.gz
 ```
 ### run fuzzing
 ```
-./echidna-test valory/onchain-protocol/contracts/VotingEscrowVerySimple.sol 
+./echidna-test audit/internal/analysis/fuzzing/VotingEscrow/VotingEscrowVerySimple.sol 
 ```
 
 ```
@@ -104,7 +104,7 @@ tar xvf echidna-test-2.0.1-Ubuntu-18.04.tar.gz
 ### run fuzzing. Not security issue. But need pay attention
 #### notes for function _balanceOfLocked(address account, uint64 ts) internal returns (uint256 vBalance) 
 ```
-./echidna-test audit/analysis/echidna/VotingEscrow/VotingEscrowFuzzing.sol --config echidna.yaml
+./echidna-test audit/internal/analysis/fuzzing/VotingEscrow/VotingEscrowFuzzing.sol --config echidna.yaml
 
                                                           ┌─────────────────────────────────────────────────────Echidna 2.0.1────────────────────────────────────────────────────┐                                                          
                                                           │ Tests found: 1                                                                                                       │                                                          
