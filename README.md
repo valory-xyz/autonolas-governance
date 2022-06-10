@@ -6,22 +6,23 @@ This repository contains the Autonolas OLAS token and the governance part of the
 
 A graphical overview of the whole on-chain architecture is available here:
 
-![architecture](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/On-chain_architecture_v2.png?raw=true)
+![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v2.png?raw=true)
+Please note that `buOLAS` and `Sale` contracts are not part on the diagram.
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (veOLAS) created by locking OLAS.
 
-An overview of the design is provided [here](https://github.com/valory-xyz/onchain-protocol/blob/main/docs/Audit_Governance.pdf?raw=true).
+An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Audit_Governance.pdf?raw=true).
 
-- [OLAS](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/OLAS.sol)
-- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/veOLAS.sol)
+- [OLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/OLAS.sol)
+- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/veOLAS.sol)
 - [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol)
 - [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol)
 
 For team incentivisation we have a burnable locked OLAS token - buOLAS:
-- [buOLAS](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/buOLAS.sol)
+- [buOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol)
 
 For initial incentivised locking of OLAS tokens we have a Sale contract - Sale:
-- [Sale](https://github.com/valory-xyz/autonolas-governancel/blob/main/contracts/Sale.sol)
+- [Sale](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Sale.sol)
 
 ## Development
 

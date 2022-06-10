@@ -6,3 +6,7 @@ Records of audit related materials of contracts the Autonolas token is based on 
 
 ### Internal audit
 The latest internal audit is located in this folder: [internal audit](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal).
+
+### External audit
+Following the initial contracts [audit report](https://github.com/valory-xyz/utonolas-governance/blob/main/audit/Valory%20Review%20Final.pdf),
+the recommendations are addressed here: [feedback](https://docs.google.com/document/d/1pSz5v-X11EFrbS6N0kJep0zGX7Eeh2c_9StBG4Cz_aE/edit?usp=sharing).
