@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/buOLAS.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> buOLAS.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>79/79</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>36/36</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>15/15</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>102/102</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">54×</span>
+<span class="cline-any cline-yes">54×</span>
+<span class="cline-any cline-yes">54×</span>
+<span class="cline-any cline-yes">54×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">22×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.14;
+&nbsp;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "./interfaces/IErrors.sol";
+&nbsp;
+/// @title Burnable Locked OLAS Token - OLAS burnable contract
+/// @author Aleksandr Kuperman - &lt;aleksandr.kuperman@valory.xyz&gt;
+&nbsp;
+// Interface for IOLAS burn functionality
+interface IOLAS {
+    /// @dev Burns OLAS tokens.
+    /// @param amount OLAS token amount to burn.
+    function burn(uint256 amount) external;
+}
+&nbsp;
+// Struct for storing balance, lock and unlock time
+// The struct size is one storage slot of uint256 (96 + 96 + 32 + 32)
+struct LockedBalance {
+    // Token amount locked. Initial OLAS cap is 1 bn tokens, or 1e27.
+    // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1
+    uint96 totalAmount;
+    // Token amount transferred to its owner. It is of the value of at most the total amount locked
+    uint96 transferredAmount;
+    // Lock time start
+    uint32 startTime;
+    // Lock end time
+    // 2^32 - 1 is enough to count 136 years starting from the year of 1970. This counter is safe until the year of 2106
+    uint32 endTime;
+}
+&nbsp;
+/// @notice This token supports the ERC20 interface specifications except for transfers.
+contract buOLAS is IErrors, IERC20, IERC165 {
+    event Lock(address indexed account, uint256 amount, uint256 startTime, uint256 endTime);
+    event Withdraw(address indexed account, uint256 amount, uint256 ts);
+    event Revoke(address indexed account, uint256 amount, uint256 ts);
+    event Burn(address indexed account, uint256 amount, uint256 ts);
+    event Supply(uint256 previousSupply, uint256 currentSupply);
+    event OwnerUpdated(address indexed owner);
+&nbsp;
+    // Locking step time
+    uint32 internal constant STEP_TIME = 365 * 86400;
+    // Maximum number of steps
+    uint32 internal constant MAX_NUM_STEPS = 10;
+    // Total token supply
+    uint256 public supply;
+    // Number of decimals
+    uint8 public constant decimals = 18;
+&nbsp;
+    // Token address
+    address public immutable token;
+    // Owner address
+    address public owner;
+    // Mapping of account address =&gt; LockedBalance
+    mapping(address =&gt; LockedBalance) public mapLockedBalances;
+&nbsp;
+    // Token name
+    string public name;
+    // Token symbol
+    string public symbol;
+&nbsp;
+    /// @dev Contract constructor
+    /// @param _token Token address.
+    /// @param _name Token name.
+    /// @param _symbol Token symbol.
+    constructor(address _token, string memory _name, string memory _symbol)
+    {
+        token = _token;
+        name = _name;
+        symbol = _symbol;
+        owner = msg.sender;
+    }
+&nbsp;
+    /// @dev Changes the owner address.
+    /// @param newOwner Address of a new owner.
+    function changeOwner(address newOwner) external {
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+&nbsp;
+        if (newOwner == address(0)) {
+            revert ZeroAddress();
+        }
+&nbsp;
+        owner = newOwner;
+        emit OwnerUpdated(newOwner);
+    }
+&nbsp;
+    /// @dev Deposits `amount` tokens for the `account` and locks for the `numSteps` time periods.
+    /// @notice Tokens are taken from `msg.sender`'s balance.
+    /// @param account Target account address.
+    /// @param amount Amount to deposit.
+    /// @param numSteps Number of locking steps.
+    function createLockFor(address account, uint256 amount, uint256 numSteps) external {
+        // Check if the account is zero
+        if (account == address(0)) {
+            revert ZeroAddress();
+        }
+        // Check if the amount is zero
+        if (amount == 0) {
+            revert ZeroValue();
+        }
+        // The locking makes sense for one step or more only
+        if (numSteps == 0) {
+            revert ZeroValue();
+        }
+        // Check the maximum number of steps
+        if (numSteps &gt; MAX_NUM_STEPS) {
+            revert Overflow(numSteps, MAX_NUM_STEPS);
+        }
+        // Lock time is equal to the number of fixed steps multiply on a step time
+        uint256 unlockTime = block.timestamp + uint256(STEP_TIME) * numSteps;
+        // Max of 2^32 - 1 value, the counter is safe until the year of 2106
+        if (unlockTime &gt; type(uint32).max) {
+            revert Overflow(unlockTime, type(uint32).max);
+        }
+        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply
+        if (amount &gt; type(uint96).max) {
+            revert Overflow(amount, type(uint96).max);
+        }
+&nbsp;
+        LockedBalance memory lockedBalance = mapLockedBalances[account];
+        // The locked balance must be zero in order to start the lock
+        if (lockedBalance.totalAmount &gt; 0) {
+            revert LockedValueNotZero(account, lockedBalance.totalAmount);
+        }
+&nbsp;
+        // Store the locked information for the account
+        lockedBalance.startTime = uint32(block.timestamp);
+        lockedBalance.endTime = uint32(unlockTime);
+        lockedBalance.totalAmount = uint96(amount);
+        mapLockedBalances[account] = lockedBalance;
+&nbsp;
+        // Calculate total supply
+        uint256 supplyBefore = supply;
+        uint256 supplyAfter;
+        // Cannot overflow because we do not add more tokens than the OLAS supply
+        unchecked {
+            supplyAfter = supplyBefore + amount;
+            supply = supplyAfter;
+        }
+&nbsp;
+        // OLAS is a solmate-based ERC20 token with optimized transferFrom() that either returns true or reverts
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+&nbsp;
+        emit Lock(account, amount, block.timestamp, unlockTime);
+        emit Supply(supplyBefore, supplyAfter);
+    }
+&nbsp;
+    /// @dev Releases all matured tokens for `msg.sender`.
+    function withdraw() external {
+        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
+        // If the balances are still active and not fully withdrawn, start time must be greater than zero
+        if (lockedBalance.startTime &gt; 0) {
+            // Calculate the amount to release
+            uint256 amount = _releasableAmount(lockedBalance);
+            // Check if at least one locking step has passed
+            if (amount == 0) {
+                revert LockNotExpired(msg.sender, lockedBalance.endTime, block.timestamp);
+            }
+&nbsp;
+            uint256 supplyBefore = supply;
+            uint256 supplyAfter = supplyBefore;
+            // End time is greater than zero if withdraw was not fully completed and `revoke` was not called on the account
+            if (lockedBalance.endTime &gt; 0) {
+                unchecked {
+                    // Update the account locked amount.
+                    // Cannot practically overflow since the amount to release is smaller than the locked amount
+                    lockedBalance.transferredAmount += uint96(amount);
+                }
+                // The balance is fully unlocked. Released amount must be equal to the locked one
+                if ((lockedBalance.transferredAmount + 1) &gt; lockedBalance.totalAmount) {
+                    mapLockedBalances[msg.sender] = LockedBalance(0, 0, 0, 0);
+                } else {
+                    mapLockedBalances[msg.sender] = lockedBalance;
+                }
+            } else {
+                // This means revoke has been called on this account and some tokens must be burned
+                uint256 amountBurn = uint256(lockedBalance.totalAmount);
+                // Burn revoked tokens
+                if (amountBurn &gt; 0) {
+                    IOLAS(token).burn(amountBurn);
+                    // Update total supply
+                    unchecked {
+                        // Amount to burn cannot be bigger than the supply before the burn
+                        supplyAfter = supplyBefore - amountBurn;
+                    }
+                    emit Burn(msg.sender, amountBurn, block.timestamp);
+                }
+                // Set all the data to zero
+                mapLockedBalances[msg.sender] = LockedBalance(0, 0, 0, 0);
+            }
+&nbsp;
+            // The amount cannot be less than the total supply
+            unchecked {
+                supplyAfter -= amount;
+                supply = supplyAfter;
+            }
+&nbsp;
+            emit Withdraw(msg.sender, amount, block.timestamp);
+            emit Supply(supplyBefore, supplyAfter);
+&nbsp;
+            // OLAS is a solmate-based ERC20 token with optimized transfer() that either returns true or reverts
+            IERC20(token).transfer(msg.sender, amount);
+        }
+    }
+&nbsp;
+    /// @dev Revoke and burn all non-matured tokens from the `account`.
+    /// @param accounts Account addresses.
+    function revoke(address[] memory accounts) external {
+        // Check for the ownership
+        if (owner != msg.sender) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+&nbsp;
+        for (uint256 i = 0; i &lt; accounts.length; ++i) {
+            address account = accounts[i];
+            LockedBalance memory lockedBalance = mapLockedBalances[account];
+&nbsp;
+            // Get the amount to release
+            uint256 amountRelease = _releasableAmount(lockedBalance);
+            // Amount locked now represents the burn amount, which can not become less than zero
+            unchecked {
+                lockedBalance.totalAmount -= (uint96(amountRelease) + lockedBalance.transferredAmount);
+            }
+            // This is the release amount that will be transferred to the account when they withdraw
+            lockedBalance.transferredAmount = uint96(amountRelease);
+            // Termination state of the revoke procedure
+            lockedBalance.endTime = 0;
+            // Update the account data
+            mapLockedBalances[account] = lockedBalance;
+&nbsp;
+            emit Revoke(account, uint256(lockedBalance.totalAmount), block.timestamp);
+        }
+    }
+&nbsp;
+    /// @dev Gets the account locking balance.
+    /// @param account Account address.
+    /// @return balance Account balance.
+    function balanceOf(address account) public view override returns (uint256 balance) {
+        LockedBalance memory lockedBalance = mapLockedBalances[account];
+        // If the end is equal 0, this balance is either left after revoke or expired
+        if (lockedBalance.endTime == 0) {
+            // The maximum balance in this case is the released amount value
+            balance = uint256(lockedBalance.transferredAmount);
+        } else {
+            // Otherwise the balance is the difference between locked and released amounts
+            balance = uint256(lockedBalance.totalAmount - lockedBalance.transferredAmount);
+        }
+    }
+&nbsp;
+    /// @dev Gets total token supply.
+    /// @return Total token supply.
+    function totalSupply() public view override returns (uint256) {
+        return supply;
+    }
+&nbsp;
+    /// @dev Gets the account releasable amount.
+    /// @param account Account address.
+    /// @return amount Amount to release.
+    function releasableAmount(address account) external view returns (uint256 amount) {
+        LockedBalance memory lockedBalance = mapLockedBalances[account];
+        amount = _releasableAmount(lockedBalance);
+    }
+&nbsp;
+    /// @dev Gets the account releasable amount.
+    /// @param lockedBalance Account locked balance struct.
+    /// @return amount Amount to release.
+    function _releasableAmount(LockedBalance memory lockedBalance) private view returns (uint256 amount) {
+        // If the end is equal 0, this balance is either left after revoke or expired
+        if (lockedBalance.endTime == 0) {
+            return lockedBalance.transferredAmount;
+        }
+        // Number of steps
+        uint32 numSteps;
+        // Current locked time
+        uint32 releasedSteps;
+        // Time in the future will be greater than the start time
+        unchecked {
+            numSteps = (lockedBalance.endTime - lockedBalance.startTime) / STEP_TIME;
+            releasedSteps = (uint32(block.timestamp) - lockedBalance.startTime) / STEP_TIME;
+        }
+&nbsp;
+        // If the number of release steps is greater than the number of steps, all the available tokens are unlocked
+        if ((releasedSteps + 1) &gt; numSteps) {
+            // Return the remainder from the last release since it's the last one
+            unchecked {
+                amount = uint256(lockedBalance.totalAmount - lockedBalance.transferredAmount);
+            }
+        } else {
+            // Calculate the amount to release
+            unchecked {
+                amount = uint256(lockedBalance.totalAmount * releasedSteps / numSteps);
+                amount -= uint256(lockedBalance.transferredAmount);
+            }
+        }
+    }
+&nbsp;
+    /// @dev Gets the `account`'s locking end time.
+    /// @param account Account address.
+    /// @return unlockTime Maturity time.
+    function lockedEnd(address account) external view returns (uint256 unlockTime) {
+        unlockTime = uint256(mapLockedBalances[account].endTime);
+    }
+&nbsp;
+    /// @dev Gets information about the interface support.
+    /// @param interfaceId A specified interface Id.
+    /// @return True if this contract implements the interface defined by interfaceId.
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IERC165).interfaceId;
+    }
+&nbsp;
+    /// @dev Reverts the transfer of this token.
+    function transfer(address to, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+&nbsp;
+    /// @dev Reverts the approval of this token.
+    function approve(address spender, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+&nbsp;
+    /// @dev Reverts the transferFrom of this token.
+    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+        revert NonTransferable(address(this));
+    }
+&nbsp;
+    /// @dev Reverts the allowance of this token.
+    function allowance(address owner, address spender) external view virtual override returns (uint256)
+    {
+        revert NonTransferable(address(this));
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Jun 09 2022 19:06:07 GMT+0100 (British Summer Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

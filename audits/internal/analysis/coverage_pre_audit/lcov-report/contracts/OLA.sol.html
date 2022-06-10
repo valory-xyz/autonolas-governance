@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/OLA.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> OLA.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">59.46% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>22/37</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">56.25% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>9/16</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">66.67% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>6/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">56.1% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>23/41</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">93×</span>
+<span class="cline-any cline-yes">93×</span>
+<span class="cline-any cline-yes">93×</span>
+<span class="cline-any cline-yes">93×</span>
+<span class="cline-any cline-yes">27×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-yes">30×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity &gt;=0.8.0;
+&nbsp;
+import "../lib/solmate/src/tokens/ERC20.sol";
+&nbsp;
+/// @dev Only `manager` has a privilege, but the `sender` was provided.
+/// @param sender Sender address.
+/// @param manager Required sender address as a manager.
+error ManagerOnly(address sender, address manager);
+&nbsp;
+/// @dev Provided zero address.
+error ZeroAddress();
+&nbsp;
+/// @title OLA - Smart contract for the main OLA token.
+/// @author AL
+/// @author Aleksandr Kuperman - &lt;aleksandr.kuperman@valory.xyz&gt;
+contract OLA is ERC20 {
+    event MinterUpdated(address indexed minter);
+    event OwnerUpdated(address indexed owner);
+&nbsp;
+    // One year interval
+    uint256 public constant oneYear = 1 days * 365;
+    // Total supply cap for the first ten years (one billion OLA tokens)
+    uint256 public constant tenYearSupplyCap = 1_000_000_000e18;
+    // Maximum annual inflation after first ten years
+    uint256 public constant maxMintCapFraction = 2;
+    // Initial timestamp of the token deployment
+    uint256 public immutable timeLaunch;
+&nbsp;
+    // Owner address
+    address public owner;
+    // Minter address
+    address public minter;
+&nbsp;
+    constructor(uint256 _supply) ERC20("Autonolas", "OLA", 18) {
+        owner = msg.sender;
+        minter = msg.sender;
+        timeLaunch = block.timestamp;
+        if (_supply &gt; 0) {
+            _mint(msg.sender, _supply);
+        }
+    }
+&nbsp;
+    /// @dev Changes the owner address.
+    /// @param newOwner Address of a new owner.
+<span class="fstat-no" title="function not covered" >    function changeOwner(address newOwner) external {</span>
+<span class="cstat-no" title="statement not covered" >        if (newOwner == address(0)) {</span>
+            revert ZeroAddress();
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (msg.sender != owner) {</span>
+            revert ManagerOnly(msg.sender, owner);
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        owner = newOwner</span>;
+<span class="cstat-no" title="statement not covered" >        emit OwnerUpdated(newOwner);</span>
+    }
+&nbsp;
+    /// @dev Changes the minter address.
+    /// @param newMinter Address of a new minter.
+    function changeMinter(address newMinter) external {
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (msg.sender != owner) {
+            revert ManagerOnly(msg.sender, owner);
+        }
+&nbsp;
+        minter = newMinter;
+        emit MinterUpdated(newMinter);
+    }
+&nbsp;
+    /// @dev Mints OLA tokens.
+    /// @param account Account address.
+    /// @param amount OLA token amount.
+    function mint(address account, uint256 amount) external {
+        // Access control
+        if (msg.sender != minter) {
+            revert ManagerOnly(msg.sender, minter);
+        }
+&nbsp;
+        // Check the inflation schedule and mint
+        if (inflationControl(amount)) {
+            _mint(account, amount);
+        }
+    }
+&nbsp;
+    /// @dev Provides various checks for the inflation control.
+    /// @param amount Amount of OLA to mint.
+    /// @return True if the amount request is within inflation boundaries.
+    function inflationControl(uint256 amount) public view returns (bool) {
+        uint256 remainder = inflationRemainder();
+        return (amount &lt;= remainder);
+    }
+&nbsp;
+    /// @dev Gets the reminder of OLA possible for the mint.
+    /// @return remainder OLA token remainder.
+    function inflationRemainder() public view returns (uint256 remainder) {
+        uint256 _totalSupply = totalSupply;
+        // Current year
+        uint256 numYears = (block.timestamp - timeLaunch) / oneYear;
+        // Calculate maximum mint amount to date
+        uint256 supplyCap = tenYearSupplyCap;
+        // After 10 years, adjust supplyCap according to the yearly inflation % set in maxMintCapFraction
+        if (numYears &gt; 9) {
+            // Number of years after ten years have passed (including ongoing ones)
+            numYears -= 9;
+            for (uint256 i = 0; i &lt; numYears; ++i) {
+                supplyCap += (supplyCap * maxMintCapFraction) / 100;
+            }
+        }
+        // Check for the requested mint overflow
+        remainder = supplyCap - _totalSupply;
+    }
+&nbsp;
+    /// @dev Burns OLA tokens.
+    /// @param amount OLA token amount to burn.
+    function burn(uint256 amount) external {
+        _burn(msg.sender, amount);
+    }
+&nbsp;
+    /// @dev Decreases the allowance of another account over their tokens.
+    /// @param spender Account that tokens are approved for.
+    /// @param amount Amount to decrease approval by.
+    /// @return True if the operation succeeded.
+<span class="fstat-no" title="function not covered" >    function decreaseAllowance(address spender, uint256 amount) external returns (bool) {</span>
+<span class="cstat-no" title="statement not covered" >        uint256 spenderAllowance = allowance[msg.sender][spender];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (spenderAllowance != type(uint256).max) {</span>
+<span class="cstat-no" title="statement not covered" >            spenderAllowance -= amount</span>;
+<span class="cstat-no" title="statement not covered" >            allowance[msg.sender][spender] = spenderAllowance</span>;
+<span class="cstat-no" title="statement not covered" >            emit Approval(msg.sender, spender, spenderAllowance);</span>
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return true;</span>
+    }
+&nbsp;
+    /// @dev Increases the allowance of another account over their tokens.
+    /// @param spender Account that tokens are approved for.
+    /// @param amount Amount to increase approval by.
+    /// @return True if the operation succeeded.
+<span class="fstat-no" title="function not covered" >    function increaseAllowance(address spender, uint256 amount) external returns (bool) {</span>
+<span class="cstat-no" title="statement not covered" >        uint256 spenderAllowance = allowance[msg.sender][spender];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        spenderAllowance += amount</span>;
+<span class="cstat-no" title="statement not covered" >        allowance[msg.sender][spender] = spenderAllowance</span>;
+<span class="cstat-no" title="statement not covered" >        emit Approval(msg.sender, spender, spenderAllowance);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return true;</span>
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jun 07 2022 04:59:55 GMT-0500 (Central Daylight Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
