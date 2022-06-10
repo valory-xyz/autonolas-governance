@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/interfaces/IErrors.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/interfaces/</a> IErrors.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/0</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/0</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/0</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/0</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.14;
+&nbsp;
+/// @dev Errors.
+interface IErrors {
+    /// @dev Only `manager` has a privilege, but the `sender` was provided.
+    /// @param sender Sender address.
+    /// @param manager Required sender address as a manager.
+    error ManagerOnly(address sender, address manager);
+&nbsp;
+    /// @dev Wrong hash format.
+    /// @param hashFunctionProvided Hash function classification provided.
+    /// @param hashFunctionNeeded Hash function classification needed.
+    /// @param sizeProvided Size of a hash digest provided.
+    /// @param sizeNeeded Size of a hash digest needed.
+    error WrongHash(uint8 hashFunctionProvided, uint8 hashFunctionNeeded, uint8 sizeProvided, uint8 sizeNeeded);
+&nbsp;
+    /// @dev Hash already exists in the records.
+    error HashExists();
+&nbsp;
+    /// @dev Provided zero address.
+    error ZeroAddress();
+&nbsp;
+    /// @dev The provided string is empty.
+    error EmptyString();
+&nbsp;
+    /// @dev Component Id is not correctly provided for the current routine.
+    /// @param componentId Component Id.
+    error WrongComponentId(uint256 componentId);
+&nbsp;
+    /// @dev Agent Id is not correctly provided for the current routine.
+    /// @param agentId Component Id.
+    error WrongAgentId(uint256 agentId);
+&nbsp;
+    /// @dev Wrong length of two arrays.
+    /// @param numValues1 Number of values in a first array.
+    /// @param numValues2 Numberf of values in a second array.
+    error WrongArrayLength(uint256 numValues1, uint256 numValues2);
+&nbsp;
+    /// @dev Canonical agent Id is not found.
+    /// @param agentId Canonical agent Id.
+    error AgentNotFound(uint256 agentId);
+&nbsp;
+    /// @dev Component Id is not found.
+    /// @param componentId Component Id.
+    error ComponentNotFound(uint256 componentId);
+&nbsp;
+    /// @dev Multisig threshold is out of bounds.
+    /// @param currentThreshold Current threshold value.
+    /// @param minThreshold Minimum possible threshold value.
+    /// @param maxThreshold Maximum possible threshold value.
+    error WrongThreshold(uint256 currentThreshold, uint256 minThreshold, uint256 maxThreshold);
+&nbsp;
+    /// @dev Service Id is not found, although service Id might exist in the records.
+    /// @dev serviceId Service Id.
+    error ServiceNotFound(uint256 serviceId);
+&nbsp;
+    /// @dev Service Id does not exist in registry records.
+    /// @param serviceId Service Id.
+    error ServiceDoesNotExist(uint256 serviceId);
+&nbsp;
+    /// @dev Agent instance is already registered with a specified `operator`.
+    /// @param operator Operator that registered an instance.
+    error AgentInstanceRegistered(address operator);
+&nbsp;
+    /// @dev Wrong operator is specified when interacting with a specified `serviceId`.
+    /// @param serviceId Service Id.
+    error WrongOperator(uint256 serviceId);
+&nbsp;
+    /// @dev Operator has no registered instances in the service.
+    /// @param operator Operator address.
+    /// @param serviceId Service Id.
+    error OperatorHasNoInstances(address operator, uint256 serviceId);
+&nbsp;
+    /// @dev Canonical `agentId` is not found as a part of `serviceId`.
+    /// @param agentId Canonical agent Id.
+    /// @param serviceId Service Id.
+    error AgentNotInService(uint256 agentId, uint256 serviceId);
+&nbsp;
+    /// @dev Zero value when it has to be different from zero.
+    error ZeroValue();
+&nbsp;
+    /// @dev Non-zero value when it has to be zero.
+    error NonZeroValue();
+&nbsp;
+    /// @dev Value overflow.
+    /// @param provided Overflow value.
+    /// @param max Maximum possible value.
+    error Overflow(uint256 provided, uint256 max);
+&nbsp;
+    /// @dev Token is non-transferable.
+    /// @param account Token address.
+    error NonTransferable(address account);
+&nbsp;
+    /// @dev Token is non-delegatable.
+    /// @param account Token address.
+    error NonDelegatable(address account);
+&nbsp;
+    /// @dev Service must be active.
+    /// @param serviceId Service Id.
+    error ServiceMustBeActive(uint256 serviceId);
+&nbsp;
+    /// @dev Service must be inactive.
+    /// @param serviceId Service Id.
+    error ServiceMustBeInactive(uint256 serviceId);
+&nbsp;
+    /// @dev Service termination block has been reached. Service is terminated.
+    /// @param teminationBlock The termination block.
+    /// @param curBlock Current block.
+    /// @param serviceId Service Id.
+    error ServiceTerminated(uint256 teminationBlock, uint256 curBlock, uint256 serviceId);
+&nbsp;
+    /// @dev All the agent instance slots for a specific `serviceId` are filled.
+    /// @param serviceId Service Id.
+    error AgentInstancesSlotsFilled(uint256 serviceId);
+&nbsp;
+    /// @dev Agent instances for a specific `serviceId` are not filled.
+    /// @param actual Current number of agent instances.
+    /// @param maxNumAgentInstances Maximum number of agent instances to be filled.
+    /// @param serviceId Service Id.
+    error AgentInstancesSlotsNotFilled(uint256 actual, uint256 maxNumAgentInstances, uint256 serviceId);
+&nbsp;
+    /// @dev Wrong state of a service.
+    /// @param state Service state.
+    /// @param serviceId Service Id.
+    error WrongServiceState(uint256 state, uint256 serviceId);
+&nbsp;
+    /// @dev Only own service multisig is allowed.
+    /// @param provided Provided address.
+    /// @param expected Expected multisig address.
+    /// @param serviceId Service Id.
+    error OnlyOwnServiceMultisig(address provided, address expected, uint256 serviceId);
+&nbsp;
+    /// @dev Fallback or receive function.
+    error WrongFunction();
+&nbsp;
+    /// @dev Token is disabled or not whitelisted.
+    /// @param tokenAddress Address of a token.
+    error UnauthorizedToken(address tokenAddress);
+&nbsp;
+    /// @dev Multisig is not whitelisted.
+    /// @param multisig Address of a multisig implementation.
+    error UnauthorizedMultisig(address multisig);
+&nbsp;
+    /// @dev Account is not whitelisted.
+    /// @param account Account address.
+    error UnauthorizedAccount(address account);
+&nbsp;
+    /// @dev Provided token address is incorrect.
+    /// @param provided Provided token address.
+    /// @param expected Expected token address.
+    error WrongTokenAddress(address provided, address expected);
+&nbsp;
+    /// @dev The product is expired.
+    /// @param tokenAddress Address of a token.
+    /// @param productId Product Id.
+    /// @param deadline The program expiry time.
+    /// @param curTime Current timestamp.
+    error ProductExpired(address tokenAddress, uint256 productId, uint256 deadline, uint256 curTime);
+&nbsp;
+    /// @dev The product supply is low for the requested payout.
+    /// @param tokenAddress Address of a token.
+    /// @param productId Product Id.
+    /// @param requested Requested payout.
+    /// @param actual Actual supply left.
+    error ProductSupplyLow(address tokenAddress, uint256 productId, uint256 requested, uint256 actual);
+&nbsp;
+    /// @dev Minting is rejected due to the requested amount bigger than the current inflation policy cap.
+    /// @param amount Amount of tokens to mint.
+    error MintRejectedByInflationPolicy(uint256 amount);
+&nbsp;
+    /// @dev Incorrect amount received / provided.
+    /// @param provided Provided amount is lower.
+    /// @param expected Expected amount.
+    error AmountLowerThan(uint256 provided, uint256 expected);
+&nbsp;
+    /// @dev Wrong amount received / provided.
+    /// @param provided Provided amount.
+    /// @param expected Expected amount.
+    error WrongAmount(uint256 provided, uint256 expected);
+&nbsp;
+    /// @dev Insufficient token allowance.
+    /// @param provided Provided amount.
+    /// @param expected Minimum expected amount.
+    error InsufficientAllowance(uint256 provided, uint256 expected);
+&nbsp;
+    /// @dev Incorrect deposit provided for the registration activation.
+    /// @param sent Sent amount.
+    /// @param expected Expected amount.
+    /// @param serviceId Service Id.
+    error IncorrectRegistrationDepositValue(uint256 sent, uint256 expected, uint256 serviceId);
+&nbsp;
+    /// @dev Insufficient value provided for the agent instance bonding.
+    /// @param sent Sent amount.
+    /// @param expected Expected amount.
+    /// @param serviceId Service Id.
+    error IncorrectAgentBondingValue(uint256 sent, uint256 expected, uint256 serviceId);
+&nbsp;
+    /// @dev Failure of a transfer.
+    /// @param token Address of a token.
+    /// @param from Address `from`.
+    /// @param to Address `to`.
+    /// @param value Value.
+    error TransferFailed(address token, address from, address to, uint256 value);
+&nbsp;
+    /// @dev No existing lock value is found.
+    /// @param account Address that is checked for the locked value.
+    error NoValueLocked(address account);
+&nbsp;
+    /// @dev Locked value is not zero.
+    /// @param account Address that is checked for the locked value.
+    /// @param amount Locked amount.
+    error LockedValueNotZero(address account, uint256 amount);
+&nbsp;
+    /// @dev Value lock is expired.
+    /// @param account Address that is checked for the locked value.
+    /// @param deadline The lock expiration deadline.
+    /// @param curTime Current timestamp.
+    error LockExpired(address account, uint256 deadline, uint256 curTime);
+&nbsp;
+    /// @dev Value lock is not expired.
+    /// @param account Address that is checked for the locked value.
+    /// @param deadline The lock expiration deadline.
+    /// @param curTime Current timestamp.
+    error LockNotExpired(address account, uint256 deadline, uint256 curTime);
+&nbsp;
+    /// @dev Provided unlock time is incorrect.
+    /// @param account Address that is checked for the locked value.
+    /// @param minUnlockTime Minimal unlock time that can be set.
+    /// @param providedUnlockTime Provided unlock time.
+    error UnlockTimeIncorrect(address account, uint256 minUnlockTime, uint256 providedUnlockTime);
+&nbsp;
+    /// @dev Provided unlock time is bigger than the maximum allowed.
+    /// @param account Address that is checked for the locked value.
+    /// @param maxUnlockTime Max unlock time that can be set.
+    /// @param providedUnlockTime Provided unlock time.
+    error MaxUnlockTimeReached(address account, uint256 maxUnlockTime, uint256 providedUnlockTime);
+&nbsp;
+    /// @dev Provided block number is incorrect (has not been processed yet).
+    /// @param providedBlockNumber Provided block number.
+    /// @param actualBlockNumber Actual block number.
+    error WrongBlockNumber(uint256 providedBlockNumber, uint256 actualBlockNumber);
+&nbsp;
+    /// @dev Caught reentrancy violation.
+    error ReentrancyGuard();
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jun 07 2022 04:59:55 GMT-0500 (Central Daylight Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
