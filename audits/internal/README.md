@@ -171,7 +171,7 @@ Some of the checks are obtained automatically. They are commented and I do not s
 All automatic warnings are listed in the following file, concerns of which we address in more detail below:
 [slither-full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/slither_full.txt)
 
-### Unresolved issues from the previous audit report. Update 09-06-2022
+### Addressing issues from the initial report. Updated on the 09-06-2022
 
 #### Needed improvements
 Missing tests for OLAS token:
