@@ -32,13 +32,10 @@ contract OLAS is ERC20 {
     // Minter address
     address public minter;
 
-    constructor(uint256 _supply) ERC20("Autonolas", "OLAS", 18) {
+    constructor() ERC20("Autonolas", "OLAS", 18) {
         owner = msg.sender;
         minter = msg.sender;
         timeLaunch = block.timestamp;
-        if (_supply > 0) {
-            _mint(msg.sender, _supply);
-        }
     }
 
     /// @dev Changes the owner address.

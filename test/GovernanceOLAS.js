@@ -34,7 +34,7 @@ describe("Governance OLAS", function () {
         await gnosisSafeProxyFactory.deployed();
 
         const Token = await ethers.getContractFactory("OLAS");
-        token = await Token.deploy(0);
+        token = await Token.deploy();
         await token.deployed();
 
         // Dispenser address is irrelevant in these tests, so its contract is passed as a zero address

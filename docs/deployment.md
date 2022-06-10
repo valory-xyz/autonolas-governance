@@ -2,6 +2,7 @@
 Pre-deploy steps:
 1. Release version of all contracts in `autonolas-governance` with final bytecode.
 2. Create and test contract deployFabric with `create2()` and `changeOwner()`, `changeMinter()`.
+3. Test the deployment with closest to real environment.
 
 The steps of deploying the contracts in this repository are as follows:
 

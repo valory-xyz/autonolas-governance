@@ -23,7 +23,8 @@ describe("OLAS", function () {
         [deployer, treasury, bob, alice] = await ethers.getSigners();
         olaFactory = await ethers.getContractFactory("OLAS");
         // Treasury address is deployer by default
-        olas = await olaFactory.deploy(initSupply);
+        olas = await olaFactory.deploy();
+        await olas.mint(deployer.address, initSupply);
         // Changing the treasury address
         await olas.connect(deployer).changeMinter(treasury.address);
     });
