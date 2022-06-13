@@ -27,11 +27,11 @@ describe("Sale contract", function () {
         await olas.mint(signers[0].address, initialMint);
 
         const VE = await ethers.getContractFactory("veOLAS");
-        ve = await VE.deploy(olas.address, "name", "symbol");
+        ve = await VE.deploy(olas.address);
         await ve.deployed();
 
         const BU = await ethers.getContractFactory("buOLAS");
-        bu = await BU.deploy(olas.address, "name", "symbol");
+        bu = await BU.deploy(olas.address);
         await bu.deployed();
 
         const SALE = await ethers.getContractFactory("Sale");

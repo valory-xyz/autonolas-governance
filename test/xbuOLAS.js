@@ -20,7 +20,7 @@ describe("Time shifting buOLAS", function () {
         await olas.mint(signers[0].address, initialMint);
 
         const BU = await ethers.getContractFactory("buOLAS");
-        bu = await BU.deploy(olas.address, "name", "symbol");
+        bu = await BU.deploy(olas.address);
         await bu.deployed();
     });
 

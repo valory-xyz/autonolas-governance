@@ -38,8 +38,8 @@ describe("Governance OLAS", function () {
         await token.deployed();
 
         // Dispenser address is irrelevant in these tests, so its contract is passed as a zero address
-        const VotingEscrow = await ethers.getContractFactory("veOLAS");
-        ve = await VotingEscrow.deploy(token.address, "Voting Escrow OLAS", "veOLAS");
+        const VE = await ethers.getContractFactory("veOLAS");
+        ve = await VE.deploy(token.address);
         await ve.deployed();
 
         signers = await ethers.getSigners();
@@ -81,12 +81,12 @@ describe("Governance OLAS", function () {
             await timelock.deployed();
             // console.log("Timelock deployed to", timelock.address);
 
-            // Deploy Governance Bravo
+            // Deploy Governance OLAS
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
             await governor.deployed();
-            // console.log("Governor Bravo deployed to", governor.address);
+            // console.log("Governor OLAS deployed to", governor.address);
 
             // Checks for the compatibility with IERC165
             const interfaceIdIERC165 = "0x01ffc9a7";
@@ -126,7 +126,7 @@ describe("Governance OLAS", function () {
             const timelock2 = await Timelock.deploy(minDelay, proposers, executors);
             await timelock2.deployed();
 
-            // Deploy Governance Bravo with a deployer being a timelock address
+            // Deploy Governance OLAS with a deployer being a timelock address
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
@@ -219,7 +219,7 @@ describe("Governance OLAS", function () {
             const timelock = await Timelock.deploy(minDelay, proposers, executors);
             await timelock.deployed();
 
-            // Deploy Governance Bravo
+            // Deploy Governance OLAS
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
@@ -320,7 +320,7 @@ describe("Governance OLAS", function () {
             const timelock = await Timelock.deploy(minDelay, proposers, executors);
             await timelock.deployed();
 
-            // Deploy Governance Bravo
+            // Deploy Governance OLAS
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);

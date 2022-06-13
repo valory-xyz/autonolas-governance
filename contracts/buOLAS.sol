@@ -56,19 +56,15 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     mapping(address => LockedBalance) public mapLockedBalances;
 
     // Token name
-    string public name;
+    string public name = "Burnable Locked OLAS";
     // Token symbol
-    string public symbol;
+    string public symbol = "buOLAS";
 
     /// @dev Contract constructor
     /// @param _token Token address.
-    /// @param _name Token name.
-    /// @param _symbol Token symbol.
-    constructor(address _token, string memory _name, string memory _symbol)
+    constructor(address _token)
     {
         token = _token;
-        name = _name;
-        symbol = _symbol;
         owner = msg.sender;
     }
 
@@ -327,7 +323,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     }
 
     /// @dev Reverts the allowance of this token.
-    function allowance(address owner, address spender) external view virtual override returns (uint256)
+    function allowance(address account, address spender) external view virtual override returns (uint256)
     {
         revert NonTransferable(address(this));
     }

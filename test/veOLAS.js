@@ -24,12 +24,13 @@ describe("Voting Escrow OLAS", function () {
         await olas.mint(signers[0].address, initialMint);
 
         const VE = await ethers.getContractFactory("veOLAS");
-        ve = await VE.deploy(olas.address, "name", "symbol");
+        ve = await VE.deploy(olas.address);
         await ve.deployed();
     });
 
     context("Locks", async function () {
         it("Check that never-supposed-to-happen zero parameter calls do not break anything", async function () {
+            //            ethers.provider.send("evm_mine");
             let result = await ve.getPastVotes(AddressZero, 0);
             expect(result).to.equal(0);
 

@@ -121,19 +121,15 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     mapping(uint64 => int128) public mapSlopeChanges;
 
     // Voting token name
-    string public name;
+    string public name = "Voting Escrow OLAS";
     // Voting token symbol
-    string public symbol;
+    string public symbol = "veOLAS";
 
     /// @dev Contract constructor
     /// @param _token Token address.
-    /// @param _name Token name.
-    /// @param _symbol Token symbol.
-    constructor(address _token, string memory _name, string memory _symbol)
+    constructor(address _token)
     {
         token = _token;
-        name = _name;
-        symbol = _symbol;
         // Create initial point such that default timestamp and block number are not zero
         // See cast specification in the PointVoting structure
         mapSupplyPoints[0] = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);
