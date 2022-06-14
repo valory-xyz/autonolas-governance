@@ -14,6 +14,7 @@ describe("Deployment", function () {
     const proposerRole = ethers.utils.id("PROPOSER_ROLE");
     const executorRole = ethers.utils.id("EXECUTOR_ROLE");
     const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
+    const safeContracts = require("@gnosis.pm/safe-contracts");
     let gnosisSafeL2;
     let gnosisSafeProxyFactory;
 
@@ -95,10 +96,25 @@ describe("Deployment", function () {
         });
     });
 
+    // Verify timelock roles for the specified account address and array of corresponding roles
+    async function checkTimelockRoles(timelock, accountAddress, grantedRoleArr) {
+        expect(await timelock.hasRole(adminRole, accountAddress)).to.equal(grantedRoleArr[0]);
+        expect(await timelock.hasRole(executorRole, accountAddress)).to.equal(grantedRoleArr[1]);
+        expect(await timelock.hasRole(proposerRole, accountAddress)).to.equal(grantedRoleArr[2]);
+        expect(await timelock.hasRole(cancellerRole, accountAddress)).to.equal(grantedRoleArr[3]);
+    }
+
+    // Signing and executing Gnosis Safe transaction based on the multisig instance, tx hash and signers
+    async function signAndExecuteSafeTx(CM, txHashData) {
+        const signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
+            await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
+            await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
+        await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+    }
+
     context("Deployment script testing", async function () {
         it("Following specified steps to deploy contracts", async function () {
             // 1. EOA creates community multisig (CM) of the DAO with Gnosis Safe, that has 3 signers and 3 threshold;
-            const safeContracts = require("@gnosis.pm/safe-contracts");
             const setupData = gnosisSafeL2.interface.encodeFunctionData(
                 "setup",
                 // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
@@ -134,7 +150,7 @@ describe("Deployment", function () {
 
             // 6. EOA to deploy the Timelock contract with the proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
             // and canceller ("CANCELLER_ROLE") roles given to the CM (via deployment with `proposers` and `executors` parameters being the CM address);
-            const minDelay = 13091; // 2 days with 13.2s block
+            const minDelay = 13091; // 2 days in blocks (assuming 13.2s per block)
             const executors = [CM.address];
             const proposers = [CM.address];
             const Timelock = await ethers.getContractFactory("Timelock");
@@ -142,10 +158,7 @@ describe("Deployment", function () {
             await timelock.deployed();
 
             // Verify CM address roles
-            expect(await timelock.hasRole(adminRole, CM.address)).to.equal(false);
-            expect(await timelock.hasRole(executorRole, CM.address)).to.equal(true);
-            expect(await timelock.hasRole(proposerRole, CM.address)).to.equal(true);
-            expect(await timelock.hasRole(cancellerRole, CM.address)).to.equal(true);
+            await checkTimelockRoles(timelock, CM.address, [false, true, true, true]);
 
             // 7. Brutforce salt for vanity address veOLAS (deployAddress + OLAS address + bytecode);
             const veSalt = bruteForceVeOLAS(factory.address, olasAddress);
@@ -157,8 +170,8 @@ describe("Deployment", function () {
 
             // 9. EOA to deploy GovernorOLAS contract with veOLAS and Timelock addresses as input parameters
             // and other defined governor-related parameters;
-            const initialVotingDelay = 13091; // 2 days with 13.2s block
-            const initialVotingPeriod = 19636; // 3 days with 13.2s block
+            const initialVotingDelay = 13091; // 2 days in blocks (assuming 13.2s per block)
+            const initialVotingPeriod = 19636; // 3 days in blocks (assuming 13.2s per block)
             const initialProposalThreshold = "1" + "0" * 21; // 1000 OLAS
             const quorum = 4;
             const GovernorOLAS = await ethers.getContractFactory("GovernorOLAS");
@@ -174,10 +187,7 @@ describe("Deployment", function () {
             await timelock.grantRole(cancellerRole, governor.address);
 
             // Verify governor address roles
-            expect(await timelock.hasRole(adminRole, governor.address)).to.equal(true);
-            expect(await timelock.hasRole(executorRole, governor.address)).to.equal(true);
-            expect(await timelock.hasRole(proposerRole, governor.address)).to.equal(true);
-            expect(await timelock.hasRole(cancellerRole, governor.address)).to.equal(true);
+            await checkTimelockRoles(timelock, governor.address, [true, true, true, true]);
 
             // 11. EOA to deploy buOLAS contract pointed to OLAS;
             const BU = await ethers.getContractFactory("buOLAS");
@@ -215,24 +225,15 @@ describe("Deployment", function () {
             // Mint for Timelock
             nonce = await CM.nonce();
             let txHashData = await safeContracts.buildContractCall(olas, "mint", [timelock.address, timelockSupply], nonce, 0, 0);
-            let signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
-            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
             // Mint for Sale
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "mint", [sale.address, saleSupply], nonce, 0, 0);
-            signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
-            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
             // Mint for CM
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "mint", [CM.address, cmSupply], nonce, 0, 0);
-            signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
-            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
 
             // Check the balance of contracts to be 500 million in total
             const balanceTimelock = BigInt(await olas.balanceOf(timelock.address));
@@ -252,10 +253,7 @@ describe("Deployment", function () {
             txHashData = await safeContracts.buildContractCall(sale, "createBalancesFor",
                 [[account.address], [thousandOLABalance], [oneYear],[account.address], [thousandOLABalance], [numSteps]],
                 nonce, 0, 0);
-            signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
-            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
 
             // Check veOLAS and buOLAS for the account address
             const balances = await sale.claimableBalances(account.address);
@@ -265,38 +263,26 @@ describe("Deployment", function () {
             // 17. CM to transfer its minting rights to Timelock with CM calling `changeMinter(Timelock)`;
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "changeMinter", [timelock.address], nonce, 0, 0);
-            signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
-            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
 
             // 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "changeOwner", [timelock.address], nonce, 0, 0);
-            signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
-            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
 
             // Try to change owner by CM once again
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "changeOwner", [CM.address], nonce, 0, 0);
-            signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-                await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
             // Safe returns GS013 on unsuccessful transaction
             await expect(
-                safeContracts.executeTx(CM, txHashData, signMessageData, 0)
+                signAndExecuteSafeTx(CM, txHashData)
             ).to.be.revertedWith("GS013");
 
             // 19. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
             await timelock.connect(EOA).renounceRole(adminRole, EOA.address);
 
-            // Verify EOA address roles
-            expect(await timelock.hasRole(adminRole, EOA.address)).to.equal(false);
-            expect(await timelock.hasRole(executorRole, EOA.address)).to.equal(false);
-            expect(await timelock.hasRole(proposerRole, EOA.address)).to.equal(false);
-            expect(await timelock.hasRole(cancellerRole, EOA.address)).to.equal(false);
+            // Verify EOA address roles to be all revoked
+            await checkTimelockRoles(timelock, EOA.address, [false, false, false, false]);
 
             // 20+ Test the possibility to claim issued balances by the account
             await sale.connect(account).claim();
