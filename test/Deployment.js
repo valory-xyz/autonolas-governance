@@ -325,12 +325,11 @@ describe("Deployment", function () {
                 expect(balances.buBalance).to.equal(buOLASData["amounts"][i]);
             }
 
-            // 17. CM to transfer its minting rights to Timelock with CM calling `changeMinter(Timelock)`;
+            // 17. CM to transfer its minting and its owner rights to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "changeMinter", [timelock.address], nonce, 0, 0);
             await signAndExecuteSafeTx(CM, txHashData);
 
-            // 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "changeOwner", [timelock.address], nonce, 0, 0);
             await signAndExecuteSafeTx(CM, txHashData);
@@ -343,13 +342,39 @@ describe("Deployment", function () {
                 signAndExecuteSafeTx(CM, txHashData)
             ).to.be.revertedWith("GS013");
 
-            // 19. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
+            // 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
+            nonce = await CM.nonce();
+            txHashData = await safeContracts.buildContractCall(bu, "changeOwner", [timelock.address], nonce, 0, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
+
+            // Try to change owner by CM once again
+            nonce = await CM.nonce();
+            txHashData = await safeContracts.buildContractCall(bu, "changeOwner", [CM.address], nonce, 0, 0);
+            // Safe returns GS013 on unsuccessful transaction
+            await expect(
+                signAndExecuteSafeTx(CM, txHashData)
+            ).to.be.revertedWith("GS013");
+
+            // 19. CM to transfer ownership rights of Sale to Timelock calling `changeOwner(Timelock)`;
+            nonce = await CM.nonce();
+            txHashData = await safeContracts.buildContractCall(sale, "changeOwner", [timelock.address], nonce, 0, 0);
+            await signAndExecuteSafeTx(CM, txHashData);
+
+            // Try to change owner by CM once again
+            nonce = await CM.nonce();
+            txHashData = await safeContracts.buildContractCall(sale, "changeOwner", [CM.address], nonce, 0, 0);
+            // Safe returns GS013 on unsuccessful transaction
+            await expect(
+                signAndExecuteSafeTx(CM, txHashData)
+            ).to.be.revertedWith("GS013");
+
+            // 20. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
             await timelock.connect(EOA).renounceRole(adminRole, EOA.address);
 
             // Verify EOA address roles to be all revoked
             await checkTimelockRoles(timelock, EOA.address, [false, false, false, false]);
 
-            // 20+ Test the possibility to claim issued balances by the claimable accounts
+            // 21+ Test the possibility to claim issued balances by the claimable accounts
             for (let i = 0; i < veOLASSigners.length; i++) {
                 await sale.connect(veOLASSigners[i]).claim();
                 const balance = await ve.balanceOf(veOLASSigners[i].address);
