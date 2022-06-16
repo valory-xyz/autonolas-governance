@@ -6,8 +6,13 @@ const { ethers } = require("hardhat");
 describe("Deployment", function () {
     let signers;
     let EOA;
-    let safeSigners;
-    const safeThreshold = 3;
+    let safeSignersCM;
+    let safeSignersCMAddresses;
+    let safeSignersValoryAddresses;
+    // Production threshold for the DAO multisig is 6
+    const safeThresholdCM = 6;
+    // Production threshold for the Valory multisig is 3
+    const safeThresholdValory = 3;
     let nonce =  0;
     const AddressZero = "0x" + "0".repeat(40);
     const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
@@ -15,8 +20,17 @@ describe("Deployment", function () {
     const executorRole = ethers.utils.id("EXECUTOR_ROLE");
     const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
     const safeContracts = require("@gnosis.pm/safe-contracts");
+    const fs = require("fs");
     let gnosisSafeL2;
     let gnosisSafeProxyFactory;
+    const _1kOLABalance = "1000" + "0".repeat(18);
+    const _2kOLABalance = "2000" + "0".repeat(18);
+    const _3kOLABalance = "3000" + "0".repeat(18);
+    const _4kOLABalance = "4000" + "0".repeat(18);
+    const oneYear = 365 * 86400;
+    let veOLASSigners;
+    let buOLASSigners;
+    const jsonFile = "claimableBalances.json";
 
     // Mock of brute force to get OLAS address
     function bruteForceOLAS(deployAddress) {
@@ -39,7 +53,37 @@ describe("Deployment", function () {
 
         signers = await ethers.getSigners();
         EOA = signers[0];
-        safeSigners = [signers[1], signers[2], signers[3]];
+        // Get the full set of CM signers addresses (9)
+        safeSignersCMAddresses = signers.slice(1, 10).map(
+            function (currentSigner) {
+                return currentSigner.address;
+            }
+        );
+        // Get CM signers array up to the threshold (6)
+        safeSignersCM = signers.slice(1, 7);
+        // Get the full set of Valory multisig signers addresses (3)
+        safeSignersValoryAddresses = [signers[11].address, signers[12].address, signers[13].address];
+
+        // Simulate claimable balances JSON data
+        veOLASSigners = [signers[15], signers[16], signers[17]];
+        buOLASSigners = [signers[16], signers[17], signers[18], signers[19]];
+
+        // signers[16] and signers[17] have both veOLAS and buOLAS for claiming
+        let claimableBalancesJSON = {
+            "veOLAS": {
+                "addresses": [veOLASSigners[0].address, veOLASSigners[1].address, veOLASSigners[2].address],
+                "amounts": [_1kOLABalance, _2kOLABalance, _3kOLABalance],
+                "lockTimes": [oneYear, 2 * oneYear, 3 * oneYear]
+            },
+            "buOLAS": {
+                "addresses": [buOLASSigners[0].address, buOLASSigners[1].address, buOLASSigners[2].address, buOLASSigners[3].address],
+                "amounts": [_1kOLABalance, _2kOLABalance, _3kOLABalance, _4kOLABalance],
+                "numSteps": [1, 2, 3, 4]
+            }
+        };
+
+        // Write the json file with the setup to simulate the read later in the flow
+        fs.writeFileSync(jsonFile, JSON.stringify(claimableBalancesJSON));
     });
 
     context("Initialization", async function () {
@@ -106,22 +150,34 @@ describe("Deployment", function () {
 
     // Signing and executing Gnosis Safe transaction based on the multisig instance, tx hash and signers
     async function signAndExecuteSafeTx(CM, txHashData) {
-        const signMessageData = [await safeContracts.safeSignMessage(safeSigners[0], CM, txHashData, 0),
-            await safeContracts.safeSignMessage(safeSigners[1], CM, txHashData, 0),
-            await safeContracts.safeSignMessage(safeSigners[2], CM, txHashData, 0)];
+        let signMessageData = new Array(safeThresholdCM);
+        for (let i = 0; i < signMessageData.length; i++) {
+            signMessageData[i] = await safeContracts.safeSignMessage(safeSignersCM[i], CM, txHashData, 0);
+        }
         await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
     }
 
     context("Deployment script testing", async function () {
         it("Following specified steps to deploy contracts", async function () {
-            // 1. EOA creates community multisig (CM) of the DAO with Gnosis Safe, that has 3 signers and 3 threshold;
-            const setupData = gnosisSafeL2.interface.encodeFunctionData(
+            // 0. EOA creates a Valory multisig
+            let setupData = gnosisSafeL2.interface.encodeFunctionData(
                 "setup",
                 // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
-                [[safeSigners[0].address, safeSigners[1].address, safeSigners[2].address], safeThreshold, AddressZero,
-                    "0x", AddressZero, AddressZero, 0, AddressZero]
+                [safeSignersValoryAddresses, safeThresholdValory, AddressZero, "0x", AddressZero, AddressZero, 0, AddressZero]
             );
-            const proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafeL2.address,
+            let proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafeL2.address,
+                setupData, nonce);
+            await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafeL2.address, setupData, nonce).then((tx) => tx.wait());
+            const valoryMultisig = await ethers.getContractAt("GnosisSafeL2", proxyAddress);
+
+            // 1. EOA creates community multisig (CM) of the DAO with Gnosis Safe, that has 3 signers and 3 threshold;
+            nonce++;
+            setupData = gnosisSafeL2.interface.encodeFunctionData(
+                "setup",
+                // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
+                [safeSignersCMAddresses, safeThresholdCM, AddressZero, "0x", AddressZero, AddressZero, 0, AddressZero]
+            );
+            proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafeL2.address,
                 setupData, nonce);
             await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafeL2.address, setupData, nonce).then((tx) => tx.wait());
             const CM = await ethers.getContractAt("GnosisSafeL2", proxyAddress);
@@ -217,11 +273,11 @@ describe("Deployment", function () {
 
             // 15. CM to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract),
             // Valory (sent to Valory multisig);
-            const initSupply = "5" + "0".repeat(26);
+            const initSupply = "5265" + "0".repeat(23);
             // Numbers below must accumulate to initSupply
-            const timelockSupply = "2" + "0".repeat(26);
-            const saleSupply = "2" + "0".repeat(26);
-            const cmSupply = "1" + "0".repeat(26);
+            const timelockSupply = "1" + "0".repeat(26);
+            const saleSupply = "3015" + "0".repeat(23);
+            const valorySupply = "125" + "0".repeat(24);
             // Mint for Timelock
             nonce = await CM.nonce();
             let txHashData = await safeContracts.buildContractCall(olas, "mint", [timelock.address, timelockSupply], nonce, 0, 0);
@@ -232,33 +288,42 @@ describe("Deployment", function () {
             await signAndExecuteSafeTx(CM, txHashData);
             // Mint for CM
             nonce = await CM.nonce();
-            txHashData = await safeContracts.buildContractCall(olas, "mint", [CM.address, cmSupply], nonce, 0, 0);
+            txHashData = await safeContracts.buildContractCall(olas, "mint", [valoryMultisig.address, valorySupply], nonce, 0, 0);
             await signAndExecuteSafeTx(CM, txHashData);
 
             // Check the balance of contracts to be 500 million in total
             const balanceTimelock = BigInt(await olas.balanceOf(timelock.address));
             const balanceSale = BigInt(await olas.balanceOf(sale.address));
-            const balanceCM = BigInt(await olas.balanceOf(CM.address));
-            const sumBalance = balanceTimelock + balanceSale + balanceCM;
+            const balanceValory = BigInt(await olas.balanceOf(valoryMultisig.address));
+            const sumBalance = balanceTimelock + balanceSale + balanceValory;
             expect(sumBalance).to.equal(BigInt(initSupply));
 
             // 16. CM to send transaction to Sale contract (`createBalancesFor()`) to create balances for initial DAO members
             // for them to claim and lock later with veOLAS and buOLAS;
-            const account = signers[5];
-            const thousandOLABalance = "1000" + "0".repeat(18);
-            const oneYear = 365 * 86400;
-            const numSteps = 4;
-            // As an example, create lockable balances for the account in both veOLAS and buOLAS for 1k OLAS (2k total)
+            // Read the data from JSON file
+            const dataFromJSON = fs.readFileSync(jsonFile, "utf8");
+            const parsedData = JSON.parse(dataFromJSON);
+            // Get veOLAS-related set of arrays
+            const veOLASData = parsedData["veOLAS"];
+            // Get buOLAS-related set of arrays
+            const buOLASData = parsedData["buOLAS"];
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(sale, "createBalancesFor",
-                [[account.address], [thousandOLABalance], [oneYear],[account.address], [thousandOLABalance], [numSteps]],
+                [veOLASData["addresses"], veOLASData["amounts"], veOLASData["lockTimes"],
+                    buOLASData["addresses"], buOLASData["amounts"], buOLASData["numSteps"]],
                 nonce, 0, 0);
             await signAndExecuteSafeTx(CM, txHashData);
 
-            // Check veOLAS and buOLAS for the account address
-            const balances = await sale.claimableBalances(account.address);
-            expect(balances.veBalance).to.equal(thousandOLABalance);
-            expect(balances.buBalance).to.equal(thousandOLABalance);
+            // Check veOLAS and buOLAS for the claimable addresses
+            for (let i = 0; i < veOLASData["addresses"].length; i++) {
+                const balances = await sale.claimableBalances(veOLASData["addresses"][i]);
+                expect(balances.veBalance).to.equal(veOLASData["amounts"][i]);
+            }
+
+            for (let i = 0; i < buOLASData["addresses"].length; i++) {
+                const balances = await sale.claimableBalances(buOLASData["addresses"][i]);
+                expect(balances.buBalance).to.equal(buOLASData["amounts"][i]);
+            }
 
             // 17. CM to transfer its minting rights to Timelock with CM calling `changeMinter(Timelock)`;
             nonce = await CM.nonce();
@@ -284,12 +349,21 @@ describe("Deployment", function () {
             // Verify EOA address roles to be all revoked
             await checkTimelockRoles(timelock, EOA.address, [false, false, false, false]);
 
-            // 20+ Test the possibility to claim issued balances by the account
-            await sale.connect(account).claim();
-            let balance = await ve.balanceOf(account.address);
-            expect(balance).to.equal(thousandOLABalance);
-            balance = await bu.balanceOf(account.address);
-            expect(balance).to.equal(thousandOLABalance);
+            // 20+ Test the possibility to claim issued balances by the claimable accounts
+            for (let i = 0; i < veOLASSigners.length; i++) {
+                await sale.connect(veOLASSigners[i]).claim();
+                const balance = await ve.balanceOf(veOLASSigners[i].address);
+                expect(balance).to.equal(veOLASData["amounts"][i]);
+            }
+
+            // Those that were claimed during the veOLAS should not be claimed now
+            for (let i = 0; i < buOLASSigners.length; i++) {
+                if (!veOLASSigners.includes(buOLASSigners[i])) {
+                    await sale.connect(buOLASSigners[i]).claim();
+                }
+                const balance = await bu.balanceOf(buOLASSigners[i].address);
+                expect(balance).to.equal(buOLASData["amounts"][i]);
+            }
         });
     });
 });
