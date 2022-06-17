@@ -505,9 +505,9 @@ describe("Deployment", function () {
             //            Balances in buOLAS: from sale claimable for buOLAS
 
             // Nuke the factory with the Null Address
-            await factory.changeOwner("0x000000000000000000000000000000000000dEaD");
+            await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
             await expect(
-                factory.changeOwner(EOA.address)
+                factory.connect(EOA).changeOwner(EOA.address)
             ).to.be.revertedWith("OwnerOnly");
             // End of deployment:
             //            CM is the proposer, canceller and executor of timelock
