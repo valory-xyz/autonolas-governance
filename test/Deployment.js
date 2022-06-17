@@ -431,7 +431,7 @@ describe("Deployment", function () {
                 safeContracts.executeTxWithSigners(CM, safeTx, safeSignersCM)
             ).to.emit(CM, "ExecutionSuccess");
 
-            // Try to change owner by CM once again
+            // Try to change owner of OLAS by CM once again
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(olas, "changeOwner", [CM.address], nonce, 0, 0);
             // Safe returns GS013 on unsuccessful transaction
@@ -439,7 +439,7 @@ describe("Deployment", function () {
                 signAndExecuteSafeTx(CM, txHashData)
             ).to.be.revertedWith("GS013");
 
-            // Try to change owner by CM once again
+            // Try to change owner of buOLAS by CM once again
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(bu, "changeOwner", [CM.address], nonce, 0, 0);
             // Safe returns GS013 on unsuccessful transaction
@@ -447,7 +447,7 @@ describe("Deployment", function () {
                 signAndExecuteSafeTx(CM, txHashData)
             ).to.be.revertedWith("GS013");
 
-            // Try to change owner by CM once again
+            // Try to change owner of Sale by CM once again
             nonce = await CM.nonce();
             txHashData = await safeContracts.buildContractCall(sale, "changeOwner", [CM.address], nonce, 0, 0);
             // Safe returns GS013 on unsuccessful transaction
