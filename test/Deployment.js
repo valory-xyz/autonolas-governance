@@ -11,8 +11,8 @@ describe("Deployment", function () {
     let safeSignersValoryAddresses;
     // Production threshold for the DAO multisig is 6
     const safeThresholdCM = 6;
-    // Production threshold for the Valory multisig is 3
-    const safeThresholdValory = 3;
+    // Production threshold for the Valory multisig is 2
+    const safeThresholdValory = 2;
     let nonce =  0;
     const AddressZero = "0x" + "0".repeat(40);
     const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
@@ -494,6 +494,22 @@ describe("Deployment", function () {
                 expect(balance).to.equal(buOLASData["amounts"][i]);
             }
             // End of 21: EOA is the owner of: factory
+            //            CM is the proposer, canceller and executor of timelock
+            //            timelock is the owner of: OLAS, buOLAS, sale
+            //            timelock is the minter of: OLAS
+            //            timelock is the admin of timelock
+            //            timelock is the governance of governor
+            //            governor is the admin, proposer, canceller and executor of timelock
+            //            Balances in OLAS: timelock: 100 million, sale: 0 if all claimed, valory multisig: 125 million
+            //            Balances in veOLAS: from sale claimable for veOLAS
+            //            Balances in buOLAS: from sale claimable for buOLAS
+
+            // Nuke the factory with the Null Address
+            await factory.changeOwner("0x000000000000000000000000000000000000dEaD");
+            await expect(
+                factory.changeOwner(EOA.address)
+            ).to.be.revertedWith("OwnerOnly");
+            // End of deployment:
             //            CM is the proposer, canceller and executor of timelock
             //            timelock is the owner of: OLAS, buOLAS, sale
             //            timelock is the minter of: OLAS
