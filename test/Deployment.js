@@ -421,7 +421,7 @@ describe("Deployment", function () {
             callData = [olas.interface.encodeFunctionData("changeMinter", [timelock.address]),
                 olas.interface.encodeFunctionData("changeOwner", [timelock.address]),
                 bu.interface.encodeFunctionData("changeOwner", [timelock.address]),
-                sale.interface.encodeFunctionData("changeOwner", [timelock.address])];
+                sale.interface.encodeFunctionData("changeOwner", [valoryMultisig.address])];
             txs = [safeContracts.buildSafeTransaction({to: olas.address, data: callData[0], nonce: 0}),
                 safeContracts.buildSafeTransaction({to: olas.address, data: callData[1], nonce: 0}),
                 safeContracts.buildSafeTransaction({to: bu.address, data: callData[2], nonce: 0}),
