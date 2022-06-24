@@ -6,7 +6,6 @@ Pre-deploy steps:
 
 The steps of deploying the contracts in this repository are as follows:
 
-0. EOA to create Valory multisig, that has 3 signers and 2 threshold;
 1. EOA creates community multisig (CM) of the DAO with Gnosis Safe, that has 9 signers and 6 threshold;
 2. EOA to deploy DeploymentFactory and get the deploymentAddress of DeploymentFactory;
 3. Brute force salt for vanity address OLAS (deploymentAddress + bytecode);
