@@ -1,8 +1,8 @@
 
 Pre-deploy steps:
-1. Release version of all contracts in `autonolas-governance` with final bytecode.
+1. Release version of all contracts in `autonolas-governance` with the final bytecode.
 2. Create and test contract deployFactory with `create2()`.
-3. Test the deployment with closest to real environment.
+3. Test the deployment flow with closest to real environment.
 
 The steps of deploying the contracts in this repository are as follows:
 
@@ -27,4 +27,4 @@ The steps of deploying the contracts in this repository are as follows:
 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
 19. CM to transfer ownership rights of Sale to Valory multisig calling `changeOwner(ValoryMultisig)`;
 20. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
-21. EOA to revoke self ownership rights from deployFactory to Null Address (via `changeOwner()`)
+21. EOA to revoke self ownership rights from deployFactory to Null Address (via `changeOwner()`).
