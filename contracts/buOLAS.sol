@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -192,7 +192,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
                 mapLockedBalances[msg.sender] = LockedBalance(0, 0, 0, 0);
             }
 
-            // The amount cannot be bigger than the total supply
+            // The amount cannot be less than the total supply
             unchecked {
                 supplyAfter -= amount;
                 supply = supplyAfter;
@@ -282,7 +282,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
             releasedSteps = (uint32(block.timestamp) - lockedBalance.startTime) / STEP_TIME;
         }
 
-        // If the number of release steps is greater or equal to the number of steps, all the available tokens are unlocked
+        // If the number of release steps is greater than the number of steps, all the available tokens are unlocked
         if ((releasedSteps + 1) > numSteps) {
             // Return the remainder from the last release since it's the last one
             unchecked {

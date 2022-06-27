@@ -478,6 +478,22 @@ describe("Deployment", function () {
             //            governor is the admin, proposer, canceller and executor of timelock
             //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
 
+            // 21. EOA to revoke self ownership rights from deployFactory to Null Address (via `changeOwner()`)
+            await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
+            await expect(
+                factory.connect(EOA).changeOwner(EOA.address)
+            ).to.be.revertedWith("OwnerOnly");
+            // End of 21:
+            //            CM is the proposer, canceller and executor of timelock
+            //            timelock is the owner of: OLAS, buOLAS, sale
+            //            timelock is the minter of: OLAS
+            //            timelock is the admin of timelock
+            //            timelock is the governance of governor
+            //            governor is the admin, proposer, canceller and executor of timelock
+            //            Balances in OLAS: timelock: 100 million, sale: 0 if all claimed, valory multisig: 125 million
+            //            Balances in veOLAS: from sale claimable for veOLAS
+            //            Balances in buOLAS: from sale claimable for buOLAS
+
             // 21+ Test the possibility to claim issued balances by the claimable accounts
             for (let i = 0; i < veOLASSigners.length; i++) {
                 await sale.connect(veOLASSigners[i]).claim();
@@ -493,32 +509,7 @@ describe("Deployment", function () {
                 const balance = await bu.balanceOf(buOLASSigners[i].address);
                 expect(balance).to.equal(buOLASData["amounts"][i]);
             }
-            // End of 21: EOA is the owner of: factory
-            //            CM is the proposer, canceller and executor of timelock
-            //            timelock is the owner of: OLAS, buOLAS, sale
-            //            timelock is the minter of: OLAS
-            //            timelock is the admin of timelock
-            //            timelock is the governance of governor
-            //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 0 if all claimed, valory multisig: 125 million
-            //            Balances in veOLAS: from sale claimable for veOLAS
-            //            Balances in buOLAS: from sale claimable for buOLAS
-
-            // Nuke the factory with the Null Address
-            await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
-            await expect(
-                factory.connect(EOA).changeOwner(EOA.address)
-            ).to.be.revertedWith("OwnerOnly");
-            // End of deployment:
-            //            CM is the proposer, canceller and executor of timelock
-            //            timelock is the owner of: OLAS, buOLAS, sale
-            //            timelock is the minter of: OLAS
-            //            timelock is the admin of timelock
-            //            timelock is the governance of governor
-            //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 0 if all claimed, valory multisig: 125 million
-            //            Balances in veOLAS: from sale claimable for veOLAS
-            //            Balances in buOLAS: from sale claimable for buOLAS
+            // End of deployment: same as End of 21
         });
     });
 });
