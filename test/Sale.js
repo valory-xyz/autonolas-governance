@@ -156,7 +156,7 @@ describe("Sale contract", function () {
             ).to.be.revertedWith("InsufficientAllowance");
 
             // Mint OLAS for the Sale contract
-            olas.mint(sale.address, twoOLABalance);
+            await olas.mint(sale.address, twoOLABalance);
 
             // Create balances for veOLAS and buOLAS and check statuses
             await sale.createBalancesFor([account], [oneOLABalance], [oneYear], [account], [oneOLABalance], [numSteps]);
@@ -186,7 +186,7 @@ describe("Sale contract", function () {
             const account = signers[1];
 
             // Mint OLAS for the Sale contract
-            olas.mint(sale.address, oneOLABalance);
+            await olas.mint(sale.address, oneOLABalance);
 
             // Create balance for account in veOLAS
             await sale.createBalancesFor([account.address], [oneOLABalance], [oneYear], [], [], []);
@@ -217,7 +217,7 @@ describe("Sale contract", function () {
             const account = signers[1];
 
             // Mint OLAS for the Sale contract
-            olas.mint(sale.address, oneOLABalance);
+            await olas.mint(sale.address, oneOLABalance);
 
             // Create balance for account in buOLAS
             await sale.createBalancesFor([], [], [], [account.address], [oneOLABalance], [numSteps]);
@@ -248,7 +248,7 @@ describe("Sale contract", function () {
             const account = signers[1];
 
             // Mint OLAS for the Sale contract
-            olas.mint(sale.address, twoOLABalance);
+            await olas.mint(sale.address, twoOLABalance);
 
             // Create balance for account in veOLAS and buOLAS
             await sale.createBalancesFor([account.address], [oneOLABalance], [oneYear],
@@ -281,7 +281,7 @@ describe("Sale contract", function () {
             const accounts = [signers[1], signers[2]];
 
             // Mint OLAS for the Sale contract
-            olas.mint(sale.address, twoOLABalance);
+            await olas.mint(sale.address, twoOLABalance);
 
             // Create balance for account in veOLAS
             await sale.createBalancesFor([accounts[0].address, accounts[1].address], [oneOLABalance, oneOLABalance],
