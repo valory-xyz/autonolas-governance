@@ -761,40 +761,41 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Reverts the transfer of this token.
-    function transfer(address, uint256) external virtual override returns (bool) {
+    function transfer(address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts the approval of this token.
-    function approve(address, uint256) external virtual override returns (bool) {
+    function approve(address spender, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts the transferFrom of this token.
-    function transferFrom(address, address, uint256) external virtual override returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts the allowance of this token.
-    function allowance(address, address) external view virtual override returns (uint256)
+    function allowance(address owner, address spender) external view virtual override returns (uint256)
     {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts delegates of this token.
-    function delegates(address) external view virtual override returns (address)
+    function delegates(address account) external view virtual override returns (address)
     {
         revert NonDelegatable(address(this));
     }
 
     /// @dev Reverts delegate for this token.
-    function delegate(address) external virtual override
+    function delegate(address delegatee) external virtual override
     {
         revert NonDelegatable(address(this));
     }
 
     /// @dev Reverts delegateBySig for this token.
-    function delegateBySig(address, uint256, uint256, uint8, bytes32, bytes32) external virtual override
+    function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    external virtual override
     {
         revert NonDelegatable(address(this));
     }

@@ -312,22 +312,22 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     }
 
     /// @dev Reverts the transfer of this token.
-    function transfer(address, uint256) external virtual override returns (bool) {
+    function transfer(address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts the approval of this token.
-    function approve(address, uint256) external virtual override returns (bool) {
+    function approve(address spender, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts the transferFrom of this token.
-    function transferFrom(address, address, uint256) external virtual override returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
         revert NonTransferable(address(this));
     }
 
     /// @dev Reverts the allowance of this token.
-    function allowance(address, address) external view virtual override returns (uint256)
+    function allowance(address owner, address spender) external view virtual override returns (uint256)
     {
         revert NonTransferable(address(this));
     }
