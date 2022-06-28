@@ -188,8 +188,8 @@ describe("Deployment", function () {
             await factory.connect(EOA).deployOLAS(olasSalt);
             const olasAddress = await factory.olasAddress();
             const olas = await ethers.getContractAt("OLAS", olasAddress);
-            expect(EOA.address).to.equal(await olas.owner());
-            expect(EOA.address).to.equal(await olas.minter());
+            expect(await EOA.getAddress()).to.equal(await olas.owner());
+            expect(await EOA.getAddress()).to.equal(await olas.minter());
             // End of 4: EOA is the owner of: factory, OLAS
             //           EOA is the minter of: OLAS
 
@@ -242,10 +242,10 @@ describe("Deployment", function () {
 
             // 9. EOA to give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
             // and canceller ("CANCELLER_ROLE") roles to GovernorOLAS from Timelock (in separate transactions via `grantRole()` calls);
-            await timelock.grantRole(adminRole, governor.address);
-            await timelock.grantRole(executorRole, governor.address);
-            await timelock.grantRole(proposerRole, governor.address);
-            await timelock.grantRole(cancellerRole, governor.address);
+            await timelock.connect(EOA).grantRole(adminRole, governor.address);
+            await timelock.connect(EOA).grantRole(executorRole, governor.address);
+            await timelock.connect(EOA).grantRole(proposerRole, governor.address);
+            await timelock.connect(EOA).grantRole(cancellerRole, governor.address);
             // End of 9: EOA is the owner of: factory, OLAS
             //           EOA is the admin of timelock
             //           EOA is the minter of: OLAS
