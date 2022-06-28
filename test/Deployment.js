@@ -339,9 +339,9 @@ describe("Deployment", function () {
             //            governor is the admin, proposer, canceller and executor of timelock
             //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
 
-            // 14. EOA to transfer its minting and its ownership rights of OLAS to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
+            // 14. EOA to transfer its minting and its ownership rights of OLAS to Timelock by calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
             // 15. EOA to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
-            // 16. EOA to transfer ownership rights of Sale to Timelock calling `changeOwner(Timelock)`;
+            // 16. EOA to transfer ownership rights of Sale to Valory multisig calling `changeOwner(ValoryMultisig)`;
             await olas.connect(EOA).changeMinter(timelock.address);
             await olas.connect(EOA).changeOwner(timelock.address);
             await bu.connect(EOA).changeOwner(timelock.address);
@@ -364,7 +364,8 @@ describe("Deployment", function () {
             // End of 16: EOA is the owner of: factory
             //            EOA is the admin of timelock
             //            CM is the proposer, canceller and executor of timelock
-            //            timelock is the owner of: OLAS, buOLAS, sale
+            //            timelock is the owner of: OLAS, buOLAS
+            //            valoryMultisig is the owner of: sale
             //            timelock is the minter of: OLAS
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
@@ -378,7 +379,8 @@ describe("Deployment", function () {
             await checkTimelockRoles(timelock, EOA.address, [false, false, false, false]);
             // End of 17: EOA is the owner of: factory
             //            CM is the proposer, canceller and executor of timelock
-            //            timelock is the owner of: OLAS, buOLAS, sale
+            //            timelock is the owner of: OLAS, buOLAS
+            //            valoryMultisig is the owner of: sale
             //            timelock is the minter of: OLAS
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
@@ -387,11 +389,13 @@ describe("Deployment", function () {
 
             // 18. EOA to revoke self ownership rights from DeploymentFactory to Null Address (via `changeOwner()`)
             await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
+            // Try to change the owner of factory by EOA once again
             await expect(
                 factory.connect(EOA).changeOwner(EOA.address)
             ).to.be.revertedWith("OwnerOnly");
             // End of 18: CM is the proposer, canceller and executor of timelock
-            //            timelock is the owner of: OLAS, buOLAS, sale
+            //            timelock is the owner of: OLAS, buOLAS
+            //            valoryMultisig is the owner of: sale
             //            timelock is the minter of: OLAS
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
