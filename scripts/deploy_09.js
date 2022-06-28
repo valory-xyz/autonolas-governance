@@ -1,3 +1,5 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
@@ -8,7 +10,6 @@ async function main() {
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
     const useLedger = parsedData.useLedger;
-    const CMAddress = parsedData.CM;
     const derivationPath = parsedData.derivationPath;
     const providerName = parsedData.providerName;
     const initialVotingDelay = parsedData.initialVotingDelay;
@@ -38,7 +39,7 @@ async function main() {
     let result = await governor.deployed();
 
     // Transaction details
-    console.log("Contract deployment: GovernorOLAS")
+    console.log("Contract deployment: GovernorOLAS");
     console.log("Contract address:", governor.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
@@ -60,28 +61,28 @@ async function main() {
     console.log("You are signing the following transaction: timelock.connect(EOA).grantRole(adminRole, governor.address)");
     result = await timelock.connect(EOA).grantRole(adminRole, governor.address);
     // Transaction details
-    console.log("Contract call: Timelock")
+    console.log("Contract call: Timelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.hash);
 
     console.log("You are signing the following transaction: timelock.connect(EOA).grantRole(executorRole, governor.address)");
     result = await timelock.connect(EOA).grantRole(executorRole, governor.address);
     // Transaction details
-    console.log("Contract call: Timelock")
+    console.log("Contract call: Timelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.hash);
 
     console.log("You are signing the following transaction: timelock.connect(EOA).grantRole(proposerRole, governor.address)");
     result = await timelock.connect(EOA).grantRole(proposerRole, governor.address);
     // Transaction details
-    console.log("Contract call: Timelock")
+    console.log("Contract call: Timelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.hash);
 
     console.log("You are signing the following transaction: timelock.connect(EOA).grantRole(cancellerRole, governor.address)");
     result = await timelock.connect(EOA).grantRole(cancellerRole, governor.address);
     // Transaction details
-    console.log("Contract call: Timelock")
+    console.log("Contract call: Timelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.hash);
 

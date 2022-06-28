@@ -1,3 +1,5 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
@@ -35,7 +37,7 @@ async function main() {
     const result = await timelock.deployed();
 
     // Transaction details
-    console.log("Contract deployment: Timelock")
+    console.log("Contract deployment: Timelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.deployTransaction.hash);
 

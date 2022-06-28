@@ -1,10 +1,11 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
 
 async function main() {
     const fs = require("fs");
-    const safeContracts = require("@gnosis.pm/safe-contracts");
     const globalsFile = "globals.json";
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
@@ -40,10 +41,8 @@ async function main() {
     console.log("Address to mint to:", parsedData.timelockAddress);
     console.log("Amount to mint:", timelockSupply);
     let result = await olas.connect(EOA).mint(parsedData.timelockAddress, timelockSupply);
-    console.log("Minted ")
-    minting: about to mint ## supply to @@@, then tx hash
     // Transaction details
-    console.log("Contract call: OLAS")
+    console.log("Contract call: OLAS");
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 
@@ -52,7 +51,7 @@ async function main() {
     console.log("Amount to mint:", saleSupply);
     result = await olas.connect(EOA).mint(parsedData.saleAddress, saleSupply);
     // Transaction details
-    console.log("Contract call: OLAS")
+    console.log("Contract call: OLAS");
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 
@@ -61,7 +60,7 @@ async function main() {
     console.log("Amount to mint:", valorySupply);
     result = await olas.connect(EOA).mint(parsedData.valoryMultisig, valorySupply);
     // Transaction details
-    console.log("Contract call: OLAS")
+    console.log("Contract call: OLAS");
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 

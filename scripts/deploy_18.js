@@ -1,10 +1,11 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
 
 async function main() {
     const fs = require("fs");
-    const safeContracts = require("@gnosis.pm/safe-contracts");
     const globalsFile = "globals.json";
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
@@ -33,14 +34,14 @@ async function main() {
     console.log("You are signing the following transaction: olas.connect(EOA).changeMinter(parsedData.timelockAddress)");
     let result = await olas.connect(EOA).changeMinter(parsedData.timelockAddress);
     // Transaction details
-    console.log("Contract call: OLAS")
+    console.log("Contract call: OLAS");
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 
     console.log("You are signing the following transaction: olas.connect(EOA).changeOwner(parsedData.timelockAddress)");
     result = await olas.connect(EOA).changeOwner(parsedData.timelockAddress);
     // Transaction details
-    console.log("Contract call: OLAS")
+    console.log("Contract call: OLAS");
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 
@@ -48,7 +49,7 @@ async function main() {
     console.log("You are signing the following transaction: bu.connect(EOA).changeOwner(parsedData.timelockAddress)");
     result = await bu.connect(EOA).changeOwner(parsedData.timelockAddress);
     // Transaction details
-    console.log("Contract call: buOLAS")
+    console.log("Contract call: buOLAS");
     console.log("Contract address:", bu.address);
     console.log("Transaction:", result.hash);
 
@@ -56,7 +57,7 @@ async function main() {
     console.log("You are signing the following transaction: sale.connect(EOA).changeOwner(parsedData.valoryMultisig)");
     result = await sale.connect(EOA).changeOwner(parsedData.valoryMultisig);
     // Transaction details
-    console.log("Contract call: Sale")
+    console.log("Contract call: Sale");
     console.log("Contract address:", sale.address);
     console.log("Transaction:", result.hash);
 
@@ -72,7 +73,7 @@ async function main() {
     console.log("You are signing the following transaction: timelock.connect(EOA).renounceRole(adminRole, await EOA.getAddress())");
     result = await timelock.connect(EOA).renounceRole(adminRole, await EOA.getAddress());
     // Transaction details
-    console.log("Contract call: Timelock")
+    console.log("Contract call: Timelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.hash);
     // Check for the admin role being revoked from the EOA
@@ -83,7 +84,7 @@ async function main() {
     console.log("You are signing the following transaction: factory.connect(EOA).changeOwner(\"0x000000000000000000000000000000000000dEaD\")");
     result = await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
     // Transaction details
-    console.log("Contract call: DeploymentFactory")
+    console.log("Contract call: DeploymentFactory");
     console.log("Contract address:", factory.address);
     console.log("Transaction:", result.hash);
     // Check the ownership of the deployment factory

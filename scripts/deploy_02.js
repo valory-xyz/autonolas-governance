@@ -1,3 +1,5 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
@@ -32,7 +34,7 @@ async function main() {
     const result = await factory.deployed();
 
     // Transaction details
-    console.log("Contract deployment: DeploymentFactory")
+    console.log("Contract deployment: DeploymentFactory");
     console.log("Contract address:", factory.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
@@ -40,8 +42,10 @@ async function main() {
     expect(await factory.owner()).to.equal(deployer);
 
     // Contract verification
-    const execSync = require("child_process").execSync;
-    execSync("npx hardhat verify --network " + providerName + " " + factory.address, { encoding: "utf-8" });
+    if (parsedData.contractVerification) {
+        const execSync = require("child_process").execSync;
+        execSync("npx hardhat verify --network " + providerName + " " + factory.address, { encoding: "utf-8" });
+    }
 
     // Writing updated parameters back to the JSON file
     parsedData.deploymentFactory = factory.address;

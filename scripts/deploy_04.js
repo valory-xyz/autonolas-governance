@@ -1,3 +1,5 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
@@ -8,7 +10,6 @@ async function main() {
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
     const useLedger = parsedData.useLedger;
-    const CMAddress = parsedData.CM;
     const derivationPath = parsedData.derivationPath;
     const providerName = parsedData.providerName;
     const olasSaltString = parsedData.olasSaltString;
@@ -38,7 +39,7 @@ async function main() {
     const olas = await ethers.getContractAt("OLAS", olasAddress);
 
     // Transaction details
-    console.log("Contract deployment: OLAS via create2()")
+    console.log("Contract deployment: OLAS via create2()");
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 
@@ -47,8 +48,10 @@ async function main() {
     expect(deployer).to.equal(await olas.minter());
 
     // Contract verification
-    const execSync = require("child_process").execSync;
-    execSync("npx hardhat verify --network " + providerName + " " + olas.address, { encoding: "utf-8" });
+    if (parsedData.contractVerification) {
+        const execSync = require("child_process").execSync;
+        execSync("npx hardhat verify --network " + providerName + " " + olas.address, { encoding: "utf-8" });
+    }
 
     // Writing updated parameters back to the JSON file
     parsedData.olasAddress = olasAddress;

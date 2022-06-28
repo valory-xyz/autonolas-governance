@@ -1,10 +1,11 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
 
 async function main() {
     const fs = require("fs");
-    const safeContracts = require("@gnosis.pm/safe-contracts");
     const globalsFile = "globals.json";
     let dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
@@ -41,7 +42,7 @@ async function main() {
         buOLASData["addresses"], buOLASData["amounts"], buOLASData["numSteps"]);
 
     // Transaction details
-    console.log("Contract call: Sale")
+    console.log("Contract call: Sale");
     console.log("Contract address:", sale.address);
     console.log("Transaction:", result.hash);
 

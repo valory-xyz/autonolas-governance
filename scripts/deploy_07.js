@@ -1,3 +1,5 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
@@ -8,10 +10,9 @@ async function main() {
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
     const useLedger = parsedData.useLedger;
-    const CMAddress = parsedData.CM;
     const derivationPath = parsedData.derivationPath;
     const providerName = parsedData.providerName;
-    const veOlasSaltString = parsedData.veOlasSaltString
+    const veOlasSaltString = parsedData.veOlasSaltString;
     let EOA;
 
     const provider = await ethers.providers.getDefaultProvider(providerName);
@@ -38,7 +39,7 @@ async function main() {
     const ve = await ethers.getContractAt("veOLAS", veOLASAddress);
 
     // Transaction details
-    console.log("Contract deployment: veOLAS via create2()")
+    console.log("Contract deployment: veOLAS via create2()");
     console.log("Contract address:", veOLASAddress);
     console.log("Transaction:", result.hash);
 

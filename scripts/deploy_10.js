@@ -1,3 +1,5 @@
+/*global process*/
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
@@ -32,7 +34,7 @@ async function main() {
     const result = await bu.deployed();
 
     // Transaction details
-    console.log("Contract deployment: buOLAS")
+    console.log("Contract deployment: buOLAS");
     console.log("Contract address:", bu.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
