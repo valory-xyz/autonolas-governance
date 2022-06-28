@@ -34,12 +34,12 @@ describe("Deployment", function () {
     const jsonFile = "claimableBalances.json";
 
     // Mock of brute force to get OLAS address
-    function bruteForceOLAS(deployAddress) {
+    function bruteForceOLAS(deploymentAddress) {
         return ethers.utils.id("0x0001a5");
     }
 
     // Mock of brute force to get veOLAS address
-    function bruteForceVeOLAS(deployAddress, olasAddress) {
+    function bruteForceVeOLAS(deploymentAddress, olasAddress) {
         return ethers.utils.id("0x7e01a5");
     }
 
@@ -164,7 +164,7 @@ describe("Deployment", function () {
 
     context("Deployment script testing", async function () {
         it("Following specified steps to deploy contracts", async function () {
-            // 0. EOA creates a Valory multisig
+            // 0. EOA creates a Valory multisig with 3 signers and 2 threshold
             let setupData = gnosisSafeL2.interface.encodeFunctionData(
                 "setup",
                 // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
@@ -175,7 +175,7 @@ describe("Deployment", function () {
             await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafeL2.address, setupData, nonce).then((tx) => tx.wait());
             const valoryMultisig = await ethers.getContractAt("GnosisSafeL2", proxyAddress);
 
-            // 1. EOA creates community multisig (CM) of the DAO with Gnosis Safe, that has 3 signers and 3 threshold;
+            // 1. EOA creates community multisig (CM) of the DAO with Gnosis Safe, that has 9 signers and 6 threshold;
             nonce++;
             setupData = gnosisSafeL2.interface.encodeFunctionData(
                 "setup",
@@ -187,16 +187,16 @@ describe("Deployment", function () {
             await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafeL2.address, setupData, nonce).then((tx) => tx.wait());
             const CM = await ethers.getContractAt("GnosisSafeL2", proxyAddress);
 
-            // 2. EOA to deploy deployFactory and get deployAddress of deployFactory;
+            // 2. EOA to deploy DeploymentFactory and get the deploymentAddress of DeploymentFactory;
             const FACTORY = await ethers.getContractFactory("DeploymentFactory");
             const factory = await FACTORY.connect(EOA).deploy();
             await factory.deployed();
             // End of 2: EOA is the owner of: factory
 
-            // 3. Brutforce salt for vanity address OLAS (deployAddress + bytecode);
+            // 3. Brutforce salt for vanity address OLAS (deploymentAddress + bytecode);
             const olasSalt = bruteForceOLAS(factory.address);
 
-            // 4. EOA to deploy OLAS contract via deployFactory (becoming its owner and minter);
+            // 4. EOA to deploy OLAS contract via DeploymentFactory (becoming its owner and minter);
             await factory.deployOLAS(olasSalt);
             const olasAddress = await factory.olasAddress();
             // End of 4: EOA is the owner of: factory, OLAS
@@ -231,10 +231,10 @@ describe("Deployment", function () {
             //           CM is the proposer, canceller and executor of timelock
             //           timelock is the admin of timelock
 
-            // 7. Brutforce salt for vanity address veOLAS (deployAddress + OLAS address + bytecode);
+            // 7. Brutforce salt for vanity address veOLAS (deploymentAddress + OLAS address + bytecode);
             const veSalt = bruteForceVeOLAS(factory.address, olasAddress);
 
-            // 8. EOA to deploy veOLAS contract via deployFactory pointed to OLAS;
+            // 8. EOA to deploy veOLAS contract via DeploymentFactory pointed to OLAS;
             await factory.deployVeOLAS(veSalt, olas.address);
             const veOLASAddress = await factory.veOLASAddress();
             const ve = await ethers.getContractAt("veOLAS", veOLASAddress);
@@ -321,7 +321,6 @@ describe("Deployment", function () {
 
             // 14. EOA changes the owner on Sale contract to CM: call `changeOwner(CM)`;
             await sale.connect(EOA).changeOwner(CM.address);
-            await sale.deployed();
 
             // Verify the ownership of Sale contract
             await expect(
@@ -414,7 +413,7 @@ describe("Deployment", function () {
             //            governor is the admin, proposer, canceller and executor of timelock
             //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
 
-            // 17. CM to transfer its minting and its owner rights to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
+            // 17. CM to transfer its minting and its ownership rights of OLAS to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
             // 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
             // 19. CM to transfer ownership rights of Sale to Timelock calling `changeOwner(Timelock)`;
             nonce = await CM.nonce();
@@ -478,7 +477,7 @@ describe("Deployment", function () {
             //            governor is the admin, proposer, canceller and executor of timelock
             //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
 
-            // 21. EOA to revoke self ownership rights from deployFactory to Null Address (via `changeOwner()`)
+            // 21. EOA to revoke self ownership rights from DeploymentFactory to Null Address (via `changeOwner()`)
             await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
             await expect(
                 factory.connect(EOA).changeOwner(EOA.address)
