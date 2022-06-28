@@ -22,7 +22,7 @@ The steps of deploying the contracts in this repository are as follows:
 14. EOA changes the ownership of Sale contract to CM: call `changeOwner(CM)`;
 15. CM to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract), Valory (sent to Valory multisig);
 16. CM to send transaction to Sale contract (`createBalancesFor()`) to create balances for initial DAO members for them to claim and lock later with veOLAS and buOLAS;
-17. CM to transfer its minting and its ownership rights to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
+17. CM to transfer its minting and its ownership rights of OLAS to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
 19. CM to transfer ownership rights of Sale to Valory multisig calling `changeOwner(ValoryMultisig)`;
 20. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);

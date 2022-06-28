@@ -413,7 +413,7 @@ describe("Deployment", function () {
             //            governor is the admin, proposer, canceller and executor of timelock
             //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
 
-            // 17. CM to transfer its minting and its ownership rights to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
+            // 17. CM to transfer its minting and its ownership rights of OLAS to Timelock with CM calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
             // 18. CM to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
             // 19. CM to transfer ownership rights of Sale to Timelock calling `changeOwner(Timelock)`;
             nonce = await CM.nonce();
