@@ -24,6 +24,9 @@ For team incentivisation we have a burnable locked `OLAS` token - `buOLAS`:
 For initial incentivised locking of `OLAS` tokens we have a `Sale` contract - `Sale`:
 - [Sale](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Sale.sol)
 
+In order to deploy OLAS and veOLAS contracts via the create2() method, the following contract is utilized for vanity addresses:
+- [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol)
+
 ## Development
 
 ### Prerequisites
@@ -57,9 +60,6 @@ Run the tests:
 npx hardhat test
 ```
 
-### Audits
-The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
-
 ### Linters
 - [`ESLint`](https://eslint.org) is used for JS code.
 - [`solhint`](https://github.com/protofire/solhint) is used for Solidity linting.
@@ -71,6 +71,13 @@ several steps in order to be verified. Those include:
 - code installation
 - running linters
 - running tests
+
+## Deployment
+The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
+The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts).
+
+## Audits
+The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
 
 
 ## Acknowledgements
