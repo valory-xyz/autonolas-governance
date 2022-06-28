@@ -199,7 +199,7 @@ describe("Deployment", function () {
             const executors = [CM.address];
             const proposers = [CM.address];
             const Timelock = await ethers.getContractFactory("Timelock");
-            const timelock = await Timelock.deploy(minDelay, proposers, executors);
+            const timelock = await Timelock.connect(EOA).deploy(minDelay, proposers, executors);
             await timelock.deployed();
 
             // Verify CM address roles
@@ -293,7 +293,7 @@ describe("Deployment", function () {
             await olas.connect(EOA).mint(sale.address, saleSupply);
             await olas.connect(EOA).mint(valoryMultisig.address, valorySupply);
 
-            // Check the balance of contracts to be 500 million in total
+            // Check the balance of contracts to be equal to the initSupply in total
             const balanceTimelock = BigInt(await olas.balanceOf(timelock.address));
             const balanceSale = BigInt(await olas.balanceOf(sale.address));
             const balanceValory = BigInt(await olas.balanceOf(valoryMultisig.address));
