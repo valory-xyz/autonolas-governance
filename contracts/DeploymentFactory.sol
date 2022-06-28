@@ -50,8 +50,9 @@ contract DeploymentFactory {
         // Deploy OLAS contract
         olasAddress = Create2.deploy(0, salt, abi.encodePacked(type(OLAS).creationCode));
 
-        // Change owner of the OLAS contract to the msg.sender
-        OLAS(olasAddress).changeOwner(owner);
+        // Change minter and owner of the OLAS contract to the msg.sender
+        OLAS(olasAddress).changeMinter(msg.sender);
+        OLAS(olasAddress).changeOwner(msg.sender);
     }
 
     /// @dev Computes `OLAS` contract address.
