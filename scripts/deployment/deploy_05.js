@@ -56,7 +56,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --contract contracts/Timelock.sol:Timelock --constructor-args script/verify_05.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --contract contracts/Timelock.sol:Timelock --constructor-args scripts/deployment/verify_05.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file

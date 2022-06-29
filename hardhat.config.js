@@ -1,3 +1,5 @@
+/*global process*/
+
 require("hardhat-deploy");
 require("hardhat-deploy-ethers");
 require("@nomiclabs/hardhat-waffle");
@@ -12,13 +14,16 @@ const accounts = {
     accountsBalance: "100000000000000000000000000",
 };
 
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+
 module.exports = {
     networks: {
         ganache: {
             url: "http://localhost:8545",
         },
         goerli: {
-            url: "https://eth-goerli.alchemyapi.io/v2/7iZOnGQUIe33uniQ4YwOIh9US3KtvBKO",
+            url: "https://eth-goerli.alchemyapi.io/v2/" + ALCHEMY_API_KEY,
             chainId: 5,
             accounts: {
                 mnemonic: "hair ugly glass focus game announce tape stairs abandon rack earn script",
@@ -34,8 +39,7 @@ module.exports = {
         },
     },
     etherscan: {
-        // No more than 5 tx per second
-        apiKey: "NX1KY4CYM4KDTU4TVEBJJ4RYC48SV89FNC"
+        apiKey: ETHERSCAN_API_KEY
     },
     solidity: {
         compilers: [

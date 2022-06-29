@@ -27,31 +27,31 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("10. EOA to deploy buOLAS contract pointed to OLAS");
-    const BU = await ethers.getContractFactory("buOLAS");
-    console.log("You are signing the following transaction: BU.connect(EOA).deploy(parsedData.olasAddress, \"Burnable Locked OLAS\", \"buOLAS\")");
-    const bu = await BU.connect(EOA).deploy(parsedData.olasAddress, "Burnable Locked OLAS", "buOLAS");
-    const result = await bu.deployed();
+    console.log("11. EOA to deploy Sale contract pointed to OLAS, veOLAs and bOLAS");
+    const SALE = await ethers.getContractFactory("Sale");
+    console.log("You are signing the following transaction: SALE.connect(EOA).deploy(parsedData.olasAddress, parsedData.veOLASAddress, parsedData.buOLASAddress)");
+    const sale = await SALE.connect(EOA).deploy(parsedData.olasAddress, parsedData.veOLASAddress, parsedData.buOLASAddress);
+    const result = await sale.deployed();
 
     // Transaction details
-    console.log("Contract deployment: buOLAS");
-    console.log("Contract address:", bu.address);
+    console.log("Contract deployment: Sale");
+    console.log("Contract address:", sale.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // Verification of ownership and values
-    expect(await bu.token()).to.equal(parsedData.olasAddress);
-    expect(await bu.name()).to.equal("Burnable Locked OLAS");
-    expect(await bu.symbol()).to.equal("buOLAS");
-    expect(await bu.owner()).to.equal(deployer);
+    expect(await sale.olasToken()).to.equal(parsedData.olasAddress);
+    expect(await sale.veToken()).to.equal(parsedData.veOLASAddress);
+    expect(await sale.buToken()).to.equal(parsedData.buOLASAddress);
+    expect(await sale.owner()).to.equal(deployer);
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args script/verify_10.js --network " + providerName + " " + bu.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_11.js --network " + providerName + " " + sale.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
-    parsedData.buOLASAddress = bu.address;
+    parsedData.saleAddress = sale.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 

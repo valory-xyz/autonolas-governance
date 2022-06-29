@@ -74,7 +74,7 @@ several steps in order to be verified. Those include:
 
 ## Deployment
 The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
-The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts).
+The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
 
 ## Audits
 The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
