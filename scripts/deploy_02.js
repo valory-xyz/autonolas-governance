@@ -27,7 +27,7 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("2. EOA to deploy deployFactory and get deploymentAddress of deploymentFactory;");
+    console.log("2. EOA to deploy deploymentFactory and get deploymentAddress of deploymentFactory;");
     const FACTORY = await ethers.getContractFactory("DeploymentFactory");
     console.log("You are signing the following transaction: FACTORY.connect(EOA).deploy()");
     const factory = await FACTORY.connect(EOA).deploy();
