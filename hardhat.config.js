@@ -30,7 +30,7 @@ module.exports = {
         mainnet: {
             url: "https://eth-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY,
             chainId: 1,
-        }
+        },
         goerli: {
             url: "https://eth-goerli.alchemyapi.io/v2/" + ALCHEMY_API_KEY,
             chainId: 5,
