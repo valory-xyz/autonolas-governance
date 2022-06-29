@@ -6,7 +6,7 @@ This repository contains the Autonolas `OLAS` token and the governance part of t
 
 A graphical overview of the whole on-chain architecture is available here:
 
-![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v2.png?raw=true)
+![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture.png?raw=true)
 Please note that `buOLAS` and `Sale` contracts are not part on the diagram.
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
@@ -76,7 +76,7 @@ several steps in order to be verified. Those include:
 The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
 The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
 
-The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abi).
+The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
 
 ## Audits
 The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
