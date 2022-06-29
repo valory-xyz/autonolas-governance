@@ -16,7 +16,10 @@ const accounts = {
 };
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-const GOERLI_MNEMONIC = process.env.GOERLI_MNEMONIC;
+let GOERLI_MNEMONIC = process.env.GOERLI_MNEMONIC;
+if (!GOERLI_MNEMONIC) {
+    GOERLI_MNEMONIC = accounts.mnemonic;
+}
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 module.exports = {
