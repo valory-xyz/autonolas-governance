@@ -29,7 +29,7 @@ async function main() {
 
     // Transaction signing and execution
     console.log("3. Brutforce salt for vanity address OLAS (deployAddress + bytecode)");
-    const olasSalt = ethers.utils.id(olasSaltString);
+    const olasSalt = olasSaltString;
 
     console.log("4. EOA to deploy OLAS contract via deploymentFactory (becoming its owner and minter)");
     const factory = await ethers.getContractAt("DeploymentFactory", parsedData.deploymentFactory);
@@ -40,7 +40,7 @@ async function main() {
 
     // Transaction details
     console.log("Contract deployment: OLAS via create2()");
-    console.log("Contract address:", olas.address);
+    console.log("Contract address:", olasAddress);
     console.log("Transaction:", result.hash);
 
     // Verification of ownership and values
@@ -50,7 +50,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --network " + providerName + " " + olas.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --network " + providerName + " " + olasAddress, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
