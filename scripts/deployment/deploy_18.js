@@ -71,7 +71,7 @@ async function main() {
     const timelock = await ethers.getContractAt("Timelock", parsedData.timelockAddress);
     const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
     console.log("You are signing the following transaction: timelock.connect(EOA).renounceRole(adminRole, await EOA.getAddress())");
-    result = await timelock.connect(EOA).renounceRole(adminRole, await EOA.getAddress());
+    result = await timelock.connect(EOA).renounceRole(adminRole, deployer);
     // Transaction details
     console.log("Contract call: Timelock");
     console.log("Contract address:", timelock.address);
