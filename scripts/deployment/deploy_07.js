@@ -29,7 +29,7 @@ async function main() {
 
     // Transaction signing and execution
     console.log("6. Brutforce salt for vanity address veOLAS (deployAddress + OLAS address + bytecode)");
-    const veSalt = ethers.utils.id(veOlasSaltString);
+    const veSalt = veOlasSaltString;
 
     console.log("7. EOA to deploy veOLAS contract via deploymentFactory pointed to OLAS");
     const factory = await ethers.getContractAt("DeploymentFactory", parsedData.deploymentFactory);
