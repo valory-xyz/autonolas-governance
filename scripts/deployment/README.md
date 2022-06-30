@@ -17,7 +17,7 @@ command and compiled with the
 ```
 npx hardhat compile
 ```
-command as described in the main https://github.com/valory-xyz/autonolas-governance/blob/main/README.md"
+command as described in the [main readme](https://github.com/valory-xyz/autonolas-governance/blob/main/README.md).
 
 
 Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/globals_goerli.json` for the goerli testnet).
