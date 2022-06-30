@@ -9,7 +9,16 @@ This folder contains the scripts to deploy Autonolas governance. These scripts c
 - Please note: if you encounter the `Unknown Error 0x6b0c`, then it is likely because the ledger is not connected or logged in.
 
 ## Steps to engage
-Make sure the project is installed with the `yarn install` command as described in the main [README](https://github.com/valory-xyz/autonolas-governance/blob/main/README.md)
+Make sure the project is installed with the
+```
+yarn install
+```
+command and compiled with the
+```
+npx hardhat compile
+```
+command as described in the main https://github.com/valory-xyz/autonolas-governance/blob/main/README.md"
+
 
 Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/globals_goerli.json` for the goerli testnet).
 
