@@ -81,6 +81,9 @@ The finalized contract ABIs for deployment and their number of optimization pass
 ## Audits
 The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
 
+## Deployed Protocol
+The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
+
 
 ## Acknowledgements
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
