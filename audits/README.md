@@ -11,4 +11,4 @@ The latest internal audit is located in this folder: [internal audit](https://gi
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
 the recommendations are addressed here: [feedback](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Addressing%20Initial%20ApeWorX%20Recommentations.pdf).
 
-The final [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v0.1.0.pre-audit.pdf).
+The final audit reports [v1](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v0.1.0.pre-audit.pdf) and [v2](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v1.0.0.pdf).
