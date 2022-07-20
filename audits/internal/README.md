@@ -147,14 +147,14 @@ slither-check-erc buOLAS-flatten.sol buOLAS
 ```
 
 ### Coverage
-Hardhat coverage has been performed before the audit and can be found here:
-[pre_audit_coverage](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_pre_audit).
+Hardhat coverage has been performed before the audit and can be found here (archive):
+[pre_audit_coverage](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_pre_audit.tar.gz).
 
-After addressing all the issues mentioned below, the coverage has been re-run, and the results are available here:
-[post_audit_coverage](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_post_audit).
+After addressing all the issues mentioned below, the coverage has been re-run, and the results are available here (archive):
+[post_audit_coverage](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_post_audit.tar.gz).
 
 One can take a look at the image representing the final coverage stage:
-[coverage_image](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_post_audit/coverage.png).
+[coverage_image](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage.png).
 
 Note that the remaining branches are not covered in the `veOLAS` contract since those conditions are unreachable in real meaningful numbers, that has been verified
 by the `echidna` fuzzer (discussed in detail below):
