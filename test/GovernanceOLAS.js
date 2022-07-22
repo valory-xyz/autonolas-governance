@@ -385,8 +385,12 @@ describe("Governance OLAS", function () {
             const callData = "0x";
             // Solidity overridden functions must be explicitly declared
             // https://github.com/ethers-io/ethers.js/issues/407
-            await governor["propose(address[],uint256[],bytes[],string)"]([AddressZero], [0],
+            const proposalTx = await governor["propose(address[],uint256[],bytes[],string)"]([AddressZero], [0],
                 [callData], proposalDescription);
+            const resultTx = await proposalTx.wait();
+            expect(resultTx.events[0].event).to.equal("ProposalCreated");
+            // Get the proposal arguments from the event
+            const proposalArgs = resultTx.events[0].args;
 
             // Get the proposalId
             const descriptionHash = ethers.utils.id(proposalDescription);
@@ -401,7 +405,9 @@ describe("Governance OLAS", function () {
 
             // Cancel the proposal via the timelock
             // We need to encode the exact same data that was coded into the proposal with descriptionHash being the salt
-            const proposalHash = timelock.hashOperationBatch([AddressZero], [0], [callData], bytes32Zero, descriptionHash);
+            // It has to correspond to: timelock.hashOperationBatch([AddressZero], [0], [callData], bytes32Zero, descriptionHash);
+            const proposalHash = timelock.hashOperationBatch(proposalArgs[2], proposalArgs[3],
+                proposalArgs[5], bytes32Zero, ethers.utils.id(proposalArgs[8]));
             await timelock.cancel(proposalHash);
 
             // Check that the proposal was cancelled: enum value of ProposalState.Canceled == 2
