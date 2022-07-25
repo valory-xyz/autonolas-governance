@@ -17,7 +17,7 @@ jobs:
 
       # Install modules
       - name: Install modules
-        run: yarn
+        run: yarn install
 
       # Run linters
       - name: Run ESLint
