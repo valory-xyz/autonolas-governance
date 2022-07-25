@@ -7,7 +7,6 @@ require("solidity-coverage");
 require("hardhat-gas-reporter");
 require("hardhat-contract-sizer");
 require("@nomiclabs/hardhat-etherscan");
-//require("@nomiclabs/hardhat-ganache");
 
 const accounts = {
     // Generated with bip39
@@ -24,7 +23,7 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 module.exports = {
     networks: {
-        ganache: {
+        local: {
             url: "http://localhost:8545",
         },
         mainnet: {
