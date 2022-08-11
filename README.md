@@ -1,7 +1,9 @@
 # Autonolas Governance & Tokens
 
-## Introduction
+## Bounty Program
+:mega::satellite::boom: The Autonolas bounty program and its details are available [here](https://immunefi.com/bounty/autonolas/).
 
+## Introduction
 This repository contains the Autonolas `OLAS` token and the governance part of the on-chain protocol.
 
 A graphical overview of the whole on-chain architecture is available here:
@@ -84,7 +86,6 @@ A list of known vulnerabilities can be found here: [Vulnerabilities list #1](htt
 
 ## Deployed Protocol
 The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
-
 
 ## Acknowledgements
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
