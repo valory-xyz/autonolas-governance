@@ -80,6 +80,10 @@ The description of deployment procedure can be found here: [deployment](https://
 
 The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
 
+## Code optimizations and best practices
+The list of optimization considerations and best practices exercised during the development of Autonolas governance
+can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/optimizations.md).
+
 ## Audits
 The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
 A list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf)

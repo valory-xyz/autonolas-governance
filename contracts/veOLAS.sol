@@ -157,6 +157,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Gets the checkpoint structure at number `idx` for `account`.
+    /// @notice The out of bound condition is treated by the default code generation check.
     /// @param account User wallet address.
     /// @param idx User point number.
     /// @return The requested checkpoint.
@@ -226,7 +227,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
         // If last point is already recorded in this block, slope == 0, but we know the block already in this case
         // Go over weeks to fill in the history and (or) calculate what the current point is
         {
-            // The timestamp is rounded and < 2^64-1
+            // The timestamp is rounded by a week and < 2^64-1
             uint64 tStep = (lastCheckpoint / WEEK) * WEEK;
             for (uint256 i = 0; i < 255; ++i) {
                 // Hopefully it won't happen that this won't get used in 5 years!
@@ -634,6 +635,8 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Gets the block time adjustment for two neighboring points.
+    /// @notice `blockNumber` must not be lower than the contract deployment block number (15050278),
+    ///         as the behavior and the return value is undefined.
     /// @param blockNumber Block number.
     /// @return point Point with the specified block number (or closest to it).
     /// @return blockTime Adjusted block time of the neighboring point.
