@@ -362,17 +362,22 @@ describe("buOLAS", function () {
             await bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps);
 
             // Move three years in time
+            // oneOLASBalance is fully unlocked at this point
             ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
             ethers.provider.send("evm_mine");
-            // Revoke at this point of time (which must never be performed in real situations)
+            // Revoke after the lock duration is expired
+            // This revoke must never be performed in real situations since the account holder has a right
+            // to all the funds initially locked
             await bu.connect(owner).revoke([account.address]);
+            // Hence lockedBalance.totalAmount becomes 0 and lockedBalance.transferredAmount = oneOLASBalance
+            // So createLockFor can be performed for the same account
 
             // Now createLockFor for the same account
             await bu.connect(owner).createLockFor(account.address, 3, numSteps);
 
             // Try to withdraw right away with the calculated releasable amount
             let amount = await bu.releasableAmount(account.address);
-            // Due to the underflow with "unchecked" statement in the uint256 value, the amount will be that much:
+            // The amount would be -10^18.  However, due to the "unchecked" statement in the uint256 value, the amount will be as follows:
             // uint256Limit = 115792089237316195423570985008687907853269984665640564039456584007913129639936 =
             // = 2^256 - 1 - 10^18 (oneOLASBalance)
             expect(amount).to.equal(uint256Limit);
