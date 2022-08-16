@@ -13,9 +13,9 @@ Please note that the following statements concern our code only and do not accou
 - Avoid reverts where the logic allows not to revert and return a zero value instead;
 - All `unchecked` statements are commented on;
 - All functions with `owner` privileges are not considered to be called from malicious actors and are not meant to be executed for other than common sense scenarios;
-- Our `OLAS` token is considered to be called `with good intentions`, and strictly corresponds to the ERC20 standard;
+- The `OLAS` token does not contain any malicious code, and strictly corresponds to the ERC20 standard;
 - Utilize standard code-generated reverts and do not duplicate them, especially in places where the contract itself or any external contracts lead to any negative or false scenario;
-- Reverts are given the security priority and the need of a business logic, such that they can be omitted where possible to save on gas;
+- Reverts are utilized where it is absolutely critical and necessary to stop the contract execution such that no state on blockchain has changed;
 - Pure storage variables are normally memory-cached to undergo operations, and are assigned back to the storage slot afterwards;
 - Prioritize lower consuming gas operations when considering statements (i.e., `(i + 1) > j` instead of `i >= j`);
 - Use addresses instead of explicit interface variables;
@@ -25,4 +25,4 @@ Please note that the following statements concern our code only and do not accou
 - Find tradeoff between optimizations and a code readability;
 - When implementing standards (i.e., `ERC20`), the most optimal well-known solutions are utilized;
 - When implementing non-standards, the most gas optimized and logical solutions are chosen;
-- Function returns sometimes mean the correct workflow of the function, and do not bear a promise that variables inside are modified.
+- `true` return value in function returns signals about the function workflow correctness, and does not necessarily mean that state variables are modified during its execution.

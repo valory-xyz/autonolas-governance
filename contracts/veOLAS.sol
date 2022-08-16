@@ -635,7 +635,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Gets the block time adjustment for two neighboring points.
-    /// @notice `blockNumber` must not be lower than the contract deployment block number (15050278),
+    /// @notice `blockNumber` must not be lower than the contract deployment block number,
     ///         as the behavior and the return value is undefined.
     /// @param blockNumber Block number.
     /// @return point Point with the specified block number (or closest to it).
