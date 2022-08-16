@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.so
 
 /// @title Governor OLAS - Smart contract for Autonolas governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
+/// @dev The OpenZeppelin functions are used as is, using the last OZ version (4.6) on the date of deployment.
 contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(
         IVotes governanceToken,

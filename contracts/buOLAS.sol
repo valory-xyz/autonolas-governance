@@ -207,6 +207,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     }
 
     /// @dev Revoke and burn all non-matured tokens from the `account`.
+    /// @notice This function must not be called after the `account`'s lock period ends.
     /// @param accounts Account addresses.
     function revoke(address[] memory accounts) external {
         // Check for the ownership

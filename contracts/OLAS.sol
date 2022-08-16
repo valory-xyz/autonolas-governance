@@ -69,6 +69,7 @@ contract OLAS is ERC20 {
     }
 
     /// @dev Mints OLAS tokens.
+    /// @notice If the inflation control does not pass, the revert does not take place, as well as no action is performed.
     /// @param account Account address.
     /// @param amount OLAS token amount.
     function mint(address account, uint256 amount) external {
@@ -84,6 +85,7 @@ contract OLAS is ERC20 {
     }
 
     /// @dev Provides various checks for the inflation control.
+    /// @notice The `<=` check is left as is for a better code readability.
     /// @param amount Amount of OLAS to mint.
     /// @return True if the amount request is within inflation boundaries.
     function inflationControl(uint256 amount) public view returns (bool) {
@@ -118,6 +120,8 @@ contract OLAS is ERC20 {
     }
 
     /// @dev Decreases the allowance of another account over their tokens.
+    /// @notice This implementation does not decrease spender allowance if the maximum allowance was granted.
+    /// @notice The underflow condition is treated by the default code generation check.
     /// @param spender Account that tokens are approved for.
     /// @param amount Amount to decrease approval by.
     /// @return True if the operation succeeded.
@@ -134,6 +138,7 @@ contract OLAS is ERC20 {
     }
 
     /// @dev Increases the allowance of another account over their tokens.
+    /// @notice The overflow condition is treated by the default code generation check.
     /// @param spender Account that tokens are approved for.
     /// @param amount Amount to increase approval by.
     /// @return True if the operation succeeded.
