@@ -13,7 +13,7 @@ Please note that `buOLAS` and `Sale` contracts are not part on the diagram.
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
 
-An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Audit_Governance.pdf?raw=true).
+An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/docs/Governance_process.pdf?raw=true) and the contracts' specifications are provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Specs%20of%20governance%20contracts_v1.0.1.pdf?raw=true).
 
 - [OLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/OLAS.sol)
 - [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/veOLAS.sol)
