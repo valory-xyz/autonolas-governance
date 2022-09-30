@@ -156,8 +156,9 @@ describe("Voting Escrow OLAS", function () {
             const owner = signers[1];
             await olas.transfer(owner.address, tenOLABalance);
 
-            // Approve deployer owner for 1 OLAS by voting escrow
-            await olas.approve(ve.address, oneOLABalance);
+            // Approve deployer for 2 OLAS by voting escrow
+            await olas.approve(ve.address, twoOLABalance);
+            // Approve owner for 1 OLAS by voting escrow
             await olas.connect(owner).approve(ve.address, oneOLABalance);
 
             // Define 1 week for the lock duration
@@ -170,6 +171,11 @@ describe("Voting Escrow OLAS", function () {
 
             // Create lock for the deployer
             await ve.createLock(oneOLABalance, lockDuration);
+
+            // Try to lock the remainder of 1 OLAS for deployer from the account that did not approve for veOLAS
+            await expect(
+                ve.connect(signers[2]).depositFor(deployer.address, oneOLABalance)
+            ).to.be.reverted;
 
             // Try to deposit zero value for deployer
             await expect(
