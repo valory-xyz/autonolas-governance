@@ -388,6 +388,38 @@ describe("Voting Escrow OLAS", function () {
             ).to.be.revertedWith("WrongBlockNumber");
         });
 
+        it("Checkpoint with points of inactivity", async function () {
+            const deployer = signers[0];
+
+            // Approve deployer and account for 1 OLAS by voting escrow
+            await olas.approve(ve.address, oneOLABalance);
+
+            // Lock for four years
+            const lockDuration = 4 * 365 * oneWeek / 7;;
+
+            // Create locks for both addresses deployer and account
+            await ve.createLock(oneOLABalance, lockDuration);
+
+            // Move 10 weeks in time
+            for (let i = 0; i < 10; ++i) {
+                ethers.provider.send("evm_increaseTime", [oneWeek + 10]);
+                ethers.provider.send("evm_mine");
+            }
+
+            // Checkpoint writes point and increases their global counter
+            await ve.checkpoint();
+
+            // The checkpoints created during the inactivity weeks have the same block number but a different timestamp
+            const point1 = await ve.mapSupplyPoints(3);
+            const blockNumber1 = point1.blockNumber;
+            const timeStamp1 = point1.ts;
+            const point2 = await ve.mapSupplyPoints(7);
+            const blockNumber2 = point2.blockNumber;
+            const timeStamp2 = point2.ts;
+            expect(blockNumber1).to.equal(blockNumber2);
+            expect(timeStamp1).not.equal(timeStamp2);
+        });
+
         it("Getting past votes and supply", async function () {
             // Transfer 10 OLAS worth of OLAS to signers[1]
             const deployer = signers[0];
