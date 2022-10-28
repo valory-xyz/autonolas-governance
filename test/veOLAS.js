@@ -389,13 +389,11 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Checkpoint with points of inactivity", async function () {
-            const deployer = signers[0];
-
             // Approve deployer and account for 1 OLAS by voting escrow
             await olas.approve(ve.address, oneOLABalance);
 
             // Lock for four years
-            const lockDuration = 4 * 365 * oneWeek / 7;;
+            const lockDuration = 4 * 365 * oneWeek / 7;
 
             // Create locks for both addresses deployer and account
             await ve.createLock(oneOLABalance, lockDuration);
