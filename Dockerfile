@@ -1,16 +1,21 @@
-# installing node
 FROM node:16.7.0 as builder
 
 RUN apt update -y && apt install jq -y
 
-# copy the current directory files to /usr/app
-COPY . /usr/app
+RUN mkdir -p /code
+WORKDIR /code
+ADD package* /code
 
-# working directory
-WORKDIR /usr/app
+COPY yarn.lock .
+RUN yarn install --ignore-engines 
 
-# install dependencies and compile hardhat
-RUN yarn install
-RUN npx hardhat compile
+COPY contracts contracts
+COPY scripts scripts
+COPY lib lib
+COPY hardhat.config.js .
 
-# ENTRYPOINT ["bash", "entrypoint.sh"]
+RUN npm run compile
+RUN npx hardhat deploy
+
+CMD [ "npx", "hardhat", "node", "--hostname", "0.0.0.0" ]
+
