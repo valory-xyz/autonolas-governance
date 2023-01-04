@@ -62,6 +62,29 @@ Run the tests:
 npx hardhat test
 ```
 
+### Docker
+
+If you running using amd64 (eg. Mac M1), please export the newly build image from the docker-build image. You can find more information [here](https://docs.docker.com/build/building/multi-platform/).
+```
+docker buildx create --name amdBuilder --driver docker-container --bootstrap
+docker buildx use amdBuilder
+```
+
+To build the docker image:
+```
+docker buildx build --platform linux/amd64 -t valory/autonolas-governance:dev . --load
+```
+
+To build the docker image with the default docker engine:
+```
+docker build -t valory/autonolas-governance:dev .
+```
+
+To run the docker image:
+```
+docker run -p 8545:8545 -it valory/autonolas-governance:dev
+```
+
 ### Linters
 - [`ESLint`](https://eslint.org) is used for JS code.
 - [`solhint`](https://github.com/protofire/solhint) is used for Solidity linting.
