@@ -1,16 +1,17 @@
 # installing node
-FROM node:16.7.0 as builder
+FROM node:18.6.0 as builder
+RUN mkdir -p /code
+WORKDIR /code
+ADD package* /code
 
-RUN apt update -y && apt install jq -y
+ENV NODE_OPTIONS=--openssl-legacy-provider
 
-# copy the current directory files to /usr/app
-COPY . /usr/app
+COPY yarn.lock .
+RUN yarn install --ignore-engines
 
-# working directory
-WORKDIR /usr/app
+COPY contracts contracts
+COPY scripts scripts
+COPY lib lib
+COPY hardhat.config.js .
 
-# install dependencies and compile hardhat
-RUN yarn install
 RUN npx hardhat compile
-
-# ENTRYPOINT ["bash", "entrypoint.sh"]
