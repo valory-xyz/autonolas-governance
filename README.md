@@ -75,13 +75,15 @@ To build the docker image:
 docker buildx build --platform linux/amd64 -t valory/autonolas-governance:dev . --load
 ```
 
+To build the docker image with the default docker engine:
+```
+docker build -t valory/autonolas-governance:dev .
+```
+
 To run the docker image:
 ```
 docker run -p 8545:8545 -it valory/autonolas-governance:dev
 ```
-
-# build with
-# `docker buildx build --platform linux/amd64 -t valory/autonolas-governance:dev . --load`
 
 ### Linters
 - [`ESLint`](https://eslint.org) is used for JS code.
