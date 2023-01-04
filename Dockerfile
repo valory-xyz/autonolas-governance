@@ -1,4 +1,3 @@
-# installing node
 FROM node:18.6.0 as builder
 
 RUN mkdir -p /code
@@ -19,9 +18,3 @@ RUN npx hardhat compile
 RUN npx hardhat deploy 
 
 CMD ["npx", "hardhat", "node", "--hostname", "0.0.0.0"] 
-
-# run with
-# `docker run -p 8545:8545 -it valory/autonolas-governance:dev`
-
-# build with
-# `docker buildx build --platform linux/amd64 -t valory/autonolas-governance:dev . --load`
