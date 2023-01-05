@@ -9,8 +9,7 @@ require("hardhat-contract-sizer");
 require("@nomiclabs/hardhat-etherscan");
 
 const accounts = {
-    // Generated with bip39
-    mnemonic: "velvet deliver grief train result fortune travel voice over subject subject staff nominee bone name",
+    mnemonic: "test test test test test test test test test test test junk",
     accountsBalance: "100000000000000000000000000",
 };
 
