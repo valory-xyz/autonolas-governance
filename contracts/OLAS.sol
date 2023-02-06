@@ -72,6 +72,8 @@ contract OLAS is ERC20 {
     /// @notice If the inflation control does not pass, the revert does not take place, as well as no action is performed.
     /// @param account Account address.
     /// @param amount OLAS token amount.
+    /// #if_succeeds {:msg "mint account balance"} inflationControl(amount) ==> balanceOf[account] == old(balanceOf[account]) + amount;
+    /// #if_succeeds {:msg "mint totalSupply"} inflationControl(amount) ==> totalSupply == old(totalSupply) + amount && totalSupply <= type(uint96).max;
     function mint(address account, uint256 amount) external {
         // Access control
         if (msg.sender != minter) {
@@ -115,6 +117,8 @@ contract OLAS is ERC20 {
 
     /// @dev Burns OLAS tokens.
     /// @param amount OLAS token amount to burn.
+    /// #if_succeeds {:msg "burn account balance"} balanceOf[msg.sender] == old(balanceOf[msg.sender]) - amount;
+    /// #if_succeeds {:msg "burn totalSupply"} totalSupply == old(totalSupply) - amount;
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }
