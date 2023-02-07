@@ -1,10 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "./interfaces/IErrors.sol";
+import "../../interfaces/IErrors.sol";
+
+/// @dev ERC20 token interface.
+interface IERC20 {
+    /// @dev Transfers the token amount.
+    /// @param to Address to transfer to.
+    /// @param amount The amount to transfer.
+    /// @return True if the function execution is successful.
+    function transfer(address to, uint256 amount) external returns (bool);
+
+    /// @dev Transfers the token amount that was previously approved up until the maximum allowance.
+    /// @param from Account address to transfer from.
+    /// @param to Account address to transfer to.
+    /// @param amount Amount to transfer to.
+    /// @return True if the function execution is successful.
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+}
 
 /**
 Votes have a weight depending on time, so that users are committed to the future of (whatever they are voting for).
@@ -83,7 +96,7 @@ struct PointVoting {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers and approvals.
-contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
+contract veOLASFuzzing is IErrors {
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,
@@ -317,6 +330,16 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Record global data to checkpoint.
+    /// #if_succeeds {:msg "checkpoint balance"} block.timestamp >= mapSupplyPoints[totalNumPoints].ts + WEEK
+    /// ==> mapSupplyPoints[totalNumPoints].balance == mapSupplyPoints[totalNumPoints - 1].balance;
+    /// #if_succeeds {:msg "checkpoint ts"} block.timestamp >= mapSupplyPoints[totalNumPoints].ts + WEEK
+    /// ==> mapSupplyPoints[totalNumPoints].ts > mapSupplyPoints[totalNumPoints - 1].ts;
+    /// #if_succeeds {:msg "checkpoint blockNumber"} block.timestamp >= mapSupplyPoints[totalNumPoints].ts + WEEK
+    /// ==> mapSupplyPoints[totalNumPoints].blockNumber > mapSupplyPoints[totalNumPoints - 1].blockNumber;
+    /// #if_succeeds {:msg "checkpoint bias"} block.timestamp >= mapSupplyPoints[totalNumPoints].ts + WEEK
+    /// ==> mapSupplyPoints[totalNumPoints].bias < mapSupplyPoints[totalNumPoints - 1].bias;
+    /// #if_succeeds {:msg "checkpoint slope"} block.timestamp >= mapSupplyPoints[totalNumPoints].ts + WEEK
+    /// ==> mapSupplyPoints[totalNumPoints].slope == mapSupplyPoints[totalNumPoints - 1].slope;
     function checkpoint() external {
         _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));
     }
@@ -373,6 +396,14 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     ///      cannot extend their locktime and deposit for a brand new user.
     /// @param account Account address.
     /// @param amount Amount to add.
+    /// #if_succeeds {:msg "depositFor amount"} mapLockedBalances[account].amount > old(mapLockedBalances[account].amount);
+    /// #if_succeeds {:msg "depositFor endTime"} mapLockedBalances[account].endTime == old(mapLockedBalances[account].endTime);
+    /// #if_succeeds {:msg "depositFor balance"} mapUserPoints[account][mapUserPoints[account].length - 1].balance >
+    /// mapUserPoints[account][mapUserPoints[account].length - 2].balance;
+    /// #if_succeeds {:msg "depositFor ts"} mapUserPoints[account][mapUserPoints[account].length - 1].ts >= mapUserPoints[account][mapUserPoints[account].length - 2].ts;
+    /// #if_succeeds {:msg "depositFor blockNumber"} mapUserPoints[account][mapUserPoints[account].length - 1].blockNumber >= mapUserPoints[account][mapUserPoints[account].length - 2].blockNumber;
+    /// #if_succeeds {:msg "depositFor bias"} mapUserPoints[account][mapUserPoints[account].length - 1].bias >= mapUserPoints[account][mapUserPoints[account].length - 2].bias;
+    /// #if_succeeds {:msg "depositFor slope"} mapUserPoints[account][mapUserPoints[account].length - 1].slope >= mapUserPoints[account][mapUserPoints[account].length - 2].slope;
     function depositFor(address account, uint256 amount) external {
         LockedBalance memory lockedBalance = mapLockedBalances[account];
         // Check if the amount is zero
@@ -399,6 +430,21 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @dev Deposits `amount` tokens for `msg.sender` and locks for `unlockTime`.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    /// #if_succeeds {:msg "createLock amount"} mapLockedBalances[msg.sender].amount == amount;
+    /// #if_succeeds {:msg "createLock endTime"} mapLockedBalances[msg.sender].endTime == ((block.timestamp + unlockTime) / WEEK) * WEEK;
+    /// #if_succeeds {:msg "createLock balance"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].balance == amount;
+    /// #if_succeeds {:msg "createLock ts"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].ts == uint64(block.timestamp);
+    /// #if_succeeds {:msg "createLock ts more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].ts >=
+    /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].ts;
+    /// #if_succeeds {:msg "createLock blockNumber"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber == uint64(block.number);
+    /// #if_succeeds {:msg "createLock blockNumber more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber >=
+    /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].blockNumber;
+    /// #if_succeeds {:msg "createLock bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias > 0;
+    /// #if_succeeds {:msg "createLock bias more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias >=
+    /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].bias;
+    /// #if_succeeds {:msg "createLock slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope > 0;
+    /// #if_succeeds {:msg "createLock slope more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope >=
+    /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].slope;
     function createLock(uint256 amount, uint256 unlockTime) external {
         _createLockFor(msg.sender, amount, unlockTime);
     }
@@ -408,6 +454,21 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @param amount Amount to deposit.
     /// @param unlockTime Time when tokens unlock, rounded down to a whole week.
+    /// #if_succeeds {:msg "createLockFor amount"} mapLockedBalances[account].amount == amount;
+    /// #if_succeeds {:msg "createLockFor endTime"} mapLockedBalances[account].endTime == ((block.timestamp + unlockTime) / WEEK) * WEEK;
+    /// #if_succeeds {:msg "createLockFor balance"} mapUserPoints[account][mapUserPoints[account].length - 1].balance == amount;
+    /// #if_succeeds {:msg "createLockFor ts"} mapUserPoints[account][mapUserPoints[account].length - 1].ts == uint64(block.timestamp);
+    /// #if_succeeds {:msg "createLockFor ts more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].ts >=
+    /// mapUserPoints[account][mapUserPoints[account].length - 2].ts;
+    /// #if_succeeds {:msg "createLockFor blockNumber"} mapUserPoints[account][mapUserPoints[account].length - 1].blockNumber == uint64(block.number);
+    /// #if_succeeds {:msg "createLockFor blockNumber more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].blockNumber >=
+    /// mapUserPoints[account][mapUserPoints[account].length - 2].blockNumber;
+    /// #if_succeeds {:msg "createLockFor bias"} mapUserPoints[account][mapUserPoints[account].length - 1].bias > 0;
+    /// #if_succeeds {:msg "createLockFor bias more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].bias >=
+    /// mapUserPoints[account][mapUserPoints[account].length - 2].bias;
+    /// #if_succeeds {:msg "createLockFor slope"} mapUserPoints[account][mapUserPoints[account].length - 1].slope > 0;
+    /// #if_succeeds {:msg "createLockFor slope more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].slope >=
+    /// mapUserPoints[account][mapUserPoints[account].length - 2].slope;
     function createLockFor(address account, uint256 amount, uint256 unlockTime) external {
         // Check if the account address is zero
         if (account == address(0)) {
@@ -455,6 +516,13 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
     /// @dev Deposits `amount` additional tokens for `msg.sender` without modifying the unlock time.
     /// @param amount Amount of tokens to deposit and add to the lock.
+    /// #if_succeeds {:msg "increaseAmount amount"} mapLockedBalances[msg.sender].amount == old(mapLockedBalances[msg.sender].amount) + amount;
+    /// #if_succeeds {:msg "increaseAmount endTime"} mapLockedBalances[msg.sender].endTime == old(mapLockedBalances[msg.sender].endTime);
+    /// #if_succeeds {:msg "increaseAmount balance"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].balance == mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].balance + amount;
+    /// #if_succeeds {:msg "increaseAmount ts"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].ts >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].ts;
+    /// #if_succeeds {:msg "increaseAmount blockNumber"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].blockNumber;
+    /// #if_succeeds {:msg "increaseAmount bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias > mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].bias;
+    /// #if_succeeds {:msg "increaseAmount slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope > mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].slope;
     function increaseAmount(uint256 amount) external {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Check if the amount is zero
@@ -480,6 +548,13 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
     /// @dev Extends the unlock time.
     /// @param unlockTime New tokens unlock time.
+    /// #if_succeeds {:msg "increaseUnlockTime amount"} mapLockedBalances[msg.sender].amount == old(mapLockedBalances[msg.sender].amount);
+    /// #if_succeeds {:msg "increaseUnlockTime endTime"} mapLockedBalances[msg.sender].endTime > old(mapLockedBalances[msg.sender].endTime);
+    /// #if_succeeds {:msg "increaseUnlockTime balance"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].balance == mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].balance;
+    /// #if_succeeds {:msg "increaseUnlockTime ts"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].ts >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].ts;
+    /// #if_succeeds {:msg "increaseUnlockTime blockNumber"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].blockNumber;
+    /// #if_succeeds {:msg "increaseUnlockTime bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].bias;
+    /// #if_succeeds {:msg "increaseUnlockTime slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].slope;
     function increaseUnlockTime(uint256 unlockTime) external {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) << 2^64-1
@@ -507,6 +582,13 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     }
 
     /// @dev Withdraws all tokens for `msg.sender`. Only possible if the lock has expired.
+    /// #if_succeeds {:msg "withdraw amount"} mapLockedBalances[msg.sender].amount == 0;
+    /// #if_succeeds {:msg "withdraw endTime"} mapLockedBalances[msg.sender].endTime == 0;
+    /// #if_succeeds {:msg "withdraw balance"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].balance == 0;
+    /// #if_succeeds {:msg "withdraw ts"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].ts >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].ts;
+    /// #if_succeeds {:msg "withdraw blockNumber"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].blockNumber;
+    /// #if_succeeds {:msg "withdraw bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias == 0;
+    /// #if_succeeds {:msg "withdraw slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope == 0;
     function withdraw() external {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         if (lockedBalance.endTime > block.timestamp) {
@@ -604,7 +686,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @dev Gets the account balance in native token.
     /// @param account Account address.
     /// @return balance Account balance.
-    function balanceOf(address account) public view override returns (uint256 balance) {
+    function balanceOf(address account) public view returns (uint256 balance) {
         balance = uint256(mapLockedBalances[account].amount);
     }
 
@@ -619,6 +701,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @param blockNumber Block number.
     /// @return balance Account balance.
+    /// if_succeeds {:msg "balanceOfAt before first lock"} mapUserPoints[account].length > 0 && blockNumber < mapUserPoints[account][0].blockNumber ==> balance == 0;
     function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance) {
         // Find point with the closest block number to the provided one
         (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
@@ -630,7 +713,7 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
     /// @dev Gets the voting power.
     /// @param account Account address.
-    function getVotes(address account) public view override returns (uint256) {
+    function getVotes(address account) public view returns (uint256) {
         return _balanceOfLocked(account, uint64(block.timestamp));
     }
 
@@ -669,7 +752,8 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @param account Account address.
     /// @param blockNumber Block number.
     /// @return balance Voting balance / power.
-    function getPastVotes(address account, uint256 blockNumber) public view override returns (uint256 balance) {
+    /// if_succeeds {:msg "getPastVotes before first lock"} blockNumber < mapUserPoints[account][0].blockNumber ==> $result == 0;
+    function getPastVotes(address account, uint256 blockNumber) public view returns (uint256 balance) {
         // Find the user point for the provided block number
         (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);
 
@@ -716,13 +800,14 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
 
     /// @dev Gets total token supply.
     /// @return Total token supply.
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return supply;
     }
 
     /// @dev Gets total token supply at a specific block number.
     /// @param blockNumber Block number.
     /// @return supplyAt Supply at the specified block number.
+    /// if_succeeds {:msg "totalSupplyAt before first point"} blockNumber < mapSupplyPoints[0].blockNumber ==> supplyAt == 0;
     function totalSupplyAt(uint256 blockNumber) external view returns (uint256 supplyAt) {
         // Find point with the closest block number to the provided one
         (PointVoting memory sPoint, ) = _findPointByBlock(blockNumber, address(0));
@@ -749,57 +834,10 @@ contract veOLAS is IErrors, IVotes, IERC20, IERC165 {
     /// @dev Calculate total voting power at some point in the past.
     /// @param blockNumber Block number to calculate the total voting power at.
     /// @return Total voting power.
-    function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256) {
+    /// if_succeeds {:msg "getPastTotalSupply before first point"} blockNumber < mapSupplyPoints[0].blockNumber ==> $result == 0;
+    function getPastTotalSupply(uint256 blockNumber) public view returns (uint256) {
         (PointVoting memory sPoint, uint256 blockTime) = _getBlockTime(blockNumber);
         // Now dt contains info on how far are we beyond the point
         return _supplyLockedAt(sPoint, uint64(blockTime));
-    }
-
-    /// @dev Gets information about the interface support.
-    /// @param interfaceId A specified interface Id.
-    /// @return True if this contract implements the interface defined by interfaceId.
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IVotes).interfaceId ||
-            interfaceId == type(IERC165).interfaceId;
-    }
-
-    /// @dev Reverts the transfer of this token.
-    function transfer(address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the approval of this token.
-    function approve(address spender, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the transferFrom of this token.
-    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the allowance of this token.
-    function allowance(address owner, address spender) external view virtual override returns (uint256)
-    {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts delegates of this token.
-    function delegates(address account) external view virtual override returns (address)
-    {
-        revert NonDelegatable(address(this));
-    }
-
-    /// @dev Reverts delegate for this token.
-    function delegate(address delegatee) external virtual override
-    {
-        revert NonDelegatable(address(this));
-    }
-
-    /// @dev Reverts delegateBySig for this token.
-    function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
-    external virtual override
-    {
-        revert NonDelegatable(address(this));
     }
 }

@@ -1,9 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "./interfaces/IErrors.sol";
+import "../../interfaces/IErrors.sol";
+
+/// @dev ERC20 token interface.
+interface IERC20 {
+    /// @dev Transfers the token amount.
+    /// @param to Address to transfer to.
+    /// @param amount The amount to transfer.
+    /// @return True if the function execution is successful.
+    function transfer(address to, uint256 amount) external returns (bool);
+
+    /// @dev Transfers the token amount that was previously approved up until the maximum allowance.
+    /// @param from Account address to transfer from.
+    /// @param to Account address to transfer to.
+    /// @param amount Amount to transfer to.
+    /// @return True if the function execution is successful.
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+}
 
 /// @title Burnable Locked OLAS Token - OLAS burnable contract
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
@@ -31,7 +45,7 @@ struct LockedBalance {
 }
 
 /// @notice This token supports the ERC20 interface specifications except for transfers.
-contract buOLAS is IErrors, IERC20, IERC165 {
+contract buOLASFuzzing is IErrors {
     event Lock(address indexed account, uint256 amount, uint256 startTime, uint256 endTime);
     event Withdraw(address indexed account, uint256 amount, uint256 ts);
     event Revoke(address indexed account, uint256 amount, uint256 ts);
@@ -92,6 +106,12 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     /// @param account Target account address.
     /// @param amount Amount to deposit.
     /// @param numSteps Number of locking steps.
+    /// #if_succeeds {:msg "account totalAmount"} mapLockedBalances[account].totalAmount == old(mapLockedBalances[account].totalAmount) + amount;
+    /// #if_succeeds {:msg "account startTime"} mapLockedBalances[account].startTime == block.timestamp;
+    /// #if_succeeds {:msg "account endTime"} mapLockedBalances[account].endTime == block.timestamp + uint256(STEP_TIME) * numSteps;
+    /// #if_succeeds {:msg "supply"} supply == old(supply) + amount && supply <= type(uint96).max;
+    /// #if_succeeds {:msg "msg.sender balance"} IERC20(token).balanceOf(msg.sender) == old(IERC20(token).balanceOf(msg.sender)) - amount;
+    /// #if_succeeds {:msg "address(this) balance"} IERC20(token).balanceOf(address(this)) == old(IERC20(token).balanceOf(address(this))) + amount;
     function createLockFor(address account, uint256 amount, uint256 numSteps) external {
         // Check if the account is zero
         if (account == address(0)) {
@@ -149,6 +169,22 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     }
 
     /// @dev Releases all matured tokens for `msg.sender`.
+    /// #if_succeeds {:msg "msg.sender withdraw"} old(mapLockedBalances[msg.sender].startTime > 0 && _releasableAmount(mapLockedBalances[msg.sender]) > 0 &&
+    /// mapLockedBalances[msg.sender].endTime > 0) ==> old(mapLockedBalances[msg.sender].transferredAmount + _releasableAmount(mapLockedBalances[msg.sender])) <= old(mapLockedBalances[msg.sender].totalAmount);
+    /// #if_succeeds {:msg "msg.sender withdraw supply"} old(mapLockedBalances[msg.sender].startTime > 0 && _releasableAmount(mapLockedBalances[msg.sender]) > 0 &&
+    /// mapLockedBalances[msg.sender].endTime > 0) ==> supply == old(supply - _releasableAmount(mapLockedBalances[msg.sender]));
+    /// #if_succeeds {:msg "msg.sender balance update after withdraw"} old(mapLockedBalances[msg.sender].startTime > 0 && _releasableAmount(mapLockedBalances[msg.sender]) > 0 &&
+    /// mapLockedBalances[msg.sender].endTime > 0) ==> IERC20(token).balanceOf(msg.sender) == old(IERC20(token).balanceOf(msg.sender) + _releasableAmount(mapLockedBalances[msg.sender]));
+    /// #if_succeeds {:msg "msg.sender info clean up after full withdraw"} old(mapLockedBalances[msg.sender].transferredAmount) + _releasableAmount(mapLockedBalances[msg.sender]) == old(mapLockedBalances[msg.sender].totalAmount)
+    /// ==> mapLockedBalances[msg.sender].startTime == 0 && mapLockedBalances[msg.sender].endTime == 0 && mapLockedBalances[msg.sender].transferredAmount == 0 && mapLockedBalances[msg.sender].totalAmount == 0;
+    /// #if_succeeds {:msg "msg.sender withdraw with revoke"} old(mapLockedBalances[msg.sender].startTime > 0 && mapLockedBalances[msg.sender].endTime == 0)
+    /// ==> IERC20(token).balanceOf(msg.sender) == old(IERC20(token).balanceOf(msg.sender) + _releasableAmount(mapLockedBalances[msg.sender]));
+    /// #if_succeeds {:msg "msg.sender withdraw with revoke supply"} old(mapLockedBalances[msg.sender].startTime > 0 && mapLockedBalances[msg.sender].endTime == 0)
+    /// ==> supply == old(supply - _releasableAmount(mapLockedBalances[msg.sender]) - mapLockedBalances[msg.sender].totalAmount);
+    /// #if_succeeds {:msg "OLAS balance withdraw with revoke"} old(mapLockedBalances[msg.sender].startTime > 0 && mapLockedBalances[msg.sender].endTime == 0)
+    /// ==> IERC20(token).balanceOf(address(this)) == old(IERC20(token).balanceOf(address(this)) - _releasableAmount(mapLockedBalances[msg.sender]) - mapLockedBalances[msg.sender].totalAmount);
+    /// #if_succeeds {:msg "OLAS balance withdraw with revoke zero the struct"} old(mapLockedBalances[msg.sender].startTime > 0 && mapLockedBalances[msg.sender].endTime == 0)
+    /// ==> mapLockedBalances[msg.sender].startTime == 0 && mapLockedBalances[msg.sender].endTime == 0 && mapLockedBalances[msg.sender].transferredAmount == 0 && mapLockedBalances[msg.sender].totalAmount == 0;
     function withdraw() external {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // If the balances are still active and not fully withdrawn, start time must be greater than zero
@@ -209,6 +245,9 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     /// @dev Revoke and burn all non-matured tokens from the `account`.
     /// @notice This function must not be called after the `account`'s lock period ends.
     /// @param accounts Account addresses.
+    /// #if_succeeds {:msg "revoke totalAmount"} old(forall (uint i in accounts) mapLockedBalances[accounts[i]].totalAmount >=
+    /// _releasableAmount(mapLockedBalances[accounts[i]]) - mapLockedBalances[accounts[i]].transferredAmount);
+    /// #if_succeeds {:msg "revoke transferredAmount"} forall (uint i in accounts) mapLockedBalances[accounts[i]].transferredAmount == old(_releasableAmount(mapLockedBalances[accounts[i]]));
     function revoke(address[] memory accounts) external {
         // Check for the ownership
         if (owner != msg.sender) {
@@ -239,7 +278,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     /// @dev Gets the account locking balance.
     /// @param account Account address.
     /// @return balance Account balance.
-    function balanceOf(address account) public view override returns (uint256 balance) {
+    function balanceOf(address account) public view returns (uint256 balance) {
         LockedBalance memory lockedBalance = mapLockedBalances[account];
         // If the end is equal 0, this balance is either left after revoke or expired
         if (lockedBalance.endTime == 0) {
@@ -253,7 +292,7 @@ contract buOLAS is IErrors, IERC20, IERC165 {
 
     /// @dev Gets total token supply.
     /// @return Total token supply.
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return supply;
     }
 
@@ -303,33 +342,5 @@ contract buOLAS is IErrors, IERC20, IERC165 {
     /// @return unlockTime Maturity time.
     function lockedEnd(address account) external view returns (uint256 unlockTime) {
         unlockTime = uint256(mapLockedBalances[account].endTime);
-    }
-
-    /// @dev Gets information about the interface support.
-    /// @param interfaceId A specified interface Id.
-    /// @return True if this contract implements the interface defined by interfaceId.
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IERC165).interfaceId;
-    }
-
-    /// @dev Reverts the transfer of this token.
-    function transfer(address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the approval of this token.
-    function approve(address spender, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the transferFrom of this token.
-    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
-        revert NonTransferable(address(this));
-    }
-
-    /// @dev Reverts the allowance of this token.
-    function allowance(address owner, address spender) external view virtual override returns (uint256)
-    {
-        revert NonTransferable(address(this));
     }
 }
