@@ -245,9 +245,10 @@ contract buOLASFuzzing is IErrors {
     /// @dev Revoke and burn all non-matured tokens from the `account`.
     /// @notice This function must not be called after the `account`'s lock period ends.
     /// @param accounts Account addresses.
-    /// #if_succeeds {:msg "revoke totalAmount"} old(forall (uint i in accounts) mapLockedBalances[accounts[i]].totalAmount >=
+    /// #if_succeeds {:msg "revoke totalAmount"} accounts.length > 0 ==> old(forall (uint i in accounts) mapLockedBalances[accounts[i]].totalAmount >=
     /// _releasableAmount(mapLockedBalances[accounts[i]]) - mapLockedBalances[accounts[i]].transferredAmount);
-    /// #if_succeeds {:msg "revoke transferredAmount"} forall (uint i in accounts) mapLockedBalances[accounts[i]].transferredAmount == old(_releasableAmount(mapLockedBalances[accounts[i]]));
+    /// #if_succeeds {:msg "revoke transferredAmount"} accounts.length > 0 ==> forall (uint i in accounts) mapLockedBalances[accounts[i]].transferredAmount ==
+    /// old(_releasableAmount(mapLockedBalances[accounts[i]]));
     function revoke(address[] memory accounts) external {
         // Check for the ownership
         if (owner != msg.sender) {

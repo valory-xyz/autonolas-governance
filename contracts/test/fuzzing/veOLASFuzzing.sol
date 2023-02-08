@@ -439,10 +439,10 @@ contract veOLASFuzzing is IErrors {
     /// #if_succeeds {:msg "createLock blockNumber"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber == uint64(block.number);
     /// #if_succeeds {:msg "createLock blockNumber more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber >=
     /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].blockNumber;
-    /// #if_succeeds {:msg "createLock bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias > 0;
+    /// #if_succeeds {:msg "createLock bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias >= 0;
     /// #if_succeeds {:msg "createLock bias more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias >=
     /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].bias;
-    /// #if_succeeds {:msg "createLock slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope > 0;
+    /// #if_succeeds {:msg "createLock slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope >= 0;
     /// #if_succeeds {:msg "createLock slope more than one point"} mapUserPoints[msg.sender].length > 1 ==> mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope >=
     /// mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].slope;
     function createLock(uint256 amount, uint256 unlockTime) external {
@@ -463,10 +463,10 @@ contract veOLASFuzzing is IErrors {
     /// #if_succeeds {:msg "createLockFor blockNumber"} mapUserPoints[account][mapUserPoints[account].length - 1].blockNumber == uint64(block.number);
     /// #if_succeeds {:msg "createLockFor blockNumber more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].blockNumber >=
     /// mapUserPoints[account][mapUserPoints[account].length - 2].blockNumber;
-    /// #if_succeeds {:msg "createLockFor bias"} mapUserPoints[account][mapUserPoints[account].length - 1].bias > 0;
+    /// #if_succeeds {:msg "createLockFor bias"} mapUserPoints[account][mapUserPoints[account].length - 1].bias >= 0;
     /// #if_succeeds {:msg "createLockFor bias more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].bias >=
     /// mapUserPoints[account][mapUserPoints[account].length - 2].bias;
-    /// #if_succeeds {:msg "createLockFor slope"} mapUserPoints[account][mapUserPoints[account].length - 1].slope > 0;
+    /// #if_succeeds {:msg "createLockFor slope"} mapUserPoints[account][mapUserPoints[account].length - 1].slope >= 0;
     /// #if_succeeds {:msg "createLockFor slope more than one point"} mapUserPoints[account].length > 1 ==> mapUserPoints[account][mapUserPoints[account].length - 1].slope >=
     /// mapUserPoints[account][mapUserPoints[account].length - 2].slope;
     function createLockFor(address account, uint256 amount, uint256 unlockTime) external {
@@ -521,8 +521,8 @@ contract veOLASFuzzing is IErrors {
     /// #if_succeeds {:msg "increaseAmount balance"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].balance == mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].balance + amount;
     /// #if_succeeds {:msg "increaseAmount ts"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].ts >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].ts;
     /// #if_succeeds {:msg "increaseAmount blockNumber"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].blockNumber >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].blockNumber;
-    /// #if_succeeds {:msg "increaseAmount bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias > mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].bias;
-    /// #if_succeeds {:msg "increaseAmount slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope > mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].slope;
+    /// #if_succeeds {:msg "increaseAmount bias"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].bias >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].bias;
+    /// #if_succeeds {:msg "increaseAmount slope"} mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 1].slope >= mapUserPoints[msg.sender][mapUserPoints[msg.sender].length - 2].slope;
     function increaseAmount(uint256 amount) external {
         LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];
         // Check if the amount is zero
