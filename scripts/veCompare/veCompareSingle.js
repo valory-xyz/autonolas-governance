@@ -21,7 +21,7 @@ async function main() {
     const contractFromJSON = fs.readFileSync(veCRVJSON, "utf8");
     const veCRVContract = JSON.parse(contractFromJSON);
 
-    // Get the Keep3r contract instance
+    // Get the original Voting Escrow contract instance
     const veCRV = await ethers.getContractAt(veCRVContract, "0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2");
     const blockNumber = await ethers.provider.getBlockNumber("latest");
     console.log("block number after original VE deployment", blockNumber);
