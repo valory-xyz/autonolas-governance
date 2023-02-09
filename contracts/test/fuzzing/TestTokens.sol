@@ -46,8 +46,9 @@ contract TestTokens {
         ve.createLock(100_000 ether, 200 weeks);
         bu.createLockFor(address(this), 100_000 ether, 4);
 
-        // Set the initial timestamp
+        // Set the initial timestamp and the block number
         lastTime = block.timestamp;
+        lastBlock = block.number;
     }
 
 
