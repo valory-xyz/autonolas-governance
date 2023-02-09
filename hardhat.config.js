@@ -42,7 +42,15 @@ module.exports = {
         },
         hardhat: {
             allowUnlimitedContractSize: true,
-            accounts
+            accounts,
+            forking: {
+                url: "https://eth-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY,
+                blockNumber: 10647812
+            },
+            mining: {
+                auto: false,
+                interval: 3000
+            }
         },
     },
     etherscan: {

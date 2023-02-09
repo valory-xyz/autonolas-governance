@@ -103,6 +103,11 @@ The description of deployment procedure can be found here: [deployment](https://
 
 The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
 
+## Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
+Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here: [veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
+
+The original Voting Escrow ABI is located here: [veCRV ABI](https://github.com/valory-xyz/autonolas-governance/blob/main/abis/test/veCRV.json).
+
 ## Code optimizations and best practices
 The list of optimization considerations and best practices exercised during the development of Autonolas governance
 can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/optimizations.md).
