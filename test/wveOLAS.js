@@ -49,7 +49,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             result = await wve.balanceOfAt(AddressZero, 0);
             expect(result).to.equal(0);
 
-            result = await ve.totalSupplyAt(0);
+            result = await wve.totalSupplyAt(0);
             expect(result).to.equal(0);
 
             await expect(

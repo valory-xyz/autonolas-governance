@@ -95,11 +95,10 @@ contract wveOLAS {
     /// @param idx User point number.
     /// @return uPoint The requested user point.
     function getUserPoint(address account, uint256 idx) public view returns (PointVoting memory uPoint) {
-        if (account != address(0)) {
-            uint256 userNumPoints = IVEOLAS(ve).getNumUserPoints(account);
-            if (userNumPoints > 0) {
-                uPoint = IVEOLAS(ve).getUserPoint(account, idx);
-            }
+        // Get the number of user points
+        uint256 userNumPoints = IVEOLAS(ve).getNumUserPoints(account);
+        if (userNumPoints > 0) {
+            uPoint = IVEOLAS(ve).getUserPoint(account, idx);
         }
     }
 
