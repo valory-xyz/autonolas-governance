@@ -72,12 +72,7 @@ error WrongTimestamp(uint256 minTimeStamp, uint256 providedTimeStamp);
 /// @param ve Original veOLAS address.
 error ImplementedIn(address ve);
 
-/*
-* This is a wrapper contract for veOLAS contract implemented via the proxy approach.
-* The fallback() implementation for all the call-s is inspired by the Gnosis Safe set of contracts.
-*/
-
-/// @title wveOLAS - Smart contract for wrapped veOLAS
+/// @title wveOLAS - Wrapper smart contract for view functions of veOLAS contract
 /// @author AL
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 contract wveOLAS {
@@ -157,10 +152,14 @@ contract wveOLAS {
     }
 
     /// @dev Calculate total voting power at some point in the past.
+    /// @notice The requested block number must be at least equal to the zero supply point block number.
     /// @param blockNumber Block number to calculate the total voting power at.
     /// @return vPower Total voting power.
     function getPastTotalSupply(uint256 blockNumber) external view returns (uint256 vPower) {
-        if (blockNumber > 0) {
+        // Get the zero supply point
+        PointVoting memory sPoint = IVEOLAS(ve).mapSupplyPoints(0);
+        // Check the requested block number to be at least equal to the zero supply point block number
+        if (blockNumber >= sPoint.blockNumber) {
             vPower = IVEOLAS(ve).getPastTotalSupply(blockNumber);
         }
     }
