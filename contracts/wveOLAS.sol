@@ -82,7 +82,7 @@ contract wveOLAS {
     /// @dev TokenomicsProxy constructor.
     /// @param _ve veOLAS address.
     constructor(address _ve) {
-        // Check for the zero address, since the call method works even with the zero one
+        // Check for the zero address
         if (_ve == address(0)) {
             revert ZeroVEOLASAddress();
         }

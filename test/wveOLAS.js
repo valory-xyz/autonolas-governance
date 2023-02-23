@@ -36,6 +36,13 @@ describe("Wrapped Voting Escrow OLAS", function () {
     });
 
     context("Locks", async function () {
+        it("Should fail when deploying with the zero address", async function () {
+            const WVE = await ethers.getContractFactory("wveOLAS");
+            await expect(
+                WVE.deploy(AddressZero)
+            ).to.be.revertedWith("ZeroVEOLASAddress");
+        });
+
         it("Check that never-supposed-to-happen zero parameter calls do not break anything", async function () {
             let result = await wve.getPastVotes(AddressZero, 0);
             expect(result).to.equal(0);
@@ -342,7 +349,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const account = signers[1];
             await olas.transfer(account.address, tenOLABalance);
 
-            // Approve deployer and account for 1 OLAS by voting escrow
+            // Approve deployer and account for 1 and 10 OLAS by voting escrow
             await olas.approve(ve.address, oneOLABalance);
             await olas.connect(account).approve(ve.address, tenOLABalance);
 
@@ -442,7 +449,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const owner = signers[1];
             await olas.transfer(owner.address, tenOLABalance);
 
-            // Approve signers[0] and signers[1] for 1 OLAS by voting escrow
+            // Approve signers[0] and signers[1] for 10 OLAS by voting escrow
             await olas.approve(ve.address, tenOLABalance);
             await olas.connect(owner).approve(ve.address, tenOLABalance);
 
@@ -472,6 +479,31 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const block = await ethers.provider.getBlock(blockNumber);
             const supplyAt = ethers.BigNumber.from(await wve.totalSupplyLockedAtT(block.timestamp + oneWeek + 1000));
             expect(supplyAt).to.equal(0);
+        });
+    });
+
+    context("Wrapper related", async function () {
+        it("Should fail when calling a function that must be called from the original veOLAS", async function () {
+            await expect(
+                wve.createLock(oneOLABalance, oneWeek)
+            ).to.be.revertedWith("ImplementedIn");
+        });
+
+        it("Balance with a block number lower than a zero user point block number returns zero value", async function () {
+            // Transfer 10 OLAS worth of OLAS to signers[1]
+            const deployer = signers[0];
+            await olas.transfer(deployer.address, tenOLABalance);
+
+            // Approve signers[0] for 10 OLAS by voting escrow
+            await olas.approve(ve.address, tenOLABalance);
+
+            const block = await ethers.provider.getBlock("latest");
+            // Create lock for signers[0]
+            await ve.createLock(twoOLABalance, oneWeek);
+
+            // Try to get the balance value before the lock
+            const balance = await wve.balanceOfAt(deployer.address, block.number);
+            expect(balance).to.equal(0);
         });
     });
 });
