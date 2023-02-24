@@ -15,6 +15,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
     const twoOLABalance = ethers.utils.parseEther("2");
     const tenOLABalance = ethers.utils.parseEther("10");
     const AddressZero = "0x" + "0".repeat(40);
+    const overflowNum96 = "8" + "0".repeat(28);
 
     beforeEach(async function () {
         const OLAS = await ethers.getContractFactory("OLAS");
@@ -47,7 +48,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             let result = await wve.getPastVotes(AddressZero, 0);
             expect(result).to.equal(0);
 
-            result = await ve.getVotes(AddressZero);
+            result = await wve.getVotes(AddressZero);
             expect(result).to.equal(0);
 
             result = await wve.getPastTotalSupply(0);
@@ -64,6 +65,13 @@ describe("Wrapped Voting Escrow OLAS", function () {
             ).to.be.revertedWithCustomError(wveProxy, "WrongTimestamp");
         });
 
+        it("Interface support", async function () {
+            // Checks for the compatibility with IERC165
+            const interfaceIdIERC165 = "0x01ffc9a7";
+            const checkInterfaceId = await wve.supportsInterface(interfaceIdIERC165);
+            expect(checkInterfaceId).to.equal(true);
+        });
+
         it("Create lock", async function () {
             // Transfer 10 OLAS to signers[1]
             const owner = signers[1];
@@ -77,30 +85,30 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const lockDuration = oneWeek; // 1 week from now
 
             // Balance should be zero before the lock
-            expect(await ve.getVotes(owner.address)).to.equal(0);
+            expect(await wve.getVotes(owner.address)).to.equal(0);
             await ve.createLock(oneOLABalance, lockDuration);
             await ve.connect(owner).createLock(oneOLABalance, lockDuration);
 
             // Lock end is rounded by 1 week, as implemented by design
-            const lockEnd = await ve.lockedEnd(owner.address);
+            const lockEnd = await wve.lockedEnd(owner.address);
             const blockNumber = await ethers.provider.getBlockNumber();
             const block = await ethers.provider.getBlock(blockNumber);
             expect(Math.floor((block.timestamp + lockDuration) / oneWeek) * oneWeek).to.equal(lockEnd);
 
             // Get the account of the last user point
-            const pv = await ve.getLastUserPoint(owner.address);
+            const pv = await wve.getLastUserPoint(owner.address);
             expect(pv.balance).to.equal(oneOLABalance);
 
             // Get the number of user points for owner and compare the balance of the last point
-            const numAccountPoints = await ve.getNumUserPoints(owner.address);
+            const numAccountPoints = await wve.getNumUserPoints(owner.address);
             expect(numAccountPoints).to.equal(1);
             const pvLast = await wve.getUserPoint(owner.address, numAccountPoints - 1);
             expect(pvLast.balance).to.equal(pv.balance);
 
             // Balance is time-based, it changes slightly every fraction of a time
             // Use the second address for locked funds to compare
-            const balanceDeployer = await ve.getVotes(signers[0].address);
-            const balanceOwner = await ve.getVotes(owner.address);
+            const balanceDeployer = await wve.getVotes(signers[0].address);
+            const balanceOwner = await wve.getVotes(owner.address);
             expect(balanceDeployer > 0).to.be.true;
             expect(balanceDeployer).to.equal(balanceOwner);
         });
@@ -116,7 +124,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const lockDuration = oneWeek; // 1 week from now
 
             // Balance should be zero before the lock
-            expect(await ve.getVotes(account.address)).to.equal(0);
+            expect(await wve.getVotes(account.address)).to.equal(0);
             // Try to create lock for the zero address
             await expect(
                 ve.connect(owner).createLockFor(AddressZero, oneOLABalance, lockDuration)
@@ -126,20 +134,72 @@ describe("Wrapped Voting Escrow OLAS", function () {
             await ve.connect(owner).createLockFor(account.address, oneOLABalance, lockDuration);
 
             // Lock end is rounded by 1 week, as implemented by design
-            const lockEnd = await ve.lockedEnd(account.address);
+            const lockEnd = await wve.lockedEnd(account.address);
             const blockNumber = await ethers.provider.getBlockNumber();
             const block = await ethers.provider.getBlock(blockNumber);
             expect(Math.floor((block.timestamp + lockDuration) / oneWeek) * oneWeek).to.equal(lockEnd);
 
             // Get the account of the last user point
-            const pv = await ve.getLastUserPoint(account.address);
+            const pv = await wve.getLastUserPoint(account.address);
             expect(pv.balance).to.equal(oneOLABalance);
 
             // Get the number of user points for owner and compare the balance of the last point
-            const numAccountPoints = await ve.getNumUserPoints(account.address);
+            const numAccountPoints = await wve.getNumUserPoints(account.address);
             expect(numAccountPoints).to.equal(1);
             const pvLast = await wve.getUserPoint(account.address, numAccountPoints - 1);
             expect(pvLast.balance).to.equal(pv.balance);
+        });
+
+        it("Deposit for", async function () {
+            const deployer = signers[0];
+            // Transfer 10 OLAS to signers[1]
+            const owner = signers[1];
+            await olas.transfer(owner.address, tenOLABalance);
+
+            // Approve deployer for 2 OLAS by voting escrow
+            await olas.approve(ve.address, twoOLABalance);
+            // Approve owner for 1 OLAS by voting escrow
+            await olas.connect(owner).approve(ve.address, oneOLABalance);
+
+            // Define 1 week for the lock duration
+            const lockDuration = oneWeek; // 1 week from now
+
+            // Try to deposit 1 OLAS for deployer without initially locked balance
+            await expect(
+                ve.depositFor(deployer.address, oneOLABalance)
+            ).to.be.revertedWithCustomError(ve, "NoValueLocked");
+
+            // Create lock for the deployer
+            await ve.createLock(oneOLABalance, lockDuration);
+
+            // Try to lock the remainder of 1 OLAS for deployer from the account that did not approve for veOLAS
+            await expect(
+                ve.connect(signers[2]).depositFor(deployer.address, oneOLABalance)
+            ).to.be.reverted;
+
+            // Try to deposit zero value for deployer
+            await expect(
+                ve.depositFor(deployer.address, 0)
+            ).to.be.revertedWithCustomError(ve, "ZeroValue");
+
+            // Try to deposit a huge number
+            await expect(
+                ve.depositFor(deployer.address, overflowNum96)
+            ).to.be.revertedWithCustomError(ve, "Overflow");
+
+            // Deposit for the deployer from the
+            await ve.connect(owner).depositFor(deployer.address, oneOLABalance);
+
+            // Check the balance of deployer (must be twice of his initial one)
+            const balanceDeployer = await wve.balanceOf(deployer.address);
+            expect(balanceDeployer).to.equal(twoOLABalance);
+
+            // Try to deposit 1 OLAS for deployer after its lock time hase expired
+            ethers.provider.send("evm_increaseTime", [oneWeek + 1000]);
+            ethers.provider.send("evm_mine");
+            await expect(
+                ve.depositFor(deployer.address, oneOLABalance)
+            ).to.be.revertedWithCustomError(ve, "LockExpired");
         });
     });
 
@@ -166,9 +226,9 @@ describe("Wrapped Voting Escrow OLAS", function () {
 
             // Balance is time-based, it changes slightly every fraction of a time
             // Use both balances to check for the supply
-            let balanceDeployer = await ve.getVotes(deployer.address);
-            let balanceAccount = await ve.getVotes(account.address);
-            let supply = await ve.totalSupplyLocked();
+            let balanceDeployer = await wve.getVotes(deployer.address);
+            let balanceAccount = await wve.getVotes(account.address);
+            let supply = await wve.totalSupplyLocked();
             let sumBalance = BigInt(balanceAccount) + BigInt(balanceDeployer);
             expect(supply).to.equal(sumBalance.toString());
 
@@ -176,7 +236,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             // Check the total supply in pure OLAS against the locked balance in OLAS as well (not veOLAS)
             balanceDeployer = await wve.balanceOfAt(deployer.address, blockNumber);
             balanceAccount = await wve.balanceOfAt(account.address, blockNumber);
-            supply = await ve.totalSupplyAt(blockNumber);
+            supply = await wve.totalSupplyAt(blockNumber);
             sumBalance = BigInt(balanceAccount) + BigInt(balanceDeployer);
             expect(supply).to.equal(sumBalance.toString());
         });
@@ -275,6 +335,34 @@ describe("Wrapped Voting Escrow OLAS", function () {
             // Try to get the balance value before the lock
             const balance = await wve.balanceOfAt(deployer.address, block.number);
             expect(balance).to.equal(0);
+        });
+    });
+
+    context("IERC20 and IVotes functions", async function () {
+        it("Check all the related functions", async function () {
+            const deployer = signers[0].address;
+            const user = signers[1].address;
+            // Approve signers[0] for 1 OLAS by voting escrow
+            await olas.approve(ve.address, oneOLABalance);
+
+            // Initial total supply must be 0
+            expect(await wve.totalSupply()).to.equal(0);
+
+            // Define 1 week for the lock duration
+            const lockDuration = oneWeek; // 1 week from now
+
+            // Create locks for both addresses signers[0] and signers[1]
+            await ve.createLock(oneOLABalance, lockDuration);
+
+            // Try to call token-related functions for veOLAS
+            await expect(
+                wve.allowance(deployer, user)
+            ).to.be.revertedWithCustomError(ve, "NonTransferable");
+
+            // Try to call delegate-related functions for veOLAS
+            await expect(
+                wve.delegates(user)
+            ).to.be.revertedWithCustomError(ve, "NonDelegatable");
         });
     });
 });
