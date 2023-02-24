@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "fork": "mv hardhat.config.js.fork hardhat.config.js && ./node_modules/.bin/hardhat run scripts/veCompare/veCompareSingle.js && ./node_modules/.bin/hardhat run scripts/veCompare/veCompareMultiple.js && ./node_modules/.bin/hardhat run scripts/veCompare/veCompareViewFunctions.js && git checkout"
+    "fork": "mv hardhat.config.js.fork hardhat.config.js && ./node_modules/.bin/hardhat run scripts/veCompare/veCompareSingle.js && ./node_modules/.bin/hardhat run scripts/veCompare/veCompareMultiple.js && ./node_modules/.bin/hardhat run scripts/veCompare/veCompareViewFunctions.js && git checkout ."
   },
   "repository": {
     "type": "git",

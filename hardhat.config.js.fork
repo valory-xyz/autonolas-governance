@@ -47,7 +47,7 @@ module.exports = {
             accounts,
             forking: {
                 url: "https://eth-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY,
-                # The block number of the original Curve Voting Escrow deployment
+                // The block number of the original Curve Voting Escrow deployment
                 blockNumber: 10647812
             },
             mining: {
