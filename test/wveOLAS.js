@@ -6,7 +6,6 @@ const { ethers } = require("hardhat");
 describe("Wrapped Voting Escrow OLAS", function () {
     let olas;
     let ve;
-    let wveProxy;
     let wve;
     let signers;
     const initialMint = "1000000000000000000000000"; // 1000000
@@ -30,10 +29,8 @@ describe("Wrapped Voting Escrow OLAS", function () {
         await ve.deployed();
 
         const WVE = await ethers.getContractFactory("wveOLAS");
-        wveProxy = await WVE.deploy(ve.address);
-        await wveProxy.deployed();
-
-        wve = await ethers.getContractAt("veOLAS", wveProxy.address);
+        wve = await WVE.deploy(ve.address);
+        await wve.deployed();
     });
 
     context("Locks", async function () {
@@ -41,7 +38,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const WVE = await ethers.getContractFactory("wveOLAS");
             await expect(
                 WVE.deploy(AddressZero)
-            ).to.be.revertedWithCustomError(wveProxy, "ZeroVEOLASAddress");
+            ).to.be.revertedWithCustomError(wve, "ZeroVEOLASAddress");
         });
 
         it("Check that never-supposed-to-happen zero parameter calls do not break anything", async function () {
@@ -62,7 +59,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
 
             await expect(
                 wve.totalSupplyLockedAtT(0)
-            ).to.be.revertedWithCustomError(wveProxy, "WrongTimestamp");
+            ).to.be.revertedWithCustomError(wve, "WrongTimestamp");
         });
 
         it("Interface support", async function () {
@@ -256,7 +253,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             let blockNumber = await ethers.provider.getBlockNumber("latest");
             await expect(
                 wve.getPastTotalSupply(blockNumber + 10)
-            ).to.be.revertedWithCustomError(wve, "WrongBlockNumber");
+            ).to.be.revertedWithCustomError(ve, "WrongBlockNumber");
 
             // Transfer OLAS to the user
             await olas.transfer(user.address, tenOLABalance);
@@ -271,7 +268,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
             // Try to get past votes of a block number in the future
             await expect(
                 wve.getPastVotes(user.address, blockNumber + 20)
-            ).to.be.revertedWithCustomError(wve, "WrongBlockNumber");
+            ).to.be.revertedWithCustomError(ve, "WrongBlockNumber");
         });
 
         it("Getting past votes and supply", async function () {
@@ -315,9 +312,10 @@ describe("Wrapped Voting Escrow OLAS", function () {
 
     context("Wrapper related", async function () {
         it("Should fail when calling a function that must be called from the original veOLAS", async function () {
+            const wveProxy = await ethers.getContractAt("veOLAS", wve.address);
             await expect(
-                wve.createLock(oneOLABalance, oneWeek)
-            ).to.be.revertedWithCustomError(wveProxy, "ImplementedIn");
+                wveProxy.createLock(oneOLABalance, oneWeek)
+            ).to.be.revertedWithCustomError(wve, "ImplementedIn");
         });
 
         it("Balance with a block number lower than a zero user point block number returns zero value", async function () {
