@@ -12,7 +12,7 @@ The steps of deploying the contracts in this repository are as follows:
 5. EOA to deploy the Timelock contract with the proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles given to the CM (via deployment with `proposers` and `executors` parameters being the CM address);
 6. Brute force salt for vanity address veOLAS (deploymentAddress + OLAS address + bytecode);
 7. EOA to deploy veOLAS contract via DeploymentFactory pointed to OLAS;
-8. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
+8. EOA to deploy GovernorOLAS contract with veOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
 9. EOA to give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to GovernorOLAS from Timelock (in separate transactions via `grantRole()` calls);
 10. EOA to deploy buOLAS contract pointed to OLAS;
 11. EOA to deploy wveOLAS contract pointed to veOLAS;
