@@ -9,7 +9,9 @@ This folder contains the scripts to deploy Autonolas governance. These scripts c
 - Please note: if you encounter the `Unknown Error 0x6b0c`, then it is likely because the ledger is not connected or logged in.
 
 ## Steps to engage
-Make sure the project is installed with the
+The project has submodules to get the dependencies. Make sure you run `git clone --recursive` or init the submodules yourself.
+The dependency list is managed by the `package.json` file, and the setup parameters are stored in the `hardhat.config.js` file.
+Simply run the following command to install the project:
 ```
 yarn install
 ```
