@@ -23,9 +23,6 @@ An overview of the design is provided [here](https://github.com/valory-xyz/auton
 For team incentivisation we have a burnable locked `OLAS` token - `buOLAS`:
 - [buOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol)
 
-For initial incentivised locking of `OLAS` tokens we have a `Sale` contract - `Sale`:
-- [Sale](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Sale.sol)
-
 In order to deploy OLAS and veOLAS contracts via the create2() method, the following contract is utilized for vanity addresses:
 - [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol)
 

@@ -27,31 +27,32 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("10. EOA to deploy buOLAS contract pointed to OLAS");
-    const BU = await ethers.getContractFactory("buOLAS");
-    console.log("You are signing the following transaction: BU.connect(EOA).deploy(parsedData.olasAddress, \"Burnable Locked OLAS\", \"buOLAS\")");
-    const bu = await BU.connect(EOA).deploy(parsedData.olasAddress, "Burnable Locked OLAS", "buOLAS");
-    const result = await bu.deployed();
+    console.log("11. EOA to deploy wveOLAS contract pointed to veOLAS");
+    const WVE = await ethers.getContractFactory("wveOLAS");
+    console.log("You are signing the following transaction: wveOLAS.connect(EOA).deploy(parsedData.veolasAddress)");
+    const wveOLAS = await WVE.connect(EOA).deploy(parsedData.veOLASAddress);
+    const result = await wveOLAS.deployed();
+    // If on goerli, wait a minute for the transaction completion
+    if (providerName === "goerli") {
+        await new Promise(r => setTimeout(r, 60000));
+    }
 
     // Transaction details
-    console.log("Contract deployment: buOLAS");
-    console.log("Contract address:", bu.address);
+    console.log("Contract deployment: wveOLAS");
+    console.log("Contract address:", wveOLAS.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // Verification of ownership and values
-    expect(await bu.token()).to.equal(parsedData.olasAddress);
-    expect(await bu.name()).to.equal("Burnable Locked OLAS");
-    expect(await bu.symbol()).to.equal("buOLAS");
-    expect(await bu.owner()).to.equal(deployer);
+    expect(await wveOLAS.ve()).to.equal(parsedData.veOLASAddress);
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_10.js --network " + providerName + " " + bu.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_11_wveolas.js --network " + providerName + " " + wveOLAS.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
-    parsedData.buOLASAddress = bu.address;
+    parsedData.wveOLASAddress = wveOLAS.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 

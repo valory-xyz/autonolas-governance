@@ -9,10 +9,9 @@ async function main() {
     const globalsFile = "globals.json";
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
-    const useLedger = parsedData.useLedger;
     const derivationPath = parsedData.derivationPath;
+    const useLedger = parsedData.useLedger;
     const providerName = parsedData.providerName;
-    const veOlasSaltString = parsedData.veOlasSaltString;
     let EOA;
 
     const provider = await ethers.providers.getDefaultProvider(providerName);
@@ -28,34 +27,31 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("6. Brutforce salt for vanity address veOLAS (deployAddress + OLAS address + bytecode)");
-    const veSalt = veOlasSaltString;
-
-    console.log("7. EOA to deploy veOLAS contract via deploymentFactory pointed to OLAS");
-    const factory = await ethers.getContractAt("DeploymentFactory", parsedData.deploymentFactory);
-    console.log("You are signing the following transaction: factory.connect(EOA).deployVeOLAS(veSalt, parsedData.olasAddress)");
-    const result = await factory.connect(EOA).deployVeOLAS(veSalt, parsedData.olasAddress);
-    const veOLASAddress = await factory.veOLASAddress();
-    const ve = await ethers.getContractAt("veOLAS", veOLASAddress);
+    console.log("10. EOA to deploy buOLAS contract pointed to OLAS");
+    const BU = await ethers.getContractFactory("buOLAS");
+    console.log("You are signing the following transaction: BU.connect(EOA).deploy(parsedData.olasAddress, \"Burnable Locked OLAS\", \"buOLAS\")");
+    const bu = await BU.connect(EOA).deploy(parsedData.olasAddress, "Burnable Locked OLAS", "buOLAS");
+    const result = await bu.deployed();
 
     // Transaction details
-    console.log("Contract deployment: veOLAS via create2()");
-    console.log("Contract address:", veOLASAddress);
-    console.log("Transaction:", result.hash);
+    console.log("Contract deployment: buOLAS");
+    console.log("Contract address:", bu.address);
+    console.log("Transaction:", result.deployTransaction.hash);
 
     // Verification of ownership and values
-    expect(await ve.token()).to.equal(parsedData.olasAddress);
-    expect(await ve.name()).to.equal("Voting Escrow OLAS");
-    expect(await ve.symbol()).to.equal("veOLAS");
+    expect(await bu.token()).to.equal(parsedData.olasAddress);
+    expect(await bu.name()).to.equal("Burnable Locked OLAS");
+    expect(await bu.symbol()).to.equal("buOLAS");
+    expect(await bu.owner()).to.equal(deployer);
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_07.js --network " + providerName + " " + veOLASAddress, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_10_buolas.js --network " + providerName + " " + bu.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
-    parsedData.veOLASAddress = veOLASAddress;
+    parsedData.buOLASAddress = bu.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 

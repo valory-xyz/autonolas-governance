@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Deployment", function () {
+describe.only("Deployment", function () {
     let signers;
     let EOA;
     let safeSignersCMAddresses;
@@ -269,11 +269,11 @@ describe("Deployment", function () {
             //            timelock is the governance of governor
             //            governor is the admin, proposer, canceller and executor of timelock
 
-            // 11. EOA to deploy Sale contract pointed to OLAS, veOLAs and bOLAS;
-            const SALE = await ethers.getContractFactory("Sale");
-            const sale = await SALE.connect(EOA).deploy(olas.address, ve.address, bu.address);
-            await sale.deployed();
-            // End of 11: EOA is the owner of: factory, OLAS, buOLAS, sale
+            // 11. EOA to deploy wveOLAS contract pointed to veOLAS;
+            const WVE = await ethers.getContractFactory("wveOLAS");
+            const wve = await WVE.connect(EOA).deploy(ve.address);
+            await wve.deployed();
+            // End of 11: EOA is the owner of: factory, OLAS, buOLAS
             //            EOA is the admin of timelock
             //            EOA is the minter of: OLAS
             //            CM is the proposer, canceller and executor of timelock
@@ -281,7 +281,7 @@ describe("Deployment", function () {
             //            timelock is the governance of governor
             //            governor is the admin, proposer, canceller and executor of timelock
 
-            // 12. EOA to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract),
+            // 12. EOA to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract (deprecated)),
             // Valory (sent to Valory multisig);
             const initSupply = "5265" + "0".repeat(23);
             // Numbers below must accumulate to initSupply
@@ -290,12 +290,12 @@ describe("Deployment", function () {
             const valorySupply = "125" + "0".repeat(24);
             // Mint for Timelock, Sale and Valory multisig
             await olas.connect(EOA).mint(timelock.address, timelockSupply);
-            await olas.connect(EOA).mint(sale.address, saleSupply);
+            await olas.connect(EOA).mint(EOA.address, saleSupply);
             await olas.connect(EOA).mint(valoryMultisig.address, valorySupply);
 
             // Check the balance of contracts to be equal to the initSupply in total
             const balanceTimelock = BigInt(await olas.balanceOf(timelock.address));
-            const balanceSale = BigInt(await olas.balanceOf(sale.address));
+            const balanceSale = BigInt(await olas.balanceOf(EOA.address));
             const balanceValory = BigInt(await olas.balanceOf(valoryMultisig.address));
             const sumBalance = balanceTimelock + balanceSale + balanceValory;
             expect(sumBalance).to.equal(BigInt(initSupply));
@@ -306,46 +306,13 @@ describe("Deployment", function () {
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
             //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
+            //            Balances in OLAS: timelock: 100 million, EOA (to simulate deprecated sale): 301.5 million, valory multisig: 125 million
 
-            // 13. EOA to send transaction to Sale contract (`createBalancesFor()`) to create balances for initial DAO members
-            // for them to claim and lock later with veOLAS and buOLAS;
-            // Read the data from JSON file
-            const dataFromJSON = fs.readFileSync(jsonFile, "utf8");
-            const parsedData = JSON.parse(dataFromJSON);
-            // Get veOLAS-related set of arrays
-            const veOLASData = parsedData["veOLAS"];
-            // Get buOLAS-related set of arrays
-            const buOLASData = parsedData["buOLAS"];
-            await sale.connect(EOA).createBalancesFor(veOLASData["addresses"], veOLASData["amounts"], veOLASData["lockTimes"],
-                buOLASData["addresses"], buOLASData["amounts"], buOLASData["numSteps"]);
-
-            // Check veOLAS and buOLAS for the claimable addresses
-            for (let i = 0; i < veOLASData["addresses"].length; i++) {
-                const balances = await sale.claimableBalances(veOLASData["addresses"][i]);
-                expect(balances.veBalance).to.equal(veOLASData["amounts"][i]);
-            }
-
-            for (let i = 0; i < buOLASData["addresses"].length; i++) {
-                const balances = await sale.claimableBalances(buOLASData["addresses"][i]);
-                expect(balances.buBalance).to.equal(buOLASData["amounts"][i]);
-            }
-            // End of 13: EOA is the owner of: factory, OLAS, buOLAS, sale
-            //            EOA is the admin of timelock
-            //            EOA is the minter of: OLAS
-            //            CM is the proposer, canceller and executor of timelock
-            //            timelock is the admin of timelock
-            //            timelock is the governance of governor
-            //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
-
-            // 14. EOA to transfer its minting and its ownership rights of OLAS to Timelock by calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
-            // 15. EOA to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
-            // 16. EOA to transfer ownership rights of Sale to Valory multisig calling `changeOwner(ValoryMultisig)`;
+            // 13. EOA to transfer its minting and its ownership rights of OLAS to Timelock by calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
+            // 14. EOA to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
             await olas.connect(EOA).changeMinter(timelock.address);
             await olas.connect(EOA).changeOwner(timelock.address);
             await bu.connect(EOA).changeOwner(timelock.address);
-            await sale.connect(EOA).changeOwner(valoryMultisig.address);
 
             // Try to change owner of OLAS by EOA once again
             await expect(
@@ -357,11 +324,7 @@ describe("Deployment", function () {
                 bu.connect(EOA).changeOwner(timelock.address)
             ).to.be.revertedWithCustomError(bu, "OwnerOnly");
 
-            // Try to change owner of Sale by EOA once again
-            await expect(
-                sale.connect(EOA).changeOwner(timelock.address)
-            ).to.be.revertedWithCustomError(sale, "OwnerOnly");
-            // End of 16: EOA is the owner of: factory
+            // End of 14: EOA is the owner of: factory
             //            EOA is the admin of timelock
             //            CM is the proposer, canceller and executor of timelock
             //            timelock is the owner of: OLAS, buOLAS
@@ -370,14 +333,14 @@ describe("Deployment", function () {
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
             //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
+            //            Balances in OLAS: timelock: 100 million, EOA (to simulate deprecated sale): 301.5 million, valory multisig: 125 million
 
-            // 17. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
+            // 15. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
             await timelock.connect(EOA).renounceRole(adminRole, EOA.address);
 
             // Verify EOA address roles to be all revoked
             await checkTimelockRoles(timelock, EOA.address, [false, false, false, false]);
-            // End of 17: EOA is the owner of: factory
+            // End of 15: EOA is the owner of: factory
             //            CM is the proposer, canceller and executor of timelock
             //            timelock is the owner of: OLAS, buOLAS
             //            valoryMultisig is the owner of: sale
@@ -385,41 +348,36 @@ describe("Deployment", function () {
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
             //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 301.5 million, valory multisig: 125 million
+            //            Balances in OLAS: timelock: 100 million, EOA (to simulate deprecated sale): 301.5 million, valory multisig: 125 million
 
-            // 18. EOA to revoke self ownership rights from DeploymentFactory to Null Address (via `changeOwner()`)
+            // veOLAS and buOLAS claim from the deprecated Sale contract
+
+            // 16. EOA to revoke self ownership rights from DeploymentFactory to Null Address (via `changeOwner()`)
             await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
             // Try to change the owner of factory by EOA once again
             await expect(
                 factory.connect(EOA).changeOwner(EOA.address)
             ).to.be.revertedWithCustomError(factory, "OwnerOnly");
-            // End of 18: CM is the proposer, canceller and executor of timelock
+            // End of 16: CM is the proposer, canceller and executor of timelock
             //            timelock is the owner of: OLAS, buOLAS
             //            valoryMultisig is the owner of: sale
             //            timelock is the minter of: OLAS
             //            timelock is the admin of timelock
             //            timelock is the governance of governor
             //            governor is the admin, proposer, canceller and executor of timelock
-            //            Balances in OLAS: timelock: 100 million, sale: 0 if all claimed, valory multisig: 125 million
-            //            Balances in veOLAS: from sale claimable for veOLAS
-            //            Balances in buOLAS: from sale claimable for buOLAS
+            //            Balances in OLAS: timelock: 100 million, valory multisig: 125 million
+            //            Balances in veOLAS and buOLAS: 301.5 million as all successfully claimed
 
-            // Test the possibility to claim issued balances by the claimable accounts
-            for (let i = 0; i < veOLASSigners.length; i++) {
-                await sale.connect(veOLASSigners[i]).claim();
-                const balance = await ve.balanceOf(veOLASSigners[i].address);
-                expect(balance).to.equal(veOLASData["amounts"][i]);
-            }
+            // !!!!!!!!!!!!!!!!!!!!!!!! STEPS AFTER THE INITIAL DEPLOYMENT !!!!!!!!!!!!!!!!!!!!!!!!
+            // 17. EOA to deploy GovernorOLAS contract with veOLAS and Timelock addresses as input parameters
+            // and other defined governor-related parameters;
+            const wgovernor = await GovernorOLAS.connect(EOA).deploy(wve.address, timelock.address, initialVotingDelay,
+                initialVotingPeriod, initialProposalThreshold, quorum);
+            await governor.deployed();
 
-            // Those that were claimed during the veOLAS should not be claimed now
-            for (let i = 0; i < buOLASSigners.length; i++) {
-                if (!veOLASSigners.includes(buOLASSigners[i])) {
-                    await sale.connect(buOLASSigners[i]).claim();
-                }
-                const balance = await bu.balanceOf(buOLASSigners[i].address);
-                expect(balance).to.equal(buOLASData["amounts"][i]);
-            }
-            // End of deployment: same as End of 18
+            // 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
+            // and canceller ("CANCELLER_ROLE") roles from GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"),
+            // executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to wGovernorOLAS (via voting).
         });
     });
 });
