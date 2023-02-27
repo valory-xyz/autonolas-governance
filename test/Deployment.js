@@ -6,6 +6,7 @@ const { ethers } = require("hardhat");
 describe.only("Deployment", function () {
     let signers;
     let EOA;
+    let safeSignersCM;
     let safeSignersCMAddresses;
     let safeSignersValoryAddresses;
     // Production threshold for the DAO multisig is 6
@@ -57,6 +58,12 @@ describe.only("Deployment", function () {
 
         signers = await ethers.getSigners();
         EOA = signers[0];
+        // Get the full set of CM signer EOAs (9)
+        safeSignersCM = signers.slice(1, 10).map(
+            function (currentSigner) {
+                return currentSigner;
+            }
+        );
         // Get the full set of CM signers addresses (9)
         safeSignersCMAddresses = signers.slice(1, 10).map(
             function (currentSigner) {
@@ -195,7 +202,7 @@ describe.only("Deployment", function () {
 
             // 5. EOA to deploy the Timelock contract with the proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
             // and canceller ("CANCELLER_ROLE") roles given to the CM (via deployment with `proposers` and `executors` parameters being the CM address);
-            const minDelay = 13091; // 2 days in blocks (assuming 13.2s per block)
+            const minDelay = 5; // 2 days in blocks (assuming 13.2s per block)
             const executors = [CM.address];
             const proposers = [CM.address];
             const Timelock = await ethers.getContractFactory("Timelock");
@@ -378,6 +385,49 @@ describe.only("Deployment", function () {
             // 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
             // and canceller ("CANCELLER_ROLE") roles from GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"),
             // executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to wGovernorOLAS (via voting).
+            // Prepare the batch data for the timelock
+            const sTargets = new Array(8).fill(timelock.address);
+            const sValues = new Array(8).fill(0);
+            const sCallDatas = [
+                timelock.interface.encodeFunctionData("revokeRole", [adminRole, governor.address]),
+                timelock.interface.encodeFunctionData("revokeRole", [executorRole, governor.address]),
+                timelock.interface.encodeFunctionData("revokeRole", [proposerRole, governor.address]),
+                timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, governor.address]),
+                timelock.interface.encodeFunctionData("grantRole", [adminRole, wgovernor.address]),
+                timelock.interface.encodeFunctionData("grantRole", [executorRole, wgovernor.address]),
+                timelock.interface.encodeFunctionData("grantRole", [proposerRole, wgovernor.address]),
+                timelock.interface.encodeFunctionData("grantRole", [cancellerRole, wgovernor.address])
+            ];
+            const bytes32Zeros = "0x" + "0".repeat(64);
+
+            // Originate a Safe transaction from the CM as the timelock proposer
+            nonce = await CM.nonce();
+            let txHashData = await safeContracts.buildContractCall(timelock, "scheduleBatch",
+                [sTargets, sValues, sCallDatas, bytes32Zeros, bytes32Zeros, minDelay], nonce, 0, 0);
+            let signMessageData = new Array(safeSignersCM.length);
+            for (let i = 0; i < safeSignersCM.length; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(safeSignersCM[i], CM, txHashData, 0);
+            }
+            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+
+            // Waiting for the minDelay number of blocks to pass
+            for (let i = 0; i < minDelay; i++) {
+                ethers.provider.send("evm_mine");
+            }
+
+            // Execute the proposed operation and check the execution result
+            nonce = await CM.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "executeBatch",
+                [sTargets, sValues, sCallDatas, bytes32Zeros, bytes32Zeros], nonce, 0, 0);
+            for (let i = 0; i < safeSignersCM.length; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(safeSignersCM[i], CM, txHashData, 0);
+            }
+            await safeContracts.executeTx(CM, txHashData, signMessageData, 0);
+
+            // Verify governor address roles
+            await checkTimelockRoles(timelock, governor.address, [false, false, false, false]);
+            // Verify wgovernor address roles
+            await checkTimelockRoles(timelock, wgovernor.address, [true, true, true, true]);
         });
     });
 });
