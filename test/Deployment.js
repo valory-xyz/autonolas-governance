@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe.only("Deployment", function () {
+describe("Deployment", function () {
     let signers;
     let EOA;
     let safeSignersCM;
