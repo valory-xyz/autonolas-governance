@@ -8,8 +8,8 @@ This repository contains the Autonolas `OLAS` token and the governance part of t
 
 A graphical overview of the whole on-chain architecture is available here:
 
-![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture.png?raw=true)
-Please note that `buOLAS` and `Sale` contracts are not part on the diagram.
+![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v3.png?raw=true)
+Please note that `buOLAS` contract is not part of the diagram.
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
 
