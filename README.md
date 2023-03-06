@@ -15,19 +15,21 @@ We follow the standard governance setup by OpenZeppelin. Our governance token is
 
 An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Governance_process.pdf?raw=true) and the contracts' specifications are provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Specs%20of%20governance%20contracts_v1.0.1.pdf?raw=true).
 
-- [OLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/OLAS.sol)
-- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/veOLAS.sol)
-- [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol)
-- [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol)
+- [OLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/OLAS.sol);
+- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/veOLAS.sol);
+- [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol);
+- [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol).
 
 For team incentivisation we have a burnable locked `OLAS` token - `buOLAS`:
-- [buOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol)
+- [buOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol).
 
 In order to deploy OLAS and veOLAS contracts via the create2() method, the following contract is utilized for vanity addresses:
-- [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol)
+- [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol).
 
 To address several found `veOLAS` contract view functions issues, a wrapper contract `wveOLAS` is implemented:
-- [veOLAS wrapper (wveOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol)
+- [veOLAS wrapper (wveOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol).
+
+To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf)
 
 ## Development
 
@@ -117,8 +119,8 @@ The list of optimization considerations and best practices exercised during the 
 can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/optimizations.md).
 
 ## Audits
-The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
-A list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf)
+- The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
+- The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf).
 
 ## Deployed Protocol
 The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
