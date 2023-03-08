@@ -439,9 +439,9 @@ describe("Voting Escrow OLAS", function () {
             await ve.connect(owner).increaseAmount(oneOLABalance);
             await ve.connect(owner).increaseAmount(oneOLABalance);
 
-            // Get past votes of the owner
+            // Get past votes of the owner (bug resolved in wveOLAS)
             const votesOwner = await ve.getPastVotes(owner.address, blockNumber);
-            expect(Number(votesOwner)).to.greaterThan(0);
+            expect(votesOwner).to.greaterThan(0);
 
             // Get past voting supply from the same block number
             const supply = await ve.getPastTotalSupply(blockNumber);

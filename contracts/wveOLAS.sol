@@ -231,7 +231,7 @@ contract wveOLAS {
 
     /// @dev Calculates current total voting power.
     /// @return vPower Total voting power.
-    function totalSupplyLocked() public view returns (uint256 vPower) {
+    function totalSupplyLocked() external view returns (uint256 vPower) {
         vPower = IVEOLAS(ve).totalSupplyLocked();
     }
 

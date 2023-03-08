@@ -23,7 +23,6 @@ describe("Deployment", function () {
     const fs = require("fs");
     let gnosisSafeL2;
     let gnosisSafeProxyFactory;
-    let multiSend;
     const _1kOLABalance = "1000" + "0".repeat(18);
     const _2kOLABalance = "2000" + "0".repeat(18);
     const _3kOLABalance = "3000" + "0".repeat(18);
@@ -51,10 +50,6 @@ describe("Deployment", function () {
         const GnosisSafeProxyFactory = await ethers.getContractFactory("GnosisSafeProxyFactory");
         gnosisSafeProxyFactory = await GnosisSafeProxyFactory.deploy();
         await gnosisSafeProxyFactory.deployed();
-
-        const MultiSend = await ethers.getContractFactory("MultiSendCallOnly");
-        multiSend = await MultiSend.deploy();
-        await multiSend.deployed();
 
         signers = await ethers.getSigners();
         EOA = signers[0];
