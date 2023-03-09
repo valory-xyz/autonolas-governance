@@ -21,7 +21,7 @@
 14. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
 15. EOA to revoke self ownership rights from DeploymentFactory to Null Address (via `changeOwner(0x000000000000000000000000000000000000dEaD)`); 
 
-## Steps of deploying supplement contracts.
+## Steps of deploying supplemental contracts.
 16. EOA to deploy wveOLAS contract pointed to veOLAS;
 17. EOA to deploy new wGovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles from GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to wGovernorOLAS (via voting).
