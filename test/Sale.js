@@ -47,12 +47,12 @@ describe("Sale contract", function () {
             // Trying to change owner from a non-owner account address
             await expect(
                 sale.connect(account).changeOwner(account.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(sale, "OwnerOnly");
 
             // Trying to change owner for the zero address
             await expect(
                 sale.connect(owner).changeOwner(AddressZero)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(sale, "ZeroAddress");
 
             // Changing the owner
             await sale.connect(owner).changeOwner(account.address);
@@ -60,7 +60,7 @@ describe("Sale contract", function () {
             // Trying to change owner from the previous owner address
             await expect(
                 sale.connect(owner).changeOwner(owner.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(sale, "OwnerOnly");
         });
 
         it("Should fail when creating a claimable balance with wrong arguments", async function () {
@@ -69,77 +69,77 @@ describe("Sale contract", function () {
             // Trying to call the createBalancesFor from a non owner
             await expect(
                 sale.connect(signers[1]).createBalancesFor([], [], [], [], [], [])
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(sale, "OwnerOnly");
 
             // **************************   veOLAS   *************************
             // Address for veOLAS is zero
             await expect(
                 sale.createBalancesFor([AddressZero], [0], [0], [], [], [])
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(sale, "ZeroAddress");
 
             // Amount for veOLAS is zero
             await expect(
                 sale.createBalancesFor([account], [0], [0], [], [], [])
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(sale, "ZeroValue");
 
             // Amount for veOLAS is above the limit
             await expect(
                 sale.createBalancesFor([account], [overflowNum128], [oneYear], [], [], [])
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(sale, "Overflow");
 
             // Time for veOLAS is less than one year
             await expect(
                 sale.createBalancesFor([account], [oneOLABalance], [0], [], [], [])
-            ).to.be.revertedWith("UnlockTimeIncorrect");
+            ).to.be.revertedWithCustomError(sale, "UnlockTimeIncorrect");
 
             // Time for veOLAS is bigger than the max time of 4 years
             await expect(
                 sale.createBalancesFor([account], [oneOLABalance], [4 * oneYear + 1], [], [], [])
-            ).to.be.revertedWith("MaxUnlockTimeReached");
+            ).to.be.revertedWithCustomError(sale, "MaxUnlockTimeReached");
 
             // Number array arguments for veOLAS is incorrect
             await expect(
                 sale.createBalancesFor([account], [oneOLABalance, twoOLABalance], [oneYear], [], [], [])
-            ).to.be.revertedWith("WrongArrayLength");
+            ).to.be.revertedWithCustomError(sale, "WrongArrayLength");
 
             await expect(
                 sale.createBalancesFor([account], [oneOLABalance], [oneYear, 2 * oneYear], [], [], [])
-            ).to.be.revertedWith("WrongArrayLength");
+            ).to.be.revertedWithCustomError(sale, "WrongArrayLength");
 
             // **************************   buOLAS   *************************
             // Address for buOLAS is zero
             await expect(
                 sale.createBalancesFor([], [], [], [AddressZero], [0], [0])
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(sale, "ZeroAddress");
 
             // Amount for buOLAS is zero
             await expect(
                 sale.createBalancesFor([], [], [], [account], [0], [0])
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(sale, "ZeroValue");
 
             // Amount for buOLAS is above the limit
             await expect(
                 sale.createBalancesFor([], [], [], [account], [overflowNum128], [1])
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(sale, "Overflow");
 
             // Number of time steps for buOLAS is zero
             await expect(
                 sale.createBalancesFor([], [], [], [account], [oneOLABalance], [0])
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(sale, "ZeroValue");
 
             // Number of time steps for buOLAS is more than the maximum number of steps
             await expect(
                 sale.createBalancesFor([], [], [], [account], [oneOLABalance], [11])
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(sale, "Overflow");
 
             // Number array arguments for buOLAS is incorrect
             await expect(
                 sale.createBalancesFor([], [], [], [account], [oneOLABalance, twoOLABalance], [1])
-            ).to.be.revertedWith("WrongArrayLength");
+            ).to.be.revertedWithCustomError(sale, "WrongArrayLength");
 
             await expect(
                 sale.createBalancesFor([], [], [], [account], [oneOLABalance], [1, 2])
-            ).to.be.revertedWith("WrongArrayLength");
+            ).to.be.revertedWithCustomError(sale, "WrongArrayLength");
         });
 
         it("Create balances for", async function () {
@@ -153,7 +153,7 @@ describe("Sale contract", function () {
             // Trying to create balances without any Sale balance
             await expect(
                 sale.createBalancesFor([account], [oneOLABalance], [oneYear], [account], [oneOLABalance], [numSteps])
-            ).to.be.revertedWith("InsufficientAllowance");
+            ).to.be.revertedWithCustomError(sale, "InsufficientAllowance");
 
             // Mint OLAS for the Sale contract
             await olas.mint(sale.address, twoOLABalance);
@@ -168,16 +168,16 @@ describe("Sale contract", function () {
             // Try to create additional balance after the existent one
             await expect(
                 sale.createBalancesFor([account], [oneOLABalance], [oneYear], [], [], [])
-            ).to.be.revertedWith("NonZeroValue");
+            ).to.be.revertedWithCustomError(sale, "NonZeroValue");
 
             await expect(
                 sale.createBalancesFor([], [], [], [account], [oneOLABalance], [numSteps])
-            ).to.be.revertedWith("NonZeroValue");
+            ).to.be.revertedWithCustomError(sale, "NonZeroValue");
 
             // Trying to create more balances without sufficient amount
             await expect(
                 sale.createBalancesFor([signers[2].address], [oneOLABalance], [oneYear], [], [], [])
-            ).to.be.revertedWith("InsufficientAllowance");
+            ).to.be.revertedWithCustomError(sale, "InsufficientAllowance");
         });
     });
 
@@ -202,7 +202,7 @@ describe("Sale contract", function () {
             // Trying to claim more
             await expect(
                 sale.connect(account).claim()
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(sale, "ZeroValue");
 
             // Check the status of the lock in veOLAS
             // Check the balance
@@ -233,7 +233,7 @@ describe("Sale contract", function () {
             // Trying to claim more
             await expect(
                 sale.connect(account).claim()
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(sale, "ZeroValue");
 
             // Check the status of the lock in buOLAS
             // Check the balance

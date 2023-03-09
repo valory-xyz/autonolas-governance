@@ -35,7 +35,7 @@ describe("Time shifting buOLAS", function () {
             ethers.provider.send("evm_mine");
             await expect(
                 bu.createLockFor(account, oneOLABalance, numSteps)
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(bu, "Overflow");
         });
     });
 });

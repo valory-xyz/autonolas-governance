@@ -101,7 +101,7 @@ describe("Governance OLAS", function () {
             // Check that the deployer does not have rights anymore
             await expect(
                 timelock.connect(deployer).revokeRole(adminRole, governor.address)
-            ).to.be.revertedWith("AccessControl: account ");
+            ).to.be.reverted;
         });
 
         it("Changes the ownership of a governance contract and a timelock", async function () {

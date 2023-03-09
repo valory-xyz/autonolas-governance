@@ -43,12 +43,12 @@ describe("OLAS", function () {
             // Trying to change owner from a non-owner account address
             await expect(
                 olas.connect(account).changeOwner(account.address)
-            ).to.be.revertedWith("ManagerOnly");
+            ).to.be.revertedWithCustomError(olas, "ManagerOnly");
 
             // Trying to change owner for the zero address
             await expect(
                 olas.connect(owner).changeOwner(AddressZero)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(olas, "ZeroAddress");
 
             // Changing the owner
             await olas.connect(owner).changeOwner(account.address);
@@ -56,7 +56,7 @@ describe("OLAS", function () {
             // Trying to change owner from the previous owner address
             await expect(
                 olas.connect(owner).changeOwner(owner.address)
-            ).to.be.revertedWith("ManagerOnly");
+            ).to.be.revertedWithCustomError(olas, "ManagerOnly");
         });
 
         it("Change minter", async function () {
@@ -66,12 +66,12 @@ describe("OLAS", function () {
             // Trying to change minter from a non-owner account address
             await expect(
                 olas.connect(account).changeMinter(account.address)
-            ).to.be.revertedWith("ManagerOnly");
+            ).to.be.revertedWithCustomError(olas, "ManagerOnly");
 
             // Trying to change minter for the zero address
             await expect(
                 olas.connect(owner).changeMinter(AddressZero)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(olas, "ZeroAddress");
 
             // Changing the minter
             await olas.connect(owner).changeMinter(account.address);
@@ -82,7 +82,7 @@ describe("OLAS", function () {
         it("Mint must be done by manager", async function () {
             await expect(
                 olas.connect(bob).mint(bob.address, amount)
-            ).to.be.revertedWith("ManagerOnly");
+            ).to.be.revertedWithCustomError(olas, "ManagerOnly");
         });
 
         it("Increases total supply", async function () {
@@ -133,7 +133,7 @@ describe("OLAS", function () {
             // Trying to do transferFrom with insufficient allowance
             await expect(
                 olas.connect(alice).transferFrom(bob.address, alice.address, amount)
-            ).to.be.revertedWith("panic code 0x11");
+            ).to.be.reverted;
             // Increasing allowance
             await olas.connect(bob).increaseAllowance(alice.address, amount - 50);
             await olas.connect(alice).transferFrom(bob.address, alice.address, amount);
@@ -157,7 +157,7 @@ describe("OLAS", function () {
             // Trying to do transferFrom for a full amount with insufficient allowance
             await expect(
                 olas.connect(alice).transferFrom(bob.address, alice.address, amount)
-            ).to.be.revertedWith("panic code 0x11");
+            ).to.be.reverted;
             await olas.connect(alice).transferFrom(bob.address, alice.address, amount - 50);
             expect(await olas.balanceOf(alice.address)).to.equal(amount - 50);
         });

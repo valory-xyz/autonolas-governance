@@ -100,12 +100,12 @@ describe("Deployment", function () {
             // Trying to change owner from a non-owner account address
             await expect(
                 factory.connect(account).changeOwner(account.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(factory, "OwnerOnly");
 
             // Trying to change owner for the zero address
             await expect(
                 factory.connect(owner).changeOwner(AddressZero)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(factory, "ZeroAddress");
 
             // Changing the owner
             await factory.connect(owner).changeOwner(account.address);
@@ -113,7 +113,7 @@ describe("Deployment", function () {
             // Trying to change owner from the previous owner address
             await expect(
                 factory.connect(owner).changeOwner(owner.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(factory, "OwnerOnly");
         });
 
         it("Checking computed addresses", async function () {
@@ -350,17 +350,17 @@ describe("Deployment", function () {
             // Try to change owner of OLAS by EOA once again
             await expect(
                 olas.connect(EOA).changeOwner(timelock.address)
-            ).to.be.revertedWith("ManagerOnly");
+            ).to.be.revertedWithCustomError(olas, "ManagerOnly");
 
             // Try to change owner of buOLAS by EOA once again
             await expect(
                 bu.connect(EOA).changeOwner(timelock.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(bu, "OwnerOnly");
 
             // Try to change owner of Sale by EOA once again
             await expect(
                 sale.connect(EOA).changeOwner(timelock.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(sale, "OwnerOnly");
             // End of 16: EOA is the owner of: factory
             //            EOA is the admin of timelock
             //            CM is the proposer, canceller and executor of timelock
@@ -392,7 +392,7 @@ describe("Deployment", function () {
             // Try to change the owner of factory by EOA once again
             await expect(
                 factory.connect(EOA).changeOwner(EOA.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(factory, "OwnerOnly");
             // End of 18: CM is the proposer, canceller and executor of timelock
             //            timelock is the owner of: OLAS, buOLAS
             //            valoryMultisig is the owner of: sale

@@ -61,15 +61,15 @@ describe("Voting Escrow OLAS", function () {
 
             await expect(
                 ve.createLock(0, 0)
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(ve, "ZeroValue");
 
             await expect(
                 ve.createLock(oneOLABalance, 0)
-            ).to.be.revertedWith("UnlockTimeIncorrect");
+            ).to.be.revertedWithCustomError(ve, "UnlockTimeIncorrect");
 
             await expect(
                 ve.createLock(overflowNum96, oneWeek)
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(ve, "Overflow");
         });
 
         it("Create lock", async function () {
@@ -128,7 +128,7 @@ describe("Voting Escrow OLAS", function () {
             // Try to create lock for the zero address
             await expect(
                 ve.connect(owner).createLockFor(AddressZero, oneOLABalance, lockDuration)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(ve, "ZeroAddress");
 
             // Lock for the account from the funds of the owner (approved for veOLAS)
             await ve.connect(owner).createLockFor(account.address, oneOLABalance, lockDuration);
@@ -167,7 +167,7 @@ describe("Voting Escrow OLAS", function () {
             // Try to deposit 1 OLAS for deployer without initially locked balance
             await expect(
                 ve.depositFor(deployer.address, oneOLABalance)
-            ).to.be.revertedWith("NoValueLocked");
+            ).to.be.revertedWithCustomError(ve, "NoValueLocked");
 
             // Create lock for the deployer
             await ve.createLock(oneOLABalance, lockDuration);
@@ -180,12 +180,12 @@ describe("Voting Escrow OLAS", function () {
             // Try to deposit zero value for deployer
             await expect(
                 ve.depositFor(deployer.address, 0)
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(ve, "ZeroValue");
 
             // Try to deposit a huge number
             await expect(
                 ve.depositFor(deployer.address, overflowNum96)
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(ve, "Overflow");
 
             // Deposit for the deployer from the
             await ve.connect(owner).depositFor(deployer.address, oneOLABalance);
@@ -199,7 +199,7 @@ describe("Voting Escrow OLAS", function () {
             ethers.provider.send("evm_mine");
             await expect(
                 ve.depositFor(deployer.address, oneOLABalance)
-            ).to.be.revertedWith("LockExpired");
+            ).to.be.revertedWithCustomError(ve, "LockExpired");
         });
 
         it("Should fail when creating a lock for more than 4 years", async function () {
@@ -210,7 +210,7 @@ describe("Voting Escrow OLAS", function () {
 
             await expect(
                 ve.createLock(oneOLABalance, lockDuration)
-            ).to.be.revertedWith("MaxUnlockTimeReached");
+            ).to.be.revertedWithCustomError(ve, "MaxUnlockTimeReached");
         });
 
         it("Should fail when creating a lock with already locked value", async function () {
@@ -220,7 +220,7 @@ describe("Voting Escrow OLAS", function () {
             ve.createLock(oneOLABalance, lockDuration);
             await expect(
                 ve.createLock(oneOLABalance, lockDuration)
-            ).to.be.revertedWith("LockedValueNotZero");
+            ).to.be.revertedWithCustomError(ve, "LockedValueNotZero");
         });
 
         it("Increase amount of lock", async function () {
@@ -231,19 +231,19 @@ describe("Voting Escrow OLAS", function () {
             // No previous lock
             await expect(
                 ve.increaseAmount(oneOLABalance)
-            ).to.be.revertedWith("NoValueLocked");
+            ).to.be.revertedWithCustomError(ve, "NoValueLocked");
 
             // Now lock 1 OLAS
             ve.createLock(oneOLABalance, lockDuration);
             // Increase by more than a zero
             await expect(
                 ve.increaseAmount(0)
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(ve, "ZeroValue");
 
             // Try to deposit a huge number
             await expect(
                 ve.increaseAmount(overflowNum96)
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(ve, "Overflow");
 
             // Add 1 OLAS more
             await ve.increaseAmount(oneOLABalance);
@@ -255,7 +255,7 @@ describe("Voting Escrow OLAS", function () {
             // Not possible to add to the expired lock
             await expect(
                 ve.increaseAmount(oneOLABalance)
-            ).to.be.revertedWith("LockExpired");
+            ).to.be.revertedWithCustomError(ve, "LockExpired");
         });
 
         it("Increase amount of unlock time", async function () {
@@ -266,21 +266,21 @@ describe("Voting Escrow OLAS", function () {
             // Nothing is locked
             await expect(
                 ve.increaseUnlockTime(oneWeek)
-            ).to.be.revertedWith("NoValueLocked");
+            ).to.be.revertedWithCustomError(ve, "NoValueLocked");
 
             // Lock 1 OLAS
             await ve.createLock(oneOLABalance, lockDuration);
             // Try to decrease the unlock time
             await expect(
                 ve.increaseUnlockTime(lockDuration - 1)
-            ).to.be.revertedWith("UnlockTimeIncorrect");
+            ).to.be.revertedWithCustomError(ve, "UnlockTimeIncorrect");
 
             await ve.increaseUnlockTime(lockDuration + oneWeek);
 
             // Try to increase unlock for the period of bigger than the max lock time
             await expect(
                 ve.increaseUnlockTime(lockDuration + oneWeek * 300)
-            ).to.be.revertedWith("MaxUnlockTimeReached");
+            ).to.be.revertedWithCustomError(ve, "MaxUnlockTimeReached");
 
             // Time forward to the lock expiration
             ethers.provider.send("evm_increaseTime", [oneWeek + oneWeek]);
@@ -289,7 +289,7 @@ describe("Voting Escrow OLAS", function () {
             // Not possible to add to the expired lock
             await expect(
                 ve.increaseUnlockTime(1)
-            ).to.be.revertedWith("LockExpired");
+            ).to.be.revertedWithCustomError(ve, "LockExpired");
         });
     });
 
@@ -305,7 +305,7 @@ describe("Voting Escrow OLAS", function () {
             await ve.connect(owner).createLock(oneOLABalance, lockDuration);
 
             // Try withdraw early
-            await expect(ve.connect(owner).withdraw()).to.be.revertedWith("LockNotExpired");
+            await expect(ve.connect(owner).withdraw()).to.be.revertedWithCustomError(ve, "LockNotExpired");
             // Move time close to the lock duration
             const blockNumber = await ethers.provider.getBlockNumber();
             const block = await ethers.provider.getBlock(blockNumber);
@@ -315,7 +315,7 @@ describe("Voting Escrow OLAS", function () {
             ethers.provider.send("evm_mine");
 
             // Try withdraw about the unlock time, but not quite there yet
-            await expect(ve.connect(owner).withdraw()).to.be.revertedWith("LockNotExpired");
+            await expect(ve.connect(owner).withdraw()).to.be.revertedWithCustomError(ve, "LockNotExpired");
 
             // Move time after the lock duration
             ethers.provider.send("evm_increaseTime", [200]);
@@ -380,12 +380,12 @@ describe("Voting Escrow OLAS", function () {
             const blockNumber = await ethers.provider.getBlockNumber();
             await expect(
                 ve.getPastTotalSupply(blockNumber + 10)
-            ).to.be.revertedWith("WrongBlockNumber");
+            ).to.be.revertedWithCustomError(ve, "WrongBlockNumber");
 
             // Try to get past total supply of a block number in the future
             await expect(
                 ve.getPastVotes(user, blockNumber + 20)
-            ).to.be.revertedWith("WrongBlockNumber");
+            ).to.be.revertedWithCustomError(ve, "WrongBlockNumber");
         });
 
         it("Checkpoint with points of inactivity", async function () {
@@ -476,28 +476,28 @@ describe("Voting Escrow OLAS", function () {
             // Try to call transfer-related functions for veOLAS
             await expect(
                 ve.approve(user, oneOLABalance)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(ve, "NonTransferable");
             await expect(
                 ve.allowance(deployer, user)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(ve, "NonTransferable");
             await expect(
                 ve.transfer(user, oneOLABalance)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(ve, "NonTransferable");
             await expect(
                 ve.transferFrom(deployer, user, oneOLABalance)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(ve, "NonTransferable");
 
             // Try to call delegate-related functions for veOLAS
             await expect(
                 ve.delegates(user)
-            ).to.be.revertedWith("NonDelegatable");
+            ).to.be.revertedWithCustomError(ve, "NonDelegatable");
             await expect(
                 ve.delegate(deployer)
-            ).to.be.revertedWith("NonDelegatable");
+            ).to.be.revertedWithCustomError(ve, "NonDelegatable");
             const rv = "0x" + "0".repeat(64);
             await expect(
                 ve.delegateBySig(deployer, 0, 0, 0, rv, rv)
-            ).to.be.revertedWith("NonDelegatable");
+            ).to.be.revertedWithCustomError(ve, "NonDelegatable");
         });
     });
 });

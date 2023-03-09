@@ -37,12 +37,12 @@ describe("buOLAS", function () {
             // Trying to change owner from a non-owner account address
             await expect(
                 bu.connect(account).changeOwner(account.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(bu, "OwnerOnly");
 
             // Trying to change owner for the zero address
             await expect(
                 bu.connect(owner).changeOwner(AddressZero)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(bu, "ZeroAddress");
 
             // Changing the owner
             await bu.connect(owner).changeOwner(account.address);
@@ -50,7 +50,7 @@ describe("buOLAS", function () {
             // Trying to change owner from the previous owner address
             await expect(
                 bu.connect(owner).changeOwner(owner.address)
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(bu, "OwnerOnly");
         });
 
         it("Interface support", async function () {
@@ -68,23 +68,23 @@ describe("buOLAS", function () {
 
             await expect(
                 bu.createLockFor(AddressZero, 0, 0)
-            ).to.be.revertedWith("ZeroAddress");
+            ).to.be.revertedWithCustomError(bu, "ZeroAddress");
 
             await expect(
                 bu.createLockFor(account, 0, 0)
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(bu, "ZeroValue");
 
             await expect(
                 bu.createLockFor(account, oneOLASBalance, 0)
-            ).to.be.revertedWith("ZeroValue");
+            ).to.be.revertedWithCustomError(bu, "ZeroValue");
 
             await expect(
                 bu.createLockFor(account, overflowNum96, 1)
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(bu, "Overflow");
 
             await expect(
                 bu.createLockFor(account, oneOLASBalance, 11)
-            ).to.be.revertedWith("Overflow");
+            ).to.be.revertedWithCustomError(bu, "Overflow");
         });
 
         it("Create lock for", async function () {
@@ -110,7 +110,7 @@ describe("buOLAS", function () {
             // Try to create an additional lock to the account address that already has a lock
             await expect(
                 bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps)
-            ).to.be.revertedWith("LockedValueNotZero");
+            ).to.be.revertedWithCustomError(bu, "LockedValueNotZero");
 
             // Check the total supply to be equal to the account locked balance
             let supply = await bu.totalSupply();
@@ -159,7 +159,7 @@ describe("buOLAS", function () {
             await bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps);
 
             // Try to withdraw early
-            await expect(bu.connect(account).withdraw()).to.be.revertedWith("LockNotExpired");
+            await expect(bu.connect(account).withdraw()).to.be.revertedWithCustomError(bu, "LockNotExpired");
             // Move one year in time
             ethers.provider.send("evm_increaseTime", [oneYear + 100]);
             ethers.provider.send("evm_mine");
@@ -171,7 +171,7 @@ describe("buOLAS", function () {
             // Try to withdraw more now
             await expect(
                 bu.connect(account).withdraw()
-            ).to.be.revertedWith("LockNotExpired");
+            ).to.be.revertedWithCustomError(bu, "LockNotExpired");
 
             // Move time after the lock duration
             ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
@@ -230,7 +230,7 @@ describe("buOLAS", function () {
             // Try to revoke not by the owner
             await expect(
                 bu.connect(account).revoke([account.address])
-            ).to.be.revertedWith("OwnerOnly");
+            ).to.be.revertedWithCustomError(bu, "OwnerOnly");
 
             // Move one year in time
             ethers.provider.send("evm_increaseTime", [oneYear + 100]);
@@ -396,16 +396,16 @@ describe("buOLAS", function () {
             // Try to call transfer-related functions for buOLAS
             await expect(
                 bu.approve(user, oneOLASBalance)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(bu, "NonTransferable");
             await expect(
                 bu.allowance(deployer, user)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(bu, "NonTransferable");
             await expect(
                 bu.transfer(user, oneOLASBalance)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(bu, "NonTransferable");
             await expect(
                 bu.transferFrom(deployer, user, oneOLASBalance)
-            ).to.be.revertedWith("NonTransferable");
+            ).to.be.revertedWithCustomError(bu, "NonTransferable");
         });
     });
 });
