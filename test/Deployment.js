@@ -367,7 +367,7 @@ describe("Deployment", function () {
             const wve = await WVE.connect(EOA).deploy(ve.address);
             await wve.deployed();
 
-            // 17. EOA to deploy GovernorOLAS contract with veOLAS and Timelock addresses as input parameters
+            // 17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters
             // and other defined governor-related parameters;
             const wgovernor = await GovernorOLAS.connect(EOA).deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);

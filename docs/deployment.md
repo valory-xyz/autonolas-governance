@@ -15,7 +15,7 @@
 8. EOA to deploy GovernorOLAS contract with veOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
 9. EOA to give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to GovernorOLAS from Timelock (in separate transactions via `grantRole()` calls);
 10. EOA to deploy buOLAS contract pointed to OLAS;
-11. EOA to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract), Valory (sent to Valory multisig);
+11. EOA to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members, Valory (sent to Valory multisig);
 12. EOA to transfer its minting and its ownership rights of OLAS to Timelock with EOA calling `changeMinter(Timelock)` and `changeOwner(Timelock)`;
 13. EOA to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`;
 14. EOA to revoke self admin rights from the Timelock (via `renounceRole()`);
