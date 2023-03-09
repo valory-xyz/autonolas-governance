@@ -236,16 +236,11 @@ contract wveOLAS {
     }
 
     /// @dev Calculate total voting power at some point in the past.
-    /// @notice The requested block number must be at least equal to the zero supply point block number.
+    /// @notice The requested block number must be at least equal to the veOLAS zero supply point block number.
     /// @param blockNumber Block number to calculate the total voting power at.
     /// @return vPower Total voting power.
     function getPastTotalSupply(uint256 blockNumber) external view returns (uint256 vPower) {
-        // Get the zero supply point
-        PointVoting memory sPoint = IVEOLAS(ve).mapSupplyPoints(0);
-        // Check the requested block number to be at least equal to the zero supply point block number
-        if (blockNumber >= sPoint.blockNumber) {
-            vPower = IVEOLAS(ve).getPastTotalSupply(blockNumber);
-        }
+        vPower = IVEOLAS(ve).getPastTotalSupply(blockNumber);
     }
 
     /// @dev Gets information about the interface support.

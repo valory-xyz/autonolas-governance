@@ -27,7 +27,7 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("11. EOA to deploy wveOLAS contract pointed to veOLAS");
+    console.log("16. EOA to deploy wveOLAS contract pointed to veOLAS");
     const WVE = await ethers.getContractFactory("wveOLAS");
     console.log("You are signing the following transaction: wveOLAS.connect(EOA).deploy(parsedData.veolasAddress)");
     const wveOLAS = await WVE.connect(EOA).deploy(parsedData.veOLASAddress);
@@ -42,13 +42,13 @@ async function main() {
     console.log("Contract address:", wveOLAS.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
-    // Verification of ownership and values
+    // Verification of values
     expect(await wveOLAS.ve()).to.equal(parsedData.veOLASAddress);
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_11_wveolas.js --network " + providerName + " " + wveOLAS.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_16_wveolas.js --network " + providerName + " " + wveOLAS.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file

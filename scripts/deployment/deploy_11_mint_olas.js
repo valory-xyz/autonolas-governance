@@ -35,7 +35,7 @@ async function main() {
 
     // Transaction signing and execution
     const olas = await ethers.getContractAt("OLAS", parsedData.olasAddress);
-    console.log("12. EOA to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract) and Valory multisig");
+    console.log("11. EOA to mint initial OLAS supply for DAO treasury (sent to Timelock), DAO members (sent to Sale contract) and Valory multisig");
 
     console.log("You are signing the following transaction: olas.connect(EOA).mint(parsedData.timelockAddress, timelockSupply)");
     console.log("Address to mint to:", parsedData.timelockAddress);
