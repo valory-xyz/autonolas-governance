@@ -61,6 +61,10 @@ Run the tests:
 ```
 npx hardhat test
 ```
+Run the Voting Escrow forking tests (please make sure the `ALCHEMY_API_KEY` environmental variable is set):
+```
+npm run fork
+```
 
 ### Docker
 
@@ -102,6 +106,11 @@ The deployment of contracts to the test- and main-net is split into step-by-step
 The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
 
 The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
+
+## Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
+Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here: [veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
+The original Voting Escrow ABI is located here: [veCRV ABI](https://github.com/valory-xyz/autonolas-governance/blob/main/abis/test/veCRV.json).
+One can run the forking test via the `npm run fork` command as described above.
 
 ## Code optimizations and best practices
 The list of optimization considerations and best practices exercised during the development of Autonolas governance
