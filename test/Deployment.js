@@ -200,7 +200,7 @@ describe("Deployment", function () {
 
             // 5. EOA to deploy the Timelock contract with the proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
             // and canceller ("CANCELLER_ROLE") roles given to the CM (via deployment with `proposers` and `executors` parameters being the CM address);
-            const minDelay = 5; // 2 days in blocks (assuming 13.2s per block)
+            const minDelay = 5; // 5 blocks (for testing purposes, to not wait for too many mined blocks)
             const executors = [CM.address];
             const proposers = [CM.address];
             const Timelock = await ethers.getContractFactory("Timelock");
