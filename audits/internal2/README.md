@@ -37,7 +37,7 @@ slither-check-erc wveOLAS-flatten.sol wveOLAS
 [ ] Transfer(address,address,uint256) is missing
 [ ] Approval(address,address,uint256) is missing
 ```
-OK. see below
+see below
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -103,6 +103,11 @@ non-affected = just call the original veOLAS
     - [Ext] allowance
     - [Ext] delegates
     - [Ext] <Fallback> #
+
+Not implemented in wveOLAS, although logically they should be
+        [] name() is view
+        [] symbol() is view
+        [] decimals() is view
 ```
 
 ### Security issues (instumantal)
