@@ -5,7 +5,6 @@ This folder contains the scripts to deploy Autonolas governance. These scripts c
 - There are several files with global parameters based on the corresponding network. In order to work with the configuration, please copy `gobals_network.json` file to file the `gobals.json` one, where `network` is the corresponding network. For example: `cp gobals_goerli.json gobals.json`.
 - The Valory multisig (Valory) is a Gnosis Safe contract with 3 signers and 2 threshold that already exists.
 - The community multisig (CM) of the DAO is a Gnosis Safe contract with 9 signers and 6 threshold that already exists.
-- The script to create balances for initial DAO members (`deploy_13.js`) will not be done from the EOA in the mainnet deployment, this will be done from the Valory multisig.
 - Please note: if you encounter the `Unknown Error 0x6b0c`, then it is likely because the ledger is not connected or logged in.
 
 ## Steps to engage
@@ -34,11 +33,9 @@ Parameters of the `globals.json` file:
 
 Other values are related to the governance and initial mint. The Gnosis Safe contracts are also provided for convenience. The deployed contract addresses will be added / updated during the scripts run.
 
-For deployment / testing of the balances creation for initial DAO members (`deploy_13.js`), create the file `claimableBalances.json` in the root folder, or copy it from `scripts/deployment/dummyClaimableBalances.json`.
-
 The script file name identifies the number of deployment steps taken up to the number in the file name. For example:
 - `deploy_02_deployment_factory.js` will complete step 2 from [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md) (1 is already complete as the multisig is created beforehand);
-- `verify_08_09_governor_and_roles.js` will complete steps 8 and 9;
+- `deploy_08_09_governor_and_roles.js` will complete steps 8 and 9;
 - etc.
 
 NOTE: All the scripts MUST be strictly run in the sequential order from smallest to biggest numbers.

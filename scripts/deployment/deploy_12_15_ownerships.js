@@ -29,7 +29,7 @@ async function main() {
     // Transaction signing and execution
     const olas = await ethers.getContractAt("OLAS", parsedData.olasAddress);
     const bu = await ethers.getContractAt("buOLAS", parsedData.buOLASAddress);
-    console.log("13. EOA to transfer its minting and its owner rights to Timelock with by calling `changeMinter(Timelock)` and `changeOwner(Timelock)`");
+    console.log("12. EOA to transfer its minting and its owner rights to Timelock with by calling `changeMinter(Timelock)` and `changeOwner(Timelock)`");
     console.log("You are signing the following transaction: olas.connect(EOA).changeMinter(parsedData.timelockAddress)");
     let result = await olas.connect(EOA).changeMinter(parsedData.timelockAddress);
     // Transaction details
@@ -44,7 +44,7 @@ async function main() {
     console.log("Contract address:", olas.address);
     console.log("Transaction:", result.hash);
 
-    console.log("14. EOA to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`");
+    console.log("13. EOA to transfer ownership rights of buOLAS to Timelock calling `changeOwner(Timelock)`");
     console.log("You are signing the following transaction: bu.connect(EOA).changeOwner(parsedData.timelockAddress)");
     result = await bu.connect(EOA).changeOwner(parsedData.timelockAddress);
     // Transaction details
@@ -57,7 +57,7 @@ async function main() {
     expect(await olas.minter()).to.equal(parsedData.timelockAddress);
     expect(await bu.owner()).to.equal(parsedData.timelockAddress);
 
-    console.log("15. EOA to revoke self admin rights from the Timelock (via `renounceRole()`)");
+    console.log("14. EOA to revoke self admin rights from the Timelock (via `renounceRole()`)");
     const timelock = await ethers.getContractAt("Timelock", parsedData.timelockAddress);
     const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
     console.log("You are signing the following transaction: timelock.connect(EOA).renounceRole(adminRole, await EOA.getAddress())");
@@ -69,7 +69,7 @@ async function main() {
     // Check for the admin role being revoked from the EOA
     expect(await timelock.hasRole(adminRole, deployer)).to.equal(false);
 
-    console.log("16. EOA to revoke self ownership rights from deploymentFactory to Null Address (via `changeOwner()`)");
+    console.log("15. EOA to revoke self ownership rights from deploymentFactory to Null Address (via `changeOwner()`)");
     const factory = await ethers.getContractAt("DeploymentFactory", parsedData.deploymentFactory);
     console.log("You are signing the following transaction: factory.connect(EOA).changeOwner(\"0x000000000000000000000000000000000000dEaD\")");
     result = await factory.connect(EOA).changeOwner("0x000000000000000000000000000000000000dEaD");
