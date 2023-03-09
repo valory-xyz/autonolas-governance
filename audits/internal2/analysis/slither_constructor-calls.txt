@@ -1,0 +1,472 @@
+'npx hardhat compile --force' running
+Compiled 57 Solidity files successfully
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLAS.sol:54:5:
+   |
+54 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:23:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:35:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:22:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:39:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:27:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:41:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:53:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:39:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+
+############################
+####### GnosisSafeL2 #######
+############################
+
+## Constructor Call Sequence
+	- GnosisSafe
+
+## Constructor Definitions
+
+### GnosisSafe
+
+     constructor() {
+        // By setting the threshold it is not possible to call setup anymore,
+        // so we create a Safe with 0 owners and threshold 1.
+        // This is an unusable Safe, perfect for the singleton
+        threshold = 1;
+    }
+
+###############################
+####### GnosisSafeProxy #######
+###############################
+
+## Constructor Call Sequence
+	- GnosisSafeProxy
+
+## Constructor Definitions
+
+### GnosisSafeProxy
+
+     constructor(address _singleton) {
+        require(_singleton != address(0), "Invalid singleton address provided");
+        singleton = _singleton;
+    }
+
+#################################
+####### DeploymentFactory #######
+#################################
+
+## Constructor Call Sequence
+	- DeploymentFactory
+
+## Constructor Definitions
+
+### DeploymentFactory
+
+     constructor() {
+        owner = msg.sender;
+    }
+
+############################
+####### GovernorOLAS #######
+############################
+
+## Constructor Call Sequence
+	- EIP712
+	- Governor
+	- GovernorSettings
+	- GovernorVotes
+	- GovernorVotesQuorumFraction
+	- GovernorTimelockControl
+	- GovernorOLAS
+
+## Constructor Definitions
+
+### EIP712
+
+     constructor(string memory name, string memory version) {
+        bytes32 hashedName = keccak256(bytes(name));
+        bytes32 hashedVersion = keccak256(bytes(version));
+        bytes32 typeHash = keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
+        _HASHED_NAME = hashedName;
+        _HASHED_VERSION = hashedVersion;
+        _CACHED_CHAIN_ID = block.chainid;
+        _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(typeHash, hashedName, hashedVersion);
+        _CACHED_THIS = address(this);
+        _TYPE_HASH = typeHash;
+    }
+
+### Governor
+
+     constructor(string memory name_) EIP712(name_, version()) {
+        _name = name_;
+    }
+
+### GovernorSettings
+
+     constructor(
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold
+    ) {
+        _setVotingDelay(initialVotingDelay);
+        _setVotingPeriod(initialVotingPeriod);
+        _setProposalThreshold(initialProposalThreshold);
+    }
+
+### GovernorVotes
+
+     constructor(IVotes tokenAddress) {
+        token = tokenAddress;
+    }
+
+### GovernorVotesQuorumFraction
+
+     constructor(uint256 quorumNumeratorValue) {
+        _updateQuorumNumerator(quorumNumeratorValue);
+    }
+
+### GovernorTimelockControl
+
+     constructor(TimelockController timelockAddress) {
+        _updateTimelock(timelockAddress);
+    }
+
+### GovernorOLAS
+
+     constructor(
+        IVotes governanceToken,
+        TimelockController timelock,
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold,
+        uint256 quorumFraction
+    )
+        Governor("Governor OLAS")
+        GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
+        GovernorVotes(governanceToken)
+        GovernorVotesQuorumFraction(quorumFraction)
+        GovernorTimelockControl(timelock)
+    {}
+
+####################
+####### OLAS #######
+####################
+
+## Constructor Call Sequence
+	- ERC20
+	- OLAS
+
+## Constructor Definitions
+
+### ERC20
+
+     constructor(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+
+        INITIAL_CHAIN_ID = block.chainid;
+        INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
+    }
+
+### OLAS
+
+     constructor() ERC20("Autonolas", "OLAS", 18) {
+        owner = msg.sender;
+        minter = msg.sender;
+        timeLaunch = block.timestamp;
+    }
+
+########################
+####### Timelock #######
+########################
+
+## Constructor Call Sequence
+	- TimelockController
+	- Timelock
+
+## Constructor Definitions
+
+### TimelockController
+
+     constructor(
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors
+    ) {
+        _setRoleAdmin(TIMELOCK_ADMIN_ROLE, TIMELOCK_ADMIN_ROLE);
+        _setRoleAdmin(PROPOSER_ROLE, TIMELOCK_ADMIN_ROLE);
+        _setRoleAdmin(EXECUTOR_ROLE, TIMELOCK_ADMIN_ROLE);
+        _setRoleAdmin(CANCELLER_ROLE, TIMELOCK_ADMIN_ROLE);
+
+        // deployer + self administration
+        _setupRole(TIMELOCK_ADMIN_ROLE, _msgSender());
+        _setupRole(TIMELOCK_ADMIN_ROLE, address(this));
+
+        // register proposers and cancellers
+        for (uint256 i = 0; i < proposers.length; ++i) {
+            _setupRole(PROPOSER_ROLE, proposers[i]);
+            _setupRole(CANCELLER_ROLE, proposers[i]);
+        }
+
+        // register executors
+        for (uint256 i = 0; i < executors.length; ++i) {
+            _setupRole(EXECUTOR_ROLE, executors[i]);
+        }
+
+        _minDelay = minDelay;
+        emit MinDelayChange(0, minDelay);
+    }
+
+### Timelock
+
+     constructor(uint256 minDelay, address[] memory proposers, address[] memory executors)
+        TimelockController(minDelay, proposers, executors)
+    {}
+
+######################
+####### buOLAS #######
+######################
+
+## Constructor Call Sequence
+	- buOLAS
+
+## Constructor Definitions
+
+### buOLAS
+
+     constructor(address _token, string memory _name, string memory _symbol)
+    {
+        token = _token;
+        name = _name;
+        symbol = _symbol;
+        owner = msg.sender;
+    }
+
+######################
+####### veOLAS #######
+######################
+
+## Constructor Call Sequence
+	- veOLAS
+
+## Constructor Definitions
+
+### veOLAS
+
+     constructor(address _token, string memory _name, string memory _symbol)
+    {
+        token = _token;
+        name = _name;
+        symbol = _symbol;
+        // Create initial point such that default timestamp and block number are not zero
+        // See cast specification in the PointVoting structure
+        mapSupplyPoints[0] = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);
+    }
+
+#######################
+####### wveOLAS #######
+#######################
+
+## Constructor Call Sequence
+	- wveOLAS
+
+## Constructor Definitions
+
+### wveOLAS
+
+     constructor(address _ve) {
+        // Check for the zero address
+        if (_ve == address(0)) {
+            revert ZeroVEOLASAddress();
+        }
+        ve = _ve;
+    }
+
+. analyzed (61 contracts)

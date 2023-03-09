@@ -1,0 +1,9 @@
+solc-0.8.15 is not recommended for deployment
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+
+Contract wveOLAS (contracts/wveOLAS.sol#117-267) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+
+
+
+

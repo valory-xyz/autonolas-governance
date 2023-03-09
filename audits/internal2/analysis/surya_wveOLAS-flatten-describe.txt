@@ -1,0 +1,44 @@
+ + [34m[Int][39m IVEOLAS 
+    - [34m[Ext][39m totalNumPoints
+    - [34m[Ext][39m mapSupplyPoints
+    - [34m[Ext][39m getLastUserPoint
+    - [34m[Ext][39m getNumUserPoints
+    - [34m[Ext][39m getUserPoint
+    - [34m[Ext][39m getPastVotes
+    - [34m[Ext][39m balanceOf
+    - [34m[Ext][39m balanceOfAt
+    - [34m[Ext][39m lockedEnd
+    - [34m[Ext][39m getVotes
+    - [34m[Ext][39m totalSupply
+    - [34m[Ext][39m totalSupplyAt
+    - [34m[Ext][39m totalSupplyLockedAtT
+    - [34m[Ext][39m totalSupplyLocked
+    - [34m[Ext][39m getPastTotalSupply
+    - [34m[Ext][39m supportsInterface
+    - [34m[Ext][39m allowance
+    - [34m[Ext][39m delegates
+
+ +  wveOLAS 
+    - [32m[Pub][39m [90m<Constructor>[39m[31m #[39m
+    - [34m[Ext][39m getLastUserPoint
+    - [34m[Ext][39m getNumUserPoints
+    - [32m[Pub][39m getUserPoint
+    - [34m[Ext][39m getVotes
+    - [34m[Ext][39m getPastVotes
+    - [34m[Ext][39m balanceOf
+    - [34m[Ext][39m balanceOfAt
+    - [34m[Ext][39m lockedEnd
+    - [34m[Ext][39m totalSupply
+    - [34m[Ext][39m totalSupplyAt
+    - [34m[Ext][39m totalSupplyLockedAtT
+    - [34m[Ext][39m totalSupplyLocked
+    - [34m[Ext][39m getPastTotalSupply
+    - [34m[Ext][39m supportsInterface
+    - [34m[Ext][39m allowance
+    - [34m[Ext][39m delegates
+    - [34m[Ext][39m [90m<Fallback>[39m[31m #[39m
+
+
+[33m ($)[39m = payable function
+[31m #[39m = non-constant function
+  

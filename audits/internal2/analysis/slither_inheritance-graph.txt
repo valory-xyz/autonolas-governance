@@ -1,0 +1,201 @@
+'npx hardhat compile --force' running
+Compiled 57 Solidity files successfully
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLAS.sol:54:5:
+   |
+54 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:23:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:35:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:22:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:39:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:27:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:41:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:53:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:39:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+Inheritance Graph: inheritance-graph.dot
+
+. analyzed (61 contracts)

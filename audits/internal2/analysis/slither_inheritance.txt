@@ -1,0 +1,547 @@
+'npx hardhat compile --force' running
+Compiled 57 Solidity files successfully
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLAS.sol:54:5:
+   |
+54 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:23:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:35:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:22:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:39:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:27:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:41:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:53:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:39:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+Inheritance
+Child_Contract -> Immediate_Base_Contracts [Not_Immediate_Base_Contracts]
++ GnosisSafe
+ -> EtherPaymentFallback, Singleton, ModuleManager, OwnerManager, SignatureDecoder, SecuredTokenTransfer, ISignatureValidatorConstants, FallbackManager, StorageAccessible, GuardManager
+, [Executor, SelfAuthorized]
+
++ GnosisSafeL2
+ -> GnosisSafe
+, [GuardManager, StorageAccessible, FallbackManager, ISignatureValidatorConstants, SecuredTokenTransfer, SignatureDecoder, OwnerManager, ModuleManager, Executor, SelfAuthorized, Singleton, EtherPaymentFallback]
+
++ Executor
+
++ FallbackManager
+ -> SelfAuthorized
+
++ Guard
+
++ GuardManager
+ -> SelfAuthorized
+
++ ModuleManager
+ -> SelfAuthorized, Executor
+
++ OwnerManager
+ -> SelfAuthorized
+
++ Enum
+
++ EtherPaymentFallback
+
++ SecuredTokenTransfer
+
++ SelfAuthorized
+
++ SignatureDecoder
+
++ Singleton
+
++ StorageAccessible
+
++ GnosisSafeMath
+
++ ISignatureValidatorConstants
+
++ ISignatureValidator
+ -> ISignatureValidatorConstants
+
++ IProxy
+
++ GnosisSafeProxy
+
++ GnosisSafeProxyFactory
+
++ IProxyCreationCallback
+
++ AccessControl
+ -> Context, IAccessControl, ERC165
+, [IERC165]
+
++ IAccessControl
+
++ Governor
+ -> Context, ERC165, EIP712, IGovernor, IERC721Receiver, IERC1155Receiver
+, [IERC165]
+
++ IGovernor
+ -> IERC165
+
++ TimelockController
+ -> AccessControl, IERC721Receiver, IERC1155Receiver
+, [ERC165, IERC165, IAccessControl, Context]
+
++ GovernorCompatibilityBravo
+ -> IGovernorTimelock, IGovernorCompatibilityBravo, Governor
+, [IERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context]
+
++ IGovernorCompatibilityBravo
+ -> IGovernor
+, [IERC165]
+
++ GovernorSettings
+ -> Governor
+, [IERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context]
+
++ GovernorTimelockControl
+ -> IGovernorTimelock, Governor
+, [IERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context]
+
++ GovernorVotes
+ -> Governor
+, [IERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context]
+
++ GovernorVotesQuorumFraction
+ -> GovernorVotes
+, [Governor, IERC1155Receiver, IERC721Receiver, IGovernor, EIP712, ERC165, IERC165, Context]
+
++ IGovernorTimelock
+ -> IGovernor
+, [IERC165]
+
++ IVotes
+
++ IERC1155Receiver
+ -> IERC165
+
++ IERC20
+
++ IERC721Receiver
+
++ Address
+
++ Context
+
++ Counters
+
++ Create2
+
++ Strings
+
++ Timers
+
++ ECDSA
+
++ EIP712
+
++ ERC165
+ -> IERC165
+
++ IERC165
+
++ SafeCast
+
++ DoubleEndedQueue
+
++ DeploymentFactory
+
++ GovernorOLAS
+ -> Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl
+, [IERC1155Receiver, IERC721Receiver, IGovernorCompatibilityBravo, IGovernorTimelock, IGovernor, EIP712, ERC165, IERC165, Context]
+
++ OLAS
+ -> ERC20
+
++ Timelock
+ -> TimelockController
+, [IERC1155Receiver, IERC721Receiver, AccessControl, ERC165, IERC165, IAccessControl, Context]
+
++ IOLAS
+
++ buOLAS
+ -> IErrors, IERC20, IERC165
+
++ IErrors
+
++ veOLAS
+ -> IErrors, IVotes, IERC20, IERC165
+
++ IVEOLAS
+
++ wveOLAS
+
++ ERC20
+
+
+Base_Contract -> Immediate_Child_Contracts
+ [Not_Immediate_Child_Contracts]
+
++ GnosisSafe
+ -> GnosisSafeL2
+
++ GnosisSafeL2
+
++ Executor
+ -> ModuleManager
+, [GnosisSafe, GnosisSafeL2]
+
++ FallbackManager
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ Guard
+
++ GuardManager
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ ModuleManager
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ OwnerManager
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ Enum
+
++ EtherPaymentFallback
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ SecuredTokenTransfer
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ SelfAuthorized
+ -> FallbackManager, GuardManager, ModuleManager, OwnerManager
+, [GnosisSafe, GnosisSafeL2]
+
++ SignatureDecoder
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ Singleton
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ StorageAccessible
+ -> GnosisSafe
+, [GnosisSafeL2]
+
++ GnosisSafeMath
+
++ ISignatureValidatorConstants
+ -> GnosisSafe, ISignatureValidator
+, [GnosisSafeL2]
+
++ ISignatureValidator
+
++ IProxy
+
++ GnosisSafeProxy
+
++ GnosisSafeProxyFactory
+
++ IProxyCreationCallback
+
++ AccessControl
+ -> TimelockController
+, [Timelock]
+
++ IAccessControl
+ -> AccessControl
+, [TimelockController, Timelock]
+
++ Governor
+ -> GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorOLAS
+, [GovernorVotesQuorumFraction]
+
++ IGovernor
+ -> Governor, IGovernorCompatibilityBravo, IGovernorTimelock
+, [GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLAS]
+
++ TimelockController
+ -> Timelock
+
++ GovernorCompatibilityBravo
+ -> GovernorOLAS
+
++ IGovernorCompatibilityBravo
+ -> GovernorCompatibilityBravo
+, [GovernorOLAS]
+
++ GovernorSettings
+ -> GovernorOLAS
+
++ GovernorTimelockControl
+ -> GovernorOLAS
+
++ GovernorVotes
+ -> GovernorVotesQuorumFraction, GovernorOLAS
+
++ GovernorVotesQuorumFraction
+ -> GovernorOLAS
+
++ IGovernorTimelock
+ -> GovernorCompatibilityBravo, GovernorTimelockControl
+, [GovernorOLAS]
+
++ IVotes
+ -> veOLAS
+
++ IERC1155Receiver
+ -> Governor, TimelockController
+, [GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLAS, Timelock]
+
++ IERC20
+ -> buOLAS, veOLAS
+
++ IERC721Receiver
+ -> Governor, TimelockController
+, [GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLAS, Timelock]
+
++ Address
+
++ Context
+ -> AccessControl, Governor
+, [TimelockController, GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLAS, Timelock]
+
++ Counters
+
++ Create2
+
++ Strings
+
++ Timers
+
++ ECDSA
+
++ EIP712
+ -> Governor
+, [GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLAS]
+
++ ERC165
+ -> AccessControl, Governor
+, [TimelockController, GovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, GovernorOLAS, Timelock]
+
++ IERC165
+ -> IGovernor, IERC1155Receiver, ERC165, buOLAS, veOLAS
+, [AccessControl, Governor, TimelockController, GovernorCompatibilityBravo, IGovernorCompatibilityBravo, GovernorSettings, GovernorTimelockControl, GovernorVotes, GovernorVotesQuorumFraction, IGovernorTimelock, GovernorOLAS, Timelock]
+
++ SafeCast
+
++ DoubleEndedQueue
+
++ DeploymentFactory
+
++ GovernorOLAS
+
++ OLAS
+
++ Timelock
+
++ IOLAS
+
++ buOLAS
+
++ IErrors
+ -> buOLAS, veOLAS
+
++ veOLAS
+
++ IVEOLAS
+
++ wveOLAS
+
++ ERC20
+ -> OLAS
+
+. analyzed (61 contracts)

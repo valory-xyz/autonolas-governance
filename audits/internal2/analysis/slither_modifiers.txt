@@ -1,0 +1,853 @@
+'npx hardhat compile --force' running
+Compiled 57 Solidity files successfully
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLAS.sol:54:5:
+   |
+54 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:23:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:35:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:22:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:39:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:27:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:41:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:53:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:39:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+
+Contract GnosisSafeL2
++-------------------------------------+----------------+
+|               Function              |   Modifiers    |
++-------------------------------------+----------------+
+|             constructor             |       []       |
+|                setup                |       []       |
+|           execTransaction           |       []       |
+|            handlePayment            |       []       |
+|           checkSignatures           |       []       |
+|           checkNSignatures          |       []       |
+|            requiredTxGas            |       []       |
+|             approveHash             |       []       |
+|              getChainId             |       []       |
+|           domainSeparator           |       []       |
+|        encodeTransactionData        |       []       |
+|          getTransactionHash         |       []       |
+|               setGuard              | ['authorized'] |
+|               getGuard              |       []       |
+|           requireSelfCall           |       []       |
+|             getStorageAt            |       []       |
+|          simulateAndRevert          |       []       |
+|      internalSetFallbackHandler     |       []       |
+|          setFallbackHandler         | ['authorized'] |
+|               fallback              |       []       |
+|            transferToken            |       []       |
+|            signatureSplit           |       []       |
+|             setupOwners             |       []       |
+|        addOwnerWithThreshold        | ['authorized'] |
+|             removeOwner             | ['authorized'] |
+|              swapOwner              | ['authorized'] |
+|           changeThreshold           | ['authorized'] |
+|             getThreshold            |       []       |
+|               isOwner               |       []       |
+|              getOwners              |       []       |
+|             setupModules            |       []       |
+|             enableModule            | ['authorized'] |
+|            disableModule            | ['authorized'] |
+|      execTransactionFromModule      |       []       |
+| execTransactionFromModuleReturnData |       []       |
+|           isModuleEnabled           |       []       |
+|         getModulesPaginated         |       []       |
+|               execute               |       []       |
+|               receive               |       []       |
+|           execTransaction           |       []       |
+|      execTransactionFromModule      |       []       |
+| slitherConstructorConstantVariables |       []       |
++-------------------------------------+----------------+
+
+Contract Guard
++---------------------+-----------+
+|       Function      | Modifiers |
++---------------------+-----------+
+|   checkTransaction  |     []    |
+| checkAfterExecution |     []    |
++---------------------+-----------+
+
+Contract Enum
++----------+-----------+
+| Function | Modifiers |
++----------+-----------+
++----------+-----------+
+
+Contract GnosisSafeMath
++----------+-----------+
+| Function | Modifiers |
++----------+-----------+
+|   mul    |     []    |
+|   sub    |     []    |
+|   add    |     []    |
+|   max    |     []    |
++----------+-----------+
+
+Contract ISignatureValidator
++-------------------------------------+-----------+
+|               Function              | Modifiers |
++-------------------------------------+-----------+
+|           isValidSignature          |     []    |
+| slitherConstructorConstantVariables |     []    |
++-------------------------------------+-----------+
+
+Contract IProxy
++------------+-----------+
+|  Function  | Modifiers |
++------------+-----------+
+| masterCopy |     []    |
++------------+-----------+
+
+Contract GnosisSafeProxy
++-------------+-----------+
+|   Function  | Modifiers |
++-------------+-----------+
+| constructor |     []    |
+|   fallback  |     []    |
++-------------+-----------+
+
+Contract GnosisSafeProxyFactory
++--------------------------------------+-----------+
+|               Function               | Modifiers |
++--------------------------------------+-----------+
+|             createProxy              |     []    |
+|           proxyRuntimeCode           |     []    |
+|          proxyCreationCode           |     []    |
+|         deployProxyWithNonce         |     []    |
+|         createProxyWithNonce         |     []    |
+|       createProxyWithCallback        |     []    |
+| calculateCreateProxyWithNonceAddress |     []    |
++--------------------------------------+-----------+
+
+Contract IProxyCreationCallback
++--------------+-----------+
+|   Function   | Modifiers |
++--------------+-----------+
+| proxyCreated |     []    |
++--------------+-----------+
+
+Contract Address
++-----------------------+-----------+
+|        Function       | Modifiers |
++-----------------------+-----------+
+|       isContract      |     []    |
+|       sendValue       |     []    |
+|      functionCall     |     []    |
+|      functionCall     |     []    |
+| functionCallWithValue |     []    |
+| functionCallWithValue |     []    |
+|   functionStaticCall  |     []    |
+|   functionStaticCall  |     []    |
+|  functionDelegateCall |     []    |
+|  functionDelegateCall |     []    |
+|    verifyCallResult   |     []    |
++-----------------------+-----------+
+
+Contract Counters
++-----------+-----------+
+|  Function | Modifiers |
++-----------+-----------+
+|  current  |     []    |
+| increment |     []    |
+| decrement |     []    |
+|   reset   |     []    |
++-----------+-----------+
+
+Contract Create2
++----------------+-----------+
+|    Function    | Modifiers |
++----------------+-----------+
+|     deploy     |     []    |
+| computeAddress |     []    |
+| computeAddress |     []    |
++----------------+-----------+
+
+Contract Strings
++-------------------------------------+-----------+
+|               Function              | Modifiers |
++-------------------------------------+-----------+
+|               toString              |     []    |
+|             toHexString             |     []    |
+|             toHexString             |     []    |
+|             toHexString             |     []    |
+| slitherConstructorConstantVariables |     []    |
++-------------------------------------+-----------+
+
+Contract Timers
++-------------+-----------+
+|   Function  | Modifiers |
++-------------+-----------+
+| getDeadline |     []    |
+| setDeadline |     []    |
+|    reset    |     []    |
+|   isUnset   |     []    |
+|  isStarted  |     []    |
+|  isPending  |     []    |
+|  isExpired  |     []    |
+| getDeadline |     []    |
+| setDeadline |     []    |
+|    reset    |     []    |
+|   isUnset   |     []    |
+|  isStarted  |     []    |
+|  isPending  |     []    |
+|  isExpired  |     []    |
++-------------+-----------+
+
+Contract ECDSA
++------------------------+-----------+
+|        Function        | Modifiers |
++------------------------+-----------+
+|      _throwError       |     []    |
+|       tryRecover       |     []    |
+|        recover         |     []    |
+|       tryRecover       |     []    |
+|        recover         |     []    |
+|       tryRecover       |     []    |
+|        recover         |     []    |
+| toEthSignedMessageHash |     []    |
+| toEthSignedMessageHash |     []    |
+|    toTypedDataHash     |     []    |
++------------------------+-----------+
+
+Contract SafeCast
++-----------+-----------+
+|  Function | Modifiers |
++-----------+-----------+
+| toUint248 |     []    |
+| toUint240 |     []    |
+| toUint232 |     []    |
+| toUint224 |     []    |
+| toUint216 |     []    |
+| toUint208 |     []    |
+| toUint200 |     []    |
+| toUint192 |     []    |
+| toUint184 |     []    |
+| toUint176 |     []    |
+| toUint168 |     []    |
+| toUint160 |     []    |
+| toUint152 |     []    |
+| toUint144 |     []    |
+| toUint136 |     []    |
+| toUint128 |     []    |
+| toUint120 |     []    |
+| toUint112 |     []    |
+| toUint104 |     []    |
+|  toUint96 |     []    |
+|  toUint88 |     []    |
+|  toUint80 |     []    |
+|  toUint72 |     []    |
+|  toUint64 |     []    |
+|  toUint56 |     []    |
+|  toUint48 |     []    |
+|  toUint40 |     []    |
+|  toUint32 |     []    |
+|  toUint24 |     []    |
+|  toUint16 |     []    |
+|  toUint8  |     []    |
+| toUint256 |     []    |
+|  toInt248 |     []    |
+|  toInt240 |     []    |
+|  toInt232 |     []    |
+|  toInt224 |     []    |
+|  toInt216 |     []    |
+|  toInt208 |     []    |
+|  toInt200 |     []    |
+|  toInt192 |     []    |
+|  toInt184 |     []    |
+|  toInt176 |     []    |
+|  toInt168 |     []    |
+|  toInt160 |     []    |
+|  toInt152 |     []    |
+|  toInt144 |     []    |
+|  toInt136 |     []    |
+|  toInt128 |     []    |
+|  toInt120 |     []    |
+|  toInt112 |     []    |
+|  toInt104 |     []    |
+|  toInt96  |     []    |
+|  toInt88  |     []    |
+|  toInt80  |     []    |
+|  toInt72  |     []    |
+|  toInt64  |     []    |
+|  toInt56  |     []    |
+|  toInt48  |     []    |
+|  toInt40  |     []    |
+|  toInt32  |     []    |
+|  toInt24  |     []    |
+|  toInt16  |     []    |
+|   toInt8  |     []    |
+|  toInt256 |     []    |
++-----------+-----------+
+
+Contract DoubleEndedQueue
++-----------+-----------+
+|  Function | Modifiers |
++-----------+-----------+
+|  pushBack |     []    |
+|  popBack  |     []    |
+| pushFront |     []    |
+|  popFront |     []    |
+|   front   |     []    |
+|    back   |     []    |
+|     at    |     []    |
+|   clear   |     []    |
+|   length  |     []    |
+|   empty   |     []    |
++-----------+-----------+
+
+Contract DeploymentFactory
++----------------------+-----------+
+|       Function       | Modifiers |
++----------------------+-----------+
+|     changeOwner      |     []    |
+|     constructor      |     []    |
+|      deployOLAS      |     []    |
+|  computeOLASAddress  |     []    |
+|     deployVeOLAS     |     []    |
+| computeVeOLASAddress |     []    |
++----------------------+-----------+
+
+Contract GovernorOLAS
++-------------------------------------+--------------------+
+|               Function              |     Modifiers      |
++-------------------------------------+--------------------+
+|             constructor             |         []         |
+|          supportsInterface          |         []         |
+|                state                |         []         |
+|               timelock              |         []         |
+|             proposalEta             |         []         |
+|                queue                |         []         |
+|               _execute              |         []         |
+|               _cancel               |         []         |
+|              _executor              |         []         |
+|            updateTimelock           | ['onlyGovernance'] |
+|           _updateTimelock           |         []         |
+|             constructor             |    ['version']     |
+|               receive               |         []         |
+|          supportsInterface          |         []         |
+|                 name                |         []         |
+|               version               |         []         |
+|             hashProposal            |         []         |
+|                state                |         []         |
+|           proposalSnapshot          |         []         |
+|           proposalDeadline          |         []         |
+|          proposalThreshold          |         []         |
+|            _quorumReached           |         []         |
+|            _voteSucceeded           |         []         |
+|              _getVotes              |         []         |
+|              _countVote             |         []         |
+|            _defaultParams           |         []         |
+|               propose               |         []         |
+|               execute               |         []         |
+|               _execute              |         []         |
+|            _beforeExecute           |         []         |
+|            _afterExecute            |         []         |
+|               _cancel               |         []         |
+|               getVotes              |         []         |
+|          getVotesWithParams         |         []         |
+|               castVote              |         []         |
+|          castVoteWithReason         |         []         |
+|     castVoteWithReasonAndParams     |         []         |
+|            castVoteBySig            |         []         |
+|   castVoteWithReasonAndParamsBySig  |         []         |
+|              _castVote              |         []         |
+|              _castVote              |         []         |
+|                relay                | ['onlyGovernance'] |
+|              _executor              |         []         |
+|           onERC721Received          |         []         |
+|          onERC1155Received          |         []         |
+|        onERC1155BatchReceived       |         []         |
+|          onERC1155Received          |         []         |
+|        onERC1155BatchReceived       |         []         |
+|          supportsInterface          |         []         |
+|           onERC721Received          |         []         |
+|                 name                |         []         |
+|               version               |         []         |
+|            COUNTING_MODE            |         []         |
+|             hashProposal            |         []         |
+|                state                |         []         |
+|           proposalSnapshot          |         []         |
+|           proposalDeadline          |         []         |
+|             votingDelay             |         []         |
+|             votingPeriod            |         []         |
+|                quorum               |         []         |
+|               getVotes              |         []         |
+|          getVotesWithParams         |         []         |
+|               hasVoted              |         []         |
+|               propose               |         []         |
+|               execute               |         []         |
+|               castVote              |         []         |
+|          castVoteWithReason         |         []         |
+|     castVoteWithReasonAndParams     |         []         |
+|            castVoteBySig            |         []         |
+|   castVoteWithReasonAndParamsBySig  |         []         |
+|             constructor             |         []         |
+|          _domainSeparatorV4         |         []         |
+|        _buildDomainSeparator        |         []         |
+|           _hashTypedDataV4          |         []         |
+|          supportsInterface          |         []         |
+|              _msgSender             |         []         |
+|               _msgData              |         []         |
+|               timelock              |         []         |
+|             proposalEta             |         []         |
+|                queue                |         []         |
+|             constructor             |         []         |
+|           quorumNumerator           |         []         |
+|          quorumDenominator          |         []         |
+|                quorum               |         []         |
+|        updateQuorumNumerator        | ['onlyGovernance'] |
+|        _updateQuorumNumerator       |         []         |
+|             constructor             |         []         |
+|              _getVotes              |         []         |
+|            COUNTING_MODE            |         []         |
+|               propose               |         []         |
+|               propose               |         []         |
+|                queue                |         []         |
+|               execute               |         []         |
+|                cancel               |         []         |
+|           _encodeCalldata           |         []         |
+|            _storeProposal           |         []         |
+|              proposals              |         []         |
+|              getActions             |         []         |
+|              getReceipt             |         []         |
+|             quorumVotes             |         []         |
+|               hasVoted              |         []         |
+|            _quorumReached           |         []         |
+|            _voteSucceeded           |         []         |
+|              _countVote             |         []         |
+|             quorumVotes             |         []         |
+|              proposals              |         []         |
+|               propose               |         []         |
+|                queue                |         []         |
+|               execute               |         []         |
+|                cancel               |         []         |
+|              getActions             |         []         |
+|              getReceipt             |         []         |
+|             constructor             |         []         |
+|             votingDelay             |         []         |
+|             votingPeriod            |         []         |
+|          proposalThreshold          |         []         |
+|            setVotingDelay           | ['onlyGovernance'] |
+|           setVotingPeriod           | ['onlyGovernance'] |
+|         setProposalThreshold        | ['onlyGovernance'] |
+|           _setVotingDelay           |         []         |
+|           _setVotingPeriod          |         []         |
+|        _setProposalThreshold        |         []         |
+|             constructor             |    ['version']     |
+|                state                |         []         |
+|               propose               |         []         |
+|          proposalThreshold          |         []         |
+|               _execute              |         []         |
+|               _cancel               |         []         |
+|              _executor              |         []         |
+|          supportsInterface          |         []         |
+| slitherConstructorConstantVariables |         []         |
++-------------------------------------+--------------------+
+
+Contract OLAS
++-------------------------------------+-----------+
+|               Function              | Modifiers |
++-------------------------------------+-----------+
+|             constructor             |     []    |
+|               approve               |     []    |
+|               transfer              |     []    |
+|             transferFrom            |     []    |
+|                permit               |     []    |
+|           DOMAIN_SEPARATOR          |     []    |
+|        computeDomainSeparator       |     []    |
+|                _mint                |     []    |
+|                _burn                |     []    |
+|             constructor             |     []    |
+|             changeOwner             |     []    |
+|             changeMinter            |     []    |
+|                 mint                |     []    |
+|           inflationControl          |     []    |
+|          inflationRemainder         |     []    |
+|                 burn                |     []    |
+|          decreaseAllowance          |     []    |
+|          increaseAllowance          |     []    |
+| slitherConstructorConstantVariables |     []    |
++-------------------------------------+-----------+
+
+Contract Timelock
++-------------------------------------+------------------------------+
+|               Function              |          Modifiers           |
++-------------------------------------+------------------------------+
+|             constructor             |              []              |
+|               receive               |              []              |
+|          supportsInterface          |              []              |
+|             isOperation             |              []              |
+|          isOperationPending         |              []              |
+|           isOperationReady          |              []              |
+|           isOperationDone           |              []              |
+|             getTimestamp            |              []              |
+|             getMinDelay             |              []              |
+|            hashOperation            |              []              |
+|          hashOperationBatch         |              []              |
+|               schedule              |         ['onlyRole']         |
+|            scheduleBatch            |         ['onlyRole']         |
+|              _schedule              |              []              |
+|                cancel               |         ['onlyRole']         |
+|               execute               |    ['onlyRoleOrOpenRole']    |
+|             executeBatch            |    ['onlyRoleOrOpenRole']    |
+|               _execute              |              []              |
+|             _beforeCall             |              []              |
+|              _afterCall             |              []              |
+|             updateDelay             |              []              |
+|           onERC721Received          |              []              |
+|          onERC1155Received          |              []              |
+|        onERC1155BatchReceived       |              []              |
+|          onERC1155Received          |              []              |
+|        onERC1155BatchReceived       |              []              |
+|          supportsInterface          |              []              |
+|           onERC721Received          |              []              |
+|          supportsInterface          |              []              |
+|               hasRole               |              []              |
+|              _checkRole             |              []              |
+|              _checkRole             |              []              |
+|             getRoleAdmin            |              []              |
+|              grantRole              | ['onlyRole', 'getRoleAdmin'] |
+|              revokeRole             | ['onlyRole', 'getRoleAdmin'] |
+|             renounceRole            |              []              |
+|              _setupRole             |              []              |
+|            _setRoleAdmin            |              []              |
+|              _grantRole             |              []              |
+|             _revokeRole             |              []              |
+|          supportsInterface          |              []              |
+|               hasRole               |              []              |
+|             getRoleAdmin            |              []              |
+|              grantRole              |              []              |
+|              revokeRole             |              []              |
+|             renounceRole            |              []              |
+|              _msgSender             |              []              |
+|               _msgData              |              []              |
+|             constructor             |              []              |
+| slitherConstructorConstantVariables |              []              |
++-------------------------------------+------------------------------+
+
+Contract IOLAS
++----------+-----------+
+| Function | Modifiers |
++----------+-----------+
+|   burn   |     []    |
++----------+-----------+
+
+Contract buOLAS
++-------------------------------------+-----------+
+|               Function              | Modifiers |
++-------------------------------------+-----------+
+|          supportsInterface          |     []    |
+|             totalSupply             |     []    |
+|              balanceOf              |     []    |
+|               transfer              |     []    |
+|              allowance              |     []    |
+|               approve               |     []    |
+|             transferFrom            |     []    |
+|             constructor             |     []    |
+|             changeOwner             |     []    |
+|            createLockFor            |     []    |
+|               withdraw              |     []    |
+|                revoke               |     []    |
+|              balanceOf              |     []    |
+|             totalSupply             |     []    |
+|           releasableAmount          |     []    |
+|          _releasableAmount          |     []    |
+|              lockedEnd              |     []    |
+|          supportsInterface          |     []    |
+|               transfer              |     []    |
+|               approve               |     []    |
+|             transferFrom            |     []    |
+|              allowance              |     []    |
+| slitherConstructorConstantVariables |     []    |
++-------------------------------------+-----------+
+
+Contract veOLAS
++-------------------------------------+-----------+
+|               Function              | Modifiers |
++-------------------------------------+-----------+
+|          supportsInterface          |     []    |
+|             totalSupply             |     []    |
+|              balanceOf              |     []    |
+|               transfer              |     []    |
+|              allowance              |     []    |
+|               approve               |     []    |
+|             transferFrom            |     []    |
+|               getVotes              |     []    |
+|             getPastVotes            |     []    |
+|          getPastTotalSupply         |     []    |
+|              delegates              |     []    |
+|               delegate              |     []    |
+|            delegateBySig            |     []    |
+|             constructor             |     []    |
+|           getLastUserPoint          |     []    |
+|           getNumUserPoints          |     []    |
+|             getUserPoint            |     []    |
+|             _checkpoint             |     []    |
+|              checkpoint             |     []    |
+|             _depositFor             |     []    |
+|              depositFor             |     []    |
+|              createLock             |     []    |
+|            createLockFor            |     []    |
+|            _createLockFor           |     []    |
+|            increaseAmount           |     []    |
+|          increaseUnlockTime         |     []    |
+|               withdraw              |     []    |
+|          _findPointByBlock          |     []    |
+|           _balanceOfLocked          |     []    |
+|              balanceOf              |     []    |
+|              lockedEnd              |     []    |
+|             balanceOfAt             |     []    |
+|               getVotes              |     []    |
+|            _getBlockTime            |     []    |
+|             getPastVotes            |     []    |
+|           _supplyLockedAt           |     []    |
+|             totalSupply             |     []    |
+|            totalSupplyAt            |     []    |
+|         totalSupplyLockedAtT        |     []    |
+|          totalSupplyLocked          |     []    |
+|          getPastTotalSupply         |     []    |
+|          supportsInterface          |     []    |
+|               transfer              |     []    |
+|               approve               |     []    |
+|             transferFrom            |     []    |
+|              allowance              |     []    |
+|              delegates              |     []    |
+|               delegate              |     []    |
+|            delegateBySig            |     []    |
+| slitherConstructorConstantVariables |     []    |
++-------------------------------------+-----------+
+
+Contract IVEOLAS
++----------------------+-----------+
+|       Function       | Modifiers |
++----------------------+-----------+
+|    totalNumPoints    |     []    |
+|   mapSupplyPoints    |     []    |
+|   getLastUserPoint   |     []    |
+|   getNumUserPoints   |     []    |
+|     getUserPoint     |     []    |
+|     getPastVotes     |     []    |
+|      balanceOf       |     []    |
+|     balanceOfAt      |     []    |
+|      lockedEnd       |     []    |
+|       getVotes       |     []    |
+|     totalSupply      |     []    |
+|    totalSupplyAt     |     []    |
+| totalSupplyLockedAtT |     []    |
+|  totalSupplyLocked   |     []    |
+|  getPastTotalSupply  |     []    |
+|  supportsInterface   |     []    |
+|      allowance       |     []    |
+|      delegates       |     []    |
++----------------------+-----------+
+
+Contract wveOLAS
++----------------------+-----------+
+|       Function       | Modifiers |
++----------------------+-----------+
+|     constructor      |     []    |
+|   getLastUserPoint   |     []    |
+|   getNumUserPoints   |     []    |
+|     getUserPoint     |     []    |
+|       getVotes       |     []    |
+|     getPastVotes     |     []    |
+|      balanceOf       |     []    |
+|     balanceOfAt      |     []    |
+|      lockedEnd       |     []    |
+|     totalSupply      |     []    |
+|    totalSupplyAt     |     []    |
+| totalSupplyLockedAtT |     []    |
+|  totalSupplyLocked   |     []    |
+|  getPastTotalSupply  |     []    |
+|  supportsInterface   |     []    |
+|      allowance       |     []    |
+|      delegates       |     []    |
+|       fallback       |     []    |
++----------------------+-----------+
+. analyzed (61 contracts)

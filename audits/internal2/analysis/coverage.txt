@@ -1,0 +1,160 @@
+
+Version
+=======
+> solidity-coverage: v0.8.2
+
+Instrumenting for coverage...
+=============================
+
+> buOLAS.sol
+> DeploymentFactory.sol
+> GovernorOLAS.sol
+> interfaces/IErrors.sol
+> OLAS.sol
+> test/TokenFactory.sol
+> Timelock.sol
+> veOLAS.sol
+> wveOLAS.sol
+
+Compilation:
+============
+
+Compiled 57 Solidity files successfully
+
+Network Info
+============
+> HardhatEVM: v2.12.7
+> network:    hardhat
+
+
+
+  Deployment
+    Initialization
+      ✔ Changing owner (190ms)
+      ✔ Checking computed addresses (539ms)
+    Deployment script testing
+      ✔ Following specified steps to deploy contracts (1323ms)
+
+  Governance OLAS
+    Initialization
+      ✔ Governance setup: deploy ve, timelock, governor, drop deployer role (308ms)
+      ✔ Changes the ownership of a governance contract and a timelock (565ms)
+      ✔ Cancel the proposal that was setup via delegator proposal (478ms)
+      ✔ Deposit for voting power: deposit 10 OLAS worth of ve to address 1 (694ms)
+      ✔ Should fail to propose if voting power is not enough for proposalThreshold (353ms)
+      ✔ Cancel the proposal that was setup via regular governance proposal (477ms)
+
+  OLAS
+    Initialization
+      ✔ correctly constructs an ERC20
+      ✔ Change owner
+      ✔ Change minter
+    Mint
+      ✔ Mint must be done by manager
+      ✔ Increases total supply
+    Burn
+      ✔ Reduces the total supply
+    Transfer
+      ✔ Transfer from self
+      ✔ Transfer from via approve
+      ✔ Transfer from via permit (58ms)
+      ✔ Transfer from with increase allowance (51ms)
+      ✔ Transfer from with maximum allowance (39ms)
+      ✔ Transfer from with decrease allowance (52ms)
+    Mint schedule
+      ✔ Should fail when mint more than a supplyCap within the first ten years
+      ✔ Mint and burn after ten years (115ms)
+
+  buOLAS
+    Initialization
+      ✔ Changing owner
+      ✔ Interface support
+    Locks
+      ✔ Should fail when creating a lock with zero value or wrong number of steps (58ms)
+      ✔ Create lock for (96ms)
+    Withdraw
+      ✔ Withdraw (134ms)
+      ✔ Withdraw with not divisible remainder (77ms)
+      ✔ Withdraw with revoke (115ms)
+      ✔ Withdraw with revoke after the first withdraw (106ms)
+      ✔ Withdraw with revoke after the full lock period (102ms)
+      ✔ Revoke after the full lock period, createLockFor for the same account and try to withdraw (95ms)
+    IERC20 functions
+      ✔ Check all the related functions (45ms)
+
+  Voting Escrow OLAS
+    Locks
+      ✔ Check that never-supposed-to-happen zero parameter calls do not break anything (53ms)
+      ✔ Interface support
+      ✔ Should fail when creating a lock with zero value or wrong duration (58ms)
+      ✔ Create lock (156ms)
+      ✔ Create lock for (98ms)
+      ✔ Deposit for (269ms)
+      ✔ Should fail when creating a lock for more than 4 years
+      ✔ Should fail when creating a lock with already locked value (59ms)
+      ✔ Increase amount of lock (140ms)
+      ✔ Increase amount of unlock time (147ms)
+    Withdraw
+      ✔ Withdraw (130ms)
+    Balance and supply
+      ✔ Supply at (157ms)
+      ✔ Checkpoint (65ms)
+      ✔ Checkpoint with points of inactivity (149ms)
+      ✔ Getting past votes and supply (319ms)
+    IERC20 and IVotes functions
+      ✔ Check all the related functions (139ms)
+
+  Governance OLAS on wveOLAS
+    Initialization
+      ✔ Governance setup: deploy ve, timelock, governor, drop deployer role (472ms)
+      ✔ Changes the ownership of a governance contract and a timelock (566ms)
+      ✔ Cancel the proposal that was setup via delegator proposal (498ms)
+      ✔ Deposit for voting power: deposit 10 OLAS worth of ve to address 1 (702ms)
+      ✔ Should fail to propose if voting power is not enough for proposalThreshold (345ms)
+      ✔ Cancel the proposal that was setup via regular governance proposal (530ms)
+
+  Wrapped Voting Escrow OLAS
+    Locks
+      ✔ Should fail when deploying with the zero address
+      ✔ Check that never-supposed-to-happen zero parameter calls do not break anything (91ms)
+      ✔ Interface support
+      ✔ Create lock (173ms)
+      ✔ Create lock for (101ms)
+      ✔ Deposit for (188ms)
+    Balance and supply
+      ✔ Supply at (194ms)
+      ✔ Checkpoint (118ms)
+      ✔ Getting past votes and supply (367ms)
+    Wrapper related
+      ✔ Should fail when calling a function that must be called from the original veOLAS
+      ✔ Balance with a block number lower than a zero user point block number returns zero value (68ms)
+    IERC20 and IVotes functions
+      ✔ Check all the related functions (70ms)
+
+  Time shifting buOLAS
+    Time sensitive functions. This must be the very last test
+      ✔ Should fail when creating a lock after the year of 2106
+
+
+  69 passing (22s)
+
+------------------------|----------|----------|----------|----------|----------------|
+File                    |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+------------------------|----------|----------|----------|----------|----------------|
+ contracts/             |      100 |    93.68 |      100 |    98.66 |                |
+  DeploymentFactory.sol |      100 |       75 |      100 |    88.24 |          47,70 |
+  GovernorOLAS.sol      |      100 |      100 |      100 |      100 |                |
+  OLAS.sol              |      100 |      100 |      100 |      100 |                |
+  Timelock.sol          |      100 |      100 |      100 |      100 |                |
+  buOLAS.sol            |      100 |    97.37 |      100 |      100 |                |
+  veOLAS.sol            |      100 |    92.37 |      100 |     98.4 |249,253,283,286 |
+  wveOLAS.sol           |      100 |      100 |      100 |      100 |                |
+ contracts/interfaces/  |      100 |      100 |      100 |      100 |                |
+  IErrors.sol           |      100 |      100 |      100 |      100 |                |
+ contracts/test/        |      100 |      100 |      100 |      100 |                |
+  TokenFactory.sol      |      100 |      100 |      100 |      100 |                |
+------------------------|----------|----------|----------|----------|----------------|
+All files               |      100 |    93.68 |      100 |    98.66 |                |
+------------------------|----------|----------|----------|----------|----------------|
+
+> Istanbul reports written to ./coverage/ and ./coverage.json
