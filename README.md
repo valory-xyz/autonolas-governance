@@ -29,6 +29,9 @@ For initial incentivised locking of `OLAS` tokens we have a `Sale` contract - `S
 In order to deploy OLAS and veOLAS contracts via the create2() method, the following contract is utilized for vanity addresses:
 - [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol)
 
+To address several found `veOLAS` contract view functions issues, a wrapper contract `wveOLAS` is implemented:
+- [veOLAS wrapper (wveOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol)
+
 ## Development
 
 ### Prerequisites

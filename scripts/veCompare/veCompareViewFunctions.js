@@ -10,8 +10,6 @@ async function main() {
     const twoOLASBalance = ethers.utils.parseEther("200");
     const threeOLASBalance = ethers.utils.parseEther("300");
     const fiveOLASBalance = ethers.utils.parseEther("500");
-    // Set the original or wrapped veOLAS
-    const checkOriginalVE = true;
 
     const OLAS = await ethers.getContractFactory("OLAS");
     const olas = await OLAS.deploy();
@@ -55,6 +53,13 @@ async function main() {
     await ethers.provider.send("hardhat_setStorageAt", [veCRV.address, tokenSlot, value]);
     //console.log("veCRV token now", await veCRV.token());
     //console.log("OLAS address", olas.address);
+
+    // Deploy veOLAS wrapper contract
+    const WVE = await ethers.getContractFactory("wveOLAS");
+    const wveProxy = await WVE.deploy(ve.address);
+    await wveProxy.deployed();
+
+    const wve = await ethers.getContractAt("veOLAS", wveProxy.address);
 
     // Approve both ve tokens to a max amount
     await olas.approve(veCRV.address, ethers.constants.MaxUint256);
@@ -160,32 +165,28 @@ async function main() {
     // Loop over user points
     for (let i = 0; i < accounts.length; i++) {
         const veCRVLastUserSlope = await veCRV.get_last_user_slope(accounts[i]);
-        const veLastUserPoint = await ve.getLastUserPoint(accounts[i]);
+        const veLastUserPoint = await wve.getLastUserPoint(accounts[i]);
         expect(veCRVLastUserSlope).to.equal(veLastUserPoint.slope);
 
         //for (let iBlock = accountInitBlockNumbers[i]; iBlock <= accountFinalBlockNumbers[i]; iBlock++)
         for (let iBlock = deployBlockNumber; iBlock <= accountFinalBlockNumbers[i]; iBlock++) {
             const veCRVBalanceOf = await veCRV["balanceOf(address)"](accounts[i]);
-            const veVotes = await ve.getVotes(accounts[i]);
+            const veVotes = await wve.getVotes(accounts[i]);
             expect(veCRVBalanceOf).to.equal(veVotes);
 
             const veCRVBalanceOfAt = await veCRV.balanceOfAt(accounts[i], iBlock);
-            const vePastVotes = await ve.getPastVotes(accounts[i], iBlock);
-
-            // In the original check we need to skip values when veOLAS returns more than zero
-            if (checkOriginalVE && Number(veCRVBalanceOfAt) > 0) {
-                expect(veCRVBalanceOfAt).to.equal(vePastVotes);
-            }
+            const vePastVotes = await wve.getPastVotes(accounts[i], iBlock);
+            expect(veCRVBalanceOfAt).to.equal(vePastVotes);
         }
     }
 
     const veCRVTotalSupply = await veCRV["totalSupply()"]();
-    const veTotalSupplyLocked = await ve.totalSupplyLocked();
+    const veTotalSupplyLocked = await wve.totalSupplyLocked();
     expect(veCRVTotalSupply).to.equal(veTotalSupplyLocked);
     // Loop over supply points
     for (let iBlock = deployBlockNumber; iBlock <= accountFinalBlockNumbers[1]; iBlock++) {
         const veCRVTotalSupplyAt = await veCRV.totalSupplyAt(iBlock);
-        const vePastTotalSupply = await ve.getPastTotalSupply(iBlock);
+        const vePastTotalSupply = await wve.getPastTotalSupply(iBlock);
         expect(veCRVTotalSupplyAt).to.equal(vePastTotalSupply);
     }
 
@@ -194,7 +195,7 @@ async function main() {
     const lastBlockTime = block.timestamp;
     for (let iTime = lastBlockTime; iTime <= lastBlockTime + 3 * oneWeek; iTime += oneWeek) {
         const veCRVTotalSupplyAtT = await veCRV["totalSupply(uint256)"](iTime);
-        const veTotalSupplyLockedAtT = await ve.totalSupplyLockedAtT(iTime);
+        const veTotalSupplyLockedAtT = await wve.totalSupplyLockedAtT(iTime);
         expect(veCRVTotalSupplyAtT).to.equal(veTotalSupplyLockedAtT);
     }
 }

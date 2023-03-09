@@ -20,6 +20,11 @@ interface IVEOLAS {
     /// @return sPoint Supply point.
     function mapSupplyPoints(uint256 idx) external view returns (PointVoting memory sPoint);
 
+    /// @dev Gets the most recently recorded user point for `account`.
+    /// @param account Account address.
+    /// @return pv Last checkpoint.
+    function getLastUserPoint(address account) external view returns (PointVoting memory pv);
+
     /// @dev Gets the number of user points.
     /// @param account Account address.
     /// @return userNumPoints Number of user points.
@@ -38,11 +43,30 @@ interface IVEOLAS {
     /// @return balance Voting balance / power.
     function getPastVotes(address account, uint256 blockNumber) external view returns (uint256 balance);
 
+    /// @dev Gets the account balance in native token.
+    /// @param account Account address.
+    /// @return balance Account balance.
+    function balanceOf(address account) external view returns (uint256 balance);
+
     /// @dev Gets the account balance at a specific block number.
     /// @param account Account address.
     /// @param blockNumber Block number.
     /// @return balance Account balance.
     function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance);
+
+    /// @dev Gets the `account`'s lock end time.
+    /// @param account Account address.
+    /// @return unlockTime Lock end time.
+    function lockedEnd(address account) external view returns (uint256 unlockTime);
+
+    /// @dev Gets the voting power.
+    /// @param account Account address.
+    /// @return balance Account balance.
+    function getVotes(address account) external view returns (uint256 balance);
+
+    /// @dev Gets total token supply.
+    /// @return supply Total token supply.
+    function totalSupply() external view returns (uint256 supply);
 
     /// @dev Gets total token supply at a specific block number.
     /// @param blockNumber Block number.
@@ -54,10 +78,25 @@ interface IVEOLAS {
     /// @return vPower Total voting power.
     function totalSupplyLockedAtT(uint256 ts) external view returns (uint256 vPower);
 
+    /// @dev Calculates current total voting power.
+    /// @return vPower Total voting power.
+    function totalSupplyLocked() external view returns (uint256 vPower);
+
     /// @dev Calculate total voting power at some point in the past.
     /// @param blockNumber Block number to calculate the total voting power at.
     /// @return vPower Total voting power.
     function getPastTotalSupply(uint256 blockNumber) external view returns (uint256 vPower);
+
+    /// @dev Gets information about the interface support.
+    /// @param interfaceId A specified interface Id.
+    /// @return True if this contract implements the interface defined by interfaceId.
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+
+    /// @dev Reverts the allowance of this token.
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /// @dev Reverts delegates of this token.
+    function delegates(address account) external view returns (address);
 }
 
 /// @dev Zero veOLAS address.
@@ -89,6 +128,20 @@ contract wveOLAS {
         ve = _ve;
     }
 
+    /// @dev Gets the most recently recorded user point for `account`.
+    /// @param account Account address.
+    /// @return pv Last checkpoint.
+    function getLastUserPoint(address account) external view returns (PointVoting memory pv) {
+        pv = IVEOLAS(ve).getLastUserPoint(account);
+    }
+
+    /// @dev Gets the number of user points.
+    /// @param account Account address.
+    /// @return userNumPoints Number of user points.
+    function getNumUserPoints(address account) external view returns (uint256 userNumPoints) {
+        userNumPoints = IVEOLAS(ve).getNumUserPoints(account);
+    }
+
     /// @dev Gets the checkpoint structure at number `idx` for `account`.
     /// @notice The out of bound condition is treated by the default code generation check.
     /// @param account User wallet address.
@@ -100,6 +153,12 @@ contract wveOLAS {
         if (userNumPoints > 0) {
             uPoint = IVEOLAS(ve).getUserPoint(account, idx);
         }
+    }
+
+    /// @dev Gets the voting power.
+    /// @param account Account address.
+    function getVotes(address account) external view returns (uint256 balance) {
+        balance = IVEOLAS(ve).getVotes(account);
     }
 
     /// @dev Gets voting power at a specific block number.
@@ -115,6 +174,13 @@ contract wveOLAS {
         }
     }
 
+    /// @dev Gets the account balance in native token.
+    /// @param account Account address.
+    /// @return balance Account balance.
+    function balanceOf(address account) external view returns (uint256 balance) {
+        balance = IVEOLAS(ve).balanceOf(account);
+    }
+
     /// @dev Gets the account balance at a specific block number.
     /// @param account Account address.
     /// @param blockNumber Block number.
@@ -126,6 +192,19 @@ contract wveOLAS {
         if (blockNumber >= uPoint.blockNumber) {
             balance = IVEOLAS(ve).balanceOfAt(account, blockNumber);
         }
+    }
+
+    /// @dev Gets the `account`'s lock end time.
+    /// @param account Account address.
+    /// @return unlockTime Lock end time.
+    function lockedEnd(address account) external view returns (uint256 unlockTime) {
+        unlockTime = IVEOLAS(ve).lockedEnd(account);
+    }
+
+    /// @dev Gets total token supply.
+    /// @return supply Total token supply.
+    function totalSupply() external view returns (uint256 supply) {
+        supply = IVEOLAS(ve).totalSupply();
     }
 
     /// @dev Gets total token supply at a specific block number.
@@ -150,6 +229,12 @@ contract wveOLAS {
         }
     }
 
+    /// @dev Calculates current total voting power.
+    /// @return vPower Total voting power.
+    function totalSupplyLocked() public view returns (uint256 vPower) {
+        vPower = IVEOLAS(ve).totalSupplyLocked();
+    }
+
     /// @dev Calculate total voting power at some point in the past.
     /// @notice The requested block number must be at least equal to the zero supply point block number.
     /// @param blockNumber Block number to calculate the total voting power at.
@@ -161,6 +246,23 @@ contract wveOLAS {
         if (blockNumber >= sPoint.blockNumber) {
             vPower = IVEOLAS(ve).getPastTotalSupply(blockNumber);
         }
+    }
+
+    /// @dev Gets information about the interface support.
+    /// @param interfaceId A specified interface Id.
+    /// @return True if this contract implements the interface defined by interfaceId.
+    function supportsInterface(bytes4 interfaceId) external view returns (bool) {
+        return IVEOLAS(ve).supportsInterface(interfaceId);
+    }
+
+    /// @dev Reverts the allowance of this token.
+    function allowance(address owner, address spender) external view returns (uint256) {
+        return IVEOLAS(ve).allowance(owner, spender);
+    }
+
+    /// @dev Reverts delegates of this token.
+    function delegates(address account) external view returns (address) {
+        return IVEOLAS(ve).delegates(account);
     }
 
     /// @dev Reverts other calls such that the original veOLAS is used.
