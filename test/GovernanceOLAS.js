@@ -186,7 +186,7 @@ describe("Governance OLAS", function () {
                 ethers.provider.send("evm_mine");
             }
 
-            // Executing via this rpoposal will fail as onlyGovernance checks for the proposals passed throught the
+            // Executing via this proposal will fail as onlyGovernance checks for the proposals passed through the
             // governor itself, i.e with voting
             await expect(
                 timelock2.execute(governor.address, 0, callData, bytes32Zero, bytes32Zero)

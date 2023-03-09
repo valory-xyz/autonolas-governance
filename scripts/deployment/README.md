@@ -37,19 +37,19 @@ Other values are related to the governance and initial mint. The Gnosis Safe con
 For deployment / testing of the balances creation for initial DAO members (`deploy_13.js`), create the file `claimableBalances.json` in the root folder, or copy it from `scripts/deployment/dummyClaimableBalances.json`.
 
 The script file name identifies the number of deployment steps taken up to the number in the file name. For example:
-- `deploy_02.js` will complete steps 1 and 2 from [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md) (1 is already complete as the multisig is created beforehand);
-- `deploy_04.js` will complete steps 3 and 4;
+- `deploy_02_deployment_factory.js` will complete step 2 from [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md) (1 is already complete as the multisig is created beforehand);
+- `verify_08_09_governor_and_roles.js` will complete steps 8 and 9;
 - etc.
 
 NOTE: All the scripts MUST be strictly run in the sequential order from smallest to biggest numbers.
 
 To run the script, use the following command:
 `npx hardhat run scripts/deployment/script_name --network network_type`,
-where `script_name` is a script name, i.e. `deploy_02.js`, `network_type` is a network type corresponding to the `hardhat.config.js` network configuration.
+where `script_number_and_name` is a script number and name, i.e. `deploy_02_deployment_factory.js`, `network_type` is a network type corresponding to the `hardhat.config.js` network configuration.
 
 ## Validity checks and contract verification
 Each script controls the obtained values by checking them against the expected ones. Also, each script has a contract verification procedure.
-If a contract is deployed with arguments, these arguments are taken from the corresponding `verify_number` file, where `number` corresponds to the deployment script number.
+If a contract is deployed with arguments, these arguments are taken from the corresponding `verify_number_and_name` file, where `number_and_name` corresponds to the deployment script number and name.
 
 
 

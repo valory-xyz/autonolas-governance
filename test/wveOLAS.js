@@ -287,14 +287,19 @@ describe("Wrapped Voting Escrow OLAS", function () {
             // Create and increase locks for both addresses signers[0] and signers[1]
             await ve.createLock(twoOLABalance, lockDuration);
             await ve.increaseAmount(oneOLABalance);
+            let blockNumber = await ethers.provider.getBlockNumber("latest");
             await ve.connect(owner).createLock(twoOLABalance, lockDuration);
             await ve.connect(owner).increaseAmount(oneOLABalance);
             await ve.connect(owner).increaseAmount(oneOLABalance);
-            let blockNumber = await ethers.provider.getBlockNumber("latest");
 
-            // Get past votes of the owner
-            const votesOwner = ethers.BigNumber.from(await wve.getPastVotes(owner.address, blockNumber));
-            expect(Number(votesOwner)).to.greaterThan(0);
+            // The past votes before the lock must be zero
+            let votesOwner = ethers.BigNumber.from(await wve.getPastVotes(owner.address, blockNumber));
+            expect(votesOwner).to.equal(0);
+
+            // Get past votes of the owner after the lock
+            blockNumber = await ethers.provider.getBlockNumber("latest");
+            votesOwner = ethers.BigNumber.from(await wve.getPastVotes(owner.address, blockNumber));
+            expect(votesOwner).to.greaterThan(0);
 
             // Get past voting supply from the same block number
             const supply = ethers.BigNumber.from(await ve.getPastTotalSupply(blockNumber));
