@@ -142,6 +142,11 @@ function delegates(address account) external view returns (address) {
     return IVEOLAS(ve).delegates(account);
 }
 these functions always cause a revert on the side of the original veOLAS contract, so you need to do a revert immediately with the original message
+
+Most likely it is better to implement these reverts directly, then this contract will be passed tests for the standard ERC20. (optional)
+[ ] transfer(address,uint256) is missing 
+[ ] transferFrom(address,address,uint256) is missing 
+[ ] approve(address,uint256) is missing
 ```
 
 
