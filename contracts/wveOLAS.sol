@@ -128,9 +128,9 @@ contract wveOLAS {
     // OLAS address
     address public immutable token;
     // veOLAS token name
-    string public constant name = "veOLAS";
+    string public constant name = "Voting Escrow OLAS";
     // veOLAS token symbol
-    string public constant symbol = "Voting Escrow OLAS";
+    string public constant symbol = "veOLAS";
     // veOLAS token decimals
     uint8 public constant decimals = 18;
 
