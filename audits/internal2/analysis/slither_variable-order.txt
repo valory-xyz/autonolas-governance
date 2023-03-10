@@ -1,0 +1,403 @@
+'npx hardhat compile --force' running
+Compiled 57 Solidity files successfully
+
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLAS.sol:54:5:
+   |
+54 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:23:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:35:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:22:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:39:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:27:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:41:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:53:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:39:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+
+
+GnosisSafeL2:
++---------------------------------------+-------------------------------------------------+------+--------+
+|                  Name                 |                       Type                      | Slot | Offset |
++---------------------------------------+-------------------------------------------------+------+--------+
+|          Singleton.singleton          |                     address                     |  0   |   0    |
+|         ModuleManager.modules         |           mapping(address => address)           |  1   |   0    |
+|          OwnerManager.owners          |           mapping(address => address)           |  2   |   0    |
+|        OwnerManager.ownerCount        |                     uint256                     |  3   |   0    |
+|         OwnerManager.threshold        |                     uint256                     |  4   |   0    |
+|            GnosisSafe.nonce           |                     uint256                     |  5   |   0    |
+| GnosisSafe._deprecatedDomainSeparator |                     bytes32                     |  6   |   0    |
+|       GnosisSafe.signedMessages       |           mapping(bytes32 => uint256)           |  7   |   0    |
+|       GnosisSafe.approvedHashes       | mapping(address => mapping(bytes32 => uint256)) |  8   |   0    |
++---------------------------------------+-------------------------------------------------+------+--------+
+
+Guard:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+Enum:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+GnosisSafeMath:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+ISignatureValidator:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+IProxy:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+GnosisSafeProxy:
++---------------------------+---------+------+--------+
+|            Name           |   Type  | Slot | Offset |
++---------------------------+---------+------+--------+
+| GnosisSafeProxy.singleton | address |  0   |   0    |
++---------------------------+---------+------+--------+
+
+GnosisSafeProxyFactory:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+IProxyCreationCallback:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+Address:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+Counters:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+Create2:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+Strings:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+Timers:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+ECDSA:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+SafeCast:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+DoubleEndedQueue:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+DeploymentFactory:
++---------------------------------+---------+------+--------+
+|               Name              |   Type  | Slot | Offset |
++---------------------------------+---------+------+--------+
+|  DeploymentFactory.olasAddress  | address |  0   |   0    |
+| DeploymentFactory.veOLASAddress | address |  1   |   0    |
+|     DeploymentFactory.owner     | address |  2   |   0    |
++---------------------------------+---------+------+--------+
+
+GovernorOLAS:
++----------------------------------------------+----------------------------------------------------------------+------+--------+
+|                     Name                     |                              Type                              | Slot | Offset |
++----------------------------------------------+----------------------------------------------------------------+------+--------+
+|                Governor._name                |                             string                             |  0   |   0    |
+|             Governor._proposals              |           mapping(uint256 => Governor.ProposalCore)            |  1   |   0    |
+|           Governor._governanceCall           |                 DoubleEndedQueue.Bytes32Deque                  |  2   |   0    |
+|        GovernorSettings._votingDelay         |                            uint256                             |  4   |   0    |
+|        GovernorSettings._votingPeriod        |                            uint256                             |  5   |   0    |
+|     GovernorSettings._proposalThreshold      |                            uint256                             |  6   |   0    |
+| GovernorCompatibilityBravo._proposalDetails  | mapping(uint256 => GovernorCompatibilityBravo.ProposalDetails) |  7   |   0    |
+| GovernorVotesQuorumFraction._quorumNumerator |                            uint256                             |  8   |   0    |
+|      GovernorTimelockControl._timelock       |                       TimelockController                       |  9   |   0    |
+|     GovernorTimelockControl._timelockIds     |                  mapping(uint256 => bytes32)                   |  10  |   0    |
++----------------------------------------------+----------------------------------------------------------------+------+--------+
+
+OLAS:
++-------------------+-------------------------------------------------+------+--------+
+|        Name       |                       Type                      | Slot | Offset |
++-------------------+-------------------------------------------------+------+--------+
+|     ERC20.name    |                      string                     |  0   |   0    |
+|    ERC20.symbol   |                      string                     |  1   |   0    |
+| ERC20.totalSupply |                     uint256                     |  2   |   0    |
+|  ERC20.balanceOf  |           mapping(address => uint256)           |  3   |   0    |
+|  ERC20.allowance  | mapping(address => mapping(address => uint256)) |  4   |   0    |
+|    ERC20.nonces   |           mapping(address => uint256)           |  5   |   0    |
+|     OLAS.owner    |                     address                     |  6   |   0    |
+|    OLAS.minter    |                     address                     |  7   |   0    |
++-------------------+-------------------------------------------------+------+--------+
+
+Timelock:
++--------------------------------+--------------------------------------------+------+--------+
+|              Name              |                    Type                    | Slot | Offset |
++--------------------------------+--------------------------------------------+------+--------+
+|      AccessControl._roles      | mapping(bytes32 => AccessControl.RoleData) |  0   |   0    |
+| TimelockController._timestamps |        mapping(bytes32 => uint256)         |  1   |   0    |
+|  TimelockController._minDelay  |                  uint256                   |  2   |   0    |
++--------------------------------+--------------------------------------------+------+--------+
+
+IOLAS:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+buOLAS:
++--------------------------+-----------------------------------+------+--------+
+|           Name           |                Type               | Slot | Offset |
++--------------------------+-----------------------------------+------+--------+
+|      buOLAS.supply       |              uint256              |  0   |   0    |
+|       buOLAS.owner       |              address              |  1   |   0    |
+| buOLAS.mapLockedBalances | mapping(address => LockedBalance) |  2   |   0    |
+|       buOLAS.name        |               string              |  3   |   0    |
+|      buOLAS.symbol       |               string              |  4   |   0    |
++--------------------------+-----------------------------------+------+--------+
+
+veOLAS:
++--------------------------+-----------------------------------+------+--------+
+|           Name           |                Type               | Slot | Offset |
++--------------------------+-----------------------------------+------+--------+
+|      veOLAS.supply       |              uint256              |  0   |   0    |
+| veOLAS.mapLockedBalances | mapping(address => LockedBalance) |  1   |   0    |
+|  veOLAS.totalNumPoints   |              uint256              |  2   |   0    |
+|  veOLAS.mapSupplyPoints  |  mapping(uint256 => PointVoting)  |  3   |   0    |
+|   veOLAS.mapUserPoints   | mapping(address => PointVoting[]) |  4   |   0    |
+|  veOLAS.mapSlopeChanges  |     mapping(uint64 => int128)     |  5   |   0    |
+|       veOLAS.name        |               string              |  6   |   0    |
+|      veOLAS.symbol       |               string              |  7   |   0    |
++--------------------------+-----------------------------------+------+--------+
+
+IVEOLAS:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+wveOLAS:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+. analyzed (61 contracts)
