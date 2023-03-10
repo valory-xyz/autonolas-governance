@@ -364,7 +364,7 @@ describe("Deployment", function () {
             // !!!!!!!!!!!!!!!!!!!!!!!! SUPPLEMENTAL DEPLOYMENT STEPS !!!!!!!!!!!!!!!!!!!!!!!!
             // 16. EOA to deploy wveOLAS contract pointed to veOLAS;
             const WVE = await ethers.getContractFactory("wveOLAS");
-            const wve = await WVE.connect(EOA).deploy(ve.address);
+            const wve = await WVE.connect(EOA).deploy(ve.address, olas.address);
             await wve.deployed();
 
             // 17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters

@@ -29,7 +29,7 @@ describe("Wrapped Voting Escrow OLAS", function () {
         await ve.deployed();
 
         const WVE = await ethers.getContractFactory("wveOLAS");
-        wve = await WVE.deploy(ve.address);
+        wve = await WVE.deploy(ve.address, olas.address);
         await wve.deployed();
     });
 
@@ -37,8 +37,12 @@ describe("Wrapped Voting Escrow OLAS", function () {
         it("Should fail when deploying with the zero address", async function () {
             const WVE = await ethers.getContractFactory("wveOLAS");
             await expect(
-                WVE.deploy(AddressZero)
-            ).to.be.revertedWithCustomError(wve, "ZeroVEOLASAddress");
+                WVE.deploy(AddressZero, AddressZero)
+            ).to.be.revertedWithCustomError(wve, "ZeroAddress");
+
+            await expect(
+                WVE.deploy(ve.address, AddressZero)
+            ).to.be.revertedWithCustomError(wve, "ZeroAddress");
         });
 
         it("Check that never-supposed-to-happen zero parameter calls do not break anything", async function () {
@@ -242,12 +246,12 @@ describe("Wrapped Voting Escrow OLAS", function () {
         it("Checkpoint", async function () {
             const user = signers[1];
             // We don't have any points at the beginning
-            let numPoints = await ve.totalNumPoints();
+            let numPoints = await wve.totalNumPoints();
             expect(numPoints).to.equal(0);
 
             // Checkpoint writes point and increases their global counter
             await ve.checkpoint();
-            numPoints = await ve.totalNumPoints();
+            numPoints = await wve.totalNumPoints();
             expect(numPoints).to.equal(1);
 
             // Try to get past total voting supply of a block number in the future
@@ -358,15 +362,31 @@ describe("Wrapped Voting Escrow OLAS", function () {
             // Create locks for both addresses signers[0] and signers[1]
             await ve.createLock(oneOLABalance, lockDuration);
 
-            // Try to call token-related functions for veOLAS
+            // Try to call transfer-related functions for veOLAS
+            await expect(
+                wve.approve(user, oneOLABalance)
+            ).to.be.revertedWithCustomError(wve, "NonTransferable");
             await expect(
                 wve.allowance(deployer, user)
-            ).to.be.revertedWithCustomError(ve, "NonTransferable");
+            ).to.be.revertedWithCustomError(wve, "NonTransferable");
+            await expect(
+                wve.transfer(user, oneOLABalance)
+            ).to.be.revertedWithCustomError(wve, "NonTransferable");
+            await expect(
+                wve.transferFrom(deployer, user, oneOLABalance)
+            ).to.be.revertedWithCustomError(wve, "NonTransferable");
 
             // Try to call delegate-related functions for veOLAS
             await expect(
                 wve.delegates(user)
-            ).to.be.revertedWithCustomError(ve, "NonDelegatable");
+            ).to.be.revertedWithCustomError(wve, "NonDelegatable");
+            await expect(
+                wve.delegate(deployer)
+            ).to.be.revertedWithCustomError(wve, "NonDelegatable");
+            const rv = "0x" + "0".repeat(64);
+            await expect(
+                wve.delegateBySig(deployer, 0, 0, 0, rv, rv)
+            ).to.be.revertedWithCustomError(wve, "NonDelegatable");
         });
     });
 });

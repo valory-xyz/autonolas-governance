@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.19;
 
 // Structure for veOLAS points
 struct PointVoting {
@@ -100,7 +100,7 @@ interface IVEOLAS {
 }
 
 /// @dev Zero veOLAS address.
-error ZeroVEOLASAddress();
+error ZeroAddress();
 
 /// @dev Provided wrong timestamp.
 /// @param minTimeStamp Minimum timestamp.
@@ -111,21 +111,40 @@ error WrongTimestamp(uint256 minTimeStamp, uint256 providedTimeStamp);
 /// @param ve Original veOLAS address.
 error ImplementedIn(address ve);
 
+/// @dev veOLAS token is non-transferable.
+/// @param ve veOLAS token address.
+error NonTransferable(address ve);
+
+/// @dev veOLAS token is non-delegatable.
+/// @param ve veOLAS token address.
+error NonDelegatable(address ve);
+
 /// @title wveOLAS - Wrapper smart contract for view functions of veOLAS contract
 /// @author AL
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 contract wveOLAS {
     // veOLAS address
     address public immutable ve;
+    // OLAS address
+    address public immutable token;
+    // veOLAS token name
+    string public constant name = "veOLAS";
+    // veOLAS token symbol
+    string public constant symbol = "Voting Escrow OLAS";
+    // veOLAS token decimals
+    uint8 public constant decimals = 18;
+
 
     /// @dev TokenomicsProxy constructor.
     /// @param _ve veOLAS address.
-    constructor(address _ve) {
+    /// @param _token OLAS address.
+    constructor(address _ve, address _token) {
         // Check for the zero address
-        if (_ve == address(0)) {
-            revert ZeroVEOLASAddress();
+        if (_ve == address(0) || _token == address(0)) {
+            revert ZeroAddress();
         }
         ve = _ve;
+        token = _token;
     }
 
     /// @dev Gets the most recently recorded user point for `account`.
@@ -189,7 +208,7 @@ contract wveOLAS {
         // Get the zero account point
         PointVoting memory uPoint = getUserPoint(account, 0);
         // Check that the zero point block number is not smaller than the specified blockNumber
-        if (blockNumber >= uPoint.blockNumber) {
+        if (uPoint.blockNumber > 0 && blockNumber >= uPoint.blockNumber) {
             balance = IVEOLAS(ve).balanceOfAt(account, blockNumber);
         }
     }
@@ -243,6 +262,12 @@ contract wveOLAS {
         vPower = IVEOLAS(ve).getPastTotalSupply(blockNumber);
     }
 
+    /// @dev Gets the total number of supply points.
+    /// @return numPoints Number of supply points.
+    function totalNumPoints() external view returns (uint256 numPoints) {
+        numPoints = IVEOLAS(ve).totalNumPoints();
+    }
+
     /// @dev Gets information about the interface support.
     /// @param interfaceId A specified interface Id.
     /// @return True if this contract implements the interface defined by interfaceId.
@@ -250,14 +275,41 @@ contract wveOLAS {
         return IVEOLAS(ve).supportsInterface(interfaceId);
     }
 
+    /// @dev Reverts the transfer of this token.
+    function transfer(address, uint256) external returns (bool) {
+        revert NonTransferable(ve);
+    }
+
+    /// @dev Reverts the approval of this token.
+    function approve(address, uint256) external returns (bool) {
+        revert NonTransferable(ve);
+    }
+
+    /// @dev Reverts the transferFrom of this token.
+    function transferFrom(address, address, uint256) external returns (bool) {
+        revert NonTransferable(ve);
+    }
+
     /// @dev Reverts the allowance of this token.
-    function allowance(address owner, address spender) external view returns (uint256) {
-        return IVEOLAS(ve).allowance(owner, spender);
+    function allowance(address, address) external view returns (uint256) {
+        revert NonTransferable(ve);
     }
 
     /// @dev Reverts delegates of this token.
-    function delegates(address account) external view returns (address) {
-        return IVEOLAS(ve).delegates(account);
+    function delegates(address) external view returns (address) {
+        revert NonDelegatable(ve);
+    }
+
+    /// @dev Reverts delegate for this token.
+    function delegate(address) external
+    {
+        revert NonDelegatable(ve);
+    }
+
+    /// @dev Reverts delegateBySig for this token.
+    function delegateBySig(address, uint256, uint256, uint8, bytes32, bytes32) external
+    {
+        revert NonDelegatable(ve);
     }
 
     /// @dev Reverts other calls such that the original veOLAS is used.
