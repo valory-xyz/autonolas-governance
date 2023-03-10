@@ -108,16 +108,16 @@ error ZeroAddress();
 error WrongTimestamp(uint256 minTimeStamp, uint256 providedTimeStamp);
 
 /// @dev Called function is implemented in a specified veOLAS contract.
-/// @param ve Original veOLAS address.
-error ImplementedIn(address ve);
+/// @param veToken Original veOLAS address.
+error ImplementedIn(address veToken);
 
 /// @dev veOLAS token is non-transferable.
-/// @param ve veOLAS token address.
-error NonTransferable(address ve);
+/// @param veToken veOLAS token address.
+error NonTransferable(address veToken);
 
 /// @dev veOLAS token is non-delegatable.
-/// @param ve veOLAS token address.
-error NonDelegatable(address ve);
+/// @param veToken veOLAS token address.
+error NonDelegatable(address veToken);
 
 /// @title wveOLAS - Wrapper smart contract for view functions of veOLAS contract
 /// @author AL
@@ -133,7 +133,6 @@ contract wveOLAS {
     string public constant symbol = "veOLAS";
     // veOLAS token decimals
     uint8 public constant decimals = 18;
-
 
     /// @dev TokenomicsProxy constructor.
     /// @param _ve veOLAS address.
