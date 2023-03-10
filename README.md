@@ -13,7 +13,7 @@ Please note that `buOLAS` contract is not part of the diagram.
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
 
-An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Governance_process.pdf?raw=true) and the contracts' specifications are provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Specs%20of%20governance%20contracts_v1.0.1.pdf?raw=true).
+An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Governance_process.pdf?raw=true) and the contracts' specifications are provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Specs%20of%20governance%20contracts_v1.1.0.pdf?raw=true).
 
 - [OLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/OLAS.sol);
 - [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/veOLAS.sol);
@@ -29,7 +29,9 @@ In order to deploy OLAS and veOLAS contracts via the create2() method, the follo
 To address several found `veOLAS` contract view functions issues, a wrapper contract `wveOLAS` is implemented:
 - [veOLAS wrapper (wveOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol).
 
-To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf)
+The changelog leading to the implementation of `wveOLAS` can be found here: [Changelog_v1.1.0](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Changelog_v1.1.0.pdf?raw=true)
+
+To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true)
 
 ## Development
 
@@ -120,7 +122,7 @@ can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main
 
 ## Audits
 - The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
-- The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf).
+- The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true).
 
 ## Deployed Protocol
 The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
