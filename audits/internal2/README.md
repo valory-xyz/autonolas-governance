@@ -37,7 +37,7 @@ slither-check-erc wveOLAS-flatten.sol wveOLAS
 [ ] Transfer(address,address,uint256) is missing
 [ ] Approval(address,address,uint256) is missing
 ```
-see below
+[x] (fixed)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -123,7 +123,6 @@ No major bugs, but some fixes needed
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 Update to actual version.
-[x] (fixed)
 
 function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance) {
         // Get the zero account point
@@ -134,7 +133,6 @@ function balanceOfAt(address account, uint256 blockNumber) external view returns
         }
     }
 missing uPoint.blockNumber > 0  && ...?
-[x] (fixed)
 
 /// @dev Reverts the allowance of this token.
 function allowance(address owner, address spender) external view returns (uint256) {
@@ -145,14 +143,13 @@ function delegates(address account) external view returns (address) {
     return IVEOLAS(ve).delegates(account);
 }
 these functions always cause a revert on the side of the original veOLAS contract, so you need to do a revert immediately with the original message
-[x] (fixed)
 
 Most likely it is better to implement these reverts directly, then this contract will be passed tests for the standard ERC20. (optional)
 [ ] transfer(address,uint256) is missing 
 [ ] transferFrom(address,address,uint256) is missing 
 [ ] approve(address,uint256) is missing
-[x] (fixed)
 ```
+[x] (fixed)
 
 
  
