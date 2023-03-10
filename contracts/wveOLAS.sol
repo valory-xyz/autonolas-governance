@@ -104,7 +104,7 @@ interface IVEOLAS {
     function delegates(address account) external view returns (address);
 }
 
-/// @dev Zero veOLAS address.
+/// @dev Zero address.
 error ZeroAddress();
 
 /// @dev Provided wrong timestamp.
