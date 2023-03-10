@@ -27,10 +27,10 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("16. EOA to deploy wveOLAS contract pointed to veOLAS");
+    console.log("16. EOA to deploy wveOLAS contract pointed to veOLAS and OLAS");
     const WVE = await ethers.getContractFactory("wveOLAS");
-    console.log("You are signing the following transaction: wveOLAS.connect(EOA).deploy(parsedData.veolasAddress)");
-    const wveOLAS = await WVE.connect(EOA).deploy(parsedData.veOLASAddress);
+    console.log("You are signing the following transaction: wveOLAS.connect(EOA).deploy(parsedData.veOLASAddress, parsedData.olasAddress)");
+    const wveOLAS = await WVE.connect(EOA).deploy(parsedData.veOLASAddress, parsedData.olasAddress);
     const result = await wveOLAS.deployed();
     // If on goerli, wait a minute for the transaction completion
     if (providerName === "goerli") {

@@ -37,7 +37,7 @@ slither-check-erc wveOLAS-flatten.sol wveOLAS
 [ ] Transfer(address,address,uint256) is missing
 [ ] Approval(address,address,uint256) is missing
 ```
-see below
+[x] (fixed)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -109,6 +109,7 @@ Not implemented in wveOLAS, although logically they should be
         [] symbol() is view
         [] decimals() is view
 ```
+[x] (fixed)
 
 ### Security issues (instumantal)
 Some of the checks are obtained automatically. They are commented and I do not see any serious problems.
@@ -148,6 +149,7 @@ Most likely it is better to implement these reverts directly, then this contract
 [ ] transferFrom(address,address,uint256) is missing 
 [ ] approve(address,uint256) is missing
 ```
+[x] (fixed)
 
 
  

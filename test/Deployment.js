@@ -362,9 +362,9 @@ describe("Deployment", function () {
             //            Balances in veOLAS and buOLAS: 301.5 million as all successfully claimed
 
             // !!!!!!!!!!!!!!!!!!!!!!!! SUPPLEMENTAL DEPLOYMENT STEPS !!!!!!!!!!!!!!!!!!!!!!!!
-            // 16. EOA to deploy wveOLAS contract pointed to veOLAS;
+            // 16. EOA to deploy wveOLAS contract pointed to veOLAS and OLAS;
             const WVE = await ethers.getContractFactory("wveOLAS");
-            const wve = await WVE.connect(EOA).deploy(ve.address);
+            const wve = await WVE.connect(EOA).deploy(ve.address, olas.address);
             await wve.deployed();
 
             // 17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters

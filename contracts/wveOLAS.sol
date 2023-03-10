@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.19;
 
 // Structure for veOLAS points
 struct PointVoting {
@@ -19,6 +19,11 @@ interface IVEOLAS {
     /// @param idx Supply point number.
     /// @return sPoint Supply point.
     function mapSupplyPoints(uint256 idx) external view returns (PointVoting memory sPoint);
+
+    /// @dev Gets the slope change for a specific timestamp.
+    /// @param ts Timestamp.
+    /// @return slopeChange Signed slope change.
+    function mapSlopeChanges(uint64 ts) external view returns (int128 slopeChange);
 
     /// @dev Gets the most recently recorded user point for `account`.
     /// @param account Account address.
@@ -99,8 +104,8 @@ interface IVEOLAS {
     function delegates(address account) external view returns (address);
 }
 
-/// @dev Zero veOLAS address.
-error ZeroVEOLASAddress();
+/// @dev Zero address.
+error ZeroAddress();
 
 /// @dev Provided wrong timestamp.
 /// @param minTimeStamp Minimum timestamp.
@@ -108,8 +113,16 @@ error ZeroVEOLASAddress();
 error WrongTimestamp(uint256 minTimeStamp, uint256 providedTimeStamp);
 
 /// @dev Called function is implemented in a specified veOLAS contract.
-/// @param ve Original veOLAS address.
-error ImplementedIn(address ve);
+/// @param veToken Original veOLAS address.
+error ImplementedIn(address veToken);
+
+/// @dev veOLAS token is non-transferable.
+/// @param veToken veOLAS token address.
+error NonTransferable(address veToken);
+
+/// @dev veOLAS token is non-delegatable.
+/// @param veToken veOLAS token address.
+error NonDelegatable(address veToken);
 
 /// @title wveOLAS - Wrapper smart contract for view functions of veOLAS contract
 /// @author AL
@@ -117,15 +130,45 @@ error ImplementedIn(address ve);
 contract wveOLAS {
     // veOLAS address
     address public immutable ve;
+    // OLAS address
+    address public immutable token;
+    // veOLAS token name
+    string public constant name = "Voting Escrow OLAS";
+    // veOLAS token symbol
+    string public constant symbol = "veOLAS";
+    // veOLAS token decimals
+    uint8 public constant decimals = 18;
 
     /// @dev TokenomicsProxy constructor.
     /// @param _ve veOLAS address.
-    constructor(address _ve) {
+    /// @param _token OLAS address.
+    constructor(address _ve, address _token) {
         // Check for the zero address
-        if (_ve == address(0)) {
-            revert ZeroVEOLASAddress();
+        if (_ve == address(0) || _token == address(0)) {
+            revert ZeroAddress();
         }
         ve = _ve;
+        token = _token;
+    }
+
+    /// @dev Gets the total number of supply points.
+    /// @return numPoints Number of supply points.
+    function totalNumPoints() external view returns (uint256 numPoints) {
+        numPoints = IVEOLAS(ve).totalNumPoints();
+    }
+
+    /// @dev Gets the supply point of a specified index.
+    /// @param idx Supply point number.
+    /// @return sPoint Supply point.
+    function mapSupplyPoints(uint256 idx) external view returns (PointVoting memory sPoint) {
+        sPoint = IVEOLAS(ve).mapSupplyPoints(idx);
+    }
+
+    /// @dev Gets the slope change for a specific timestamp.
+    /// @param ts Timestamp.
+    /// @return slopeChange Signed slope change.
+    function mapSlopeChanges(uint64 ts) external view returns (int128 slopeChange) {
+        slopeChange = IVEOLAS(ve).mapSlopeChanges(ts);
     }
 
     /// @dev Gets the most recently recorded user point for `account`.
@@ -189,7 +232,7 @@ contract wveOLAS {
         // Get the zero account point
         PointVoting memory uPoint = getUserPoint(account, 0);
         // Check that the zero point block number is not smaller than the specified blockNumber
-        if (blockNumber >= uPoint.blockNumber) {
+        if (uPoint.blockNumber > 0 && blockNumber >= uPoint.blockNumber) {
             balance = IVEOLAS(ve).balanceOfAt(account, blockNumber);
         }
     }
@@ -250,14 +293,41 @@ contract wveOLAS {
         return IVEOLAS(ve).supportsInterface(interfaceId);
     }
 
+    /// @dev Reverts the transfer of this token.
+    function transfer(address, uint256) external returns (bool) {
+        revert NonTransferable(ve);
+    }
+
+    /// @dev Reverts the approval of this token.
+    function approve(address, uint256) external returns (bool) {
+        revert NonTransferable(ve);
+    }
+
+    /// @dev Reverts the transferFrom of this token.
+    function transferFrom(address, address, uint256) external returns (bool) {
+        revert NonTransferable(ve);
+    }
+
     /// @dev Reverts the allowance of this token.
-    function allowance(address owner, address spender) external view returns (uint256) {
-        return IVEOLAS(ve).allowance(owner, spender);
+    function allowance(address, address) external view returns (uint256) {
+        revert NonTransferable(ve);
     }
 
     /// @dev Reverts delegates of this token.
-    function delegates(address account) external view returns (address) {
-        return IVEOLAS(ve).delegates(account);
+    function delegates(address) external view returns (address) {
+        revert NonDelegatable(ve);
+    }
+
+    /// @dev Reverts delegate for this token.
+    function delegate(address) external
+    {
+        revert NonDelegatable(ve);
+    }
+
+    /// @dev Reverts delegateBySig for this token.
+    function delegateBySig(address, uint256, uint256, uint8, bytes32, bytes32) external
+    {
+        revert NonDelegatable(ve);
     }
 
     /// @dev Reverts other calls such that the original veOLAS is used.

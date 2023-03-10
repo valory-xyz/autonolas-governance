@@ -43,7 +43,7 @@ describe("Governance OLAS on wveOLAS", function () {
         await ve.deployed();
 
         const wVotingEscrow = await ethers.getContractFactory("wveOLAS");
-        wve = await wVotingEscrow.deploy(ve.address);
+        wve = await wVotingEscrow.deploy(ve.address, token.address);
         await wve.deployed();
 
         signers = await ethers.getSigners();
