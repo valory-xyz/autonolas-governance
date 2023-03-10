@@ -20,6 +20,11 @@ interface IVEOLAS {
     /// @return sPoint Supply point.
     function mapSupplyPoints(uint256 idx) external view returns (PointVoting memory sPoint);
 
+    /// @dev Gets the slope change for a specific timestamp.
+    /// @param ts Timestamp.
+    /// @return slopeChange Signed slope change.
+    function mapSlopeChanges(uint64 ts) external view returns (int128 slopeChange);
+
     /// @dev Gets the most recently recorded user point for `account`.
     /// @param account Account address.
     /// @return pv Last checkpoint.
@@ -146,6 +151,26 @@ contract wveOLAS {
         token = _token;
     }
 
+    /// @dev Gets the total number of supply points.
+    /// @return numPoints Number of supply points.
+    function totalNumPoints() external view returns (uint256 numPoints) {
+        numPoints = IVEOLAS(ve).totalNumPoints();
+    }
+
+    /// @dev Gets the supply point of a specified index.
+    /// @param idx Supply point number.
+    /// @return sPoint Supply point.
+    function mapSupplyPoints(uint256 idx) external view returns (PointVoting memory sPoint) {
+        sPoint = IVEOLAS(ve).mapSupplyPoints(idx);
+    }
+
+    /// @dev Gets the slope change for a specific timestamp.
+    /// @param ts Timestamp.
+    /// @return slopeChange Signed slope change.
+    function mapSlopeChanges(uint64 ts) external view returns (int128 slopeChange) {
+        return IVEOLAS(ve).mapSlopeChanges(ts);
+    }
+
     /// @dev Gets the most recently recorded user point for `account`.
     /// @param account Account address.
     /// @return pv Last checkpoint.
@@ -259,12 +284,6 @@ contract wveOLAS {
     /// @return vPower Total voting power.
     function getPastTotalSupply(uint256 blockNumber) external view returns (uint256 vPower) {
         vPower = IVEOLAS(ve).getPastTotalSupply(blockNumber);
-    }
-
-    /// @dev Gets the total number of supply points.
-    /// @return numPoints Number of supply points.
-    function totalNumPoints() external view returns (uint256 numPoints) {
-        numPoints = IVEOLAS(ve).totalNumPoints();
     }
 
     /// @dev Gets information about the interface support.

@@ -317,6 +317,15 @@ describe("Wrapped Voting Escrow OLAS", function () {
             const block = await ethers.provider.getBlock(blockNumber);
             const supplyAt = ethers.BigNumber.from(await wve.totalSupplyLockedAtT(block.timestamp + oneWeek + 1000));
             expect(supplyAt).to.equal(0);
+
+            // Get the zero supply point
+            const sPoint = await wve.mapSupplyPoints(0);
+            expect(sPoint.ts).to.greaterThan(0);
+            expect(sPoint.blockNumber).to.greaterThan(0);
+
+            // Get the zero ts slope change
+            const slopeChange = await wve.mapSlopeChanges(0);
+            expect(slopeChange).to.equal(0);
         });
     });
 
