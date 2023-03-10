@@ -168,7 +168,7 @@ contract wveOLAS {
     /// @param ts Timestamp.
     /// @return slopeChange Signed slope change.
     function mapSlopeChanges(uint64 ts) external view returns (int128 slopeChange) {
-        return IVEOLAS(ve).mapSlopeChanges(ts);
+        slopeChange = IVEOLAS(ve).mapSlopeChanges(ts);
     }
 
     /// @dev Gets the most recently recorded user point for `account`.
