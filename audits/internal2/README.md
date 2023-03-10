@@ -6,7 +6,7 @@ tag: `v1.0.2-pre-internal-audit` <br>
 Update: 09-03-2023  <br>
 
 ## Objectives
-The audit focused on `wveOLAS` contracts.
+The audit focused on `wveOLAS` contract.
 
 ### Flatten version
 Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal2/analysis/contracts)
