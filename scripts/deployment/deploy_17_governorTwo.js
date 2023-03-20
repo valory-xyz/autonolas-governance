@@ -53,11 +53,11 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_17_wgovernor.js --network " + providerName + " " + governor.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_17_governorTwo.js --network " + providerName + " " + governor.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
-    parsedData.wgovernorAddress = governor.address;
+    parsedData.governorTwoAddress = governor.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 
