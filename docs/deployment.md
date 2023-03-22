@@ -23,5 +23,5 @@
 
 ## Steps of deploying supplemental contracts.
 16. EOA to deploy wveOLAS contract pointed to veOLAS and OLAS;
-17. EOA to deploy new wGovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
-18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles from GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to wGovernorOLAS (via voting).
+17. EOA to deploy new GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
+18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles from original GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to a new GovernorOLAS based on wveOLAS (via voting).

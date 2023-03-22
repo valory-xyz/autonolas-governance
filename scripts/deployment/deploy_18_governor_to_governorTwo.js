@@ -15,10 +15,10 @@ async function main() {
 
     const timelockAddress = parsedData.timelockAddress;
     const governorAddress = parsedData.governorAddress;
-    const wgovernorAddress = parsedData.wgovernorAddress;
+    const governorTwoAddress = parsedData.governorTwoAddress;
 
     // Obtaining proposal values
-    console.log("18. Revoking governorOLAS roles and granting wgovernorOLAS roles in the Timelock");
+    console.log("18. Revoking governorOLAS roles and granting governorTwoOLAS roles in the Timelock");
     const timelock = await ethers.getContractAt("Timelock", timelockAddress);
     const targets = new Array(8).fill(timelockAddress);
     const values = new Array(8).fill(0);
@@ -27,10 +27,10 @@ async function main() {
         timelock.interface.encodeFunctionData("revokeRole", [executorRole, governorAddress]),
         timelock.interface.encodeFunctionData("revokeRole", [proposerRole, governorAddress]),
         timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, governorAddress]),
-        timelock.interface.encodeFunctionData("grantRole", [adminRole, wgovernorAddress]),
-        timelock.interface.encodeFunctionData("grantRole", [executorRole, wgovernorAddress]),
-        timelock.interface.encodeFunctionData("grantRole", [proposerRole, wgovernorAddress]),
-        timelock.interface.encodeFunctionData("grantRole", [cancellerRole, wgovernorAddress])
+        timelock.interface.encodeFunctionData("grantRole", [adminRole, governorTwoAddress]),
+        timelock.interface.encodeFunctionData("grantRole", [executorRole, governorTwoAddress]),
+        timelock.interface.encodeFunctionData("grantRole", [proposerRole, governorTwoAddress]),
+        timelock.interface.encodeFunctionData("grantRole", [cancellerRole, governorTwoAddress])
     ];
     const description = "Timelock to revoke original GovernorOLAS roles and grant new GovernorOLAS roles";
 

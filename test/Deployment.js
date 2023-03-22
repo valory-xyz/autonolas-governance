@@ -369,13 +369,13 @@ describe("Deployment", function () {
 
             // 17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters
             // and other defined governor-related parameters;
-            const wgovernor = await GovernorOLAS.connect(EOA).deploy(wve.address, timelock.address, initialVotingDelay,
+            const governorTwo = await GovernorOLAS.connect(EOA).deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
             await governor.deployed();
 
             // 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
-            // and canceller ("CANCELLER_ROLE") roles from GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"),
-            // executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to wGovernorOLAS (via voting).
+            // and canceller ("CANCELLER_ROLE") roles from original GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"),
+            // executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to a new GovernorOLAS based on wveOLAS (via voting).
             // Prepare the batch data for the timelock
             const sTargets = new Array(8).fill(timelock.address);
             const sValues = new Array(8).fill(0);
@@ -384,10 +384,10 @@ describe("Deployment", function () {
                 timelock.interface.encodeFunctionData("revokeRole", [executorRole, governor.address]),
                 timelock.interface.encodeFunctionData("revokeRole", [proposerRole, governor.address]),
                 timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, governor.address]),
-                timelock.interface.encodeFunctionData("grantRole", [adminRole, wgovernor.address]),
-                timelock.interface.encodeFunctionData("grantRole", [executorRole, wgovernor.address]),
-                timelock.interface.encodeFunctionData("grantRole", [proposerRole, wgovernor.address]),
-                timelock.interface.encodeFunctionData("grantRole", [cancellerRole, wgovernor.address])
+                timelock.interface.encodeFunctionData("grantRole", [adminRole, governorTwo.address]),
+                timelock.interface.encodeFunctionData("grantRole", [executorRole, governorTwo.address]),
+                timelock.interface.encodeFunctionData("grantRole", [proposerRole, governorTwo.address]),
+                timelock.interface.encodeFunctionData("grantRole", [cancellerRole, governorTwo.address])
             ];
             const bytes32Zeros = "0x" + "0".repeat(64);
 
@@ -417,8 +417,8 @@ describe("Deployment", function () {
 
             // Verify governor address roles
             await checkTimelockRoles(timelock, governor.address, [false, false, false, false]);
-            // Verify wgovernor address roles
-            await checkTimelockRoles(timelock, wgovernor.address, [true, true, true, true]);
+            // Verify governorTwo address roles
+            await checkTimelockRoles(timelock, governorTwo.address, [true, true, true, true]);
         });
     });
 });
