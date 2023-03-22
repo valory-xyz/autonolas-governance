@@ -374,8 +374,8 @@ describe("Deployment", function () {
             await governor.deployed();
 
             // 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),
-            // and canceller ("CANCELLER_ROLE") roles from GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"),
-            // executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to wGovernorOLAS (via voting).
+            // and canceller ("CANCELLER_ROLE") roles from original GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"),
+            // executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to a new GovernorOLAS based on wveOLAS (via voting).
             // Prepare the batch data for the timelock
             const sTargets = new Array(8).fill(timelock.address);
             const sValues = new Array(8).fill(0);
