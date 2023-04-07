@@ -68,9 +68,8 @@ async function main() {
     // Compare the data sent and the data from the NewFxMessage event that must match
     // MessageReceived(uint256 indexed stateId, address indexed sender, bytes message)
     const events = await fxChildTunnel.queryFilter("MessageReceived", 0, lastMumbaiBlock);
-    //console.log(events[0]['args']['message']);
     events.forEach((item) => {
-        const msg = item['args']['message'];
+        const msg = item["args"]["message"];
         if(msg == data) {
             console.log("Catch event MessageReceived. OK. Message in mumbai equal:", msg);
         } else {
