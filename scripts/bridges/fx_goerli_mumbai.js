@@ -26,7 +26,7 @@ async function main() {
     const fxRootABI = parsedFile["abi"];
     const fxRoot = new ethers.Contract(fxRootAddress, fxRootABI, goerliProvider);
 
-    // FxRoot address on mumbai
+    // FxChild address on mumbai
     const fxChildAddress = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
     const fxChildJSON = "artifacts/fx-portal/contracts/FxChild.sol/FxChild.json";
     contractFromJSON = fs.readFileSync(fxChildJSON, "utf8");
