@@ -3,6 +3,7 @@
 const { ethers } = require("ethers");
 
 async function main() {
+    let lastMumbaiBlock;
     const ALCHEMY_API_KEY_GOERLI = process.env.ALCHEMY_API_KEY_GOERLI;
     const goerliURL = "https://eth-goerli.g.alchemy.com/v2/" + ALCHEMY_API_KEY_GOERLI;
     const goerliProvider = new ethers.providers.JsonRpcProvider(goerliURL);
@@ -14,6 +15,7 @@ async function main() {
     const mumbaiURL = "https://polygon-mumbai.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MUMBAI;
     const mumbaiProvider = new ethers.providers.JsonRpcProvider(mumbaiURL);
     await mumbaiProvider.getBlockNumber().then((result) => {
+        lastMumbaiBlock = result;
         console.log("Current block number mumbai: " + result);
     });
 
@@ -47,16 +49,34 @@ async function main() {
     }
 
     // Get the EOA
-    const EOA = 0;
+    const account = ethers.utils.HDNode.fromMnemonic(process.env.TESTNET_MNEMONIC).derivePath("m/44'/60'/0'/0/0");
+    const EOAgoerli = new ethers.Wallet(account, goerliProvider);
+    const EOAmumbai = new ethers.Wallet(account, mumbaiProvider);
+    console.log("EOA",EOAgoerli.address);
+    if(EOAmumbai.address == EOAgoerli.address) {
+        console.log("Correct wallet setup");
+    }
 
     // Wrap the data to send over the bridge
-    const data = "0x";
+    // hello world == 68656c6c6f20776f726c64
+    const data = "0x68656c6c6f20776f726c64";
     // Send the message to mumbai receiver
-    await fxRoot.connect(EOA).sendMessageToChild(fxChildTunnelAddress, data);
+    // await fxRoot.connect(EOAgoerli).sendMessageToChild(fxChildTunnelAddress, data);
 
     // Wait for the event of a processed data on mumbai
     // catch NewFxMessage event from fxChild and MessageReceived event from fxChildTunnel
     // Compare the data sent and the data from the NewFxMessage event that must match
+    // MessageReceived(uint256 indexed stateId, address indexed sender, bytes message)
+    const events = await fxChildTunnel.queryFilter("MessageReceived", 0, lastMumbaiBlock);
+    //console.log(events[0]['args']['message']);
+    events.forEach((item) => {
+        const msg = item['args']['message'];
+        if(msg == data) {
+            console.log("Catch event MessageReceived. OK. Message in mumbai equal:", msg);
+        } else {
+            console.log("Catch event MessageReceived. Fail. Message in mumbai not equal:", msg);
+        }
+    });
 }
 
 main()
