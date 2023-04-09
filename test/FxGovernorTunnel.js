@@ -10,9 +10,6 @@ describe("FxGovernorTunnel", function () {
     const AddressZero = ethers.constants.AddressZero;
     const stateId = 0;
 
-    const maxUint256 = ethers.constants.MaxUint256;
-    const ZeroBytes32 = "0x" + "0".repeat(64);
-
     beforeEach(async function () {
         signers = await ethers.getSigners();
         deployer = signers[0];
@@ -54,7 +51,7 @@ describe("FxGovernorTunnel", function () {
 
         it("Should fail when trying to call with the incorrectly provided payload", async function () {
             const OLAS = await ethers.getContractFactory("OLAS");
-            olas = await OLAS.deploy();
+            const olas = await OLAS.deploy();
             await olas.deployed();
 
             const target = olas.address;
@@ -73,7 +70,7 @@ describe("FxGovernorTunnel", function () {
 
         it("Unpack the data and call one specified target on the OLAS contract", async function () {
             const OLAS = await ethers.getContractFactory("OLAS");
-            olas = await OLAS.deploy();
+            const olas = await OLAS.deploy();
             await olas.deployed();
             // Minter of OLAS must be the fxGovernorTunnel contract
             await olas.connect(deployer).changeMinter(fxGovernorTunnel.address);
