@@ -9,7 +9,7 @@ describe("OLAS", function () {
     let bob;
     let alice;
     let olas;
-    let olaFactory;
+    let olasFactory;
     const initSupply = "5" + "0".repeat(26);
     const oneYear = 365 * 86400;
     const threeYears = 3 * oneYear;
@@ -21,9 +21,9 @@ describe("OLAS", function () {
 
     beforeEach(async function () {
         [deployer, treasury, bob, alice] = await ethers.getSigners();
-        olaFactory = await ethers.getContractFactory("OLAS");
+        olasFactory = await ethers.getContractFactory("OLAS");
         // Treasury address is deployer by default
-        olas = await olaFactory.deploy();
+        olas = await olasFactory.deploy();
         await olas.mint(deployer.address, initSupply);
         // Changing the treasury address
         await olas.connect(deployer).changeMinter(treasury.address);

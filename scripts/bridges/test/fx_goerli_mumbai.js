@@ -34,7 +34,7 @@ async function main() {
     const fxChildABI = parsedFile["abi"];
     const fxChild = new ethers.Contract(fxChildAddress, fxChildABI, mumbaiProvider);
 
-    // FxChildTunnel address on mumbai
+    // Test deployed FxChildTunnel address on mumbai
     const fxChildTunnelAddress = "0x31D3202d8744B16A120117A053459DDFAE93c855";
     const fxChildTunnelJSON = "artifacts/contracts/bridges/test/FxChildTunnel.sol/FxChildTunnel.json";
     contractFromJSON = fs.readFileSync(fxChildTunnelJSON, "utf8");

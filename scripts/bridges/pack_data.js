@@ -18,7 +18,7 @@ async function main() {
         return;
     }
 
-    // Pack the data into one continuous buffer
+    // Pack the data into one contiguous buffer
     let data = "0x";
     for (let i = 0; i < targets.length; i++) {
         const payload = ethers.utils.arrayify(payloads[i]);

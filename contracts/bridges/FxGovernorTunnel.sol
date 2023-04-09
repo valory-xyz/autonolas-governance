@@ -6,6 +6,9 @@ interface IFxMessageProcessor {
     function processMessageFromRoot(uint256 stateId, address rootMessageSender, bytes memory data) external;
 }
 
+/// @dev Provided zero address.
+error ZeroAddress();
+
 /// @dev Only `fxChild` is allowed to call the function.
 /// @param sender Sender address.
 /// @param fxChild Required Fx Child address.
@@ -16,18 +19,40 @@ error FxChildOnly(address sender, address fxChild);
 /// @param rootGovernor Required Root Governor address.
 error RootGovernorOnly(address sender, address rootGovernor);
 
+/// @dev Provided incorrect data length.
+/// @param expected Expected minimum data length.
+/// @param provided Provided data length.
+error IncorrectDataLength(uint256 expected, uint256 provided);
+
+/// @dev Target execution failed.
+/// @param target Target address.
+/// @param value Provided value.
+/// @param payload Provided payload.
+error TargetExecFailed(address target, uint256 value, bytes payload);
+
 /// @title FxGovernorTunnel - Smart contract for the governor child tunnel bridge implementation
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author AL
 contract FxGovernorTunnel is IFxMessageProcessor {
     event MessageReceived(uint256 indexed stateId, address indexed rootMessageSender, bytes data);
 
+    // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
+    // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
+    uint256 public constant DEFAULT_DATA_LENGTH = 36;
     // FX child address
     address public immutable fxChild;
     // Root governor address
     address public immutable rootGovernor;
 
+    /// @dev FxGovernorTunnel constructor.
+    /// @param _fxChild Fx Child address.
+    /// @param _rootGovernor Root Governor address.
     constructor(address _fxChild, address _rootGovernor) {
+        // Check fo zero addresses
+        if (_fxChild == address(0) || _rootGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
         fxChild = _fxChild;
         rootGovernor = _rootGovernor;
     }
@@ -35,8 +60,6 @@ contract FxGovernorTunnel is IFxMessageProcessor {
     /// @dev Process message received from the Root Tunnel.
     /// @notice This is called by onStateReceive function. Since it is called via a system call,
     ///         any event will not be emitted during its execution.
-    /// @notice Packing mechanism is inspired by the Safe Ecosystem MultiSend contract:
-    ///         https://github.com/safe-global/safe-contracts/blob/v1.3.0/contracts/libraries/MultiSendCallOnly.sol
     /// @param stateId Unique state id.
     /// @param rootMessageSender Root message sender.
     /// @param data Bytes message sent from the Root Tunnel.
@@ -51,30 +74,47 @@ contract FxGovernorTunnel is IFxMessageProcessor {
             revert RootGovernorOnly(rootMessageSender, rootGovernor);
         }
 
+        // Check for the correct data length
+        uint256 dataLength = data.length;
+        if (dataLength < DEFAULT_DATA_LENGTH) {
+            revert IncorrectDataLength(DEFAULT_DATA_LENGTH, data.length);
+        }
+
         // Emit received message for testing
         emit MessageReceived(stateId, rootMessageSender, data);
         
         // Unpack and process the data
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            let length := mload(data)
-            let i := 0x20
-            // While loop until the data length is reached
-            for {} lt(i, length) {} {
-                // First 20 bytes is the address
-                let to := mload(add(data, i))
-                // Offset the data by 20 bytes of the to address
-                let value := mload(add(data, add(i, 0x14)))
-                // Offset the data by 32 bytes (20 address bytes + 12 value bytes)
-                let payloadLength := mload(add(data, add(i, 0x20)))
-                // Offset the data by 36 bytes (20 address bytes + 12 value bytes + 4 payload length bytes)
-                let payload := add(data, add(i, 0x24))
-                let success := call(gas(), to, value, payload, payloadLength, 0, 0)
-                if eq(success, 0) {
-                    revert(0, 0)
-                }
-                // Next transaction starts at 36 bytes + payload length
-                i := add(i, add(0x24, payloadLength))
+        for (uint256 i = 0; i < dataLength;) {
+            address target;
+            uint96 value;
+            uint32 payloadLength;
+            bytes memory payload;
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                // First 20 bytes is the address (160 bits)
+                i := add(i, 20)
+                target := mload(add(data, i))
+                // Offset the data by 12 bytes of value (96 bits)
+                i := add(i, 12)
+                value := mload(add(data, i))
+                // Offset the data by 4 bytes of payload length (32 bits)
+                i := add(i, 4)
+                payloadLength := mload(add(data, i))
+            }
+
+            // TODO What if the payload is zero? just the call
+            // Get the payload
+            payload = new bytes(payloadLength);
+            for (uint256 j = 0; j < payloadLength; ++j) {
+                payload[j] = data[i + j];
+            }
+            // Offset the data by the payload number of bytes
+            i += payloadLength;
+
+            // Call the target with the provided payload
+            (bool success, ) = target.call{value: value}(payload);
+            if (!success) {
+                revert TargetExecFailed(target, value, payload);
             }
         }
     }
