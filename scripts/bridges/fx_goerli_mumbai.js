@@ -36,14 +36,14 @@ async function main() {
 
     // FxChildTunnel address on mumbai
     const fxChildTunnelAddress = "0x31D3202d8744B16A120117A053459DDFAE93c855";
-    const fxChildTunnelJSON = "artifacts/contracts/bridges/FxChildTunnel.sol/FxChildTunnel.json";
+    const fxChildTunnelJSON = "artifacts/contracts/bridges/test/FxChildTunnel.sol/FxChildTunnel.json";
     contractFromJSON = fs.readFileSync(fxChildTunnelJSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);
     const fxChildTunnelABI = parsedFile["abi"];
     const fxChildTunnel = new ethers.Contract(fxChildTunnelAddress, fxChildTunnelABI, mumbaiProvider);
     const verifyFxChildAddress = await fxChildTunnel.fxChild();
     if (fxChildAddress == verifyFxChildAddress) {
-        console.log("Successfully connected to the fxChildTunnel contract");
+        console.log("Successfully connected to the test fxChildTunnel contract");
     }
 
     // Get the EOA
