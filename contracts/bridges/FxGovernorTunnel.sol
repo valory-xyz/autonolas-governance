@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// IFxMessageProcessor represents interface to process message
+/// @dev Interface to process message across the bridge.
 interface IFxMessageProcessor {
     function processMessageFromRoot(uint256 stateId, address rootMessageSender, bytes memory data) external;
 }
@@ -62,6 +62,10 @@ contract FxGovernorTunnel is IFxMessageProcessor {
         rootGovernor = _rootGovernor;
     }
 
+    /// @dev Changes the Root Governor address (Timelock).
+    /// @notice The only way to change the Root Governor address is by the Timelock on L1 to request that change.
+    ///         This triggers a self-contract transaction of FxGovernorTunnel that changes the Root Governor address.
+    /// @param newRootGovernor New Root Governor address.
     function changeRootGovernor(address newRootGovernor) external {
         // Check if the change is authorized by the previous governor itself
         // This is possible only if all the checks in the message process function pass and the contract calls itself
