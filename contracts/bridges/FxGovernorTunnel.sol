@@ -87,10 +87,10 @@ contract FxGovernorTunnel is IFxMessageProcessor {
     /// @param rootMessageSender Root message sender.
     /// @param data Bytes message sent from the Root Tunnel. The data must be encoded as a set of continuous
     ///        transactions packed into a single buffer, where each transaction is composed as follows:
-    ///        - target address of 20 bytes (160 bits)
-    ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts
-    ///        - payload length of 4 bytes (32 bits), as 2^32 - 1 characters is more than enough to fill a whole block
-    ///        - payload as bytes, with the length equal to the specified payload length
+    ///        - target address of 20 bytes (160 bits);
+    ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts;
+    ///        - payload length of 4 bytes (32 bits), as 2^32 - 1 characters is more than enough to fill a whole block;
+    ///        - payload as bytes, with the length equal to the specified payload length.
     function processMessageFromRoot(uint256 stateId, address rootMessageSender, bytes memory data) external override {
         // Check for the Fx Child address
         if(msg.sender != fxChild) {

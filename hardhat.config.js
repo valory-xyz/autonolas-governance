@@ -23,6 +23,7 @@ let TESTNET_MNEMONIC = process.env.TESTNET_MNEMONIC;
 if (!TESTNET_MNEMONIC) {
     TESTNET_MNEMONIC = accounts.mnemonic;
 }
+// Etherscan key has the same field (below) for L1 and L2, need to pay attention which one is provided
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 module.exports = {

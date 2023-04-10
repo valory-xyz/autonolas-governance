@@ -3,8 +3,9 @@
 const { ethers } = require("ethers");
 
 async function main() {
-    // Get the transaction data from file
+    // Get the transaction data from file (set of L1 transactions supplied to Timelock)
     const fs = require("fs");
+    // "transactions.json" test file is located in the same folder of this script
     const dataJSON = "transactions.json";
     const dataFromJSON = fs.readFileSync(dataJSON, "utf8");
     const parsedFile = JSON.parse(dataFromJSON);
@@ -18,7 +19,7 @@ async function main() {
         return;
     }
 
-    // Pack the data into one contiguous buffer
+    // Pack the data into one contiguous buffer (to be consumed by Timelock along with a batch of unpacked L1 transactions)
     let data = "0x";
     for (let i = 0; i < targets.length; i++) {
         const payload = ethers.utils.arrayify(payloads[i]);
