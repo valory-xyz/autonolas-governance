@@ -33,6 +33,10 @@ The changelog leading to the implementation of `wveOLAS` can be found here: [Cha
 
 To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true)
 
+In order to manage cross-bridge transactions via the `Timelock` contract, the Fx Governor Tunnel contract is implemented:
+- [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol).
+
+
 ## Development
 
 ### Prerequisites
@@ -113,6 +117,7 @@ The finalized contract ABIs for deployment and their number of optimization pass
 
 ## Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
 Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here: [veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
+
 The original Voting Escrow ABI is located here: [veCRV ABI](https://github.com/valory-xyz/autonolas-governance/blob/main/abis/test/veCRV.json).
 One can run the forking test via the `npm run fork` command as described above.
 
@@ -126,6 +131,14 @@ can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main
 
 ## Deployed Protocol
 The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
+
+## Bridges
+The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges).
+
+For running a test between `goerli` and `mumbai`, run the test script with your own credentials: [`goerli-mumbai` bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/test/fx_goerli_mumbai.js).
+
+In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
+use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/pack-data.js).
 
 ## Acknowledgements
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:

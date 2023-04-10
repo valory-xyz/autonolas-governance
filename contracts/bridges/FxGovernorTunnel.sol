@@ -9,6 +9,11 @@ interface IFxMessageProcessor {
 /// @dev Provided zero address.
 error ZeroAddress();
 
+/// @dev Only self contract is allowed to call the function.
+/// @param sender Sender address.
+/// @param instance Required contract instance address.
+error SelfCallOnly(address sender, address instance);
+
 /// @dev Only `fxChild` is allowed to call the function.
 /// @param sender Sender address.
 /// @param fxChild Required Fx Child address.
@@ -42,7 +47,7 @@ contract FxGovernorTunnel is IFxMessageProcessor {
     // FX child address
     address public immutable fxChild;
     // Root governor address
-    address public immutable rootGovernor;
+    address public rootGovernor;
 
     /// @dev FxGovernorTunnel constructor.
     /// @param _fxChild Fx Child address.
@@ -57,12 +62,31 @@ contract FxGovernorTunnel is IFxMessageProcessor {
         rootGovernor = _rootGovernor;
     }
 
+    function changeRootGovernor(address newRootGovernor) external {
+        // Check if the change is authorized by the previous governor itself
+        // This is possible only if all the checks in the message process function pass and the contract calls itself
+        if (msg.sender != address(this)) {
+            revert SelfCallOnly(msg.sender, address(this));
+        }
+
+        // Check for the zero address
+        if (newRootGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        rootGovernor = newRootGovernor;
+    }
+
     /// @dev Process message received from the Root Tunnel.
-    /// @notice This is called by onStateReceive function. Since it is called via a system call,
-    ///         any event will not be emitted during its execution.
+    /// @notice This is called by onStateReceive function. The sender must be the Root Governor address (Timelock).
     /// @param stateId Unique state id.
     /// @param rootMessageSender Root message sender.
-    /// @param data Bytes message sent from the Root Tunnel.
+    /// @param data Bytes message sent from the Root Tunnel. The data must be encoded as a set of continuous
+    ///        transactions packed into a single buffer, where each transaction is composed as follows:
+    ///        - target address of 20 bytes (160 bits)
+    ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts
+    ///        - payload length of 4 bytes (32 bits), as 2^32 - 1 characters is more than enough to fill a whole block
+    ///        - payload as bytes, with the length equal to the specified payload length
     function processMessageFromRoot(uint256 stateId, address rootMessageSender, bytes memory data) external override {
         // Check for the Fx Child address
         if(msg.sender != fxChild) {
@@ -79,16 +103,12 @@ contract FxGovernorTunnel is IFxMessageProcessor {
         if (dataLength < DEFAULT_DATA_LENGTH) {
             revert IncorrectDataLength(DEFAULT_DATA_LENGTH, data.length);
         }
-
-        // Emit received message for testing
-        emit MessageReceived(stateId, rootMessageSender, data);
         
         // Unpack and process the data
         for (uint256 i = 0; i < dataLength;) {
             address target;
             uint96 value;
             uint32 payloadLength;
-            bytes memory payload;
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 // First 20 bytes is the address (160 bits)
@@ -102,9 +122,8 @@ contract FxGovernorTunnel is IFxMessageProcessor {
                 payloadLength := mload(add(data, i))
             }
 
-            // TODO What if the payload is zero? just the call
             // Get the payload
-            payload = new bytes(payloadLength);
+            bytes memory payload = new bytes(payloadLength);
             for (uint256 j = 0; j < payloadLength; ++j) {
                 payload[j] = data[i + j];
             }
@@ -117,5 +136,8 @@ contract FxGovernorTunnel is IFxMessageProcessor {
                 revert TargetExecFailed(target, value, payload);
             }
         }
+
+        // Emit received message
+        emit MessageReceived(stateId, rootMessageSender, data);
     }
 }
