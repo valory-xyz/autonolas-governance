@@ -29,6 +29,11 @@ error RootGovernorOnly(address sender, address rootGovernor);
 /// @param provided Provided data length.
 error IncorrectDataLength(uint256 expected, uint256 provided);
 
+/// @dev Provided value is bigger than the actual balance.
+/// @param value Provided value.
+/// @param balance Actual balance.
+error InsufficientBalance(uint256 value, uint256 balance);
+
 /// @dev Target execution failed.
 /// @param target Target address.
 /// @param value Provided value.
@@ -39,6 +44,7 @@ error TargetExecFailed(address target, uint256 value, bytes payload);
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author AL
 contract FxGovernorTunnel is IFxMessageProcessor {
+    event FundsReceived(address indexed sender, uint256 value);
     event MessageReceived(uint256 indexed stateId, address indexed rootMessageSender, bytes data);
 
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
@@ -60,6 +66,11 @@ contract FxGovernorTunnel is IFxMessageProcessor {
 
         fxChild = _fxChild;
         rootGovernor = _rootGovernor;
+    }
+
+    /// @dev Receives native network token.
+    receive() external payable {
+        emit FundsReceived(msg.sender, msg.value);
     }
 
     /// @dev Changes the Root Governor address (Timelock).
@@ -107,7 +118,7 @@ contract FxGovernorTunnel is IFxMessageProcessor {
         if (dataLength < DEFAULT_DATA_LENGTH) {
             revert IncorrectDataLength(DEFAULT_DATA_LENGTH, data.length);
         }
-        
+
         // Unpack and process the data
         for (uint256 i = 0; i < dataLength;) {
             address target;
@@ -124,6 +135,11 @@ contract FxGovernorTunnel is IFxMessageProcessor {
                 // Offset the data by 4 bytes of payload length (32 bits)
                 i := add(i, 4)
                 payloadLength := mload(add(data, i))
+            }
+
+            // Check for the value compared to the contract's balance
+            if (value > address(this).balance) {
+                revert InsufficientBalance(value, address(this).balance);
             }
 
             // Get the payload

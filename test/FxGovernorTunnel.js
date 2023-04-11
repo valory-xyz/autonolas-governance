@@ -5,6 +5,7 @@ const { ethers } = require("hardhat");
 
 describe("FxGovernorTunnel", function () {
     let fxGovernorTunnel;
+    let olas;
     let signers;
     let deployer;
     const AddressZero = ethers.constants.AddressZero;
@@ -17,6 +18,10 @@ describe("FxGovernorTunnel", function () {
         const FxGovernorTunnel = await ethers.getContractFactory("FxGovernorTunnel");
         fxGovernorTunnel = await FxGovernorTunnel.deploy(deployer.address, deployer.address);
         await fxGovernorTunnel.deployed();
+
+        const OLAS = await ethers.getContractFactory("OLAS");
+        olas = await OLAS.deploy();
+        await olas.deployed();
     });
 
     context("Initialization", async function () {
@@ -75,9 +80,6 @@ describe("FxGovernorTunnel", function () {
         });
 
         it("Unpack the data and call one specified target on the OLAS contract", async function () {
-            const OLAS = await ethers.getContractFactory("OLAS");
-            const olas = await OLAS.deploy();
-            await olas.deployed();
             // Minter of OLAS must be the fxGovernorTunnel contract
             await olas.connect(deployer).changeMinter(fxGovernorTunnel.address);
 
@@ -103,9 +105,6 @@ describe("FxGovernorTunnel", function () {
         });
 
         it("Unpack the data and call two specified targets on the OLAS contract", async function () {
-            const OLAS = await ethers.getContractFactory("OLAS");
-            const olas = await OLAS.deploy();
-            await olas.deployed();
             // Minter of OLAS must be the fxGovernorTunnel contract
             await olas.connect(deployer).changeMinter(fxGovernorTunnel.address);
             // Change OLAS owner to the fxGovernorTunnel contract
@@ -173,6 +172,78 @@ describe("FxGovernorTunnel", function () {
             await expect(
                 fxGovernorTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, data)
             ).to.be.revertedWithCustomError(fxGovernorTunnel, "TargetExecFailed");
+        });
+
+        it("Unpack the data and call one specified target to send funds", async function () {
+            const amount = ethers.utils.parseEther("1");
+            // Pack the data into one contiguous buffer
+            const target = deployer.address;
+            const value = amount;
+            const payloadLength = 0;
+            const data = ethers.utils.solidityPack(
+                ["address", "uint96", "uint32"],
+                [target, value, payloadLength]
+            );
+
+            // Try to execute the unpacked transaction without the contract having enough balance
+            await expect(
+                fxGovernorTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, data)
+            ).to.be.revertedWithCustomError(fxGovernorTunnel, "InsufficientBalance");
+
+            // Send funds to the contract
+            await deployer.sendTransaction({to: fxGovernorTunnel.address, value: amount});
+
+            // Now the funds can be transferred
+            const balanceBefore = await ethers.provider.getBalance(deployer.address);
+            const tx = await fxGovernorTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, data);
+            const receipt = await tx.wait();
+            const gasCost = ethers.BigNumber.from(receipt.gasUsed).mul(ethers.BigNumber.from(tx.gasPrice));
+            const balanceAfter = await ethers.provider.getBalance(deployer.address);
+            const balanceDiff = balanceAfter.sub(balanceBefore).add(gasCost);
+            expect(balanceDiff).to.equal(amount);
+        });
+
+        it("Unpack the data and call one specified target to send funds and to mint OLAS", async function () {
+            const amount = ethers.utils.parseEther("1");
+            const amountToMint = 100;
+            // Minter of OLAS must be the fxGovernorTunnel contract
+            await olas.connect(deployer).changeMinter(fxGovernorTunnel.address);
+
+            // Pack the first part of data with the zero payload
+            let target = deployer.address;
+            let value = amount;
+            const payloadLength = 0;
+            let data = ethers.utils.solidityPack(
+                ["address", "uint96", "uint32"],
+                [target, value, payloadLength]
+            );
+
+            // OLAS contract across the bridge must mint 100 OLAS for the deployer
+            const rawPayload = olas.interface.encodeFunctionData("mint", [deployer.address, amountToMint]);
+            // Pack the second part of data
+            target = olas.address;
+            value = 0;
+            const payload = ethers.utils.arrayify(rawPayload);
+            data += ethers.utils.solidityPack(
+                ["address", "uint96", "uint32", "bytes"],
+                [target, value, payload.length, payload]
+            ).slice(2);
+
+            // Send funds to the contract
+            await deployer.sendTransaction({to: fxGovernorTunnel.address, value: amount});
+
+            // Execute the function and check for the deployer balance
+            const balanceBefore = await ethers.provider.getBalance(deployer.address);
+            const tx = await fxGovernorTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, data);
+            const receipt = await tx.wait();
+            const gasCost = ethers.BigNumber.from(receipt.gasUsed).mul(ethers.BigNumber.from(tx.gasPrice));
+            const balanceAfter = await ethers.provider.getBalance(deployer.address);
+            const balanceDiff = balanceAfter.sub(balanceBefore).add(gasCost);
+            expect(balanceDiff).to.equal(amount);
+
+            // Check that OLAS tokens were minted to the deployer
+            const olasBalance = Number(await olas.balanceOf(deployer.address));
+            expect(olasBalance).to.equal(amountToMint);
         });
     });
 });
