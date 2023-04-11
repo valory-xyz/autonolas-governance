@@ -59,25 +59,46 @@ async function main() {
         console.log("Correct wallet setup");
     }
 
-    // Wrap the data to send over the bridge
-    const target = mockChildERC20Address;
-    const value = 0;
+    // Amount of MATIC to send
+    const amountToSend = ethers.utils.parseEther("0.1");
+    // Amount of ERC20 token to mint
     const amountToMint = 100;
+
+    // Send funds to the FxGovernorTunnel contract
+    let tx = await EOAmumbai.sendTransaction({to: fxGovernorTunnel.address, value: amountToSend});
+    console.log("Send MATIC hash", tx.hash);
+    await tx.wait();
+
+    // Pack the first part of data with the zero payload
+    let target = EOAmumbai.address;
+    let value = amountToSend;
+    const payloadLength = 0;
+    let data = ethers.utils.solidityPack(
+        ["address", "uint96", "uint32"],
+        [target, value, payloadLength]
+    );
+
+    // Mock Token contract across the bridge must mint 100 OLAS for the deployer
     const rawPayload = mockChildERC20.interface.encodeFunctionData("mint", [EOAmumbai.address, amountToMint]);
+    // Pack the second part of data
+    target = mockChildERC20Address;
+    value = 0;
     const payload = ethers.utils.arrayify(rawPayload);
-    const data = ethers.utils.solidityPack(
+    data += ethers.utils.solidityPack(
         ["address", "uint96", "uint32", "bytes"],
         [target, value, payload.length, payload]
-    );
+    ).slice(2);
 
     // Balance of mock tokens before the cross-bridge transaction
     const balanceERC20Before = Number(await mockChildERC20.balanceOf(EOAmumbai.address));
+    // Balance of MATIC of the FxGovernorTunnel before the cross-bridge transaction
+    const balanceMATICBefore = await mumbaiProvider.getBalance(EOAmumbai.address);
 
     // Send the message to mumbai receiver from the timelock
     const timelockPayload = await fxRoot.interface.encodeFunctionData("sendMessageToChild", [fxGovernorTunnelAddress, data]);
-    const tx = await mockTimelock.connect(EOAgoerli).execute(timelockPayload);
-    const result = await tx.wait();
-    console.log(result.hash);
+    tx = await mockTimelock.connect(EOAgoerli).execute(timelockPayload);
+    console.log(tx.hash);
+    await tx.wait();
 
     // Wait for the event of a processed data on mumbai
     // catch NewFxMessage event from mockChildERC20 and MessageReceived event from fxGovernorTunnel
@@ -102,10 +123,18 @@ async function main() {
         }
     }
 
+    // Balance of ERC20 token after the cross-bridge transaction
     const balanceERC20After = Number(await mockChildERC20.balanceOf(EOAmumbai.address));
     const balanceERC20Diff = balanceERC20After - balanceERC20Before;
     if (balanceERC20Diff == amountToMint) {
         console.log("Successfully minted MockChildERC20");
+    }
+
+    // Balance of MATIC of the FxGovernorTunnel after the cross-bridge transaction
+    const balanceMATICAfter = await mumbaiProvider.getBalance(EOAmumbai.address);
+    const balanceMATICDiff = balanceMATICAfter - balanceMATICBefore;
+    if (balanceMATICDiff == amountToSend) {
+        console.log("Successfully sent MATIC");
     }
 }
 
