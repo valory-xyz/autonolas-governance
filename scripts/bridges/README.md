@@ -8,7 +8,7 @@ Parameters of the `globals.json` file:
 - `useLedger`: flag whether to use the hardware wallet (`true`) or proceed with the seed-phrase accounts (`false`);
 - `derivationPath`: string with the derivation path;
 - `fxChildAddress`: Fx Child contract address serving as a system processor of inbound calls across the bridge;
-- `timelockAddress`: Timelock address on the root network;
+- `timelockAddress`: Timelock address on the root L1 network;
 
 The script file name identifies the number of deployment steps taken up to the number in the file name.
 

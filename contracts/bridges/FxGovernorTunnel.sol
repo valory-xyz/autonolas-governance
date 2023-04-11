@@ -50,9 +50,9 @@ contract FxGovernorTunnel is IFxMessageProcessor {
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
     // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
     uint256 public constant DEFAULT_DATA_LENGTH = 36;
-    // FX child address
+    // FX child address on L2 that receives the message across the bridge from the root L1 network
     address public immutable fxChild;
-    // Root governor address
+    // Root governor address on L1 that is authorized to propagate the transaction execution across the bridge
     address public rootGovernor;
 
     /// @dev FxGovernorTunnel constructor.
