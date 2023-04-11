@@ -1,5 +1,6 @@
 module.exports = {
-    skipFiles: ["bridges/test/FxChildTunnel.sol",
+    skipFiles: ["bridges/test/ChildMockERC20.sol",
+        "bridges/test/MockTimelock.sol",
         "test/BridgeSetup.sol",
         "test/SafeSetup.sol"
     ]

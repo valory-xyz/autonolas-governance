@@ -135,7 +135,9 @@ The list of addresses can be found [here](https://github.com/valory-xyz/autonola
 ## Bridges
 The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges).
 
-For running a test between `goerli` and `mumbai`, run the test script with your own credentials: [`goerli-mumbai` bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/test/fx_goerli_mumbai.js).
+For running a test between `goerli` and `mumbai`, run the test script with your own credentials: [`goerli-mumbai` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/test/fx_goerli_mumbai_hello_world.js)
+and [`goerli-mumbai` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/test/fx_goerli_mumbai_governor.js).
+Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
 use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/pack-data.js).
