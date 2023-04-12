@@ -36,7 +36,7 @@ module.exports = {
             url: "https://eth-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MAINNET,
             chainId: 1,
         },
-        matic: {
+        polygon: {
             url: "https://polygon-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MATIC,
             chainId: 137,
         },
@@ -51,7 +51,7 @@ module.exports = {
                 passphrase: "",
             },
         },
-        mumbai: {
+        polygonMumbai: {
             url: "https://polygon-mumbai.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MUMBAI,
             accounts: {
                 mnemonic: TESTNET_MNEMONIC,
@@ -69,9 +69,9 @@ module.exports = {
     etherscan: {
         apiKey: {
             mainnet: ETHERSCAN_API_KEY,
-            matic: POLYGONSCAN_API_KEY,
+            polygon: POLYGONSCAN_API_KEY,
             goerli: ETHERSCAN_API_KEY,
-            mumbai: POLYGONSCAN_API_KEY
+            polygonMumbai: POLYGONSCAN_API_KEY
         }
     },
     solidity: {
