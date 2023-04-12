@@ -78,7 +78,7 @@ npm run fork
 
 ### Docker
 
-If you running using amd64 (eg. Mac M1), please export the newly build image from the docker-build image.
+If you are running using amd64 (eg. Mac M1), please export the newly build image from the docker-build image.
 You can find more information [here](https://docs.docker.com/build/building/multi-platform/).
 ```
 docker buildx create --name amdBuilder --driver docker-container --bootstrap
