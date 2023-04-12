@@ -62,11 +62,21 @@ describe("FxGovernorTunnel", function () {
             ).to.be.revertedWithCustomError(fxGovernorTunnel, "SelfCallOnly");
         });
 
-        it("Should fail when trying to call with the incorrectly provided payload", async function () {
-            const OLAS = await ethers.getContractFactory("OLAS");
-            const olas = await OLAS.deploy();
-            await olas.deployed();
+        it("Should fail when trying to call with the zero address", async function () {
+            const target = AddressZero;
+            const value = 0;
+            const payload = "";
+            const data = ethers.utils.solidityPack(
+                ["address", "uint96", "uint32"],
+                [target, value, payload.length]
+            );
 
+            await expect(
+                fxGovernorTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, data)
+            ).to.be.revertedWithCustomError(fxGovernorTunnel, "ZeroAddress");
+        });
+
+        it("Should fail when trying to call with the incorrectly provided payload", async function () {
             const target = olas.address;
             const value = 0;
             const rawPayload = "0x" + "abcd".repeat(10);
