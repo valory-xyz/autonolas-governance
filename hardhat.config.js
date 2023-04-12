@@ -23,8 +23,9 @@ let TESTNET_MNEMONIC = process.env.TESTNET_MNEMONIC;
 if (!TESTNET_MNEMONIC) {
     TESTNET_MNEMONIC = accounts.mnemonic;
 }
-// Etherscan key has the same field (below) for L1 and L2, need to pay attention which one is provided
+
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 
 module.exports = {
     networks: {
@@ -66,7 +67,12 @@ module.exports = {
         },
     },
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY
+        apiKey: {
+            mainnet: ETHERSCAN_API_KEY,
+            matic: POLYGONSCAN_API_KEY,
+            goerli: ETHERSCAN_API_KEY,
+            mumbai: POLYGONSCAN_API_KEY
+        }
     },
     solidity: {
         compilers: [
