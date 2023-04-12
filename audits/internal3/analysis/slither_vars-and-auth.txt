@@ -1,0 +1,21 @@
+INFO:Printers:
+Contract IFxMessageProcessor
++------------------------+-------------------------+--------------------------+
+|        Function        | State variables written | Conditions on msg.sender |
++------------------------+-------------------------+--------------------------+
+| processMessageFromRoot |            []           |            []            |
++------------------------+-------------------------+--------------------------+
+
+Contract FxGovernorTunnel
++-------------------------------------+-----------------------------+---------------------------------+
+|               Function              |   State variables written   |     Conditions on msg.sender    |
++-------------------------------------+-----------------------------+---------------------------------+
+|        processMessageFromRoot       |              []             |                []               |
+|             constructor             | ['fxChild', 'rootGovernor'] |                []               |
+|               receive               |              []             |                []               |
+|          changeRootGovernor         |       ['rootGovernor']      | ['msg.sender != address(this)'] |
+|        processMessageFromRoot       |              []             |    ['msg.sender != fxChild']    |
+| slitherConstructorConstantVariables |   ['DEFAULT_DATA_LENGTH']   |                []               |
++-------------------------------------+-----------------------------+---------------------------------+
+
+INFO:Slither:. analyzed (2 contracts)

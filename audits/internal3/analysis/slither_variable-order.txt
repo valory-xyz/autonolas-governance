@@ -1,0 +1,9 @@
+INFO:Printers:
+FxGovernorTunnel:
++-------------------------------+---------+------+--------+
+|              Name             |   Type  | Slot | Offset |
++-------------------------------+---------+------+--------+
+| FxGovernorTunnel.rootGovernor | address |  0   |   0    |
++-------------------------------+---------+------+--------+
+
+INFO:Slither:. analyzed (2 contracts)

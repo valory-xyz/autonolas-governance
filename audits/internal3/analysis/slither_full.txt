@@ -1,0 +1,38 @@
+Notes: low priority
+INFO:Detectors:
+FxGovernorTunnel.processMessageFromRoot(uint256,address,bytes).target (FxGovernorTunnel.sol#128) lacks a zero-check on :
+		- (success) = target.call{value: value}(payload) (FxGovernorTunnel.sol#158)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+Notes: False, controlled by authorized Root Governor address (Timelock L1)
+INFO:Detectors:
+FxGovernorTunnel.processMessageFromRoot(uint256,address,bytes) (FxGovernorTunnel.sol#109-166) has external calls inside a loop: (success) = target.call{value: value}(payload) (FxGovernorTunnel.sol#158)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+Notes: False, controlled by authorized Root Governor address (Timelock L1). cannot be re-entenracy via target.call
+INFO:Detectors:
+Reentrancy in FxGovernorTunnel.processMessageFromRoot(uint256,address,bytes) (FxGovernorTunnel.sol#109-166):
+	External calls:
+	- (success) = target.call{value: value}(payload) (FxGovernorTunnel.sol#158)
+	Event emitted after the call(s):
+	- MessageReceived(stateId,rootMessageSender,data) (FxGovernorTunnel.sol#165)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Notes: Ignore
+INFO:Detectors:
+FxGovernorTunnel.processMessageFromRoot(uint256,address,bytes) (FxGovernorTunnel.sol#109-166) uses assembly
+	- INLINE ASM (FxGovernorTunnel.sol#132-142)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+Notes: Ignore
+INFO:Detectors:
+Pragma version^0.8.19 (FxGovernorTunnel.sol#6) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+solc-0.8.19 is not recommended for deployment
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+
+Notes: Ignore
+INFO:Detectors:
+Low level call in FxGovernorTunnel.processMessageFromRoot(uint256,address,bytes) (FxGovernorTunnel.sol#109-166):
+	- (success) = target.call{value: value}(payload) (FxGovernorTunnel.sol#158)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Slither:. analyzed (2 contracts with 85 detectors), 7 result(s) found

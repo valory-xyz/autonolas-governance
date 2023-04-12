@@ -1,0 +1,13 @@
+INFO:Printers:
+Contract FxGovernorTunnel
++-------------------------------------+-------------------+
+|               Function              | require or assert |
++-------------------------------------+-------------------+
+|        processMessageFromRoot       |                   |
+|             constructor             |                   |
+|               receive               |                   |
+|          changeRootGovernor         |                   |
+|        processMessageFromRoot       |                   |
+| slitherConstructorConstantVariables |                   |
++-------------------------------------+-------------------+
+INFO:Slither:. analyzed (2 contracts)

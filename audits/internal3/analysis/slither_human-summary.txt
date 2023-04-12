@@ -1,0 +1,21 @@
+INFO:Printers:
+Compiled with solc
+Number of lines: 167 (+ 0 in dependencies, + 0 in tests)
+Number of assembly lines: 0
+Number of contracts: 2 (+ 0 in dependencies, + 0 tests) 
+
+Number of optimization issues: 0
+Number of informational issues: 4
+Number of low issues: 3
+Number of medium issues: 0
+Number of high issues: 0
+
+
++------------------+-------------+------+------------+--------------+-------------+
+|       Name       | # functions | ERCS | ERC20 info | Complex code |   Features  |
++------------------+-------------+------+------------+--------------+-------------+
+| FxGovernorTunnel |      6      |      |            |     Yes      | Receive ETH |
+|                  |             |      |            |              |   Send ETH  |
+|                  |             |      |            |              |   Assembly  |
++------------------+-------------+------+------------+--------------+-------------+
+INFO:Slither:. analyzed (2 contracts)
