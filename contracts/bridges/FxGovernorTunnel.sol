@@ -45,6 +45,7 @@ error TargetExecFailed(address target, uint256 value, bytes payload);
 /// @author AL
 contract FxGovernorTunnel is IFxMessageProcessor {
     event FundsReceived(address indexed sender, uint256 value);
+    event RootGovernorUpdated(address indexed rootMessageSender);
     event MessageReceived(uint256 indexed stateId, address indexed rootMessageSender, bytes data);
 
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
@@ -90,6 +91,7 @@ contract FxGovernorTunnel is IFxMessageProcessor {
         }
 
         rootGovernor = newRootGovernor;
+        emit RootGovernorUpdated(newRootGovernor);
     }
 
     /// @dev Process message received from the Root Tunnel.
@@ -137,6 +139,10 @@ contract FxGovernorTunnel is IFxMessageProcessor {
                 payloadLength := mload(add(data, i))
             }
 
+            // Check for the zero address
+            if (target == address(0)) {
+                revert ZeroAddress();
+            }
             // Check for the value compared to the contract's balance
             if (value > address(this).balance) {
                 revert InsufficientBalance(value, address(this).balance);

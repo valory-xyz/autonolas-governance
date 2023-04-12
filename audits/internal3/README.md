@@ -27,12 +27,14 @@ Some of the checks are obtained automatically. They are commented and I do not s
 All automatic warnings are listed in the following file, concerns of which we address in more detail below:
 [slither-full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal3/analysis/slither_full.txt)
 - zero-check on ```target.call{value: value}(payload);``` . Low risk.
+[x] fixed.
 
 Notes: <br>
 Reentrancy in FxGovernorTunnel.processMessageFromRoot does not seem feasible.
 
 ### Needed Improvements and Bugs fixning
 changeRootGovernor not event.
+[x] fixed.
 
 
  
