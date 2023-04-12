@@ -3,7 +3,7 @@ The review has been performed based on the contract code in the following reposi
 `https://github.com/valory-xyz/autonolas-governance` <br>
 commit: `01c92ed0b79a72ffac35191b2cb91aa46022b1b1` <br> 
 
-Update: 09-03-2023  <br>
+Update: 12-04-2023  <br>
 
 ## Objectives
 The audit focused on `FxGovernorTunnel` contract.
