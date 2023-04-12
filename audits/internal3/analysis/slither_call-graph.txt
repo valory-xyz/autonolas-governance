@@ -1,0 +1,4 @@
+INFO:Printers:Call Graph: ./FxGovernorTunnel.sol.all_contracts.call-graph.dot
+Call Graph: ./FxGovernorTunnel.sol.FxGovernorTunnel.call-graph.dot
+
+INFO:Slither:. analyzed (2 contracts)

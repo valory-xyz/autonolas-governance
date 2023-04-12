@@ -1,0 +1,3 @@
+INFO:Printers:Inheritance Graph: ./FxGovernorTunnel.sol.inheritance-graph.dot
+
+INFO:Slither:. analyzed (2 contracts)

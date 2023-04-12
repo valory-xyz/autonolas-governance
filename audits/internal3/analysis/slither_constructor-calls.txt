@@ -1,0 +1,23 @@
+INFO:Printers:
+################################
+####### FxGovernorTunnel #######
+################################
+
+## Constructor Call Sequence
+	- FxGovernorTunnel
+
+## Constructor Definitions
+
+### FxGovernorTunnel
+
+     constructor(address _fxChild, address _rootGovernor) {
+        // Check fo zero addresses
+        if (_fxChild == address(0) || _rootGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        fxChild = _fxChild;
+        rootGovernor = _rootGovernor;
+    }
+
+INFO:Slither:. analyzed (2 contracts)
