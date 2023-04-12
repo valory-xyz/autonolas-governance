@@ -1,6 +1,18 @@
 # Bridge-related deployment scripts
 This process is the same as described in the original deployment procedure: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
 
+## Steps to engage
+The project has submodules to get the dependencies. Make sure you run `git clone --recursive` or init the submodules yourself.
+The dependency list is managed by the `package.json` file, and the setup parameters are stored in the `hardhat.config.js` file.
+Simply run the following command to install the project:
+```
+yarn install
+```
+command and compiled with the
+```
+npx hardhat compile
+```
+
 Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/bridges/globals_polygon_mumbai.json` for the mumbai testnet).
 
 Parameters of the `globals.json` file:
@@ -11,6 +23,8 @@ Parameters of the `globals.json` file:
 - `timelockAddress`: Timelock address on the root L1 network;
 
 The script file name identifies the number of deployment steps taken up to the number in the file name.
+
+Export network-related API keys defined in `hardhat.config.js` file that correspond to the required network.
 
 To run the script, use the following command:
 `npx hardhat run scripts/deployment/script_name --network network_type`,

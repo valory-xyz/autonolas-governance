@@ -13,8 +13,13 @@ async function main() {
     const providerName = parsedData.providerName;
     let EOA;
 
-    const mumbaiURL = "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MUMBAI;
-    const provider = new ethers.providers.JsonRpcProvider(mumbaiURL);
+    let provider;
+    if (providerName == "polygon") {
+        provider = await ethers.providers.getDefaultProvider("matic");
+    } else {
+        const mumbaiURL = "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MUMBAI;
+        provider = new ethers.providers.JsonRpcProvider(mumbaiURL);
+    }
     const signers = await ethers.getSigners();
 
     if (useLedger) {

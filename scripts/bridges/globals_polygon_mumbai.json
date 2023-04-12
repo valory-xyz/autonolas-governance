@@ -1,1 +1,1 @@
-{"contractVerification":true,"useLedger":false,"derivationPath":"m/44'/60'/2'/0/0","providerName":"mumbai","fxChildAddress":"0xCf73231F28B7331BBe3124B907840A94851f9f11","timelockAddress":"0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"}
+{"contractVerification":true,"useLedger":false,"derivationPath":"m/44'/60'/2'/0/0","providerName":"polygonMumbai","fxChildAddress":"0xCf73231F28B7331BBe3124B907840A94851f9f11","timelockAddress":"0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"}

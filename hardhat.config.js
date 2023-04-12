@@ -23,8 +23,9 @@ let TESTNET_MNEMONIC = process.env.TESTNET_MNEMONIC;
 if (!TESTNET_MNEMONIC) {
     TESTNET_MNEMONIC = accounts.mnemonic;
 }
-// Etherscan key has the same field (below) for L1 and L2, need to pay attention which one is provided
+
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 
 module.exports = {
     networks: {
@@ -35,7 +36,7 @@ module.exports = {
             url: "https://eth-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MAINNET,
             chainId: 1,
         },
-        matic: {
+        polygon: {
             url: "https://polygon-mainnet.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MATIC,
             chainId: 137,
         },
@@ -50,7 +51,7 @@ module.exports = {
                 passphrase: "",
             },
         },
-        mumbai: {
+        polygonMumbai: {
             url: "https://polygon-mumbai.g.alchemy.com/v2/" + ALCHEMY_API_KEY_MUMBAI,
             accounts: {
                 mnemonic: TESTNET_MNEMONIC,
@@ -66,7 +67,12 @@ module.exports = {
         },
     },
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY
+        apiKey: {
+            mainnet: ETHERSCAN_API_KEY,
+            polygon: POLYGONSCAN_API_KEY,
+            goerli: ETHERSCAN_API_KEY,
+            polygonMumbai: POLYGONSCAN_API_KEY
+        }
     },
     solidity: {
         compilers: [
