@@ -40,6 +40,8 @@ The script file name identifies the number of deployment steps taken up to the n
 
 NOTE: All the scripts MUST be strictly run in the sequential order from smallest to biggest numbers.
 
+Export network-related API keys defined in `hardhat.config.js` file that correspond to the required network.
+
 To run the script, use the following command:
 `npx hardhat run scripts/deployment/script_name --network network_type`,
 where `script_number_and_name` is a script number and name, i.e. `deploy_02_deployment_factory.js`, `network_type` is a network type corresponding to the `hardhat.config.js` network configuration.
