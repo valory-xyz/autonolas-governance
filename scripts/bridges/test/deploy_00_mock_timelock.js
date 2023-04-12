@@ -10,11 +10,10 @@ async function main() {
     let parsedData = JSON.parse(dataFromJSON);
     const useLedger = parsedData.useLedger;
     const derivationPath = parsedData.derivationPath;
-    const providerName = parsedData.providerName;
+    const providerName = "goerli";
     let EOA;
 
-    const mumbaiURL = "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MUMBAI;
-    const provider = new ethers.providers.JsonRpcProvider(mumbaiURL);
+    const provider = await ethers.providers.getDefaultProvider(providerName);
     const signers = await ethers.getSigners();
 
     if (useLedger) {
@@ -27,25 +26,25 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("1. EOA to deploy child tunnel contract");
-    const FxChildTunnel = await ethers.getContractFactory("FxChildTunnel");
-    console.log("You are signing the following transaction: FxChildTunnel.connect(EOA).deploy(fxChildAddress)");
-    const fxChildTunnel = await FxChildTunnel.connect(EOA).deploy(parsedData.fxChildAddress);
-    const result = await fxChildTunnel.deployed();
+    console.log("1. EOA to deploy mock timelock contract");
+    const Timelock = await ethers.getContractFactory("Timelock");
+    console.log("You are signing the following transaction: Timelock.connect(EOA).deploy(fxRootAddress)");
+    const timelock = await Timelock.connect(EOA).deploy(parsedData.fxRootAddress);
+    const result = await timelock.deployed();
 
     // Transaction details
-    console.log("Contract deployment: FxChildTunnel");
-    console.log("Contract address:", fxChildTunnel.address);
+    console.log("Contract deployment: Timelock");
+    console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // Writing updated parameters back to the JSON file
-    parsedData.fxChildTunnelAddress = fxChildTunnel.address;
+    parsedData.timelockAddress = timelock.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/bridges/verify_01_child_tunnel.js --network " + providerName + " " + fxChildTunnel.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/bridges/test/verify_00_mock_timelock.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
     }
 }
 

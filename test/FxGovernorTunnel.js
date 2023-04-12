@@ -15,10 +15,12 @@ describe("FxGovernorTunnel", function () {
         signers = await ethers.getSigners();
         deployer = signers[0];
 
+        // The deployer is the analogue of the Timelock on L1 and the FxRoot mock on L1 as well
         const FxGovernorTunnel = await ethers.getContractFactory("FxGovernorTunnel");
         fxGovernorTunnel = await FxGovernorTunnel.deploy(deployer.address, deployer.address);
         await fxGovernorTunnel.deployed();
 
+        // OLAS represents a contract deployed on L2
         const OLAS = await ethers.getContractFactory("OLAS");
         olas = await OLAS.deploy();
         await olas.deployed();
