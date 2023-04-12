@@ -78,7 +78,8 @@ npm run fork
 
 ### Docker
 
-If you running using amd64 (eg. Mac M1), please export the newly build image from the docker-build image. You can find more information [here](https://docs.docker.com/build/building/multi-platform/).
+If you running using amd64 (eg. Mac M1), please export the newly build image from the docker-build image.
+You can find more information [here](https://docs.docker.com/build/building/multi-platform/).
 ```
 docker buildx create --name amdBuilder --driver docker-container --bootstrap
 docker buildx use amdBuilder
@@ -111,31 +112,19 @@ several steps in order to be verified. Those include:
 - running linters
 - running tests
 
-## Deployment
-The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
-The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
-
-The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
-
-## Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
+### Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
 Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here: [veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
 
 The original Voting Escrow ABI is located here: [veCRV ABI](https://github.com/valory-xyz/autonolas-governance/blob/main/abis/test/veCRV.json).
 One can run the forking test via the `npm run fork` command as described above.
 
-## Code optimizations and best practices
-The list of optimization considerations and best practices exercised during the development of Autonolas governance
-can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/optimizations.md).
+## Deployment of Core Contracts
+The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
+The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
 
-## Audits
-- The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
-- The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true).
-
-## Deployed Protocol
-The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
+The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
 
 ## Bridges
-The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges).
 
 ### Polygon governance bridge 
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon. The functionality thereby enabled is outlined in detail
@@ -147,6 +136,23 @@ Note that the script must be run without Hardhat environment, i.e.: `node test_s
 
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
 use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/pack-data.js).
+
+### Deployment of bridge-related contracts
+The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges).
+
+## Documents
+All the project-related documents are located here: [docs](https://github.com/valory-xyz/autonolas-governance/blob/main/docs).
+
+### Code optimizations and best practices
+The list of optimization considerations and best practices exercised during the development of Autonolas governance
+can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/optimizations.md).
+
+### Audits
+- The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
+- The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true).
+
+### Deployed Protocol
+The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
 
 ## Acknowledgements
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
