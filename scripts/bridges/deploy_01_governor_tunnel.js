@@ -35,8 +35,8 @@ async function main() {
     console.log("1. EOA to deploy governor tunnel contract");
     const FxGovernorTunnel = await ethers.getContractFactory("FxGovernorTunnel");
     console.log("You are signing the following transaction: FxGovernorTunnel.connect(EOA).deploy(fxChild, timelock)");
-    const gasPriceInGwei = '230';
-    const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, 'gwei');
+    const gasPriceInGwei = "230";
+    const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
     const fxGovernorTunnel = await FxGovernorTunnel.connect(EOA).deploy(parsedData.fxChildAddress, parsedData.timelockAddress, { gasPrice });
     const result = await fxGovernorTunnel.deployed();
 
