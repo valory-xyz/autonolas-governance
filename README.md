@@ -152,7 +152,8 @@ can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main
 - The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true).
 
 ### Deployed Protocol
-The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses.json).
+The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses).
+
 
 ## Acknowledgements
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
