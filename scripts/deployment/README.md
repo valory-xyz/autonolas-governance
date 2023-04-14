@@ -50,6 +50,17 @@ where `script_number_and_name` is a script number and name, i.e. `deploy_02_depl
 Each script controls the obtained values by checking them against the expected ones. Also, each script has a contract verification procedure.
 If a contract is deployed with arguments, these arguments are taken from the corresponding `verify_number_and_name` file, where `number_and_name` corresponds to the deployment script number and name.
 
+## Deployment of supplemental contracts
+For deploying supplemental contracts listed in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md),
+run the following scripts:
+```
+npx hardhat run scripts/deployment/deploy_16_wveolas.js --network network_type
+npx hardhat run scripts/deployment/deploy_17_governorTwo.js --network network_type
+```
+
+Then, after successful deployment of two supplemental contracts, the last script gives the proposal payload necessary to finalize the deployment:
+`npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
+
 
 
 
