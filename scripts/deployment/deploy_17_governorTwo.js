@@ -32,8 +32,8 @@ async function main() {
 
     // Transaction signing and execution
     console.log("17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters");
-    const maxPriorityFeePerGasInGwei = "2"
-    const maxFeePerGasInGwei = "36"
+    const maxPriorityFeePerGasInGwei = "2";
+    const maxFeePerGasInGwei = "36";
 
     const maxPriorityFeePerGas = ethers.utils.parseUnits(maxPriorityFeePerGasInGwei, "gwei");
     const maxFeePerGas = ethers.utils.parseUnits(maxFeePerGasInGwei, "gwei");
