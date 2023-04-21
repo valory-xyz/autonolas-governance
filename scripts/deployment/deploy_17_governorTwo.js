@@ -32,11 +32,19 @@ async function main() {
 
     // Transaction signing and execution
     console.log("17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters");
+    const maxPriorityFeePerGasInGwei = "2";
+    const maxFeePerGasInGwei = "36";
+
+    const maxPriorityFeePerGas = ethers.utils.parseUnits(maxPriorityFeePerGasInGwei, "gwei");
+    const maxFeePerGas = ethers.utils.parseUnits(maxFeePerGasInGwei, "gwei");
+
     const GovernorOLAS = await ethers.getContractFactory("GovernorOLAS");
     console.log("You are signing the following transaction: GovernorOLAS.connect(EOA).deploy(parsedData.wveOLASAddress, parsedData.timelockAddress, initialVotingDelay, initialVotingPeriod, initialProposalThreshold, quorum)");
     const governor = await GovernorOLAS.connect(EOA).deploy(parsedData.wveOLASAddress, parsedData.timelockAddress, initialVotingDelay,
-        initialVotingPeriod, initialProposalThreshold, quorum);
+        initialVotingPeriod, initialProposalThreshold, quorum, { maxPriorityFeePerGas, maxFeePerGas });
     let result = await governor.deployed();
+
+
 
     // Transaction details
     console.log("Contract deployment: GovernorOLAS");
