@@ -31,7 +31,7 @@ To address several found `veOLAS` contract view functions issues, a wrapper cont
 
 The changelog leading to the implementation of `wveOLAS` can be found here: [Changelog_v1.1.0](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Changelog_v1.1.0.pdf?raw=true)
 
-To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true)
+To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list_governance.pdf?raw=true)
 
 In order to manage cross-bridge transactions via the `Timelock` contract, the Fx Governor Tunnel contract is implemented:
 - [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol).
