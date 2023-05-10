@@ -33,8 +33,11 @@ The changelog leading to the implementation of `wveOLAS` can be found here: [Cha
 
 To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true)
 
-In order to manage cross-bridge transactions via the `Timelock` contract, the Fx Governor Tunnel contract is implemented:
+In order to manage cross-bridge transactions via the `Timelock` contract on the polygon network, the Fx Governor Tunnel contract is implemented:
 - [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol).
+
+In order to manage cross-bridge transactions via the `Timelock` contract on the gnosis network, the Home Mediator contract is implemented:
+- [HomeMediator](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/HomeMediator.sol).
 
 The functionality thereby enabled is outlined in detail here: [Cross-chain governance: from Ethereum to Polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
 
@@ -130,15 +133,15 @@ The finalized contract ABIs for deployment and their number of optimization pass
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon. The functionality thereby enabled is outlined in detail
 here: [Cross-chain governance: from Ethereum to Polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true). 
 
-For running a test between `goerli` and `mumbai`, run the test script with your own credentials: [`goerli-mumbai` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/test/fx_goerli_mumbai_hello_world.js)
-and [`goerli-mumbai` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/test/fx_goerli_mumbai_governor.js).
+For running a test between `goerli` and `mumbai`, run the test script with your own credentials: [`goerli-mumbai` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_hello_world.js)
+and [`goerli-mumbai` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
-use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/pack-data.js).
+use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack-data.js).
 
 ### Deployment of bridge-related contracts
-The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges).
+The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges).
 
 ## Documents
 All the project-related documents are located here: [docs](https://github.com/valory-xyz/autonolas-governance/blob/main/docs).

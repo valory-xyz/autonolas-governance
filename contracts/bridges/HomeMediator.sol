@@ -51,9 +51,9 @@ contract HomeMediator {
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
     // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
     uint256 public constant DEFAULT_DATA_LENGTH = 36;
-    // FX child address on L2 that receives the message across the bridge from the root L1 network
+    // FX child address on L2 that receives the message across the bridge from the foreign L1 network
     address public immutable AMBMediator;
-    // Root governor address on L1 that is authorized to propagate the transaction execution across the bridge
+    // Foreign governor address on L1 that is authorized to propagate the transaction execution across the bridge
     address public foreignGovernor;
 
     /// @dev HomeMediator constructor.
@@ -94,9 +94,9 @@ contract HomeMediator {
         emit ForeignGovernorUpdated(newForeignGovernor);
     }
 
-    /// @dev Process message received from the Root Tunnel.
-    /// @notice This is called by onStateReceive function. The sender must be the Foreign Governor address (Timelock).
-    /// @param data Bytes message sent from the Root Tunnel. The data must be encoded as a set of continuous
+    /// @dev Process message received from the AMB Mediator contract.
+    /// @notice The sender must be the Foreign Governor address (Timelock).
+    /// @param data Bytes message sent from the AMB Mediator contract. The data must be encoded as a set of continuous
     ///        transactions packed into a single buffer, where each transaction is composed as follows:
     ///        - target address of 20 bytes (160 bits);
     ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts;

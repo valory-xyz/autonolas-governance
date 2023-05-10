@@ -15,6 +15,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Get a specific Node.js version such that hardhat does not hang periodically
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.15.0"
+
       # Install modules
       - name: Install modules
         run: yarn install

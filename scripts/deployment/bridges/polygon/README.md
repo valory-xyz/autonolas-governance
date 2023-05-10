@@ -13,13 +13,14 @@ command and compiled with the
 npx hardhat compile
 ```
 
-Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/bridges/globals_polygon_mumbai.json` for the mumbai testnet).
+Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/bridges/polygon/globals_polygon_mumbai.json` for the mumbai testnet).
 
 Parameters of the `globals.json` file:
 - `contractVerification`: flag for verifying contracts in deployment scripts (`true`) or skipping it (`false`);
 - `useLedger`: flag whether to use the hardware wallet (`true`) or proceed with the seed-phrase accounts (`false`);
 - `derivationPath`: string with the derivation path;
-- `fxChildAddress`: Fx Child contract address serving as a system processor of inbound calls across the bridge;
+- `fxChildAddress`: (Polygon) Fx Child contract address serving as a system processor of inbound calls across the bridge;
+- `homeMediator`: (Gnosis) Home Mediator contract address serving as a system processor of inbound calls across the bridge;
 - `timelockAddress`: Timelock address on the root L1 network;
 
 The script file name identifies the number of deployment steps taken up to the number in the file name.
@@ -36,7 +37,7 @@ If a contract is deployed with arguments, these arguments are taken from the cor
 
 ## Data packing for cross-bridge transactions
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
-use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/bridges/pack-data.js).
+use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack-data.js).
 
 
 
