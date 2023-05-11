@@ -46,7 +46,8 @@ async function main() {
     const data = "0x68656c6c6f20776f726c64";
     const timelockPayload = await homeMediator.interface.encodeFunctionData("processMessageFromForeign", [data]);
     // Send the message to chiado receiver
-    await AMBProxy.connect(EOAgoerli).requireToPassMessage(homeMediatorAddress, timelockPayload, "2000000");
+    const requestGasLimit = "2000000";
+    await AMBProxy.connect(EOAgoerli).requireToPassMessage(homeMediatorAddress, timelockPayload, requestGasLimit);
 
     // Wait for the event of a processed data on chiado
     // catch MessageReceived event from the HomeMediator contract
