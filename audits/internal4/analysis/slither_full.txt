@@ -1,0 +1,31 @@
+Notes: loop by design, controlled on `timelock` (DAO) side on "foreign" (ETH) network. Ignore this warning.
+INFO:Detectors:
+HomeMediator.processMessageFromForeign(bytes) (HomeMediator.sol#106-169) has external calls inside a loop: (success) = target.call{value: value}(payload) (HomeMediator.sol#161)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+Notes: False positive. Cannot be called by an arbitrary contract.
+INFO:Detectors:
+Reentrancy in HomeMediator.processMessageFromForeign(bytes) (HomeMediator.sol#106-169):
+	External calls:
+	- (success) = target.call{value: value}(payload) (HomeMediator.sol#161)
+	Event emitted after the call(s):
+	- MessageReceived(governor,data) (HomeMediator.sol#168)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Notes: Ignore this warning.
+INFO:Detectors:
+HomeMediator.processMessageFromForeign(bytes) (HomeMediator.sol#106-169) uses assembly
+	- INLINE ASM (HomeMediator.sol#131-141)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+Notes: Ignore this warning.
+INFO:Detectors:
+Low level call in HomeMediator.processMessageFromForeign(bytes) (HomeMediator.sol#106-169):
+	- (success) = target.call{value: value}(payload) (HomeMediator.sol#161)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+
+Notes: Ignore this warning. "AMB" is well-known abbreviation
+INFO:Detectors:
+Variable HomeMediator.AMBMediator (HomeMediator.sol#56) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Slither:. analyzed (2 contracts with 85 detectors), 7 result(s) found

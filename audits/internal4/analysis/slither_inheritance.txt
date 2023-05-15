@@ -1,0 +1,15 @@
+INFO:Printers:Inheritance
+Child_Contract -> Immediate_Base_Contracts [Not_Immediate_Base_Contracts]
++ IForeignMediator
+
++ HomeMediator
+
+
+Base_Contract -> Immediate_Child_Contracts
+ [Not_Immediate_Child_Contracts]
+
++ IForeignMediator
+
++ HomeMediator
+
+INFO:Slither:. analyzed (2 contracts)

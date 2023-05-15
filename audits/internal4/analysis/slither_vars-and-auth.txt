@@ -1,0 +1,20 @@
+INFO:Printers:
+Contract IForeignMediator
++---------------+-------------------------+--------------------------+
+|    Function   | State variables written | Conditions on msg.sender |
++---------------+-------------------------+--------------------------+
+| messageSender |            []           |            []            |
++---------------+-------------------------+--------------------------+
+
+Contract HomeMediator
++-------------------------------------+------------------------------------+---------------------------------+
+|               Function              |      State variables written       |     Conditions on msg.sender    |
++-------------------------------------+------------------------------------+---------------------------------+
+|             constructor             | ['AMBMediator', 'foreignGovernor'] |                []               |
+|               receive               |                 []                 |                []               |
+|        changeForeignGovernor        |        ['foreignGovernor']         | ['msg.sender != address(this)'] |
+|      processMessageFromForeign      |                 []                 |  ['msg.sender != AMBMediator']  |
+| slitherConstructorConstantVariables |      ['DEFAULT_DATA_LENGTH']       |                []               |
++-------------------------------------+------------------------------------+---------------------------------+
+
+INFO:Slither:. analyzed (2 contracts)

@@ -1,0 +1,19 @@
+INFO:Printers:
+Contract IForeignMediator
++---------------+-----------+
+|    Function   | Modifiers |
++---------------+-----------+
+| messageSender |     []    |
++---------------+-----------+
+INFO:Printers:
+Contract HomeMediator
++-------------------------------------+-----------+
+|               Function              | Modifiers |
++-------------------------------------+-----------+
+|             constructor             |     []    |
+|               receive               |     []    |
+|        changeForeignGovernor        |     []    |
+|      processMessageFromForeign      |     []    |
+| slitherConstructorConstantVariables |     []    |
++-------------------------------------+-----------+
+INFO:Slither:. analyzed (2 contracts)
