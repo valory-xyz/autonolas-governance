@@ -42,7 +42,7 @@ or
 ref: https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge
 IForeignMediator doesn't look like a very good name (sounds like an interface to "ForeignMediator" contract).
 ```
-[] fixed.
+[x] fixed.
 
 
 

@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe.only("HomeMediator", function () {
+describe("HomeMediator", function () {
     let ambMediator;
     let homeMediator;
     let olas;
@@ -51,7 +51,7 @@ describe.only("HomeMediator", function () {
         it("Should fail when trying to call from incorrect contract addresses", async function () {
             await expect(
                 homeMediator.connect(deployer).processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "AMBMediatorOnly");
+            ).to.be.revertedWithCustomError(homeMediator, "AMBContractProxyHomeOnly");
 
             // Simulate incorrect foreignGovernor address
             await ambMediator.changeForeignGovernor(AddressZero);
