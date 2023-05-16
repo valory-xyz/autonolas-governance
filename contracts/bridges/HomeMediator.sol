@@ -16,7 +16,7 @@ error SelfCallOnly(address sender, address instance);
 
 /// @dev Only `AMBContractProxyHome` is allowed to call the function.
 /// @param sender Sender address.
-/// @param AMBContractProxyHome Required AMB Mediator address.
+/// @param AMBContractProxyHome Required AMB Contract Proxy (Home) address.
 error AMBContractProxyHomeOnly(address sender, address AMBContractProxyHome);
 
 /// @dev Only on behalf of `foreignGovernor` the function is allowed to process the data.
@@ -57,7 +57,7 @@ contract HomeMediator {
     address public foreignGovernor;
 
     /// @dev HomeMediator constructor.
-    /// @param _AMBContractProxyHome AMB Mediator address (Gnosis).
+    /// @param _AMBContractProxyHome AMB Contract Proxy (Home) address (Gnosis).
     /// @param _foreignGovernor Foreign Governor address (ETH).
     constructor(address _AMBContractProxyHome, address _foreignGovernor) {
         // Check fo zero addresses
@@ -94,16 +94,16 @@ contract HomeMediator {
         emit ForeignGovernorUpdated(newForeignGovernor);
     }
 
-    /// @dev Process message received from the AMB Mediator contract.
+    /// @dev Processes a message received from the AMB Contract Proxy (Home) contract.
     /// @notice The sender must be the Foreign Governor address (Timelock).
-    /// @param data Bytes message sent from the AMB Mediator contract. The data must be encoded as a set of continuous
-    ///        transactions packed into a single buffer, where each transaction is composed as follows:
+    /// @param data Bytes message sent from the AMB Contract Proxy (Home) contract. The data must be encoded as a set of
+    ///        continuous transactions packed into a single buffer, where each transaction is composed as follows:
     ///        - target address of 20 bytes (160 bits);
     ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts;
     ///        - payload length of 4 bytes (32 bits), as 2^32 - 1 characters is more than enough to fill a whole block;
     ///        - payload as bytes, with the length equal to the specified payload length.
     function processMessageFromForeign(bytes memory data) external {
-        // Check for the AMB Mediator address
+        // Check for the AMB Contract Proxy (Home) address
         if (msg.sender != AMBContractProxyHome) {
             revert AMBContractProxyHomeOnly(msg.sender, AMBContractProxyHome);
         }

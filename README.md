@@ -33,10 +33,10 @@ The changelog leading to the implementation of `wveOLAS` can be found here: [Cha
 
 To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true)
 
-In order to manage cross-bridge transactions via the `Timelock` contract on the polygon network, the Fx Governor Tunnel contract is implemented:
+In order to manage cross-bridge transactions via the `Timelock` contract on the Polygon network, the Fx Governor Tunnel contract is implemented:
 - [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol).
 
-In order to manage cross-bridge transactions via the `Timelock` contract on the gnosis network, the Home Mediator contract is implemented:
+In order to manage cross-bridge transactions via the `Timelock` contract on the Gnosis network, the Home Mediator contract is implemented:
 - [HomeMediator](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/HomeMediator.sol).
 
 The functionality thereby enabled is outlined in detail here: [Cross-chain governance: from Ethereum to Polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
@@ -116,7 +116,8 @@ several steps in order to be verified. Those include:
 - running tests
 
 ### Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
-Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here: [veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
+Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here:
+[veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
 
 The original Voting Escrow ABI is located here: [veCRV ABI](https://github.com/valory-xyz/autonolas-governance/blob/main/abis/test/veCRV.json).
 One can run the forking test via the `npm run fork` command as described above.
@@ -125,22 +126,27 @@ One can run the forking test via the `npm run fork` command as described above.
 The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
 The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
 
-The finalized contract ABIs for deployment and their number of optimization passes are located here: [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
+The finalized contract ABIs for deployment and their number of optimization passes are located here:
+[ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
 
 ## Bridges
+Depending on the network, the cross-chain functionality enabled is outlined in detail here:
+[Cross-chain governance](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
 
 ### Polygon governance bridge 
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon.
-The functionality thereby enabled is outlined in detail here: [Cross-chain governance: from Ethereum to Polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true). 
 
-For running a test between `goerli` and `mumbai`, run the test script with your own credentials: [`goerli-mumbai` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_hello_world.js)
+For running a test between `goerli` and `mumbai`, run the test script with your own credentials:
+[`goerli-mumbai` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_hello_world.js)
 and [`goerli-mumbai` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 ### Gnosis governance bridge
-Autonolas will use the [Arbitrary Message Bridge](https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge) developed and designed by the Gnosis team to support cross-chain bridging from Ethereum to Gnosis Chain.
+Autonolas will use the [Arbitrary Message Bridge](https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge) developed
+and designed by the Gnosis team to support cross-chain bridging from Ethereum to Gnosis Chain.
 
-For running a test between `goerli` and `chiado`, run the test script with your own credentials: [`goerli-chiado` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_hello_world.js)
+For running a test between `goerli` and `chiado`, run the test script with your own credentials:
+[`goerli-chiado` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_hello_world.js)
 and [`goerli-chiado` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
@@ -148,7 +154,8 @@ In order to correctly pack the data and supply it to the Timelock such that it i
 use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack-data.js).
 
 ### Deployment of bridge-related contracts
-The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here: [bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges).
+The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here:
+[bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges).
 
 ## Documents
 All the project-related documents are located here: [docs](https://github.com/valory-xyz/autonolas-governance/blob/main/docs).
@@ -179,4 +186,4 @@ The governance contracts and the rest was inspired and based on the following so
 The bridging contracts were based on and inspired by the following sources:
 - [Polygon](https://github.com/maticnetwork).
 - [fx-portal](https://github.com/fx-portal).
-- [Gnosis Chain Docs](https://docs.gnosischain.com/).
+- [Gnosis Chain Docs](https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge).
