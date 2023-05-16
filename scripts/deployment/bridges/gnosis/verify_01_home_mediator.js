@@ -4,6 +4,6 @@ const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
 const parsedData = JSON.parse(dataFromJSON);
 
 module.exports = [
-    parsedData.AMBMediatorAddress,
+    parsedData.AMBContractProxyHomeAddress,
     parsedData.timelockAddress
 ];

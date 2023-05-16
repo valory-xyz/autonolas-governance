@@ -1,1 +1,1 @@
-{"contractVerification":true,"useLedger":false,"derivationPath":"m/44'/60'/2'/0/0","providerName":"chiado","gasPriceInGwei":"2","AMBMediatorAddress",:"0x99Ca51a3534785ED619f46A79C7Ad65Fa8d85e7a","timelockAddress":"0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"}
+{"contractVerification":true,"useLedger":false,"derivationPath":"m/44'/60'/2'/0/0","providerName":"chiado","gasPriceInGwei":"2","AMBContractProxyHomeAddress":"0x99Ca51a3534785ED619f46A79C7Ad65Fa8d85e7a","timelockAddress":"0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"}

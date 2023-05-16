@@ -43,9 +43,9 @@ async function main() {
     // Transaction signing and execution
     console.log("1. EOA to deploy home mediator contract");
     const HomeMediator = await ethers.getContractFactory("HomeMediator");
-    console.log("You are signing the following transaction: HomeMediator.connect(EOA).deploy(AMBMediatorAddress, timelockAddress)");
+    console.log("You are signing the following transaction: HomeMediator.connect(EOA).deploy(AMBContractProxyHomeAddress, timelockAddress)");
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
-    const homeMediator = await HomeMediator.connect(EOA).deploy(parsedData.AMBMediatorAddress, parsedData.timelockAddress, { gasPrice });
+    const homeMediator = await HomeMediator.connect(EOA).deploy(parsedData.AMBContractProxyHomeAddress, parsedData.timelockAddress, { gasPrice });
     const result = await homeMediator.deployed();
 
     // Transaction details
