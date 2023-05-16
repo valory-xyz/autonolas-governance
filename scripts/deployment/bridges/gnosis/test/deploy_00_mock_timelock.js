@@ -28,8 +28,8 @@ async function main() {
     // Transaction signing and execution
     console.log("1. EOA to deploy mock timelock contract");
     const Timelock = await ethers.getContractFactory("MockTimelock");
-    console.log("You are signing the following transaction: Timelock.connect(EOA).deploy(AMBProxyAddress)");
-    const timelock = await Timelock.connect(EOA).deploy(parsedData.AMBProxyAddress);
+    console.log("You are signing the following transaction: Timelock.connect(EOA).deploy(AMBContractProxyForeignAddress)");
+    const timelock = await Timelock.connect(EOA).deploy(parsedData.AMBContractProxyForeignAddress);
     const result = await timelock.deployed();
 
     // Transaction details

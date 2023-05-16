@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-/// @dev Interface to process message across the bridge.
-interface IForeignMediator {
+/// @dev Interface to the AMB Contract Proxy.
+interface IAMB {
     function messageSender() external view returns (address);
 }
 
@@ -14,10 +14,10 @@ error ZeroAddress();
 /// @param instance Required contract instance address.
 error SelfCallOnly(address sender, address instance);
 
-/// @dev Only `AMBMediator` is allowed to call the function.
+/// @dev Only `AMBContractProxyHome` is allowed to call the function.
 /// @param sender Sender address.
-/// @param AMBMediator Required AMB Mediator address.
-error AMBMediatorOnly(address sender, address AMBMediator);
+/// @param AMBContractProxyHome Required AMB Contract Proxy (Home) address.
+error AMBContractProxyHomeOnly(address sender, address AMBContractProxyHome);
 
 /// @dev Only on behalf of `foreignGovernor` the function is allowed to process the data.
 /// @param sender Sender address.
@@ -51,21 +51,21 @@ contract HomeMediator {
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
     // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
     uint256 public constant DEFAULT_DATA_LENGTH = 36;
-    // FX child address on L2 that receives the message across the bridge from the foreign L1 network
-    address public immutable AMBMediator;
+    // AMB Contract Proxy (Home) address on L2 that receives the message across the bridge from the foreign L1 network
+    address public immutable AMBContractProxyHome;
     // Foreign governor address on L1 that is authorized to propagate the transaction execution across the bridge
     address public foreignGovernor;
 
     /// @dev HomeMediator constructor.
-    /// @param _AMBMediator AMB Mediator address (Gnosis).
+    /// @param _AMBContractProxyHome AMB Contract Proxy (Home) address (Gnosis).
     /// @param _foreignGovernor Foreign Governor address (ETH).
-    constructor(address _AMBMediator, address _foreignGovernor) {
+    constructor(address _AMBContractProxyHome, address _foreignGovernor) {
         // Check fo zero addresses
-        if (_AMBMediator == address(0) || _foreignGovernor == address(0)) {
+        if (_AMBContractProxyHome == address(0) || _foreignGovernor == address(0)) {
             revert ZeroAddress();
         }
 
-        AMBMediator = _AMBMediator;
+        AMBContractProxyHome = _AMBContractProxyHome;
         foreignGovernor = _foreignGovernor;
     }
 
@@ -94,23 +94,23 @@ contract HomeMediator {
         emit ForeignGovernorUpdated(newForeignGovernor);
     }
 
-    /// @dev Process message received from the AMB Mediator contract.
+    /// @dev Processes a message received from the AMB Contract Proxy (Home) contract.
     /// @notice The sender must be the Foreign Governor address (Timelock).
-    /// @param data Bytes message sent from the AMB Mediator contract. The data must be encoded as a set of continuous
-    ///        transactions packed into a single buffer, where each transaction is composed as follows:
+    /// @param data Bytes message sent from the AMB Contract Proxy (Home) contract. The data must be encoded as a set of
+    ///        continuous transactions packed into a single buffer, where each transaction is composed as follows:
     ///        - target address of 20 bytes (160 bits);
     ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts;
     ///        - payload length of 4 bytes (32 bits), as 2^32 - 1 characters is more than enough to fill a whole block;
     ///        - payload as bytes, with the length equal to the specified payload length.
     function processMessageFromForeign(bytes memory data) external {
-        // Check for the AMB Mediator address
-        if (msg.sender != AMBMediator) {
-            revert AMBMediatorOnly(msg.sender, AMBMediator);
+        // Check for the AMB Contract Proxy (Home) address
+        if (msg.sender != AMBContractProxyHome) {
+            revert AMBContractProxyHomeOnly(msg.sender, AMBContractProxyHome);
         }
 
         // Check for the Foreign Governor address
         address governor = foreignGovernor;
-        address bridgeGovernor = IForeignMediator(AMBMediator).messageSender();
+        address bridgeGovernor = IAMB(AMBContractProxyHome).messageSender();
         if (bridgeGovernor != governor) {
             revert ForeignGovernorOnly(bridgeGovernor, governor);
         }
