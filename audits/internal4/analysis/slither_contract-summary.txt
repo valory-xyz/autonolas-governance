@@ -1,0 +1,13 @@
+INFO:Printers:
++ Contract IForeignMediator (Most derived contract)
+  - From IForeignMediator
+    - messageSender() (external)
+
++ Contract HomeMediator (Most derived contract)
+  - From HomeMediator
+    - changeForeignGovernor(address) (external)
+    - constructor(address,address) (public)
+    - processMessageFromForeign(bytes) (external)
+    - receive() (external)
+
+INFO:Slither:. analyzed (2 contracts)

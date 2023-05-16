@@ -1,0 +1,40 @@
+INFO:Printers:
+Contract IForeignMediator
+Contract vars: []
+Inheritance:: []
+ 
++-----------------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+|     Function    | Visibility | Modifiers | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++-----------------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+| messageSender() |  external  |     []    |  []  |   []  |       []       |       []       |           2           |
++-----------------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+| Modifiers | Visibility | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++-----------+------------+------+-------+----------------+----------------+-----------------------+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+
+INFO:Printers:
+Contract HomeMediator
+Contract vars: ['DEFAULT_DATA_LENGTH', 'AMBMediator', 'foreignGovernor']
+Inheritance:: []
+ 
++---------------------------------------+------------+-----------+----------------------------------------+------------------------------------+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+-----------------------+
+|                Function               | Visibility | Modifiers |                  Read                  |               Write                |                                         Internal Calls                                         |                                 External Calls                                | Cyclomatic Complexity |
++---------------------------------------+------------+-----------+----------------------------------------+------------------------------------+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+-----------------------+
+|      constructor(address,address)     |   public   |     []    |                   []                   | ['AMBMediator', 'foreignGovernor'] |                                    ['revert ZeroAddress()']                                    |                                       []                                      |           2           |
+|               receive()               |  external  |     []    |      ['msg.sender', 'msg.value']       |                 []                 |                                               []                                               |                                       []                                      |           1           |
+|     changeForeignGovernor(address)    |  external  |     []    |         ['msg.sender', 'this']         |        ['foreignGovernor']         |                ['revert SelfCallOnly(address,address)', 'revert ZeroAddress()']                |                                       []                                      |           3           |
+|    processMessageFromForeign(bytes)   |  external  |     []    | ['AMBMediator', 'DEFAULT_DATA_LENGTH'] |                 []                 |                             ['balance(address)', 'mload(uint256)']                             | ['IForeignMediator(AMBMediator).messageSender()', 'new bytes(payloadLength)'] |           9           |
+|                                       |            |           |   ['foreignGovernor', 'msg.sender']    |                                    |   ['revert AMBMediatorOnly(address,address)', 'revert ForeignGovernorOnly(address,address)']   |                     ['target.call{value: value}(payload)']                    |                       |
+|                                       |            |           |                ['this']                |                                    | ['revert IncorrectDataLength(uint256,uint256)', 'revert InsufficientBalance(uint256,uint256)'] |                                                                               |                       |
+|                                       |            |           |                                        |                                    |           ['revert TargetExecFailed(address,uint256,bytes)', 'revert ZeroAddress()']           |                                                                               |                       |
+| slitherConstructorConstantVariables() |  internal  |     []    |                   []                   |      ['DEFAULT_DATA_LENGTH']       |                                               []                                               |                                       []                                      |           1           |
++---------------------------------------+------------+-----------+----------------------------------------+------------------------------------+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+-----------------------+
+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+| Modifiers | Visibility | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++-----------+------------+------+-------+----------------+----------------+-----------------------+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+
+INFO:Slither:. analyzed (2 contracts)

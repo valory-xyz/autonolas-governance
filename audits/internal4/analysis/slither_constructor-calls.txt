@@ -1,0 +1,23 @@
+INFO:Printers:
+############################
+####### HomeMediator #######
+############################
+
+## Constructor Call Sequence
+	- HomeMediator
+
+## Constructor Definitions
+
+### HomeMediator
+
+     constructor(address _AMBMediator, address _foreignGovernor) {
+        // Check fo zero addresses
+        if (_AMBMediator == address(0) || _foreignGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        AMBMediator = _AMBMediator;
+        foreignGovernor = _foreignGovernor;
+    }
+
+INFO:Slither:. analyzed (2 contracts)

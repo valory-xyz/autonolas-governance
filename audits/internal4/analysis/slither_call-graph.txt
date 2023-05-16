@@ -1,0 +1,5 @@
+INFO:Printers:Call Graph: ./HomeMediator.sol.all_contracts.call-graph.dot
+Call Graph: ./HomeMediator.sol.IForeignMediator.call-graph.dot
+Call Graph: ./HomeMediator.sol.HomeMediator.call-graph.dot
+
+INFO:Slither:. analyzed (2 contracts)
