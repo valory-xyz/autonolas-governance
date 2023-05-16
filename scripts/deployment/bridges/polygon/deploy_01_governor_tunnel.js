@@ -52,7 +52,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/bridges/verify_01_governor_tunnel.js --network " + providerName + " " + fxGovernorTunnel.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/polygon/verify_01_governor_tunnel.js --network " + providerName + " " + fxGovernorTunnel.address, { encoding: "utf-8" });
     }
 }
 

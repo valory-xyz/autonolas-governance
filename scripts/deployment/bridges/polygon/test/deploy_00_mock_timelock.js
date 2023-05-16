@@ -27,13 +27,13 @@ async function main() {
 
     // Transaction signing and execution
     console.log("1. EOA to deploy mock timelock contract");
-    const Timelock = await ethers.getContractFactory("Timelock");
+    const Timelock = await ethers.getContractFactory("MockTimelock");
     console.log("You are signing the following transaction: Timelock.connect(EOA).deploy(fxRootAddress)");
     const timelock = await Timelock.connect(EOA).deploy(parsedData.fxRootAddress);
     const result = await timelock.deployed();
 
     // Transaction details
-    console.log("Contract deployment: Timelock");
+    console.log("Contract deployment: MockTimelock");
     console.log("Contract address:", timelock.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
@@ -44,7 +44,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/bridges/test/verify_00_mock_timelock.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/polygon/test/verify_00_mock_timelock.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
     }
 }
 
