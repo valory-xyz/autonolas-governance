@@ -20,7 +20,7 @@ Parameters of the `globals.json` file:
 - `useLedger`: flag whether to use the hardware wallet (`true`) or proceed with the seed-phrase accounts (`false`);
 - `derivationPath`: string with the derivation path;
 - `gasPriceInGwei`: gas price in Gwei;
-- `homeMediator`: (Gnosis) Home Mediator contract address serving as a system processor of inbound calls across the bridge;
+- `AMBContractProxyHomeAddress`: (Gnosis) AMB Contract Proxy Homeaddress serving as a system processor of inbound calls across the bridge;
 - `timelockAddress`: Timelock address on the root L1 network;
 
 The script file name identifies the number of deployment steps taken up to the number in the file name.

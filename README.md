@@ -134,7 +134,7 @@ Depending on the network, the cross-chain functionality enabled is outlined in d
 [Cross-chain governance](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
 
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
-use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack-data.js).
+use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack_data.js).
 
 ### Polygon governance bridge 
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon.
