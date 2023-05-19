@@ -133,6 +133,9 @@ The finalized contract ABIs for deployment and their number of optimization pass
 Depending on the network, the cross-chain functionality enabled is outlined in detail here:
 [Cross-chain governance](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
 
+In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
+use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack_data.js).
+
 ### Polygon governance bridge 
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon.
 
@@ -150,12 +153,10 @@ For running a test between `goerli` and `chiado`, run the test script with your 
 and [`goerli-chiado` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
-In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
-use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack-data.js).
-
 ### Deployment of bridge-related contracts
 The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here:
-[bridges](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges).
+- [bridges-polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon);
+- [bridges-gnosis](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis).
 
 ## Documents
 All the project-related documents are located here: [docs](https://github.com/valory-xyz/autonolas-governance/blob/main/docs).
