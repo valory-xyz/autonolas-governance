@@ -13,7 +13,7 @@ command and compiled with the
 npx hardhat compile
 ```
 
-Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/bridges/polygon/globals_polygon_mumbai.json` for the mumbai testnet).
+Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/bridges/gnosis/globals_gnosis_chiado.json` for the chiado testnet).
 
 Parameters of the `globals.json` file:
 - `contractVerification`: flag for verifying contracts in deployment scripts (`true`) or skipping it (`false`);
@@ -28,7 +28,7 @@ The script file name identifies the number of deployment steps taken up to the n
 Export network-related API keys defined in `hardhat.config.js` file that correspond to the required network.
 
 To run the script, use the following command:
-`npx hardhat run scripts/deployment/script_name --network network_type`,
+`npx hardhat run scripts/deployment/bridges/script_name --network network_type`,
 where `script_number_and_name` is a script number and name, i.e. `deploy_01_home_mediator.js`, `network_type` is a network type corresponding to the `hardhat.config.js` network configuration.
 
 ## Validity checks and contract verification
