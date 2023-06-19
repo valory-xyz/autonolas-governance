@@ -8,7 +8,7 @@ Update: 19-06-2023  <br>
 ## Objectives
 The audit focused on GovernorOLAS update with latest OZ version. <BR>
 NOTES: This audit is not an audit of the code OppenZeppelin itself. Audit of OZ out of scope<br>
-It is only considering using the current one (no redeploy) Timelock with the new version GovernorOLAS.
+It is considering using the previous Timelock contract (without update) with the new version GovernorOLAS.
 
 ### Flatten version
 Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal5/analysis/contracts)
