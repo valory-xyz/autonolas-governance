@@ -6,7 +6,7 @@ commit: `e4180c3b979c912345bcbd30db37c9d42d371e38` or `v1.1.4-pre-internal-audit
 Update: 19-06-2023  <br>
 
 ## Objectives
-The audit focused on update with latest OZ version. <BR>
+The audit focused on GovernorOLAS update with latest OZ version. <BR>
 NOTES: This audit is not an audit of the code OppenZeppelin itself. Audit of OZ out of scope<br>
 It is only considering using the current one (no redeploy) Timelock with the new version GovernorOLAS.
 
