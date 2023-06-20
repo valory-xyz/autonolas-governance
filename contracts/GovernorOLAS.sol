@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.so
 
 /// @title Governor OLAS - Smart contract for Autonolas governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
-/// @dev The OpenZeppelin functions are used as is, using the last OZ version (4.9.1) on the date of deployment.
+/// @dev The OpenZeppelin functions are used as is, version 4.8.3.
 contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(
         IVotes governanceToken,
@@ -56,16 +56,6 @@ contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo,
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256)
     {
         return super.proposalThreshold();
-    }
-
-    function cancel(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) public override(Governor, IGovernor, GovernorCompatibilityBravo) returns (uint256)
-    {
-        return super.cancel(targets, values, calldatas, descriptionHash);
     }
 
     /// @dev Executes a proposal.

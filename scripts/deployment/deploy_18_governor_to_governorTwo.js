@@ -20,7 +20,7 @@ async function main() {
     // Obtaining proposal values
     console.log("18. Revoking governorOLAS roles and granting governorTwoOLAS roles in the Timelock");
     const timelock = await ethers.getContractAt("Timelock", timelockAddress);
-    const targets = new Array(4).fill(governorAddress).concat(Array(4).fill(governorTwoAddress));
+    const targets = new Array(8).fill(timelockAddress);
     const values = new Array(8).fill(0);
     const callDatas = [
         timelock.interface.encodeFunctionData("revokeRole", [adminRole, governorAddress]),
