@@ -44,12 +44,14 @@ async function main() {
         initialVotingPeriod, initialProposalThreshold, quorum, { maxPriorityFeePerGas, maxFeePerGas });
     let result = await governor.deployed();
 
-
-
     // Transaction details
     console.log("Contract deployment: GovernorOLAS");
     console.log("Contract address:", governor.address);
     console.log("Transaction:", result.deployTransaction.hash);
+
+    // Writing updated parameters back to the JSON file
+    parsedData.governorTwoAddress = governor.address;
+    fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 
     // Verification of ownership and values
     expect(await governor.name()).to.equal("Governor OLAS");
@@ -63,10 +65,6 @@ async function main() {
         const execSync = require("child_process").execSync;
         execSync("npx hardhat verify --constructor-args scripts/deployment/verify_17_governorTwo.js --network " + providerName + " " + governor.address, { encoding: "utf-8" });
     }
-
-    // Writing updated parameters back to the JSON file
-    parsedData.governorTwoAddress = governor.address;
-    fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 
 main()
