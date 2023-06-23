@@ -8,7 +8,6 @@ async function main() {
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
 
-    const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
     const proposerRole = ethers.utils.id("PROPOSER_ROLE");
     const executorRole = ethers.utils.id("EXECUTOR_ROLE");
     const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
