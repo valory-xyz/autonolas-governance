@@ -45,8 +45,6 @@ async function checkBytecode(provider, configContracts, contractName, log) {
             const contractFromJSON = fs.readFileSync(configContracts[i]["artifact"], "utf8");
             const parsedFile = JSON.parse(contractFromJSON);
             const bytecode = parsedFile["deployedBytecode"];
-            console.log("\nContract name", configContracts[i]["name"]);
-            console.log("Contract address", configContracts[i]["address"]);
             const onChainCreationCode = await provider.getCode(configContracts[i]["address"]);
 
             // Compare last 8-th part of deployed bytecode bytes (wveOLAS can't manage more)
@@ -101,6 +99,39 @@ async function checkTimelock(chainId, provider, globalsInstance, configContracts
     const timelock = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + timelock.address;
+    // Check roles
+    const adminRole = ethers.utils.id("TIMELOCK_ADMIN_ROLE");
+    const proposerRole = ethers.utils.id("PROPOSER_ROLE");
+    const executorRole = ethers.utils.id("EXECUTOR_ROLE");
+    const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
+
+    // All must be true for the governor
+    let res = await timelock.hasRole(adminRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, true, log + ", function: hasRole(adminRole)");
+    res = await timelock.hasRole(proposerRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, true, log + ", function: hasRole(proposerRole)");
+    res = await timelock.hasRole(executorRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, true, log + ", function: hasRole(executorRole)");
+    res = await timelock.hasRole(cancellerRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, true, log + ", function: hasRole(cancellerRole)");
+
+    // CM must have all the roles except for the admin one
+    res = await timelock.hasRole(adminRole, globalsInstance["CM"]);
+    customExpect(res, false, log + ", function: hasRole(adminRole)");
+    res = await timelock.hasRole(proposerRole, globalsInstance["CM"]);
+    customExpect(res, true, log + ", function: hasRole(proposerRole)");
+    res = await timelock.hasRole(executorRole, globalsInstance["CM"]);
+    customExpect(res, true, log + ", function: hasRole(executorRole)");
+    res = await timelock.hasRole(cancellerRole, globalsInstance["CM"]);
+    customExpect(res, true, log + ", function: hasRole(cancellerRole)");
+
+    // Timelock has the admin role as well
+    res = await timelock.hasRole(adminRole, globalsInstance["timelockAddress"]);
+    customExpect(res, true, log + ", function: hasRole(adminRole)");
+
+    // Check timelock min delay
+    res = await timelock.getMinDelay();
+    customExpect(res.toString(), globalsInstance["timelockMinDelay"], log + ", function: hasRole(adminRole)");
 }
 
 // Check veOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -112,6 +143,10 @@ async function checkVEOLAS(chainId, provider, globalsInstance, configContracts, 
     const veOLAS = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + veOLAS.address;
+    // Check current token
+    const token = await veOLAS.token();
+    customExpect(token, globalsInstance["olasAddress"], log + ", function: token()");
+
 }
 
 // Check buOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -123,6 +158,13 @@ async function checkBUOLAS(chainId, provider, globalsInstance, configContracts, 
     const buOLAS = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + buOLAS.address;
+    // Check current token
+    const token = await buOLAS.token();
+    customExpect(token, globalsInstance["olasAddress"], log + ", function: token()");
+
+    // Check owner
+    const owner = await buOLAS.owner();
+    customExpect(owner, globalsInstance["timelockAddress"], log + ", function: owner()");
 }
 
 // Check wveOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -134,6 +176,13 @@ async function checkWrappedVEOLAS(chainId, provider, globalsInstance, configCont
     const wveOLAS = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + wveOLAS.address;
+    // Check current token
+    const token = await wveOLAS.token();
+    customExpect(token, globalsInstance["olasAddress"], log + ", function: token()");
+    
+    // Check ve
+    const ve = await wveOLAS.ve();
+    customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
 }
 
 // Check GolvernorOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -145,6 +194,29 @@ async function checkGovernorOLAS(chainId, provider, globalsInstance, configContr
     const governor = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + governor.address;
+    // Check current token
+    const token = await governor.token();
+    customExpect(token, globalsInstance["wveOLASAddress"], log + ", function: token()");
+
+    // Check timelock
+    const timelock = await governor.timelock();
+    customExpect(timelock, globalsInstance["timelockAddress"], log + ", function: timelock()");
+
+    // Check version, hardcoded
+    const version = await governor.version();
+    customExpect(version, "1", log + ", function: version()");
+
+    // Check quorumNumerator, hardcoded
+    const quorumNumerator = await governor["quorumNumerator()"]();
+    customExpect(quorumNumerator.toString(), globalsInstance["quorum"], log + ", function: quorumNumerator()");
+
+    // Check votingDelay
+    const vDelay = await governor.votingDelay();
+    customExpect(vDelay.toString(), globalsInstance["initialVotingDelay"], log + ", function: votingDelay()");
+
+    // Check quorumNumerator
+    const vPeriod = await governor.votingPeriod();
+    customExpect(vPeriod.toString(), globalsInstance["initialVotingPeriod"], log + ", function: votingPeriod()");
 }
 
 // Check FxGovernorTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -156,6 +228,13 @@ async function checkFxGovernorTunnel(chainId, provider, globalsInstance, configC
     const fxGovernorTunnel = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + fxGovernorTunnel.address;
+    // Check the root governor
+    const rootGovernor = await fxGovernorTunnel.rootGovernor();
+    customExpect(rootGovernor, globalsInstance["timelockAddress"], log + ", function: rootGovernor()");
+
+    // Check fxChild
+    const fxChild = await fxGovernorTunnel.fxChild();
+    customExpect(fxChild, globalsInstance["fxChildAddress"], log + ", function: fxChild()");
 }
 
 // Check HomeMediator: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -167,6 +246,13 @@ async function checkHomeMediator(chainId, provider, globalsInstance, configContr
     const homeMediator = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + homeMediator.address;
+    // Check the foreign governor
+    const foreignGovernor = await homeMediator.foreignGovernor();
+    customExpect(foreignGovernor, globalsInstance["timelockAddress"], log + ", function: foreignGovernor()");
+
+    // Check AMBContractProxyHomeAddress
+    const proxyHome = await homeMediator.AMBContractProxyHome();
+    customExpect(proxyHome, globalsInstance["AMBContractProxyHomeAddress"], log + ", function: AMBContractProxyHomeAddress()");
 }
 
 async function main() {
@@ -192,30 +278,30 @@ async function main() {
         "polygonMumbai": "testnet.polygonscan"
     };
 
-    //    console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
-    //
-    //    // Traverse all chains
-    //    for (let i = 0; i < numChains; i++) {
-    //        // Skip gnosis chains
-    //        if (!networks[configs[i]["name"]]) {
-    //            continue;
-    //        }
-    //
-    //        console.log("\n\nNetwork:", configs[i]["name"]);
-    //        const network = networks[configs[i]["name"]];
-    //        const contracts = configs[i]["contracts"];
-    //
-    //        // Verify contracts
-    //        for (let j = 0; j < contracts.length; j++) {
-    //            console.log("Checking " + contracts[j]["name"]);
-    //            const execSync = require("child_process").execSync;
-    //            try {
-    //                execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
-    //            } catch (error) {
-    //            }
-    //        }
-    //    }
-    //    // ################################# /VERIFY CONTRACTS WITH REPO #################################
+    console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
+
+    // Traverse all chains
+    for (let i = 0; i < numChains; i++) {
+        // Skip gnosis chains
+        if (!networks[configs[i]["name"]]) {
+            continue;
+        }
+
+        console.log("\n\nNetwork:", configs[i]["name"]);
+        const network = networks[configs[i]["name"]];
+        const contracts = configs[i]["contracts"];
+
+        // Verify contracts
+        for (let j = 0; j < contracts.length; j++) {
+            console.log("Checking " + contracts[j]["name"]);
+            const execSync = require("child_process").execSync;
+            try {
+                execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
+            } catch (error) {
+            }
+        }
+    }
+    // ################################# /VERIFY CONTRACTS WITH REPO #################################
 
     // ################################# VERIFY CONTRACTS SETUP #################################
     const globalNames = {
