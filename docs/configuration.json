@@ -1,0 +1,118 @@
+[
+  {
+    "name": "mainnet",
+    "chainId": "1",
+    "contracts": [
+      {
+        "name": "OLAS",
+        "artifact": "abis/0.8.15/OLAS.json",
+        "address": "0x0001A500A6B18995B03f44bb040A5fFc28E45CB0"
+      },
+      {
+        "name": "Timelock",
+        "artifact": "abis/0.8.15/Timelock.json",
+        "address": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+      },
+      {
+        "name": "veOLAS",
+        "artifact": "abis/0.8.15/veOLAS.json",
+        "address": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3"
+      },
+      {
+        "name": "buOLAS",
+        "artifact": "abis/0.8.15/buOLAS.json",
+        "address": "0xb09CcF0Dbf0C178806Aaee28956c74bd66d21f73"
+      },
+      {
+        "name": "wveOLAS",
+        "artifact": "abis/0.8.19/wveOLAS.json",
+        "address": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+      },
+      {
+        "name": "GovernorOLAS",
+        "artifact": "abis/0.8.20/GovernorOLAS.json",
+        "address": "0x8e84b5055492901988b831817e4ace5275a3b401"
+      }
+    ]
+  },
+  {
+    "name": "goerli",
+    "chainId": "5",
+    "contracts": [
+      {
+        "name": "OLAS",
+        "artifact": "abis/0.8.15/OLAS.json",
+        "address": "0xEdfc28215B1Eb6eb0be426f1f529cf691A5C2400"
+      },
+      {
+        "name": "Timelock",
+        "artifact": "abis/0.8.15/Timelock.json",
+        "address": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"
+      },
+      {
+        "name": "veOLAS",
+        "artifact": "abis/0.8.15/veOLAS.json",
+        "address": "0xf8B20e160557c747E8640CdcE77E1dd44bCaAfbB"
+      },
+      {
+        "name": "buOLAS",
+        "artifact": "abis/0.8.15/buOLAS.json",
+        "address": "0x397125902ED2cA2d42104F621f448A2cE1bC8Fb7"
+      },
+      {
+        "name": "wveOLAS",
+        "artifact": "abis/0.8.19/wveOLAS.json",
+        "address": "0xa2AA89938805836077aB0724f335142da7A27085"
+      },
+      {
+        "name": "GovernorOLAS",
+        "artifact": "abis/0.8.20/GovernorOLAS.json",
+        "address": "0x63b0f322837a7160B7E3d95C60aAaeB4EF1aECcb"
+      }
+    ]
+  },
+  {
+    "name": "polygon",
+    "chainId": "137",
+    "contracts": [
+      {
+        "name": "FxGovernorTunnel",
+        "artifact": "abis/0.8.19/FxGovernorTunnel.json",
+        "address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD"
+      }
+    ]
+  },
+  {
+    "name": "polygonMumbai",
+    "chainId": "80001",
+    "contracts": [
+      {
+        "name": "FxGovernorTunnel",
+        "artifact": "abis/0.8.19/FxGovernorTunnel.json",
+        "address": "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77"
+      }
+    ]
+  },
+  {
+    "name": "gnosis",
+    "chainId": "100",
+    "contracts": [
+      {
+        "name": "HomeMediator",
+        "artifact": "abis/0.8.19/HomeMediator.json",
+        "address": "0x15bd56669F57192a97dF41A2aa8f4403e9491776"
+      }
+    ]
+  },
+  {
+    "name": "chiado",
+    "chainId": "10200",
+    "contracts": [
+      {
+        "name": "HomeMediator",
+        "artifact": "abis/0.8.19/HomeMediator.json",
+        "address": "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"
+      }
+    ]
+  }
+]
