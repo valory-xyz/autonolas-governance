@@ -192,30 +192,30 @@ async function main() {
         "polygonMumbai": "testnet.polygonscan"
     };
 
-//    console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
-//
-//    // Traverse all chains
-//    for (let i = 0; i < numChains; i++) {
-//        // Skip gnosis chains
-//        if (!networks[configs[i]["name"]]) {
-//            continue;
-//        }
-//
-//        console.log("\n\nNetwork:", configs[i]["name"]);
-//        const network = networks[configs[i]["name"]];
-//        const contracts = configs[i]["contracts"];
-//
-//        // Verify contracts
-//        for (let j = 0; j < contracts.length; j++) {
-//            console.log("Checking " + contracts[j]["name"]);
-//            const execSync = require("child_process").execSync;
-//            try {
-//                execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
-//            } catch (error) {
-//            }
-//        }
-//    }
-//    // ################################# /VERIFY CONTRACTS WITH REPO #################################
+    //    console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
+    //
+    //    // Traverse all chains
+    //    for (let i = 0; i < numChains; i++) {
+    //        // Skip gnosis chains
+    //        if (!networks[configs[i]["name"]]) {
+    //            continue;
+    //        }
+    //
+    //        console.log("\n\nNetwork:", configs[i]["name"]);
+    //        const network = networks[configs[i]["name"]];
+    //        const contracts = configs[i]["contracts"];
+    //
+    //        // Verify contracts
+    //        for (let j = 0; j < contracts.length; j++) {
+    //            console.log("Checking " + contracts[j]["name"]);
+    //            const execSync = require("child_process").execSync;
+    //            try {
+    //                execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
+    //            } catch (error) {
+    //            }
+    //        }
+    //    }
+    //    // ################################# /VERIFY CONTRACTS WITH REPO #################################
 
     // ################################# VERIFY CONTRACTS SETUP #################################
     const globalNames = {
