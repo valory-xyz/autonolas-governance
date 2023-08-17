@@ -298,6 +298,7 @@ async function main() {
             try {
                 execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
             } catch (error) {
+                ;
             }
         }
     }
