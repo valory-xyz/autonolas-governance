@@ -170,8 +170,13 @@ can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main
 - The list of known vulnerabilities can be found here: [Vulnerabilities list #1](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list%231.pdf?raw=true).
 
 ### Deployed Protocol
-The list of addresses can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/mainnet_addresses).
+The list of addresses for different chains and their full contract configuration can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/configuration.json).
 
+In order to test the protocol setup on all the deployed chains, the audit script is implemented. Make sure to export
+required API keys for corresponding chains (see the script for more information). The audit script can be run as follows:
+```
+node scripts/audit_chains/audit_contracts_setup.js
+```
 
 ## Acknowledgements
 The Autonolas `OLAS` contract was inspired and based on in parts by the following sources:
