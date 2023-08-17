@@ -36,6 +36,22 @@ function customExpectContain(arg1, arg2, log) {
     }
 }
 
+// Custom expect for contain clause that is wrapped into try / catch block
+function customExpectWithIn(arg1, arg2, arg3, log) {
+    try {
+        expect(arg1).within(arg2,arg3);
+    } catch (error) {
+        console.log(log);
+        if (error.status) {
+            console.error(error.status);
+            console.log("\n");
+        } else {
+            console.error(error);
+            console.log("\n");
+        }
+    }
+}
+
 // Check the bytecode
 async function checkBytecode(provider, configContracts, contractName, log) {
     // Get the contract number from the set of configuration contracts
@@ -112,6 +128,10 @@ async function checkVEOLAS(chainId, provider, globalsInstance, configContracts, 
     const veOLAS = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + veOLAS.address;
+    // Check current token
+    const olas = await veOLAS.token();
+    customExpect(olas, globalsInstance["olasAddress"], log + ", function: token()");
+
 }
 
 // Check buOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -123,6 +143,13 @@ async function checkBUOLAS(chainId, provider, globalsInstance, configContracts, 
     const buOLAS = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + buOLAS.address;
+    // Check current token
+    const olas = await buOLAS.token();
+    customExpect(olas, globalsInstance["olasAddress"], log + ", function: token()");
+
+    // Check owner
+    const owner = await buOLAS.owner();
+    customExpect(owner, globalsInstance["timelockAddress"], log + ", function: owner()");
 }
 
 // Check wveOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -134,6 +161,13 @@ async function checkWrappedVEOLAS(chainId, provider, globalsInstance, configCont
     const wveOLAS = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + wveOLAS.address;
+    // Check current token
+    const olas = await wveOLAS.token();
+    customExpect(olas, globalsInstance["olasAddress"], log + ", function: token()");
+    
+    // Check ve
+    const ve = await wveOLAS.ve();
+    customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
 }
 
 // Check GolvernorOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -145,6 +179,27 @@ async function checkGovernorOLAS(chainId, provider, globalsInstance, configContr
     const governor = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + governor.address;
+    // Check current token
+    const wveOLAS = await governor.token();
+    customExpect(wveOLAS, globalsInstance["wveOLASAddress"], log + ", function: token()");
+    // Check timelock
+    const timelock = await governor.timelock();
+    customExpect(timelock, globalsInstance["timelockAddress"], log + ", function: timelock()");
+    // Check version, hardcoded
+    const version = await governor.version();
+    customExpect(version, "1", log + ", function: version()");
+    // Check quorumNumerator, hardcoded
+    const quorumNumerator = await governor.quorumNumerator();
+    customExpect(quorumNumerator, "3", log + ", function: quorumNumerator()");
+    // Check votingDelay, hardcoded 2 days => 86400 * 2 / 12.43 = 13901
+    // 86400 * 2 / 11 = 15709 to 86400 * 2 / 15 = 11250
+    const vDelay = await governor.votingDelay();
+    customExpectWithIn(vDelay, "11250","13901", log + ", function: votingDelay()");
+    // Check quorumNumerator, hardcoded 2 days => 86400 * 3 / 13.2 = 19639
+    // 86400 * 3 / 11 = 23563 to 86400 * 3 / 15 = 17280
+    const vPeriod = await governor.votingPeriod();
+    customExpectWithIn(vPeriod, "17280","23563", log + ", function: votingPeriod()");
+
 }
 
 // Check FxGovernorTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
