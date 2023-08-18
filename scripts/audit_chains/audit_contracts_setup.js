@@ -185,8 +185,8 @@ async function checkWrappedVEOLAS(chainId, provider, globalsInstance, configCont
     customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
 }
 
-// Check GolvernorOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
-async function checkGovernorOLAS(chainId, provider, globalsInstance, configContracts, contractName, log) {
+// Check GolvernorOLAS: chain Id, provider, parsed globals, mainnet globals, configuration contracts, contract name
+async function checkGovernorOLAS(chainId, provider, globalsInstance, globalsMainnet, configContracts, contractName, log) {
     // Check the bytecode
     await checkBytecode(provider, configContracts, contractName, log);
 
@@ -202,21 +202,22 @@ async function checkGovernorOLAS(chainId, provider, globalsInstance, configContr
     const timelock = await governor.timelock();
     customExpect(timelock, globalsInstance["timelockAddress"], log + ", function: timelock()");
 
-    // Check version, hardcoded
+    // Check version
     const version = await governor.version();
     customExpect(version, "1", log + ", function: version()");
 
-    // Check quorumNumerator, hardcoded
+    // Value below need to be in sync with mainnet
+    // Check quorumNumerator
     const quorumNumerator = await governor["quorumNumerator()"]();
-    customExpect(quorumNumerator.toString(), globalsInstance["quorum"], log + ", function: quorumNumerator()");
+    customExpect(quorumNumerator.toString(), globalsMainnet["quorum"], log + ", function: quorumNumerator()");
 
     // Check votingDelay
     const vDelay = await governor.votingDelay();
-    customExpect(vDelay.toString(), globalsInstance["initialVotingDelay"], log + ", function: votingDelay()");
+    customExpect(vDelay.toString(), globalsMainnet["initialVotingDelay"], log + ", function: votingDelay()");
 
     // Check quorumNumerator
     const vPeriod = await governor.votingPeriod();
-    customExpect(vPeriod.toString(), globalsInstance["initialVotingPeriod"], log + ", function: votingPeriod()");
+    customExpect(vPeriod.toString(), globalsMainnet["initialVotingPeriod"], log + ", function: votingPeriod()");
 }
 
 // Check FxGovernorTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -357,7 +358,7 @@ async function main() {
         await checkWrappedVEOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "wveOLAS", log);
 
         log = initLog + ", contract: " + "GovernorOLAS";
-        await checkGovernorOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "GovernorOLAS", log);
+        await checkGovernorOLAS(configs[i]["chainId"], providers[i], globals[i], globals[0], configs[i]["contracts"], "GovernorOLAS", log);
     }
 
     // L2 contracts
