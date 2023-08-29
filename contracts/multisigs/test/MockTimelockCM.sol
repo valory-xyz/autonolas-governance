@@ -7,19 +7,27 @@ error ExecFailed(address multisig, bytes payload);
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author AL
 contract MockTimelockCM {
-    // Multisig address
-    address public multisig;
-
-    function setMultisig(address _multisig) external {
-        multisig = _multisig;
-    }
+    event CallScheduled(address target, uint256 value, bytes data, bytes32 predecessor, bytes32 salt, uint256 delay);
 
     /// @dev Executes the payload at the Fx Root address.
+    /// @param to Address to call.
     /// @param payload Bytes of payload.
-    function execute(bytes memory payload) external {
-        (bool success, ) = multisig.call(payload);
+    function execute(address to, bytes memory payload) external {
+        (bool success, ) = to.call(payload);
         if (!success) {
-            revert ExecFailed(multisig, payload);
+            revert ExecFailed(to, payload);
         }
+    }
+
+    /// @dev Mock of a schedule function.
+    function schedule(
+        address target,
+        uint256 value,
+        bytes calldata data,
+        bytes32 predecessor,
+        bytes32 salt,
+        uint256 delay
+    ) external {
+        emit CallScheduled(target, value, data, predecessor, salt, delay);
     }
 }
