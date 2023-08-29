@@ -252,16 +252,32 @@ describe("Community Multisig", function () {
             const defaultProposalId = await guard.governorCheckProposalId();
             expect(proposalId).to.equal(defaultProposalId);
 
-            // Wait until the proposal gets defeated
-            await helpers.mine(initialVotingDelay + initialVotingPeriod + 1);
-
-            // Now the proposal must be defeated and the CM can pause the guard
+            // Construct the pausing tx
             nonce = await multisig.nonce();
             txHashData = await safeContracts.buildContractCall(guard, "pause", [], nonce, 0, 0);
             for (let i = 0; i < safeThreshold; i++) {
                 signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
             }
+
+            // Try to pause the guard when the proposal is not yet defeated
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Wait until the proposal gets defeated
+            await helpers.mine(initialVotingDelay + initialVotingPeriod + 1);
+
+            // Now the proposal must be defeated and the CM can pause the guard
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Try to unpause the guard by a non-owner
+            await expect(
+                guard.connect(deployer).unpause()
+            ).to.be.revertedWithCustomError(guard, "OwnerOnly");
+
+            // The timelock now can unpause the guard
+            const unpausePayload = guard.interface.encodeFunctionData("unpause");
+            await timelock.execute(guard.address, unpausePayload);
 
             // Restore to the state of the snapshot
             await snapshot.restore();

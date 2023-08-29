@@ -7,6 +7,18 @@ interface IGovernor {
     function state(uint256 proposalId) external returns (ProposalState);
 }
 
+// Governor proposal state
+enum ProposalState {
+    Pending,
+    Active,
+    Canceled,
+    Defeated,
+    Succeeded,
+    Queued,
+    Expired,
+    Executed
+}
+
 /// @dev Only `owner` has a privilege, but the `sender` was provided.
 /// @param sender Sender address.
 /// @param owner Required sender address as an owner.
@@ -44,17 +56,10 @@ error NoSelfCall();
 /// @param selector Function selector.
 error NotAuthorized(address target, bytes4 selector);
 
-// Governor proposal state
-enum ProposalState {
-    Pending,
-    Active,
-    Canceled,
-    Defeated,
-    Succeeded,
-    Queued,
-    Expired,
-    Executed
-}
+/// @dev The proposal is not yet defeated.
+/// @param proposalId Proposal Id.
+/// @param state Current proposal state.
+error NotYetDefeated(uint256 proposalId, ProposalState state);
 
 /// @title GuardCM - Smart contract for Gnosis Safe community multisig (CM) guard
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
@@ -268,6 +273,8 @@ contract GuardCM {
             ProposalState state = IGovernor(governor).state(governorCheckProposalId);
             if (state == ProposalState.Defeated) {
                 paused = 2;
+            } else {
+                revert NotYetDefeated(governorCheckProposalId, state);
             }
         } else {
             // msg.sender is not a timelock, nor a multisig
