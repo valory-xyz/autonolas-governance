@@ -77,7 +77,7 @@ contract GuardCM {
     address public immutable multisig;
     // Governor address
     address public governor;
-    // Guard pause possibility
+    // Guard pausing possibility
     uint8 public paused = 1;
     
     // Mapping of address + bytes4 selector => enabled / disabled
@@ -137,7 +137,7 @@ contract GuardCM {
     /// @dev Verifies authorized target and selector in the schedule or scheduleBatch function call.
     /// @param data Data in bytes.
     /// @param selector Schedule function selector.
-    function _verifySchedule(bytes memory data, bytes4 selector) internal {
+    function _verifySchedule(bytes memory data, bytes4 selector) internal view {
         //address,uint256,bytes,bytes32,bytes32,uint256
         bytes memory payload = new bytes(data.length - 4);
         for (uint256 i = 0; i < payload.length; ++i) {
@@ -161,6 +161,7 @@ contract GuardCM {
             abi.decode(payload, (address[], uint256[], bytes[], bytes32, bytes32, uint256));
         }
 
+        // Traverse all the schedule targets and selectors extracted from calldatas
         for (uint i = 0; i < targets.length; ++i) {
             // Push a pair of key defining variables into one key
             // target occupies first 160 bits
@@ -179,29 +180,21 @@ contract GuardCM {
     /// @notice Scheduling in timelock in checked against authorized targets and signatures.
     /// @notice No self-multisig function calls are allowed.
     /// @param to Destination address of Safe transaction.
-    /// @param value Ether value of Safe transaction.
     /// @param data Data payload of Safe transaction.
     /// @param operation Operation type of Safe transaction.
-    /// @param safeTxGas Gas that should be used for the Safe transaction.
-    /// @param baseGas Gas costs that are independent of the transaction execution(e.g. base transaction fee, signature check, payment of the refund)
-    /// @param gasPrice Gas price that should be used for the payment calculation.
-    /// @param gasToken Token address (or 0 if ETH) that is used for the payment.
-    /// @param refundReceiver Address of receiver of gas payment (or 0 if tx.origin).
-    /// @param signatures Packed signature data ({bytes32 r}{bytes32 s}{uint8 v}).
-    /// @param msgSender msg.sender of a Safe transaction.
     function checkTransaction(
         address to,
-        uint256 value,
+        uint256,
         bytes memory data,
         Enum.Operation operation,
-        uint256 safeTxGas,
-        uint256 baseGas,
-        uint256 gasPrice,
-        address gasToken,
-        address payable refundReceiver,
-        bytes memory signatures,
-        address msgSender
-    ) external {
+        uint256,
+        uint256,
+        uint256,
+        address,
+        address payable,
+        bytes memory,
+        address
+    ) external view {
         // Just return if paused
         if (paused == 1) {
             // Call to the timelock
