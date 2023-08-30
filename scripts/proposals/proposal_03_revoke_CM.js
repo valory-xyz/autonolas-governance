@@ -16,7 +16,7 @@ async function main() {
     const CMAddress = parsedData.CM;
 
     // Obtaining proposal values
-    console.log("19. Revoking CM in the Timelock");
+    console.log("3. Revoking CM in the Timelock");
     const timelock = await ethers.getContractAt("Timelock", timelockAddress);
     const targets = new Array(3).fill(timelockAddress);
     const values = new Array(3).fill(0);
