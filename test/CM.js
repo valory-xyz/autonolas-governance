@@ -20,6 +20,7 @@ describe("Community Multisig", function () {
     let deployer;
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
+    const Bytes4Zero = "0x" + "0".repeat(8);
     const safeThreshold = 7;
     const initialVotingDelay = 5;
     const initialVotingPeriod = 10;
@@ -91,6 +92,74 @@ describe("Community Multisig", function () {
         await guard.deployed();
     });
 
+    context("Initialization", async function () {
+        it("Change governor", async function () {
+            // Try to change governor not by the timelock
+            await expect(
+                guard.changeGovernor(governor.address)
+            ).to.be.revertedWithCustomError(guard, "OwnerOnly");
+
+            // Try to change governor to the zero address
+            let payload = guard.interface.encodeFunctionData("changeGovernor", [AddressZero]);
+            await expect(
+                timelock.execute(guard.address, payload)
+            ).to.be.reverted;
+
+            payload = guard.interface.encodeFunctionData("changeGovernor", [timelock.address]);
+            await timelock.execute(guard.address, payload);
+            expect(await guard.owner()).to.equal(timelock.address);
+        });
+
+        it("Change governor check proposal Id", async function () {
+            // Try to change the proposal Id not by the timelock
+            await expect(
+                guard.changeGovernorCheckProposalId(5)
+            ).to.be.revertedWithCustomError(guard, "OwnerOnly");
+
+            // Try to change proposal Id to the zero address
+            let payload = guard.interface.encodeFunctionData("changeGovernorCheckProposalId", [0]);
+            await expect(
+                timelock.execute(guard.address, payload)
+            ).to.be.reverted;
+
+            payload = guard.interface.encodeFunctionData("changeGovernorCheckProposalId", [5]);
+            await timelock.execute(guard.address, payload);
+            expect(await guard.governorCheckProposalId()).to.equal(5);
+        });
+
+        it("Set target selectors", async function () {
+            // Try to set selectors not by the timelock
+            await expect(
+                guard.setTargetSelectors([AddressZero], [Bytes4Zero], [true])
+            ).to.be.revertedWithCustomError(guard, "OwnerOnly");
+
+            // Try to set targets with wrong arrays
+            let setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+                [[AddressZero], [Bytes4Zero, Bytes4Zero], [true]]);
+            await expect(
+                timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+                [[AddressZero], [Bytes4Zero], [true, true]]);
+            await expect(
+                timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+        });
+
+        it("Pause the guard", async function () {
+            // Try to pause the guard not by the timelock or the multisig
+            await expect(
+                guard.pause()
+            ).to.be.revertedWithCustomError(guard, "ManagerOnly");
+
+            // Pause the guard by the timelock
+            const payload = guard.interface.encodeFunctionData("pause", []);
+            await timelock.execute(guard.address, payload);
+            expect(await guard.paused()).to.equal(2);
+        });
+    });
+
     context("Timelock manipulation via the CM", async function () {
         it("Enabling CM module as a timelock address ", async function () {
             // Add timelock as a module
@@ -160,7 +229,7 @@ describe("Community Multisig", function () {
             await timelock.execute(guard.address, setTargetSelectorsPayload);
 
             // Create a payload data for the schedule function
-            const payload = treasury.interface.encodeFunctionData("pause");
+            let payload = treasury.interface.encodeFunctionData("pause");
 
             // Prepare the CM schedule function call
             nonce = await multisig.nonce();
@@ -180,8 +249,81 @@ describe("Community Multisig", function () {
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
             // Check that the treasury is paused
-            const pausedTreasury = await treasury.paused();
+            let pausedTreasury = await treasury.paused();
             expect(pausedTreasury).to.eq(2);
+
+            // Pause the guard and be able to unpause the treasury even though it's not authorized
+            payload = guard.interface.encodeFunctionData("pause", []);
+            await timelock.execute(guard.address, payload);
+
+            payload = treasury.interface.encodeFunctionData("unpause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "execute", [treasury.address, payload], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            pausedTreasury = await treasury.paused();
+            expect(pausedTreasury).to.eq(1);
+
+            // Unpause the guard
+            payload = guard.interface.encodeFunctionData("unpause", []);
+            await timelock.execute(guard.address, payload);
+
+            // Negative checks
+            // Try to call non-authorized selectors
+            payload = treasury.interface.encodeFunctionData("unpause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to do a delegatecall with the authorized selector
+            payload = treasury.interface.encodeFunctionData("pause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 1, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to pass the payload shorter than at least 4 bytes
+            nonce = await multisig.nonce();
+            txHashData.data = "0x00";
+            txHashData.operation = 0;
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to have a call to the multisig itself
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(multisig, "getThreshold", [], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
         });
 
         it("CM Guard with a scheduleBatch function", async function () {

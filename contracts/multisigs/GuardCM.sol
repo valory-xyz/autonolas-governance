@@ -175,7 +175,7 @@ contract GuardCM {
     }
 
     /// @dev Checks the transaction for authorized arguments.
-    /// @notice Scheduling in timelock in checked against authorized targets and signatures.
+    /// @notice Scheduling in timelock is checked against authorized targets and signatures.
     /// @notice No self-multisig function calls are allowed.
     /// @param to Destination address of Safe transaction.
     /// @param data Data payload of Safe transaction.
@@ -236,6 +236,7 @@ contract GuardCM {
             revert WrongArrayLength(targets.length, selectors.length);
         }
 
+        // Traverse all the targets and selectors to build their paired values
         for (uint256 i = 0; i < targets.length; ++i) {
             // Push a pair of key defining variables into one key
             // target occupies first 160 bits
@@ -251,7 +252,7 @@ contract GuardCM {
     }
 
     /// @dev Pauses the guard restoring a full CM functionality.
-    /// @notice The timelock is able to pause the guard via the voting.
+    /// @notice The timeline is able to pause the guard via the voting.
     /// @notice The CM can request pausing the guard is there was a proposal to check if the governance is alive.
     ///         If the proposal is defeated (not enough votes or never voted on),
     ///         the governance is considered inactive for about a week.
@@ -260,7 +261,7 @@ contract GuardCM {
             // Timelock can release the community multisig right away
             paused = 2;
         } else if (msg.sender == multisig) {
-            // Multisig needs to check if governor check proposal Id state is defeated
+            // Multisig needs to check if the governor check proposal Id state is defeated
             ProposalState state = IGovernor(governor).state(governorCheckProposalId);
             if (state == ProposalState.Defeated) {
                 paused = 2;
