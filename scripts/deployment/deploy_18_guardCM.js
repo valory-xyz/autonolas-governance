@@ -1,6 +1,5 @@
 /*global process*/
 
-const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { LedgerSigner } = require("@anders-t/ethers-ledger");
 
