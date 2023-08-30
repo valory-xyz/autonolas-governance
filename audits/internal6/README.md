@@ -34,12 +34,17 @@ Storage: [GuardCM](https://github.com/valory-xyz/autonolas-governance/blob/main/
 Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal6/analysis/slither_full.txt) <br>
 Minor issue: <br>
 - lacks a zero-check on constructor
+[x] fixed - same as in other contracts, no need for the sanity check as we deploy on test networks as well
 
 Notes: <br>
 - You need to add it in some initializer (for example, in the constructor) pre-defined list of mapAllowedTargetSelectors.
+[x] fixed - decided to not create pre-defined targets and selectors
+
 - Please, add the following tests: 
 -- CM owners can't call addOwnerWithThreshold() after installing Guard.
+[x] fixed - there is a test that tries to call the getThreshold() function on self multisig.
 -- In "Guarded CM can still do other actions" transfer ETH from CM.
+[x] fixed - added the test.
 
 
 
