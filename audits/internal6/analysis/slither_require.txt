@@ -1,0 +1,36 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Contract Enum
++----------+-------------------+
+| Function | require or assert |
++----------+-------------------+
++----------+-------------------+
+INFO:Printers:
+Contract IGovernor
++----------+-------------------+
+| Function | require or assert |
++----------+-------------------+
+|  state   |                   |
++----------+-------------------+
+INFO:Printers:
+Contract GuardCM
++-------------------------------------+-------------------+
+|               Function              | require or assert |
++-------------------------------------+-------------------+
+|             constructor             |                   |
+|            changeGovernor           |                   |
+|    changeGovernorCheckProposalId    |                   |
+|           _verifySchedule           |                   |
+|           checkTransaction          |                   |
+|          setTargetSelectors         |                   |
+|                pause                |                   |
+|               unpause               |                   |
+|         checkAfterExecution         |                   |
+|     slitherConstructorVariables     |                   |
+| slitherConstructorConstantVariables |                   |
++-------------------------------------+-------------------+
+INFO:Slither:. analyzed (3 contracts)

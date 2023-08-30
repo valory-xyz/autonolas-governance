@@ -466,5 +466,38 @@ describe("Community Multisig", function () {
             const balanceAfter = await olas.balanceOf(deployer.address);
             expect(balanceAfter.sub(balanceBefore)).to.equal(amount);
         });
+
+        it("Guarded CM can still transfer ETH", async function () {
+            // Setting the CM guard
+            let nonce = await multisig.nonce();
+            let txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            let signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Send funds to the multisig
+            const amount = ethers.utils.parseEther("1000");
+            await deployer.sendTransaction({to: multisig.address, value: amount});
+
+            let balance = await ethers.provider.getBalance(multisig.address);
+            expect(balance).to.equal(amount);
+
+            // Get the balance before
+            const balanceBefore = await ethers.provider.getBalance(deployer.address);
+
+            // Send the funds back
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildSafeTransaction({to: deployer.address, data: "0x", operation: 0, nonce: nonce});
+            txHashData.value = amount;
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            balance = await ethers.provider.getBalance(multisig.address);
+            expect(balance).to.equal(0);
+        });
     });
 });

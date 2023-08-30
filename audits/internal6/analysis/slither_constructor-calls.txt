@@ -1,0 +1,24 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+#######################
+####### GuardCM #######
+#######################
+
+## Constructor Call Sequence
+	- GuardCM
+
+## Constructor Definitions
+
+### GuardCM
+
+     constructor(address _timelock, address _multisig, address _governor) {
+        owner = _timelock;
+        multisig = _multisig;
+        governor = _governor;
+    }
+
+INFO:Slither:. analyzed (3 contracts)

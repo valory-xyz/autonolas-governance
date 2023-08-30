@@ -1,0 +1,29 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Enum:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+IGovernor:
++------+------+------+--------+
+| Name | Type | Slot | Offset |
++------+------+------+--------+
++------+------+------+--------+
+
+GuardCM:
++-----------------------------------+--------------------------+------+--------+
+|                Name               |           Type           | Slot | Offset |
++-----------------------------------+--------------------------+------+--------+
+|          GuardCM.governor         |         address          |  0   |   0    |
+|           GuardCM.paused          |          uint8           |  0   |   20   |
+| GuardCM.mapAllowedTargetSelectors | mapping(uint256 => bool) |  1   |   0    |
+|  GuardCM.governorCheckProposalId  |         uint256          |  2   |   0    |
++-----------------------------------+--------------------------+------+--------+
+
+INFO:Slither:. analyzed (3 contracts)
