@@ -68,6 +68,11 @@
         "name": "GovernorOLAS",
         "artifact": "abis/0.8.20/GovernorOLAS.json",
         "address": "0x63b0f322837a7160B7E3d95C60aAaeB4EF1aECcb"
+      },
+      {
+        "name": "GuardCM",
+        "artifact": "abis/0.8.21/GuardCM.json",
+        "address": "0x1F4C3134aFB97DE2BfBBF28894d24F58D0A95eFC"
       }
     ]
   },
