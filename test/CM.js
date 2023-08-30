@@ -433,5 +433,38 @@ describe("Community Multisig", function () {
             // Restore to the state of the snapshot
             await snapshot.restore();
         });
+
+        it("Guarded CM can still do other actions", async function () {
+            // Setting the CM guard
+            let nonce = await multisig.nonce();
+            let txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            let signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Send funds to the multisig
+            const amount = ethers.utils.parseEther("1000");
+            await olas.mint(multisig.address, amount);
+
+            const balance = await olas.balanceOf(multisig.address);
+            expect(balance).to.equal(amount);
+
+            // Get the balance before
+            const balanceBefore = await olas.balanceOf(deployer.address);
+
+            // Send the funds back
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(olas, "transfer", [deployer.address, amount], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Get the balance after that must be bigger by the amount
+            const balanceAfter = await olas.balanceOf(deployer.address);
+            expect(balanceAfter.sub(balanceBefore)).to.equal(amount);
+        });
     });
 });
