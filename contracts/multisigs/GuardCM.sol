@@ -56,10 +56,10 @@ error NoSelfCall();
 /// @param selector Function selector.
 error NotAuthorized(address target, bytes4 selector);
 
-/// @dev The proposal is not yet defeated.
+/// @dev The proposal is not defeated.
 /// @param proposalId Proposal Id.
 /// @param state Current proposal state.
-error NotYetDefeated(uint256 proposalId, ProposalState state);
+error NotDefeated(uint256 proposalId, ProposalState state);
 
 /// @title GuardCM - Smart contract for Gnosis Safe community multisig (CM) guard
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
@@ -146,18 +146,16 @@ contract GuardCM {
 
         // Prepare the decoding data sets
         address[] memory targets;
-        uint256[] memory values;
         bytes[] memory callDatas;
         if (selector == SCHEDULE) {
             targets = new address[](1);
-            values = new uint256[](1);
             callDatas = new bytes[](1);
             // Decode the data in the schedule function
-            (targets[0], values[0], callDatas[0], , , ) =
+            (targets[0], , callDatas[0], , , ) =
                 abi.decode(payload, (address, uint256, bytes, bytes32, bytes32, uint256));
         } else {
             // Decode the data in the scheduleBatch function
-            (targets, values, callDatas, , , ) =
+            (targets, , callDatas, , , ) =
             abi.decode(payload, (address[], uint256[], bytes[], bytes32, bytes32, uint256));
         }
 
@@ -267,7 +265,7 @@ contract GuardCM {
             if (state == ProposalState.Defeated) {
                 paused = 2;
             } else {
-                revert NotYetDefeated(governorCheckProposalId, state);
+                revert NotDefeated(governorCheckProposalId, state);
             }
         } else {
             // msg.sender is not a timelock, nor a multisig

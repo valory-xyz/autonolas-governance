@@ -102,6 +102,15 @@ describe("Community Multisig", function () {
             }
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
+            // Setting the CM guard to make sure the module can still act on a multisig
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
             // Construct the payload for the multisig
             //const safePayload = multisig.interface.encodeFunctionData("addOwnerWithThreshold", [signers[15].address, safeThreshold]);
             //const timelockPayload = multisig.interface.encodeFunctionData("execTransactionFromModule", [multisig.address, 0, safePayload, 0]);
