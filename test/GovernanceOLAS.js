@@ -37,7 +37,6 @@ describe("Governance OLAS", function () {
         token = await Token.deploy();
         await token.deployed();
 
-        // Dispenser address is irrelevant in these tests, so its contract is passed as a zero address
         const VotingEscrow = await ethers.getContractFactory("veOLAS");
         ve = await VotingEscrow.deploy(token.address, "Voting Escrow OLAS", "veOLAS");
         await ve.deployed();
