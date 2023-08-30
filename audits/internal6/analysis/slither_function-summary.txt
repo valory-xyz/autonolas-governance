@@ -1,0 +1,70 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Contract Enum
+Contract vars: []
+Inheritance:: []
+ 
++----------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+| Function | Visibility | Modifiers | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++----------+------------+-----------+------+-------+----------------+----------------+-----------------------+
++----------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+| Modifiers | Visibility | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++-----------+------------+------+-------+----------------+----------------+-----------------------+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+
+INFO:Printers:
+Contract IGovernor
+Contract vars: []
+Inheritance:: []
+ 
++----------------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+|    Function    | Visibility | Modifiers | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++----------------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+| state(uint256) |  external  |     []    |  []  |   []  |       []       |       []       |           2           |
++----------------+------------+-----------+------+-------+----------------+----------------+-----------------------+
+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+| Modifiers | Visibility | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++-----------+------------+------+-------+----------------+----------------+-----------------------+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+
+INFO:Printers:
+Contract GuardCM
+Contract vars: ['owner', 'multisig', 'governor', 'paused', 'mapAllowedTargetSelectors', 'SCHEDULE', 'SCHEDULE_BATCH', 'governorCheckProposalId']
+Inheritance:: []
+ 
++--------------------------------------------------------------------------------------------------------------+------------+-----------+-------------------------------------------+---------------------------------------+--------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+
+|                                                   Function                                                   | Visibility | Modifiers |                    Read                   |                 Write                 |                                    Internal Calls                                    |                                                                    External Calls                                                                    | Cyclomatic Complexity |
++--------------------------------------------------------------------------------------------------------------+------------+-----------+-------------------------------------------+---------------------------------------+--------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+
+|                                     constructor(address,address,address)                                     |   public   |     []    |                     []                    |        ['governor', 'multisig']       |                                          []                                          |                                                                          []                                                                          |           1           |
+|                                                                                                              |            |           |                                           |               ['owner']               |                                                                                      |                                                                                                                                                      |                       |
+|                                           changeGovernor(address)                                            |  external  |     []    |          ['msg.sender', 'owner']          |              ['governor']             |            ['revert OwnerOnly(address,address)', 'revert ZeroAddress()']             |                                                                          []                                                                          |           3           |
+|                                    changeGovernorCheckProposalId(uint256)                                    |  external  |     []    |          ['msg.sender', 'owner']          |      ['governorCheckProposalId']      |             ['revert OwnerOnly(address,address)', 'revert ZeroValue()']              |                                                                          []                                                                          |           3           |
+|                                        _verifySchedule(bytes,bytes4)                                         |  internal  |     []    | ['SCHEDULE', 'mapAllowedTargetSelectors'] |                   []                  |               ['abi.decode()', 'revert NotAuthorized(address,bytes4)']               | ['abi.decode(payload,(address,uint256,bytes,bytes32,bytes32,uint256))', 'abi.decode(payload,(address[],uint256[],bytes[],bytes32,bytes32,uint256))'] |           5           |
+|                                                                                                              |            |           |                                           |                                       |                                                                                      |                                                  ['new address[](1)', 'new bytes(data.length - 4)']                                                  |                       |
+|                                                                                                              |            |           |                                           |                                       |                                                                                      |                                                                  ['new bytes[](1)']                                                                  |                       |
+| checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) |  external  |     []    |       ['SCHEDULE', 'SCHEDULE_BATCH']      |                   []                  |          ['_verifySchedule', 'revert IncorrectDataLength(uint256,uint256)']          |                                                                          []                                                                          |           7           |
+|                                                                                                              |            |           |           ['multisig', 'owner']           |                                       |                  ['revert NoDelegateCall()', 'revert NoSelfCall()']                  |                                                                                                                                                      |                       |
+|                                                                                                              |            |           |                 ['paused']                |                                       |                                                                                      |                                                                                                                                                      |                       |
+|                                setTargetSelectors(address[],bytes4[],bool[])                                 |  external  |     []    |          ['msg.sender', 'owner']          |     ['mapAllowedTargetSelectors']     |  ['revert OwnerOnly(address,address)', 'revert WrongArrayLength(uint256,uint256)']   |                                                                          []                                                                          |           4           |
+|                                                   pause()                                                    |  external  |     []    |  ['governor', 'governorCheckProposalId']  |               ['paused']              | ['revert ManagerOnly(address,address)', 'revert NotDefeated(uint256,ProposalState)'] |                                                ['IGovernor(governor).state(governorCheckProposalId)']                                                |           4           |
+|                                                                                                              |            |           |         ['msg.sender', 'multisig']        |                                       |                                                                                      |                                                                                                                                                      |                       |
+|                                                                                                              |            |           |                 ['owner']                 |                                       |                                                                                      |                                                                                                                                                      |                       |
+|                                                  unpause()                                                   |  external  |     []    |          ['msg.sender', 'owner']          |               ['paused']              |                        ['revert OwnerOnly(address,address)']                         |                                                                          []                                                                          |           2           |
+|                                      checkAfterExecution(bytes32,bool)                                       |  external  |     []    |                     []                    |                   []                  |                                          []                                          |                                                                          []                                                                          |           1           |
+|                                        slitherConstructorVariables()                                         |  internal  |     []    |                     []                    | ['governorCheckProposalId', 'paused'] |                                          []                                          |                                                                          []                                                                          |           1           |
+|                                    slitherConstructorConstantVariables()                                     |  internal  |     []    |                     []                    |     ['SCHEDULE', 'SCHEDULE_BATCH']    |                                 ['keccak256(bytes)']                                 |                                                                          []                                                                          |           1           |
++--------------------------------------------------------------------------------------------------------------+------------+-----------+-------------------------------------------+---------------------------------------+--------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+
+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+| Modifiers | Visibility | Read | Write | Internal Calls | External Calls | Cyclomatic Complexity |
++-----------+------------+------+-------+----------------+----------------+-----------------------+
++-----------+------------+------+-------+----------------+----------------+-----------------------+
+
+INFO:Slither:. analyzed (3 contracts)

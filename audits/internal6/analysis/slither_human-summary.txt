@@ -1,0 +1,26 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Compiled with solc
+Number of lines: 299 (+ 0 in dependencies, + 0 in tests)
+Number of assembly lines: 0
+Number of contracts: 3 (+ 0 in dependencies, + 0 tests) 
+
+Number of optimization issues: 0
+Number of informational issues: 2
+Number of low issues: 5
+Number of medium issues: 0
+Number of high issues: 0
+
+
++-----------+-------------+------+------------+--------------+----------+
+|    Name   | # functions | ERCS | ERC20 info | Complex code | Features |
++-----------+-------------+------+------------+--------------+----------+
+|    Enum   |      0      |      |            |      No      |          |
+| IGovernor |      1      |      |            |      No      |          |
+|  GuardCM  |      11     |      |            |      No      |          |
++-----------+-------------+------+------------+--------------+----------+
+INFO:Slither:. analyzed (3 contracts)

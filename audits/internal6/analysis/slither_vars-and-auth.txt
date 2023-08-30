@@ -1,0 +1,37 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Contract Enum
++----------+-------------------------+--------------------------+
+| Function | State variables written | Conditions on msg.sender |
++----------+-------------------------+--------------------------+
++----------+-------------------------+--------------------------+
+
+Contract IGovernor
++----------+-------------------------+--------------------------+
+| Function | State variables written | Conditions on msg.sender |
++----------+-------------------------+--------------------------+
+|  state   |            []           |            []            |
++----------+-------------------------+--------------------------+
+
+Contract GuardCM
++-------------------------------------+---------------------------------------+---------------------------------------------------+
+|               Function              |        State variables written        |              Conditions on msg.sender             |
++-------------------------------------+---------------------------------------+---------------------------------------------------+
+|             constructor             |   ['governor', 'multisig', 'owner']   |                         []                        |
+|            changeGovernor           |              ['governor']             |              ['msg.sender != owner']              |
+|    changeGovernorCheckProposalId    |      ['governorCheckProposalId']      |              ['msg.sender != owner']              |
+|           _verifySchedule           |                   []                  |                         []                        |
+|           checkTransaction          |                   []                  |                         []                        |
+|          setTargetSelectors         |     ['mapAllowedTargetSelectors']     |              ['msg.sender != owner']              |
+|                pause                |               ['paused']              | ['msg.sender == multisig', 'msg.sender == owner'] |
+|               unpause               |               ['paused']              |              ['msg.sender != owner']              |
+|         checkAfterExecution         |                   []                  |                         []                        |
+|     slitherConstructorVariables     | ['governorCheckProposalId', 'paused'] |                         []                        |
+| slitherConstructorConstantVariables |     ['SCHEDULE', 'SCHEDULE_BATCH']    |                         []                        |
++-------------------------------------+---------------------------------------+---------------------------------------------------+
+
+INFO:Slither:. analyzed (3 contracts)

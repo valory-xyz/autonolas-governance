@@ -1,0 +1,30 @@
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+
+Notes: Not critical, but can be easily fixed.
+INFO:Detectors:
+GuardCM.constructor(address,address,address)._timelock (GuardCM-flatten.sol#105) lacks a zero-check on :
+		- owner = _timelock (GuardCM-flatten.sol#106)
+GuardCM.constructor(address,address,address)._multisig (GuardCM-flatten.sol#105) lacks a zero-check on :
+		- multisig = _multisig (GuardCM-flatten.sol#107)
+GuardCM.constructor(address,address,address)._governor (GuardCM-flatten.sol#105) lacks a zero-check on :
+		- governor = _governor (GuardCM-flatten.sol#108)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+False positive.
+INFO:Detectors:
+Reentrancy in GuardCM.pause() (GuardCM-flatten.sol#265-283):
+	External calls:
+	- state = IGovernor(governor).state(governorCheckProposalId) (GuardCM-flatten.sol#271)
+	State variables written after the call(s):
+	- paused = 2 (GuardCM-flatten.sol#273)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+
+False positive
+INFO:Detectors:
+Reentrancy in GuardCM.pause() (GuardCM-flatten.sol#265-283):
+	External calls:
+	- state = IGovernor(governor).state(governorCheckProposalId) (GuardCM-flatten.sol#271)
+	Event emitted after the call(s):
+	- GuardPaused(msg.sender) (GuardCM-flatten.sol#282)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
