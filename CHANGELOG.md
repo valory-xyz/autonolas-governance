@@ -4,12 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
+[1.1.6]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.5-pre-audit...v1.1.6
+[1.1.5-pre-audit]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.4...v1.1.5-pre-audit 
 [1.1.4]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.1...v1.1.1
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
+
+## [1.1.6] - 2023-09-07
+
+### Changed
+- Created and deployed `GuardCM` contract for community multisig (CM) guard ([#83](https://github.com/valory-xyz/autonolas-governance/pull/83))
+  with the subsequent internal audit ([audit6](https://github.com/valory-xyz/autonolas-governance/tree/main/audits/internal6))
+  
+## [1.1.5-pre-audit] - 2023-08-24
+
+### Changed
+- Updated documentation 
+- Created changelog
+- Created proposal scripts
+- Created script to check on-chain configutations 
 
 ## [1.1.4] - 2023-06-21
 
