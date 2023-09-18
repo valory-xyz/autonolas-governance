@@ -21,9 +21,9 @@ async function main() {
     const targets = [guardCMAddress, timelockAddress];
     const values = new Array(2).fill(0);
     const callDatas = [
-        // CM is always able to shedule pause() and disableToken(token) against timelock
+        // CM is always able to schedule pause() and disableToken(token) function calls via the timelock
         // When the new owner address are known, add the CM.swapOwner method
-        guardCM.interface.encodeFunctionData("setTargetSelectors", [[treasuryAddress,treasuryAddress],[0x3f4ba83a,0x23e27a64], [true, true]]),
+        guardCM.interface.encodeFunctionData("setTargetSelectors", [[treasuryAddress, treasuryAddress],[0x3f4ba83a, 0x23e27a64], [true, true]]),
         timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, CMAddress])
     ];
     const description = "Timelock to revoke CM roles";
