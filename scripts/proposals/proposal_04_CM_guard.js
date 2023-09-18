@@ -9,13 +9,13 @@ async function main() {
     let parsedData = JSON.parse(dataFromJSON);
 
     const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
-    const timelockAddress = parsedData.timelockAddress
-    const treasuryAddress = parsedData.treasuryAddress
-    const guardCMAddress = parsedData.guardCMAddress
+    const timelockAddress = parsedData.timelockAddress;
+    const treasuryAddress = parsedData.treasuryAddress;
+    const guardCMAddress = parsedData.guardCMAddress;
     const CMAddress = parsedData.CM;
 
     // Obtaining proposal values
-    console.log("3. Revoking cancellor role of CM in the Timelock and select Selectors");
+    console.log("Revoking cancellor role of CM in the Timelock and enabling selectors");
     const timelock = await ethers.getContractAt("Timelock", timelockAddress);
     const guardCM = await ethers.getContractAt("GuardCM", guardCMAddress);
     const targets = [guardCMAddress, timelockAddress];
@@ -24,7 +24,7 @@ async function main() {
         // CM is always able to shedule pause() and disableToken(token) against timelock
         // When the new owner address are known, add the CM.swapOwner method
         guardCM.interface.encodeFunctionData("setTargetSelectors", [[treasuryAddress,treasuryAddress],[0x3f4ba83a,0x23e27a64], [true, true]]),
-        timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, CMAddress]),
+        timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, CMAddress])
     ];
     const description = "Timelock to revoke CM roles";
 
