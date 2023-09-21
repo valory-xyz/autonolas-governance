@@ -220,6 +220,28 @@ async function checkGovernorOLAS(chainId, provider, globalsInstance, globalsMain
     customExpect(vPeriod.toString(), globalsMainnet["initialVotingPeriod"], log + ", function: votingPeriod()");
 }
 
+// Check GuardCM: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkGuardCM(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const guard = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + guard.address;
+    // Check governor
+    const governor = await guard.governor();
+    customExpect(governor, globalsInstance["governorTwoAddress"], log + ", function: governor()");
+
+    // Check timelock to be the owner
+    const timelock = await guard.owner();
+    customExpect(timelock, globalsInstance["timelockAddress"], log + ", function: owner()");
+
+    // Check multisig to be the CM
+    const multisig = await guard.multisig();
+    customExpect(multisig, globalsInstance["CM"], log + ", function: multisig()");
+}
+
 // Check FxGovernorTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkFxGovernorTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
@@ -359,6 +381,9 @@ async function main() {
 
         log = initLog + ", contract: " + "GovernorOLAS";
         await checkGovernorOLAS(configs[i]["chainId"], providers[i], globals[i], globals[0], configs[i]["contracts"], "GovernorOLAS", log);
+
+        log = initLog + ", contract: " + "GuardCM";
+        await checkGuardCM(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "GuardCM", log);
     }
 
     // L2 contracts
