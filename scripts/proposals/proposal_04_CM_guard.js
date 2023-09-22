@@ -17,12 +17,13 @@ async function main() {
     const CMAddress = parsedData.CM;
 
     // Obtaining proposal values
-    console.log("Revoking cancellor role of CM in the Timelock and enabling selectors");
+    console.log("Revoking canceller role of CM in the Timelock, updating proposal Id and enabling selectors");
     const timelock = await ethers.getContractAt("Timelock", timelockAddress);
     const guardCM = await ethers.getContractAt("GuardCM", guardCMAddress);
-    const targets = [guardCMAddress, timelockAddress];
-    const values = new Array(2).fill(0);
+    const targets = [guardCMAddress, guardCMAddress, timelockAddress];
+    const values = new Array(3).fill(0);
     const callDatas = [
+        guardCM.interface.encodeFunctionData("changeGovernorCheckProposalId", ["88250008686885504216650933897987879122244685460173810624866685274624741477673"]),
         guardCM.interface.encodeFunctionData("setTargetSelectors", [[treasuryAddress, treasuryAddress, depositoryAddress, serviceRegistryTokenUtilityAddress], [0x8456cb59, 0x8f202bf9, 0x58d3ec6a, 0xece53132], [true, true, true, true]]),
         timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, CMAddress])
     ];
