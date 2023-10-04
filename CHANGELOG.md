@@ -19,7 +19,19 @@ The format is based on [Common Changelog](https://common-changelog.org).
 - Created and deployed `GuardCM` contract for community multisig (CM) guard ([#83](https://github.com/valory-xyz/autonolas-governance/pull/83))
   with the subsequent internal audit ([audit6](https://github.com/valory-xyz/autonolas-governance/tree/main/audits/internal6))
   
+## [1.1.5] - 2023-09-04
+
+### Changed
+
+_No bytecode changes_.
+
+- Added last external audit  
+- Updated audit contract setup script
+
+
 ## [1.1.5-pre-audit] - 2023-08-24
+
+_No bytecode changes_.
 
 ### Changed
 - Updated documentation 
