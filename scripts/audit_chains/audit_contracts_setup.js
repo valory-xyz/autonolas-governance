@@ -123,7 +123,7 @@ async function checkTimelock(chainId, provider, globalsInstance, configContracts
     res = await timelock.hasRole(executorRole, globalsInstance["CM"]);
     customExpect(res, true, log + ", function: hasRole(executorRole)");
     res = await timelock.hasRole(cancellerRole, globalsInstance["CM"]);
-    customExpect(res, true, log + ", function: hasRole(cancellerRole)");
+    customExpect(res, false, log + ", function: hasRole(cancellerRole)");
 
     // Timelock has the admin role as well
     res = await timelock.hasRole(adminRole, globalsInstance["timelockAddress"]);
