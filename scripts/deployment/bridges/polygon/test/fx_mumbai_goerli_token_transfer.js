@@ -83,9 +83,9 @@ async function main() {
         console.log("Correct wallet setup");
     }
 
-//    const balance = await mockChildERC20.balanceOf(fxERC20ChildTunnel.address);
-//    console.log(balance);
-//    return;
+    //    const balance = await mockChildERC20.balanceOf(fxERC20ChildTunnel.address);
+    //    console.log(balance);
+    //    return;
 
     // Deposit tokens for goerli bridged ERC20 ones
     await mockChildERC20.connect(EOAmumbai).approve(fxERC20ChildTunnel.address, 10);

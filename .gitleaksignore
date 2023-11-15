@@ -6,3 +6,7 @@ c4f2bb1997ed9f4689a807d494e7d29ed3c6bd2f:scripts/lbp/fjord_enable_swap.js:generi
 260edea55dc19cebf830f7a68fa34c72685523f9:scripts/deployment/globals_mainnet.json:generic-api-key:2
 4aec13ea3e18189b9f647459b84758efcea40785:scripts/deployment/globals_mainnet.json:generic-api-key:2
 672f4a7e75e45bb8903e61a88246f735ba3f3b91:scripts/deployment/globals_mainnet.json:generic-api-key:2
+1f3a9deea388a55014ca6d39fb67d9d932e9a5fa:scripts/deployment/bridges/polygon/test/globals.json:generic-api-key:1
+1f3a9deea388a55014ca6d39fb67d9d932e9a5fa:scripts/deployment/bridges/polygon/test/globals.json:generic-api-key:2
+4b70a4ad9afdd4a2b965795fc580697cb9a282f8:scripts/deployment/bridges/polygon/test/globals.json:generic-api-key:1
+4b70a4ad9afdd4a2b965795fc580697cb9a282f8:scripts/deployment/bridges/polygon/test/globals.json:generic-api-key:2
