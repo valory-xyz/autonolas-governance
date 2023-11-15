@@ -23,17 +23,12 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
         rootToken = _rootToken;
     }
 
-    function withdraw(address to, uint256 amount) external {
-        // Transfer from sender to this contract
-        IERC20(rootToken).transferFrom(msg.sender, address(this), amount);
+    function withdraw(uint256 amount) external {
+        _withdraw(msg.sender, amount);
+    }
 
-        // Burn tokens
-        IERC20(rootToken).burn(amount);
-
-        // Send message to child
-        bytes memory message = abi.encode(msg.sender, to, amount);
-        _sendMessageToChild(message);
-        emit FxWithdrawERC20(rootToken, childToken, msg.sender, to, amount);
+    function withdrawTo(address to, uint256 amount) external {
+        _withdraw(to, amount);
     }
 
     // exit processor
@@ -43,6 +38,21 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
 
         // transfer from tokens to
         IERC20(rootToken).mint(to, amount);
+
         emit FxDepositERC20(childToken, rootToken, from, to, amount);
+    }
+
+    function _withdraw(address to, uint256 amount) internal {
+        // Transfer from sender to this contract
+        IERC20(rootToken).transferFrom(msg.sender, address(this), amount);
+
+        // Burn tokens
+        IERC20(rootToken).burn(amount);
+
+        // Send message to child
+        bytes memory message = abi.encode(msg.sender, to, amount);
+        _sendMessageToChild(message);
+
+        emit FxWithdrawERC20(rootToken, childToken, msg.sender, to, amount);
     }
 }

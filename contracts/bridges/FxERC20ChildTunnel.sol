@@ -22,11 +22,11 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
         rootToken = _rootToken;
     }
 
-    function deposit(uint256 amount) public {
+    function deposit(uint256 amount) external {
         _deposit(msg.sender, amount);
     }
 
-    function depositTo(address to, uint256 amount) public {
+    function depositTo(address to, uint256 amount) external {
         _deposit(to, amount);
     }
 
@@ -38,7 +38,9 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
         // Decode incoming data
         (address from, address to, uint256 amount) = abi.decode(data, (address, address, uint256));
 
+        // Transfer tokens
         IERC20(childToken).transfer(to, amount);
+
         emit FxWithdrawERC20(rootToken, childToken, from, to, amount);
     }
 
@@ -47,7 +49,9 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
         IERC20(childToken).transferFrom(msg.sender, address(this), amount);
 
         // Send message to root
-        _sendMessageToRoot(abi.encode(msg.sender, to, amount));
+        bytes memory message = abi.encode(msg.sender, to, amount);
+        _sendMessageToRoot(message);
+
         emit FxDepositERC20(childToken, rootToken, msg.sender, to, amount);
     }
 }
