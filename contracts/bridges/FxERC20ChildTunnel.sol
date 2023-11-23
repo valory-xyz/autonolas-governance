@@ -58,7 +58,7 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
 
     /// @dev Receives the token message from L1 and transfers L2 tokens to a specified address.
     /// @param sender FxERC20RootTunnel contract address from L1.
-    /// @param message Incoming bridge data.
+    /// @param message Incoming bridge message.
     function _processMessageFromRoot(
         uint256 /* stateId */,
         address sender,
