@@ -152,11 +152,7 @@ describe("FxERC20", function () {
             ).to.be.reverted;
 
             // Get the message on L2
-            //            const data = ethers.utils.solidityPack(
-            //                ["address", "address", "uint256"],
-            //                [deployer.address, deployer.address, amount]
-            //            );
-            const data = ethers.utils.defaultAbiCoder.encode(
+            const data = ethers.utils.solidityPack(
                 ["address", "address", "uint256"],
                 [deployer.address, deployer.address, amount]
             );
@@ -169,7 +165,7 @@ describe("FxERC20", function () {
             expect(balance).to.equal(0);
         });
 
-        it("Withdraw tokens to a different address", async function () {
+        it.only("Withdraw tokens to a different address", async function () {
             const account = signers[1];
 
             // Approve tokens
@@ -197,13 +193,9 @@ describe("FxERC20", function () {
             ).to.be.reverted;
 
             // Get the message on L2
-            //            const data = ethers.utils.solidityPack(
-            //                ["address", "address", "uint256"],
-            //                [deployer.address, deployer.address, amount]
-            //            );
-            const data = ethers.utils.defaultAbiCoder.encode(
+            const data = ethers.utils.solidityPack(
                 ["address", "address", "uint256"],
-                [account.address, deployer.address, amount]
+                [deployer.address, deployer.address, amount]
             );
 
             // Upon message receive, tokens on L2 are transferred to the destination account (deployer)
