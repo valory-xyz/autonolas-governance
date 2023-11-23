@@ -13,12 +13,15 @@ error ZeroAddress();
 
 
 /// @title BridgedERC20 - Smart contract for bridged ERC20 token
+/// @dev Bridged token contract is owned by the bridge mediator contract, and thus the token representation from
+///      another chain must be minted and burned solely by the bridge mediator contract.
 contract BridgedERC20 is ERC20 {
     event OwnerUpdated(address indexed owner);
 
+    // Bridged token owner
     address public owner;
 
-    constructor() ERC20("ERC20 bridged token", "BridgedERC20", 18) {
+    constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
         owner = msg.sender;
     }
 
