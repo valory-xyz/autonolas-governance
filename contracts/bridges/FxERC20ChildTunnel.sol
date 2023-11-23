@@ -71,14 +71,11 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
         // solhint-disable-next-line no-inline-assembly
         assembly {
             // Offset 20 bytes for the address from (160 bits)
-            let i := 20
-            from := mload(add(message, i))
+            from := mload(add(message, 20))
             // Offset 20 bytes for the address to (160 bits)
-            i := add(i, 20)
-            to := mload(add(message, i))
+            to := mload(add(message, 40))
             // Offset the data by32 bytes of amount (256 bits)
-            i := add(i, 32)
-            amount := mload(add(message, i))
+            amount := mload(add(message, 72))
         }
 
         // Transfer decoded amount of tokens to a specified address

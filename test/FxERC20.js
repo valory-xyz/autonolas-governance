@@ -165,7 +165,7 @@ describe("FxERC20", function () {
             expect(balance).to.equal(0);
         });
 
-        it.only("Withdraw tokens to a different address", async function () {
+        it("Withdraw tokens to a different address", async function () {
             const account = signers[1];
 
             // Approve tokens
