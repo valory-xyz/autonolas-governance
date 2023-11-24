@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe.("FxERC20", function () {
+describe("FxERC20", function () {
     let fxERC20RootTunnel;
     let fxERC20ChildTunnel;
     let childToken;
