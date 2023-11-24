@@ -52,6 +52,11 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
     /// @param to Destination address on L2.
     /// @param amount Token amount to be withdrawn.
     function withdrawTo(address to, uint256 amount) external {
+        // Check for the address to withdraw tokens to
+        if (to == address(0)) {
+            revert ZeroAddress();
+        }
+
         _withdraw(to, amount);
     }
 

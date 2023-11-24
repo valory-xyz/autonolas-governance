@@ -48,7 +48,7 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
     /// @param to Destination address on L1.
     /// @param amount Token amount to be deposited.
     function depositTo(address to, uint256 amount) external {
-        // Check for the address to send tokens to
+        // Check for the address to deposit tokens to
         if (to == address(0)) {
             revert ZeroAddress();
         }

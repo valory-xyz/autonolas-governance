@@ -88,6 +88,30 @@ describe("FxERC20", function () {
                 FxERC20ChildTunnel.deploy(signers[1].address, signers[1].address, AddressZero)
             ).to.be.revertedWithCustomError(fxERC20ChildTunnel, "ZeroAddress");
         });
+
+        it("Bridging ownership", async function () {
+            const account = signers[1];
+
+            // Try to change the owner not by the owner
+            await expect(
+                rootToken.connect(account).changeOwner(account.address)
+            ).to.be.revertedWithCustomError(rootToken, "OwnerOnly");
+
+            // Try to change the owner with a zero address
+            await expect(
+                rootToken.connect(deployer).changeOwner(AddressZero)
+            ).to.be.revertedWithCustomError(rootToken, "ZeroAddress");
+
+            // Try to mint not by the owner
+            await expect(
+                rootToken.connect(account).mint(account.address, initMint)
+            ).to.be.revertedWithCustomError(rootToken, "OwnerOnly");
+
+            // Try to burn not by the owner
+            await expect(
+                rootToken.connect(account).burn(initMint)
+            ).to.be.revertedWithCustomError(rootToken, "OwnerOnly");
+        });
     });
 
     context("Deposit and withdraw ERC20 tokens", async function () {
@@ -106,6 +130,28 @@ describe("FxERC20", function () {
             await expect(
                 testChildTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, "0x")
             ).to.be.revertedWith("FxBaseChildTunnel: INVALID_SENDER_FROM_ROOT");
+        });
+
+        it("Deposit or withdraw zero amount or to zero addresses", async function () {
+            // Try to deposit zero amounts
+            await expect(
+                fxERC20ChildTunnel.connect(deployer).deposit(0)
+            ).to.be.revertedWithCustomError(fxERC20ChildTunnel, "ZeroValue");
+
+            // Try to deposit to a zero address
+            await expect(
+                fxERC20ChildTunnel.connect(deployer).depositTo(AddressZero, amount)
+            ).to.be.revertedWithCustomError(fxERC20ChildTunnel, "ZeroAddress");
+
+            // Try to withdraw a zero amount
+            await expect(
+                fxERC20RootTunnel.connect(deployer).withdraw(0)
+            ).to.be.revertedWithCustomError(fxERC20RootTunnel, "ZeroValue");
+
+            // Try to deposit to a zero address
+            await expect(
+                fxERC20RootTunnel.connect(deployer).withdrawTo(AddressZero, amount)
+            ).to.be.revertedWithCustomError(fxERC20RootTunnel, "ZeroAddress");
         });
 
         it("Deposit tokens", async function () {
