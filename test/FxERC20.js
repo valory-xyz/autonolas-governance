@@ -83,14 +83,14 @@ describe("FxERC20", function () {
 
     context("Deposit and withdraw ERC20 tokens", async function () {
         it("Should fail when trying to call from incorrect contract addresses", async function () {
-            // FxChild as a sender is incorrect
+            // signers[1].address as a sender is incorrect, must be deployer.address (aka FxChild in the setup)
             await expect(
                 fxERC20ChildTunnel.connect(signers[1]).processMessageFromRoot(stateId, deployer.address, "0x")
             ).to.be.revertedWith("FxBaseChildTunnel: INVALID_SENDER");
 
-            // FxRoot as a sender is incorrect
+            // deployer.address as an FxERC20RootTunnel is incorrect
             await expect(
-                fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, signers[1].address, "0x")
+                fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, "0x")
             ).to.be.revertedWith("FxBaseChildTunnel: INVALID_SENDER_FROM_ROOT");
         });
 
@@ -157,12 +157,19 @@ describe("FxERC20", function () {
                 [deployer.address, deployer.address, amount]
             );
 
+            const balanceBefore = await childToken.balanceOf(deployer.address);
+
             // Upon message receive, tokens on L2 are transferred to the destination account (deployer)
             await fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, fxERC20RootTunnel.address, data);
 
             // There must be no balance left locked on the FxERC20ChildTunnel contract
             balance = await childToken.balanceOf(fxERC20ChildTunnel.address);
             expect(balance).to.equal(0);
+
+            // The receiver balance must increase for the amount sent
+            const balanceAfter = await childToken.balanceOf(deployer.address);
+            const balanceDiff = Number(balanceAfter.sub(balanceBefore));
+            expect(balanceDiff).to.equal(amount);
         });
 
         it("Withdraw tokens to a different address", async function () {
@@ -195,8 +202,10 @@ describe("FxERC20", function () {
             // Get the message on L2
             const data = ethers.utils.solidityPack(
                 ["address", "address", "uint256"],
-                [deployer.address, deployer.address, amount]
+                [deployer.address, account.address, amount]
             );
+
+            const balanceBefore = await childToken.balanceOf(account.address);
 
             // Upon message receive, tokens on L2 are transferred to the destination account (deployer)
             await fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, fxERC20RootTunnel.address, data);
@@ -204,6 +213,11 @@ describe("FxERC20", function () {
             // There must be no balance left locked on the FxERC20ChildTunnel contract
             balance = await childToken.balanceOf(fxERC20ChildTunnel.address);
             expect(balance).to.equal(0);
+
+            // The receiver balance must increase for the amount sent
+            const balanceAfter = await childToken.balanceOf(account.address);
+            const balanceDiff = Number(balanceAfter.sub(balanceBefore));
+            expect(balanceDiff).to.equal(amount);
         });
     });
 });
