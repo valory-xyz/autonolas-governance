@@ -61,15 +61,15 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
         // Decode incoming message from child: (address, address, uint256)
         address from;
         address to;
-        uint256 amount;
+        uint96 amount;
         // solhint-disable-next-line no-inline-assembly
         assembly {
             // Offset 20 bytes for the address from (160 bits)
             from := mload(add(message, 20))
             // Offset 20 bytes for the address to (160 bits)
             to := mload(add(message, 40))
-            // Offset the data by32 bytes of amount (256 bits)
-            amount := mload(add(message, 72))
+            // Offset 12 bytes of amount (96 bits)
+            amount := mload(add(message, 52))
         }
 
         // Mints bridged amount of tokens to a specified address
@@ -93,8 +93,8 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
         // Burn bridged tokens
         IERC20(rootToken).burn(amount);
 
-        // Encode message for child: (address, address, uint256)
-        bytes memory message = abi.encodePacked(msg.sender, to, amount);
+        // Encode message for child: (address, address, uint96)
+        bytes memory message = abi.encodePacked(msg.sender, to, uint96(amount));
         // Send message to child
         _sendMessageToChild(message);
 
