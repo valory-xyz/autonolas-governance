@@ -64,9 +64,10 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
         address sender,
         bytes memory message
     ) internal override validateSender(sender) {
-        // Decode incoming message from root: (address, address, uint256)
+        // Decode incoming message from root: (address, address, uint96)
         address from;
         address to;
+        // The token amount is limited to be no bigger than 2^96 - 1
         uint96 amount;
         // solhint-disable-next-line no-inline-assembly
         assembly {
