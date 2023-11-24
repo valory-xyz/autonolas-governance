@@ -30,13 +30,22 @@ describe("FxERC20", function () {
         await rootToken.deployed();
 
         // ERC20 tunnels
+        const FxRootMock = await ethers.getContractFactory("FxRootMock");
+        const fxRootMock = await FxRootMock.deploy();
+        await fxRootMock.deployed();
+
         const FxERC20RootTunnel = await ethers.getContractFactory("FxERC20RootTunnel");
-        fxERC20RootTunnel = await FxERC20RootTunnel.deploy(deployer.address, deployer.address, childToken.address,
+        fxERC20RootTunnel = await FxERC20RootTunnel.deploy(deployer.address, fxRootMock.address, childToken.address,
             rootToken.address);
         await fxERC20RootTunnel.deployed();
 
+        // Set the FxERC20RootTunnel address such that the FxRootMock routes the call from the FxERC20RootTunnel
+        // directly to the FxERC20ChildTunnel to simulate the cross-chain message sending
+        await fxRootMock.setRootTunnel(fxERC20RootTunnel.address);
+
         const FxERC20ChildTunnel = await ethers.getContractFactory("FxERC20ChildTunnel");
-        fxERC20ChildTunnel = await FxERC20ChildTunnel.deploy(deployer.address, childToken.address, rootToken.address);
+        // FxRootMock is the mock for FxChild contract address in order to re-route message sending for testing purposes
+        fxERC20ChildTunnel = await FxERC20ChildTunnel.deploy(fxRootMock.address, childToken.address, rootToken.address);
         await fxERC20ChildTunnel.deployed();
 
         // Set child and root tunnels accordingly
@@ -88,9 +97,14 @@ describe("FxERC20", function () {
                 fxERC20ChildTunnel.connect(signers[1]).processMessageFromRoot(stateId, deployer.address, "0x")
             ).to.be.revertedWith("FxBaseChildTunnel: INVALID_SENDER");
 
+            // deployer is the FxChild for testing purposes
+            const FxERC20ChildTunnel = await ethers.getContractFactory("FxERC20ChildTunnel");
+            const testChildTunnel = await FxERC20ChildTunnel.deploy(deployer.address, childToken.address, rootToken.address);
+            await testChildTunnel.deployed();
+
             // deployer.address as an FxERC20RootTunnel is incorrect
             await expect(
-                fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, "0x")
+                testChildTunnel.connect(deployer).processMessageFromRoot(stateId, deployer.address, "0x")
             ).to.be.revertedWith("FxBaseChildTunnel: INVALID_SENDER_FROM_ROOT");
         });
 
@@ -146,21 +160,14 @@ describe("FxERC20", function () {
             // Root token must be owned by the FxERC20RootTunnel contract
             await rootToken.changeOwner(fxERC20RootTunnel.address);
 
-            // Burn tokens on L1 and send message to L2 to retrieve them there
-            await expect(
-                fxERC20RootTunnel.withdraw(amount)
-            ).to.be.reverted;
-
-            // Get the message on L2
-            const data = ethers.utils.solidityPack(
-                ["address", "address", "uint256"],
-                [deployer.address, deployer.address, amount]
-            );
-
             const balanceBefore = await childToken.balanceOf(deployer.address);
 
-            // Upon message receive, tokens on L2 are transferred to the destination account (deployer)
-            await fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, fxERC20RootTunnel.address, data);
+            // Burn tokens on L1 and send message to L2 to retrieve them there
+            await fxERC20RootTunnel.withdraw(amount);
+
+            // Check that bridged tokens were burned
+            balance = await rootToken.balanceOf(deployer.address);
+            expect(balance).to.equal(0);
 
             // There must be no balance left locked on the FxERC20ChildTunnel contract
             balance = await childToken.balanceOf(fxERC20ChildTunnel.address);
@@ -189,33 +196,26 @@ describe("FxERC20", function () {
             await rootToken.mint(account.address, amount);
 
             // Withdraw tokens
-            await rootToken.connect(deployer).approve(fxERC20RootTunnel.address, amount);
+            await rootToken.connect(account).approve(fxERC20RootTunnel.address, amount);
 
             // Root token must be owned by the FxERC20RootTunnel contract
             await rootToken.changeOwner(fxERC20RootTunnel.address);
 
+            const balanceBefore = await childToken.balanceOf(deployer.address);
+
             // Burn tokens on L1 and send message to L2 to retrieve them there
-            await expect(
-                fxERC20RootTunnel.withdrawTo(deployer.address, amount)
-            ).to.be.reverted;
+            await fxERC20RootTunnel.connect(account).withdrawTo(deployer.address, amount);
 
-            // Get the message on L2
-            const data = ethers.utils.solidityPack(
-                ["address", "address", "uint256"],
-                [deployer.address, account.address, amount]
-            );
-
-            const balanceBefore = await childToken.balanceOf(account.address);
-
-            // Upon message receive, tokens on L2 are transferred to the destination account (deployer)
-            await fxERC20ChildTunnel.connect(deployer).processMessageFromRoot(stateId, fxERC20RootTunnel.address, data);
+            // Check that bridged tokens were burned
+            balance = await rootToken.balanceOf(account.address);
+            expect(balance).to.equal(0);
 
             // There must be no balance left locked on the FxERC20ChildTunnel contract
             balance = await childToken.balanceOf(fxERC20ChildTunnel.address);
             expect(balance).to.equal(0);
 
             // The receiver balance must increase for the amount sent
-            const balanceAfter = await childToken.balanceOf(account.address);
+            const balanceAfter = await childToken.balanceOf(deployer.address);
             const balanceDiff = Number(balanceAfter.sub(balanceBefore));
             expect(balanceDiff).to.equal(amount);
         });
