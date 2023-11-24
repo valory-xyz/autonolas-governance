@@ -55,7 +55,7 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
         _withdraw(to, amount);
     }
 
-    /// @dev Receives the token message from L1 and transfers L2 tokens to a specified address.
+    /// @dev Receives the token message from L2 and transfers bridged tokens to a specified address.
     /// @param message Incoming bridge message.
     function _processMessageFromChild(bytes memory message) internal override {
         // Decode incoming message from child: (address, address, uint256)
