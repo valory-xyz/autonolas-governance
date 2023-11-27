@@ -1,0 +1,216 @@
+'solc --version' running
+'solc ./FxERC20ChildTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+'solc --version' running
+'solc ./BridgedERC20-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./BridgedERC20-flatten.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> BridgedERC20-flatten.sol:231:38:
+    |
+231 |     constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
+    |                                      ^^^^^^^^^^^^^^^^^^^^^
+
+
+'solc --version' running
+'solc ./FxERC20RootTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./FxERC20RootTunnel-flatten.sol:
+Warning: Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
+   --> FxERC20RootTunnel-flatten.sol:626:30:
+    |
+626 |     ) internal pure returns (bool) {
+    |                              ^^^^
+
+Warning: Unused local variable.
+   --> FxERC20RootTunnel-flatten.sol:872:52:
+    |
+872 |         (bytes32 headerRoot, uint256 startBlock, , uint256 createdAt, ) = checkpointManager.headerBlocks(headerNumber);
+    |                                                    ^^^^^^^^^^^^^^^^^
+
+
+INFO:Printers:
++ Contract IERC20 (Most derived contract)
+  - From IERC20
+    - allowance(address,address) (external)
+    - approve(address,uint256) (external)
+    - balanceOf(address) (external)
+    - burn(uint256) (external)
+    - mint(address,uint256) (external)
+    - totalSupply() (external)
+    - transfer(address,uint256) (external)
+    - transferFrom(address,address,uint256) (external)
+
++ Contract IStateReceiver
+  - From IStateReceiver
+    - onStateReceive(uint256,bytes) (external)
+
++ Contract IFxMessageProcessor
+  - From IFxMessageProcessor
+    - processMessageFromRoot(uint256,address,bytes) (external)
+
++ Contract FxChild (Most derived contract)
+  - From FxChild
+    - onStateReceive(uint256,bytes) (external)
+    - setFxRoot(address) (external)
+
++ Contract FxBaseChildTunnel
+  - From FxBaseChildTunnel
+    - _processMessageFromRoot(uint256,address,bytes) (internal)
+    - _sendMessageToRoot(bytes) (internal)
+    - constructor(address) (internal)
+    - processMessageFromRoot(uint256,address,bytes) (external)
+    - setFxRootTunnel(address) (external)
+
++ Contract FxERC20ChildTunnel (Most derived contract)
+  - From FxBaseChildTunnel
+    - _sendMessageToRoot(bytes) (internal)
+    - constructor(address) (internal)
+    - processMessageFromRoot(uint256,address,bytes) (external)
+    - setFxRootTunnel(address) (external)
+  - From FxERC20ChildTunnel
+    - _deposit(address,uint256) (internal)
+    - _processMessageFromRoot(uint256,address,bytes) (internal)
+    - constructor(address,address,address) (public)
+    - deposit(uint256) (external)
+    - depositTo(address,uint256) (external)
+
+INFO:Printers:
++ Contract ERC20
+  - From ERC20
+    - DOMAIN_SEPARATOR() (public)
+    - _burn(address,uint256) (internal)
+    - _mint(address,uint256) (internal)
+    - approve(address,uint256) (public)
+    - computeDomainSeparator() (internal)
+    - constructor(string,string,uint8) (internal)
+    - permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (public)
+    - transfer(address,uint256) (public)
+    - transferFrom(address,address,uint256) (public)
+
++ Contract BridgedERC20 (Most derived contract)
+  - From ERC20
+    - DOMAIN_SEPARATOR() (public)
+    - _burn(address,uint256) (internal)
+    - _mint(address,uint256) (internal)
+    - approve(address,uint256) (public)
+    - computeDomainSeparator() (internal)
+    - constructor(string,string,uint8) (internal)
+    - permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (public)
+    - transfer(address,uint256) (public)
+    - transferFrom(address,address,uint256) (public)
+  - From BridgedERC20
+    - burn(uint256) (external)
+    - changeOwner(address) (external)
+    - constructor(string,string) (public)
+    - mint(address,uint256) (external)
+
+INFO:Printers:
++ Contract IERC20 (Most derived contract)
+  - From IERC20
+    - allowance(address,address) (external)
+    - approve(address,uint256) (external)
+    - balanceOf(address) (external)
+    - burn(uint256) (external)
+    - mint(address,uint256) (external)
+    - totalSupply() (external)
+    - transfer(address,uint256) (external)
+    - transferFrom(address,address,uint256) (external)
+
++ Contract IStateSender (Most derived contract)
+  - From IStateSender
+    - syncState(address,bytes) (external)
+
++ Contract IFxStateSender
+  - From IFxStateSender
+    - sendMessageToChild(address,bytes) (external)
+
++ Contract FxRoot (Most derived contract)
+  - From FxRoot
+    - constructor(address) (public)
+    - sendMessageToChild(address,bytes) (public)
+    - setFxChild(address) (public)
+
++ Contract RLPReader (Most derived contract)
+  - From RLPReader
+    - _itemLength(uint256) (private)
+    - _payloadOffset(uint256) (private)
+    - copy(uint256,uint256,uint256) (private)
+    - hasNext(RLPReader.Iterator) (internal)
+    - isList(RLPReader.RLPItem) (internal)
+    - iterator(RLPReader.RLPItem) (internal)
+    - next(RLPReader.Iterator) (internal)
+    - numItems(RLPReader.RLPItem) (private)
+    - payloadKeccak256(RLPReader.RLPItem) (internal)
+    - payloadLen(RLPReader.RLPItem) (internal)
+    - payloadLocation(RLPReader.RLPItem) (internal)
+    - rlpBytesKeccak256(RLPReader.RLPItem) (internal)
+    - rlpLen(RLPReader.RLPItem) (internal)
+    - toAddress(RLPReader.RLPItem) (internal)
+    - toBoolean(RLPReader.RLPItem) (internal)
+    - toBytes(RLPReader.RLPItem) (internal)
+    - toList(RLPReader.RLPItem) (internal)
+    - toRlpBytes(RLPReader.RLPItem) (internal)
+    - toRlpItem(bytes) (internal)
+    - toUint(RLPReader.RLPItem) (internal)
+    - toUintStrict(RLPReader.RLPItem) (internal)
+
++ Contract ExitPayloadReader (Most derived contract)
+  - From ExitPayloadReader
+    - copy(uint256,uint256,uint256) (private)
+    - getBlockNumber(ExitPayloadReader.ExitPayload) (internal)
+    - getBlockProof(ExitPayloadReader.ExitPayload) (internal)
+    - getBlockTime(ExitPayloadReader.ExitPayload) (internal)
+    - getBranchMaskAsBytes(ExitPayloadReader.ExitPayload) (internal)
+    - getBranchMaskAsUint(ExitPayloadReader.ExitPayload) (internal)
+    - getData(ExitPayloadReader.Log) (internal)
+    - getEmitter(ExitPayloadReader.Log) (internal)
+    - getField(ExitPayloadReader.LogTopics,uint256) (internal)
+    - getHeaderNumber(ExitPayloadReader.ExitPayload) (internal)
+    - getLog(ExitPayloadReader.Receipt) (internal)
+    - getReceipt(ExitPayloadReader.ExitPayload) (internal)
+    - getReceiptLogIndex(ExitPayloadReader.ExitPayload) (internal)
+    - getReceiptProof(ExitPayloadReader.ExitPayload) (internal)
+    - getReceiptRoot(ExitPayloadReader.ExitPayload) (internal)
+    - getTopics(ExitPayloadReader.Log) (internal)
+    - getTxRoot(ExitPayloadReader.ExitPayload) (internal)
+    - toBytes(ExitPayloadReader.Receipt) (internal)
+    - toExitPayload(bytes) (internal)
+    - toRlpBytes(ExitPayloadReader.Log) (internal)
+
++ Contract Merkle (Most derived contract)
+  - From Merkle
+    - checkMembership(bytes32,uint256,bytes32,bytes) (internal)
+
++ Contract MerklePatriciaProof (Most derived contract)
+  - From MerklePatriciaProof
+    - _getNibbleArray(bytes) (internal)
+    - _getNthNibbleOfBytes(uint256,bytes) (private)
+    - _nibblesToTraverse(bytes,bytes,uint256) (private)
+    - verify(bytes,bytes,bytes,bytes32) (internal)
+
++ Contract ICheckpointManager (Most derived contract)
+
++ Contract FxBaseRootTunnel
+  - From FxBaseRootTunnel
+    - _checkBlockMembershipInCheckpoint(uint256,uint256,bytes32,bytes32,uint256,bytes) (private)
+    - _processMessageFromChild(bytes) (internal)
+    - _sendMessageToChild(bytes) (internal)
+    - _validateAndExtractMessage(bytes) (internal)
+    - constructor(address,address) (internal)
+    - receiveMessage(bytes) (public)
+    - setFxChildTunnel(address) (public)
+
++ Contract FxERC20RootTunnel (Most derived contract)
+  - From FxBaseRootTunnel
+    - _checkBlockMembershipInCheckpoint(uint256,uint256,bytes32,bytes32,uint256,bytes) (private)
+    - _sendMessageToChild(bytes) (internal)
+    - _validateAndExtractMessage(bytes) (internal)
+    - constructor(address,address) (internal)
+    - receiveMessage(bytes) (public)
+    - setFxChildTunnel(address) (public)
+  - From FxERC20RootTunnel
+    - _processMessageFromChild(bytes) (internal)
+    - _withdraw(address,uint256) (internal)
+    - constructor(address,address,address,address) (public)
+    - withdraw(uint256) (external)
+    - withdrawTo(address,uint256) (external)
+
+INFO:Slither:. analyzed (19 contracts)

@@ -1,0 +1,48 @@
+'solc --version' running
+'solc ./FxERC20ChildTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+'solc --version' running
+'solc ./BridgedERC20-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./BridgedERC20-flatten.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> BridgedERC20-flatten.sol:231:38:
+    |
+231 |     constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
+    |                                      ^^^^^^^^^^^^^^^^^^^^^
+
+
+'solc --version' running
+'solc ./FxERC20RootTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./FxERC20RootTunnel-flatten.sol:
+Warning: Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
+   --> FxERC20RootTunnel-flatten.sol:626:30:
+    |
+626 |     ) internal pure returns (bool) {
+    |                              ^^^^
+
+Warning: Unused local variable.
+   --> FxERC20RootTunnel-flatten.sol:872:52:
+    |
+872 |         (bytes32 headerRoot, uint256 startBlock, , uint256 createdAt, ) = checkpointManager.headerBlocks(headerNumber);
+    |                                                    ^^^^^^^^^^^^^^^^^
+
+
+INFO:Printers:Call Graph: ./FxERC20ChildTunnel-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./FxERC20ChildTunnel-flatten.sol.IERC20.call-graph.dot
+Call Graph: ./FxERC20ChildTunnel-flatten.sol.FxChild.call-graph.dot
+Call Graph: ./FxERC20ChildTunnel-flatten.sol.FxERC20ChildTunnel.call-graph.dot
+
+INFO:Printers:Call Graph: ./BridgedERC20-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./BridgedERC20-flatten.sol.BridgedERC20.call-graph.dot
+
+INFO:Printers:Call Graph: ./FxERC20RootTunnel-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.IERC20.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.IStateSender.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.FxRoot.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.RLPReader.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.ExitPayloadReader.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.Merkle.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.MerklePatriciaProof.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.ICheckpointManager.call-graph.dot
+Call Graph: ./FxERC20RootTunnel-flatten.sol.FxERC20RootTunnel.call-graph.dot
+
+INFO:Slither:. analyzed (19 contracts)

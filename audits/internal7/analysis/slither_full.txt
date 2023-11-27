@@ -1,0 +1,224 @@
+Notes: Pay attention
+Compilation warnings/errors on ./BridgedERC20-flatten.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> BridgedERC20-flatten.sol:231:38:
+    |
+231 |     constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
+    |                                      ^^^^^^^^^^^^^^^^^^^^^
+
+Compilation warnings/errors on ./FxERC20RootTunnel-flatten.sol:
+Warning: Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
+   --> FxERC20RootTunnel-flatten.sol:626:30:
+    |
+626 |     ) internal pure returns (bool) {
+    |                              ^^^^
+
+Warning: Unused local variable.
+   --> FxERC20RootTunnel-flatten.sol:872:52:
+    |
+872 |         (bytes32 headerRoot, uint256 startBlock, , uint256 createdAt, ) = checkpointManager.headerBlocks(headerNumber);
+    |                                                    ^^^^^^^^^^^^^^^^^
+
+
+
+Notes: Pay attention
+INFO:Detectors:
+FxERC20ChildTunnel._processMessageFromRoot(uint256,address,bytes) (FxERC20ChildTunnel-flatten.sol#205-229) ignores return value by IERC20(childToken).transfer(to,amount) (FxERC20ChildTunnel-flatten.sol#226)
+FxERC20ChildTunnel._deposit(address,uint256) (FxERC20ChildTunnel-flatten.sol#234-249) ignores return value by IERC20(childToken).transferFrom(msg.sender,address(this),amount) (FxERC20ChildTunnel-flatten.sol#241)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+
+
+Notes: Ignore
+INFO:Detectors:
+Function FxChild.setFxRoot(address) (FxERC20ChildTunnel-flatten.sol#72-75) is a non-protected setter fxRoot is written
+Function FxBaseChildTunnel.setFxRootTunnel(address) (FxERC20ChildTunnel-flatten.sol#113-116) is a non-protected setter fxRootTunnel is written
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/unprotected_setter.md
+
+Notes: Pay attention
+INFO:Detectors:
+Dubious typecast in FxERC20ChildTunnel._deposit(address,uint256) (FxERC20ChildTunnel-flatten.sol#234-249):
+	uint256 => uint96 casting occurs in message = abi.encodePacked(msg.sender,to,uint96(amount)) (FxERC20ChildTunnel-flatten.sol#244)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Notes: Ignore
+INFO:Detectors:
+FxChild.setFxRoot(address)._fxRoot (FxERC20ChildTunnel-flatten.sol#72) lacks a zero-check on :
+		- fxRoot = _fxRoot (FxERC20ChildTunnel-flatten.sol#74)
+FxBaseChildTunnel.setFxRootTunnel(address)._fxRootTunnel (FxERC20ChildTunnel-flatten.sol#113) lacks a zero-check on :
+		- fxRootTunnel = _fxRootTunnel (FxERC20ChildTunnel-flatten.sol#115)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+Notes: Ignore
+INFO:Detectors:
+Reentrancy in FxERC20ChildTunnel._deposit(address,uint256) (FxERC20ChildTunnel-flatten.sol#234-249):
+	External calls:
+	- IERC20(childToken).transferFrom(msg.sender,address(this),amount) (FxERC20ChildTunnel-flatten.sol#241)
+	Event emitted after the call(s):
+	- FxDepositERC20(childToken,rootToken,msg.sender,to,amount) (FxERC20ChildTunnel-flatten.sol#248)
+	- MessageSent(message) (FxERC20ChildTunnel-flatten.sol#133)
+		- _sendMessageToRoot(message) (FxERC20ChildTunnel-flatten.sol#246)
+Reentrancy in FxERC20ChildTunnel._processMessageFromRoot(uint256,address,bytes) (FxERC20ChildTunnel-flatten.sol#205-229):
+	External calls:
+	- IERC20(childToken).transfer(to,amount) (FxERC20ChildTunnel-flatten.sol#226)
+	Event emitted after the call(s):
+	- FxWithdrawERC20(rootToken,childToken,from,to,amount) (FxERC20ChildTunnel-flatten.sol#228)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Notes: Ignore
+INFO:Detectors:
+Setter function FxChild.setFxRoot(address) (FxERC20ChildTunnel-flatten.sol#72-75) does not emit an event
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/event_setter.md
+
+Notes: Pay attention
+INFO:Detectors:
+FxERC20ChildTunnel._processMessageFromRoot(uint256,address,bytes) (FxERC20ChildTunnel-flatten.sol#205-229) uses assembly
+	- INLINE ASM (FxERC20ChildTunnel-flatten.sol#216-223)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+Notes: Pay attention
+INFO:Detectors:
+Function FxERC20ChildTunnel._processMessageFromRoot(uint256,address,bytes) (FxERC20ChildTunnel-flatten.sol#205-229) contains magic numbers: 20, 40, 52
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+Notes: Ignore
+INFO:Detectors:
+FxBaseChildTunnel.fxChild (FxERC20ChildTunnel-flatten.sol#97) should be immutable 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-immutable
+
+Notes: Ignore
+INFO:Detectors:
+ERC20.permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (BridgedERC20-flatten.sol#119-163) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(deadline >= block.timestamp,PERMIT_DEADLINE_EXPIRED) (BridgedERC20-flatten.sol#128)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+
+Notes: Ignore
+INFO:Detectors:
+Function ERC20.DOMAIN_SEPARATOR() (BridgedERC20-flatten.sol#165-167) is not in mixedCase
+Variable ERC20.INITIAL_CHAIN_ID (BridgedERC20-flatten.sol#44) is not in mixedCase
+Variable ERC20.INITIAL_DOMAIN_SEPARATOR (BridgedERC20-flatten.sol#46) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+
+Notes: Pay attention
+INFO:Detectors:
+Function BridgedERC20.constructor(string,string) (BridgedERC20-flatten.sol#231-233) contains magic number: 18
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+Notes: Pay attention
+INFO:Detectors:
+FxERC20RootTunnel._withdraw(address,uint256) (FxERC20RootTunnel-flatten.sol#1000-1018) ignores return value by IERC20(rootToken).transferFrom(msg.sender,address(this),amount) (FxERC20RootTunnel-flatten.sol#1007)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+
+Notes: Ignore
+INFO:Detectors:
+Function FxRoot.setFxChild(address) (FxERC20RootTunnel-flatten.sol#74-77) is a non-protected setter fxChild is written
+Function FxBaseRootTunnel.setFxChildTunnel(address) (FxERC20RootTunnel-flatten.sol#791-794) is a non-protected setter fxChildTunnel is written
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/unprotected_setter.md
+
+Notes: Ignore
+INFO:Detectors:
+FxBaseRootTunnel._checkBlockMembershipInCheckpoint(uint256,uint256,bytes32,bytes32,uint256,bytes) (FxERC20RootTunnel-flatten.sol#864-882) ignores return value by (headerRoot,startBlock,createdAt) = checkpointManager.headerBlocks(headerNumber) (FxERC20RootTunnel-flatten.sol#872)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+
+Notes: Pay attention
+INFO:Detectors:
+Dubious typecast in RLPReader.toAddress(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#264-269):
+	uint256 => uint160 casting occurs in address(uint160(toUint(item))) (FxERC20RootTunnel-flatten.sol#268)
+Dubious typecast in FxERC20RootTunnel._withdraw(address,uint256) (FxERC20RootTunnel-flatten.sol#1000-1018):
+	uint256 => uint96 casting occurs in message = abi.encodePacked(msg.sender,to,uint96(amount)) (FxERC20RootTunnel-flatten.sol#1013)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Notes: Ignore
+INFO:Detectors:
+FxRoot.setFxChild(address)._fxChild (FxERC20RootTunnel-flatten.sol#74) lacks a zero-check on :
+		- fxChild = _fxChild (FxERC20RootTunnel-flatten.sol#76)
+FxBaseRootTunnel.setFxChildTunnel(address)._fxChildTunnel (FxERC20RootTunnel-flatten.sol#791) lacks a zero-check on :
+		- fxChildTunnel = _fxChildTunnel (FxERC20RootTunnel-flatten.sol#793)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+Notes: Ignore
+INFO:Detectors:
+Reentrancy in FxERC20RootTunnel._processMessageFromChild(bytes) (FxERC20RootTunnel-flatten.sol#975-995):
+	External calls:
+	- IERC20(rootToken).mint(to,amount) (FxERC20RootTunnel-flatten.sol#992)
+	Event emitted after the call(s):
+	- FxDepositERC20(childToken,rootToken,from,to,amount) (FxERC20RootTunnel-flatten.sol#994)
+Reentrancy in FxERC20RootTunnel._withdraw(address,uint256) (FxERC20RootTunnel-flatten.sol#1000-1018):
+	External calls:
+	- IERC20(rootToken).transferFrom(msg.sender,address(this),amount) (FxERC20RootTunnel-flatten.sol#1007)
+	- IERC20(rootToken).burn(amount) (FxERC20RootTunnel-flatten.sol#1010)
+	- _sendMessageToChild(message) (FxERC20RootTunnel-flatten.sol#1015)
+		- fxRoot.sendMessageToChild(fxChildTunnel,message) (FxERC20RootTunnel-flatten.sol#806)
+	Event emitted after the call(s):
+	- FxWithdrawERC20(rootToken,childToken,msg.sender,to,amount) (FxERC20RootTunnel-flatten.sol#1017)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+
+Notes: Ignore
+INFO:Detectors:
+Setter function FxRoot.setFxChild(address) (FxERC20RootTunnel-flatten.sol#74-77) does not emit an event
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/event_setter.md
+
+Notes: Ignore
+INFO:Detectors:
+FxBaseRootTunnel._validateAndExtractMessage(bytes) (FxERC20RootTunnel-flatten.sol#809-862) compares to a boolean constant:
+	-require(bool,string)(processedExits[exitHash] == false,FxRootTunnel: EXIT_ALREADY_PROCESSED) (FxERC20RootTunnel-flatten.sol#826)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#boolean-equality
+
+Notes: Ignore
+INFO:Detectors:
+ExitPayloadReader.getBranchMaskAsUint(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#535-537) is never used and should be removed
+ExitPayloadReader.toRlpBytes(ExitPayloadReader.Log) (FxERC20RootTunnel-flatten.sol#566-568) is never used and should be removed
+RLPReader.hasNext(RLPReader.Iterator) (FxERC20RootTunnel-flatten.sol#125-128) is never used and should be removed
+RLPReader.iterator(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#147-152) is never used and should be removed
+RLPReader.next(RLPReader.Iterator) (FxERC20RootTunnel-flatten.sol#110-118) is never used and should be removed
+RLPReader.payloadKeccak256(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#227-234) is never used and should be removed
+RLPReader.payloadLen(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#164-166) is never used and should be removed
+RLPReader.payloadLocation(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#216-221) is never used and should be removed
+RLPReader.rlpBytesKeccak256(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#206-214) is never used and should be removed
+RLPReader.rlpLen(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#157-159) is never used and should be removed
+RLPReader.toBoolean(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#253-262) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+
+Notes: Ignore
+INFO:Detectors:
+Parameter FxRoot.setFxChild(address)._fxChild (FxERC20RootTunnel-flatten.sol#74) is not in mixedCase
+Parameter FxRoot.sendMessageToChild(address,bytes)._receiver (FxERC20RootTunnel-flatten.sol#80) is not in mixedCase
+Parameter FxRoot.sendMessageToChild(address,bytes)._data (FxERC20RootTunnel-flatten.sol#80) is not in mixedCase
+Parameter FxBaseRootTunnel.setFxChildTunnel(address)._fxChildTunnel (FxERC20RootTunnel-flatten.sol#791) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+
+Notes: Ignore
+INFO:Detectors:
+Function RLPReader.toAddress(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#264-269) contains magic number: 21
+Function RLPReader.toUint(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#271-289) contains magic numbers: 32, 256
+Function RLPReader.toUintStrict(RLPReader.RLPItem) (FxERC20RootTunnel-flatten.sol#292-303) contains magic number: 33
+Function RLPReader._itemLength(uint256) (FxERC20RootTunnel-flatten.sol#341-371) contains magic numbers: 256, 256
+Function RLPReader.copy(uint256,uint256,uint256) (FxERC20RootTunnel-flatten.sol#393-416) contains magic number: 256
+Function ExitPayloadReader.copy(uint256,uint256,uint256) (FxERC20RootTunnel-flatten.sol#447-469) contains magic number: 256
+Function ExitPayloadReader.getBlockTime(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#489-491) contains magic number: 3
+Function ExitPayloadReader.getTxRoot(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#493-495) contains magic number: 4
+Function ExitPayloadReader.getReceiptRoot(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#497-499) contains magic number: 5
+Function ExitPayloadReader.getReceipt(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#501-525) contains magic numbers: 6, 33
+Function ExitPayloadReader.getReceiptProof(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#527-529) contains magic number: 7
+Function ExitPayloadReader.getBranchMaskAsBytes(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#531-533) contains magic number: 8
+Function ExitPayloadReader.getBranchMaskAsUint(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#535-537) contains magic number: 8
+Function ExitPayloadReader.getReceiptLogIndex(ExitPayloadReader.ExitPayload) (FxERC20RootTunnel-flatten.sol#539-541) contains magic number: 9
+Function ExitPayloadReader.getLog(ExitPayloadReader.Receipt) (FxERC20RootTunnel-flatten.sol#548-551) contains magic number: 3
+Function Merkle.checkMembership(bytes32,uint256,bytes32,bytes) (FxERC20RootTunnel-flatten.sol#579-607) contains magic numbers: 32, 32, 32, 32
+Function MerklePatriciaProof.verify(bytes,bytes,bytes,bytes32) (FxERC20RootTunnel-flatten.sol#621-689) contains magic numbers: 17, 16, 16
+Function FxERC20RootTunnel._processMessageFromChild(bytes) (FxERC20RootTunnel-flatten.sol#975-995) contains magic numbers: 20, 40, 52
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+Notes: Ignore
+INFO:Detectors:
+FxBaseRootTunnel.checkpointManager (FxERC20RootTunnel-flatten.sol#778) should be immutable 
+FxBaseRootTunnel.fxRoot (FxERC20RootTunnel-flatten.sol#776) should be immutable 
+FxRoot.stateSender (FxERC20RootTunnel-flatten.sol#67) should be immutable 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-immutable
+INFO:Detectors:
+In a function RLPReader.copy(uint256,uint256,uint256) (FxERC20RootTunnel-flatten.sol#393-416) variable RLPReader.WORD_SIZE (FxERC20RootTunnel-flatten.sol#93) is read multiple times
+In a function ExitPayloadReader.copy(uint256,uint256,uint256) (FxERC20RootTunnel-flatten.sol#447-469) variable ExitPayloadReader.WORD_SIZE (FxERC20RootTunnel-flatten.sol#425) is read multiple times
+In a function FxERC20RootTunnel._withdraw(address,uint256) (FxERC20RootTunnel-flatten.sol#1000-1018) variable FxERC20RootTunnel.rootToken (FxERC20RootTunnel-flatten.sol#934) is read multiple times
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/multiple_storage_read.md
+INFO:Slither:. analyzed (19 contracts with 108 detectors), 94 result(s) found

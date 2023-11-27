@@ -17,7 +17,7 @@ An internal audit with a focus on `GovernorOLAS update to latest OZ version` is 
 
 An internal audit with a focus on `Guard for Community Multisig (CM)` is located in this folder: [internal audit 6](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal6).
 
-
+An internal audit with a focus on `ERC20 bridging via fx-tunnel` is located in this folder: [internal audit 7](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal7).
 
 ### External audit
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
