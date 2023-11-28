@@ -158,6 +158,9 @@ The description of bridge-related deployment procedure is very similar to the or
 - [bridges-polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon);
 - [bridges-gnosis](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis).
 
+The description of ERC20 token bridging deployment between Polygon and Ethereum can be found here:
+[deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
+
 ## Documents
 All the project-related documents are located here: [docs](https://github.com/valory-xyz/autonolas-governance/blob/main/docs).
 

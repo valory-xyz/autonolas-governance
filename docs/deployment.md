@@ -25,3 +25,11 @@
 16. EOA to deploy wveOLAS contract pointed to veOLAS and OLAS;
 17. EOA to deploy new GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters and other defined governor-related parameters;
 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles from original GovernorOLAS, give admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"), and canceller ("CANCELLER_ROLE") roles to a new GovernorOLAS based on wveOLAS (via voting).
+
+## Steps of deploying Polygon-Ethereum ERC20 token bridging contracts.
+1. EOA to deploy BridgedERC20 contract on Ethereum;
+2. EOA to deploy FxERC20ChildTunnel contract on Polygon specifying both child (Polygon) and root (BridgedERC20 on Ethereum) tokens;
+3. EOA to deploy FxERC20RootTunnel contract on Ethereum specifying both child (Polygon) and root (BridgedERC20 on Ethereum) tokens;
+4. EOA to change owner of BridgedERC20 to FxERC20RootTunnel by calling `changeOwner(FxERC20RootTunnel)`;
+5. FxERC20RootTunnel to set child tunnel by calling `setFxChildTunnel(FxERC20ChildTunnel)`;
+6. FxERC20ChildTunnel to set root tunnel by calling `setFxRootTunnel(FxERC20RootTunnel)`.
