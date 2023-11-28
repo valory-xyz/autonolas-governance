@@ -96,7 +96,7 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
         // Deposit tokens on an L2 bridge contract (lock)
         bool success = IERC20(childToken).transferFrom(msg.sender, address(this), amount);
         if (!success) {
-            revert TransferFailed(rootToken, msg.sender, address(this), amount);
+            revert TransferFailed(childToken, msg.sender, address(this), amount);
         }
 
         // Encode message for root: (address, address, uint256)

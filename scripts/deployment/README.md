@@ -61,6 +61,16 @@ npx hardhat run scripts/deployment/deploy_17_governorTwo.js --network network_ty
 Then, after successful deployment of two supplemental contracts, the last script gives the proposal payload necessary to finalize the deployment:
 `npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
 
+## Deployment of Polygon-Ethereum ERC20 bridging contracts
+For deploying ERC20 bridging contracts listed in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md),
+run the following scripts:
+```
+npx hardhat run scripts/deployment/deploy_19_bridged_erc20.js --network mainnet
+npx hardhat run scripts/deployment/deploy_03_erc20_child_tunnel.js --network polygon
+npx hardhat run scripts/deployment/deploy_20_erc20_root_tunnel.js --network mainnet
+npx hardhat run scripts/deployment/deploy_21_22_bridged_erc20_change_owners.js --network mainnet
+npx hardhat run scripts/deployment/bridges/polygon/deploy_04_set_root_tunnel.js --network polygon
+```
 
 
 
