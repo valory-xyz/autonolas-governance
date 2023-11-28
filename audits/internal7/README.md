@@ -41,6 +41,7 @@ ERC20(_name, _symbol, 18)
 
 decimals (18) as constant is OK?
 ```
+[x] fixed
 
 #### Reentrancy (not critical since the token is trusted, but it’s better to fix the problem)
 ```solidity
@@ -61,6 +62,7 @@ function depositTo(address to, uint256 amount) external {
     
 ```
 Notes: It is better to use explicit protection like reentrancy_guard_variable than CEI. <br>
+[x] fixed
 
 #### Non-checked return
 ```solidity
@@ -69,6 +71,7 @@ unchecked-transfer
         IERC20(childToken).transfer(to, amount);
 
 ```
+[x] fixed
 
 #### Non-checked return
 ```solidity
@@ -77,6 +80,7 @@ unchecked-transfer
         IERC20(rootToken).transferFrom(msg.sender, address(this), amount);
 
 ```
+[x] fixed
 
 #### Overengineering
 ```solidity
@@ -89,3 +93,4 @@ https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
 no-inline-assembly
 I'm not sure that it is necessary to parse using assembler
 ```
+[x] fixed

@@ -10,6 +10,13 @@ error ZeroAddress();
 /// @dev Zero value when it has to be different from zero.
 error ZeroValue();
 
+/// @dev Failure of a transfer.
+/// @param token Address of a token.
+/// @param from Address `from`.
+/// @param to Address `to`.
+/// @param amount Token amount.
+error TransferFailed(address token, address from, address to, uint256 amount);
+
 /// @title FxERC20RootTunnel - Smart contract for the L1 token management part
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
@@ -63,20 +70,8 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
     /// @dev Receives the token message from L2 and transfers bridged tokens to a specified address.
     /// @param message Incoming bridge message.
     function _processMessageFromChild(bytes memory message) internal override {
-        // Decode incoming message from child: (address, address, uint96)
-        address from;
-        address to;
-        // The token amount is limited to be no bigger than 2^96 - 1
-        uint96 amount;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            // Offset 20 bytes for the address from (160 bits)
-            from := mload(add(message, 20))
-            // Offset 20 bytes for the address to (160 bits)
-            to := mload(add(message, 40))
-            // Offset 12 bytes of amount (96 bits)
-            amount := mload(add(message, 52))
-        }
+        // Decode incoming message from child: (address, address, uint256)
+        (address from, address to, uint256 amount) = abi.decode(message, (address, address, uint256));
 
         // Mints bridged amount of tokens to a specified address
         IERC20(rootToken).mint(to, amount);
@@ -85,6 +80,7 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
     }
 
     /// @dev Withdraws bridged tokens from L1 to get their original tokens on L1 by a specified address.
+    /// @notice Reentrancy is not possible as tokens are verified before the contract deployment.
     /// @param to Destination address on L2.
     /// @param amount Token amount to be withdrawn.
     function _withdraw(address to, uint256 amount) internal {
@@ -93,16 +89,19 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
             revert ZeroValue();
         }
 
+        // Encode message for child: (address, address, uint256)
+        bytes memory message = abi.encode(msg.sender, to, amount);
+        // Send message to child
+        _sendMessageToChild(message);
+
         // Transfer tokens from sender to this contract address
-        IERC20(rootToken).transferFrom(msg.sender, address(this), amount);
+        bool success = IERC20(rootToken).transferFrom(msg.sender, address(this), amount);
+        if (!success) {
+            revert TransferFailed(rootToken, msg.sender, address(this), amount);
+        }
 
         // Burn bridged tokens
         IERC20(rootToken).burn(amount);
-
-        // Encode message for child: (address, address, uint96)
-        bytes memory message = abi.encodePacked(msg.sender, to, uint96(amount));
-        // Send message to child
-        _sendMessageToChild(message);
 
         emit FxWithdrawERC20(rootToken, childToken, msg.sender, to, amount);
     }
