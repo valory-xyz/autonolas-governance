@@ -93,16 +93,16 @@ contract FxERC20ChildTunnel is FxBaseChildTunnel {
             revert ZeroValue();
         }
 
+        // Encode message for root: (address, address, uint256)
+        bytes memory message = abi.encode(msg.sender, to, amount);
+        // Send message to root
+        _sendMessageToRoot(message);
+
         // Deposit tokens on an L2 bridge contract (lock)
         bool success = IERC20(childToken).transferFrom(msg.sender, address(this), amount);
         if (!success) {
             revert TransferFailed(childToken, msg.sender, address(this), amount);
         }
-
-        // Encode message for root: (address, address, uint256)
-        bytes memory message = abi.encode(msg.sender, to, amount);
-        // Send message to root
-        _sendMessageToRoot(message);
 
         emit FxDepositERC20(childToken, rootToken, msg.sender, to, amount);
     }
