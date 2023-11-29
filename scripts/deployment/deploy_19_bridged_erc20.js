@@ -30,7 +30,7 @@ async function main() {
     const BridgedERC20 = await ethers.getContractFactory("BridgedERC20");
     console.log("You are signing the following transaction: BridgedERC20.connect(EOA).deploy()");
     const bridgedERC20 = await BridgedERC20.connect(EOA).deploy();
-    //const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("ERC20 bridged token", "BridgedERC20");
+    //const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("ERC20 bridged token", "BridgedERC20", 18);
     let result = await bridgedERC20.deployed();
 
     // Transaction details

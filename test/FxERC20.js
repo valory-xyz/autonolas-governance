@@ -6,8 +6,10 @@ const { ethers } = require("hardhat");
 describe("FxERC20", function () {
     let fxERC20RootTunnel;
     let fxERC20ChildTunnel;
+    let fxRootMock;
     let childToken;
     let rootToken;
+    let brokenToken;
     let signers;
     let deployer;
     const AddressZero = ethers.constants.AddressZero;
@@ -26,12 +28,12 @@ describe("FxERC20", function () {
 
         // Root token is a bridged ERC20 token
         const BridgedToken = await ethers.getContractFactory("BridgedERC20");
-        rootToken = await BridgedToken.deploy("Bridged token", "BERC20");
+        rootToken = await BridgedToken.deploy("Bridged token", "BERC20", 18);
         await rootToken.deployed();
 
         // ERC20 tunnels
         const FxRootMock = await ethers.getContractFactory("FxRootMock");
-        const fxRootMock = await FxRootMock.deploy();
+        fxRootMock = await FxRootMock.deploy();
         await fxRootMock.deployed();
 
         const FxERC20RootTunnel = await ethers.getContractFactory("FxERC20RootTunnel");
@@ -54,6 +56,11 @@ describe("FxERC20", function () {
 
         // Mint tokens
         await childToken.mint(deployer.address, initMint);
+
+        // Broken ERC20 token
+        const BrokenToken = await ethers.getContractFactory("BrokenERC20");
+        brokenToken = await BrokenToken.deploy();
+        await brokenToken.deployed();
     });
 
     context("Initialization", async function () {
@@ -264,6 +271,75 @@ describe("FxERC20", function () {
             const balanceAfter = await childToken.balanceOf(deployer.address);
             const balanceDiff = Number(balanceAfter.sub(balanceBefore));
             expect(balanceDiff).to.equal(amount);
+        });
+    });
+
+    context("Deposit and withdraw with broken ERC20 tokens", async function () {
+        it("Should fail when trying to deposit", async function () {
+            const FxERC20ChildTunnel = await ethers.getContractFactory("FxERC20ChildTunnel");
+            const brokenChildTunnel = await FxERC20ChildTunnel.deploy(deployer.address, brokenToken.address, rootToken.address);
+            await brokenChildTunnel.deployed();
+
+            // Mint tokens to deployer
+            await brokenToken.mint(deployer.address, amount);
+
+            // Approve tokens
+            await brokenToken.connect(deployer).approve(brokenChildTunnel.address, amount);
+
+            // Send tokens to L1
+            await expect(
+                brokenChildTunnel.connect(deployer).deposit(amount)
+            ).to.be.revertedWithCustomError(fxERC20ChildTunnel, "TransferFailed");
+        });
+
+        it("Should fail when trying to withdraw on the root side", async function () {
+            const FxERC20RootTunnel = await ethers.getContractFactory("FxERC20RootTunnel");
+            const brokenRootTunnel = await FxERC20RootTunnel.deploy(deployer.address, fxRootMock.address,
+                childToken.address, brokenToken.address);
+            await brokenRootTunnel.deployed();
+
+            // Approve tokens
+            await childToken.approve(fxERC20ChildTunnel.address, amount);
+
+            // Send tokens to L1
+            await fxERC20ChildTunnel.connect(deployer).deposit(amount);
+
+            // Set child tunnel accordingly
+            await brokenRootTunnel.setFxChildTunnel(fxERC20ChildTunnel.address);
+
+            // Approve tokens
+            await childToken.approve(brokenRootTunnel.address, amount);
+
+            // Send tokens to L2
+            await expect(
+                brokenRootTunnel.connect(deployer).withdraw(amount)
+            ).to.be.revertedWithCustomError(brokenRootTunnel, "TransferFailed");
+        });
+
+        it("Should fail when trying to withdraw on the child side", async function () {
+            const FxERC20ChildTunnel = await ethers.getContractFactory("FxERC20ChildTunnel");
+            const brokenChildTunnel = await FxERC20ChildTunnel.deploy(fxRootMock.address, brokenToken.address, rootToken.address);
+            await brokenChildTunnel.deployed();
+
+            const FxERC20RootTunnel = await ethers.getContractFactory("FxERC20RootTunnel");
+            const brokenRootTunnel = await FxERC20RootTunnel.deploy(deployer.address, fxRootMock.address,
+                brokenToken.address, rootToken.address);
+            await brokenRootTunnel.deployed();
+
+            // Set the root tunnel in the root mock
+            await fxRootMock.setRootTunnel(brokenRootTunnel.address);
+
+            // Set child and root tunnels accordingly
+            await brokenRootTunnel.setFxChildTunnel(brokenChildTunnel.address);
+            await brokenChildTunnel.setFxRootTunnel(brokenRootTunnel.address);
+
+            // Approve tokens
+            await rootToken.approve(brokenRootTunnel.address, amount);
+
+            // Send tokens to L2
+            await expect(
+                brokenRootTunnel.connect(deployer).withdraw(amount)
+            ).to.be.revertedWithCustomError(brokenChildTunnel, "TransferFailed");
         });
     });
 });

@@ -1,0 +1,138 @@
+'solc --version' running
+'solc ./FxERC20ChildTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+'solc --version' running
+'solc ./BridgedERC20-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./BridgedERC20-flatten.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> BridgedERC20-flatten.sol:231:38:
+    |
+231 |     constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
+    |                                      ^^^^^^^^^^^^^^^^^^^^^
+
+
+'solc --version' running
+'solc ./FxERC20RootTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./FxERC20RootTunnel-flatten.sol:
+Warning: Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
+   --> FxERC20RootTunnel-flatten.sol:626:30:
+    |
+626 |     ) internal pure returns (bool) {
+    |                              ^^^^
+
+Warning: Unused local variable.
+   --> FxERC20RootTunnel-flatten.sol:872:52:
+    |
+872 |         (bytes32 headerRoot, uint256 startBlock, , uint256 createdAt, ) = checkpointManager.headerBlocks(headerNumber);
+    |                                                    ^^^^^^^^^^^^^^^^^
+
+
+INFO:Printers:
+##################################
+####### FxERC20ChildTunnel #######
+##################################
+
+## Constructor Call Sequence
+	- FxBaseChildTunnel
+	- FxERC20ChildTunnel
+
+## Constructor Definitions
+
+### FxBaseChildTunnel
+
+     constructor(address _fxChild) {
+        fxChild = _fxChild;
+    }
+
+### FxERC20ChildTunnel
+
+     constructor(address _fxChild, address _childToken, address _rootToken) FxBaseChildTunnel(_fxChild) {
+        // Check for zero addresses
+        if (_fxChild == address(0) || _childToken == address(0) || _rootToken == address(0)) {
+            revert ZeroAddress();
+        }
+
+        childToken = _childToken;
+        rootToken = _rootToken;
+    }
+
+INFO:Printers:
+############################
+####### BridgedERC20 #######
+############################
+
+## Constructor Call Sequence
+	- ERC20
+	- BridgedERC20
+
+## Constructor Definitions
+
+### ERC20
+
+     constructor(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+
+        INITIAL_CHAIN_ID = block.chainid;
+        INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
+    }
+
+### BridgedERC20
+
+     constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
+        owner = msg.sender;
+    }
+
+INFO:Printers:
+######################
+####### FxRoot #######
+######################
+
+## Constructor Call Sequence
+	- FxRoot
+
+## Constructor Definitions
+
+### FxRoot
+
+     constructor(address _stateSender) {
+        stateSender = IStateSender(_stateSender);
+    }
+
+#################################
+####### FxERC20RootTunnel #######
+#################################
+
+## Constructor Call Sequence
+	- FxBaseRootTunnel
+	- FxERC20RootTunnel
+
+## Constructor Definitions
+
+### FxBaseRootTunnel
+
+     constructor(address _checkpointManager, address _fxRoot) {
+        checkpointManager = ICheckpointManager(_checkpointManager);
+        fxRoot = IFxStateSender(_fxRoot);
+    }
+
+### FxERC20RootTunnel
+
+     constructor(address _checkpointManager, address _fxRoot, address _childToken, address _rootToken)
+        FxBaseRootTunnel(_checkpointManager, _fxRoot)
+    {
+        // Check for zero addresses
+        if (_checkpointManager == address(0) || _fxRoot == address(0) || _childToken == address(0) ||
+            _rootToken == address(0)) {
+            revert ZeroAddress();
+        }
+
+        childToken = _childToken;
+        rootToken = _rootToken;
+    }
+
+INFO:Slither:. analyzed (19 contracts)

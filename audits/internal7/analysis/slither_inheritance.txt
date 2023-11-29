@@ -1,0 +1,137 @@
+'solc --version' running
+'solc ./FxERC20ChildTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+'solc --version' running
+'solc ./BridgedERC20-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./BridgedERC20-flatten.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> BridgedERC20-flatten.sol:231:38:
+    |
+231 |     constructor(string memory _name, string memory _symbol) ERC20(_name, symbol, 18) {
+    |                                      ^^^^^^^^^^^^^^^^^^^^^
+
+
+'solc --version' running
+'solc ./FxERC20RootTunnel-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal7/analysis/contracts' running
+Compilation warnings/errors on ./FxERC20RootTunnel-flatten.sol:
+Warning: Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
+   --> FxERC20RootTunnel-flatten.sol:626:30:
+    |
+626 |     ) internal pure returns (bool) {
+    |                              ^^^^
+
+Warning: Unused local variable.
+   --> FxERC20RootTunnel-flatten.sol:872:52:
+    |
+872 |         (bytes32 headerRoot, uint256 startBlock, , uint256 createdAt, ) = checkpointManager.headerBlocks(headerNumber);
+    |                                                    ^^^^^^^^^^^^^^^^^
+
+
+INFO:Printers:Inheritance
+Child_Contract -> Immediate_Base_Contracts [Not_Immediate_Base_Contracts]
++ IERC20
+
++ IStateReceiver
+
++ IFxMessageProcessor
+
++ FxChild
+ -> IStateReceiver
+
++ FxBaseChildTunnel
+ -> IFxMessageProcessor
+
++ FxERC20ChildTunnel
+ -> FxBaseChildTunnel
+, [IFxMessageProcessor]
+
+
+Base_Contract -> Immediate_Child_Contracts
+ [Not_Immediate_Child_Contracts]
+
++ IERC20
+
++ IStateReceiver
+ -> FxChild
+
++ IFxMessageProcessor
+ -> FxBaseChildTunnel
+, [FxERC20ChildTunnel]
+
++ FxChild
+
++ FxBaseChildTunnel
+ -> FxERC20ChildTunnel
+
++ FxERC20ChildTunnel
+
+INFO:Printers:Inheritance
+Child_Contract -> Immediate_Base_Contracts [Not_Immediate_Base_Contracts]
++ ERC20
+
++ BridgedERC20
+ -> ERC20
+
+
+Base_Contract -> Immediate_Child_Contracts
+ [Not_Immediate_Child_Contracts]
+
++ ERC20
+ -> BridgedERC20
+
++ BridgedERC20
+
+INFO:Printers:Inheritance
+Child_Contract -> Immediate_Base_Contracts [Not_Immediate_Base_Contracts]
++ IERC20
+
++ IStateSender
+
++ IFxStateSender
+
++ FxRoot
+ -> IFxStateSender
+
++ RLPReader
+
++ ExitPayloadReader
+
++ Merkle
+
++ MerklePatriciaProof
+
++ ICheckpointManager
+
++ FxBaseRootTunnel
+
++ FxERC20RootTunnel
+ -> FxBaseRootTunnel
+
+
+Base_Contract -> Immediate_Child_Contracts
+ [Not_Immediate_Child_Contracts]
+
++ IERC20
+
++ IStateSender
+
++ IFxStateSender
+ -> FxRoot
+
++ FxRoot
+
++ RLPReader
+
++ ExitPayloadReader
+
++ Merkle
+
++ MerklePatriciaProof
+
++ ICheckpointManager
+
++ FxBaseRootTunnel
+ -> FxERC20RootTunnel
+
++ FxERC20RootTunnel
+
+INFO:Slither:. analyzed (19 contracts)
