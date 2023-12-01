@@ -16,7 +16,7 @@ The format is based on [Common Changelog](https://common-changelog.org).
 
 ## [v1.1.7-post-internal-audit] - 2023-11-30
 - Created and deployed ERC20 token bridging contracts to Polygon mumbai and Ethereum goerli testnets
-- Updated documentation adn deployment scripts
+- Updated documentation and deployment scripts
 - Added unit tests, coverage and bridging integration test scripts
 
 ## [1.1.6] - 2023-09-07
