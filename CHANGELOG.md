@@ -15,7 +15,7 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
 
 ## [v1.1.7-post-internal-audit] - 2023-11-30
-- Created and deployed ERC20 token bridging contracts to Polygon mumbai and Ethereum goerli testnets ()
+- Created and deployed ERC20 token bridging contracts to Polygon mumbai and Ethereum goerli testnets
 - Updated documentation adn deployment scripts
 - Added unit tests, coverage and bridging integration test scripts
 
