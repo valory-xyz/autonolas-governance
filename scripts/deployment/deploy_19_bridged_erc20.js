@@ -29,8 +29,16 @@ async function main() {
     console.log("19. EOA to deploy bridged ERC20 contract");
     const BridgedERC20 = await ethers.getContractFactory("BridgedERC20");
     console.log("You are signing the following transaction: BridgedERC20.connect(EOA).deploy()");
-    const bridgedERC20 = await BridgedERC20.connect(EOA).deploy();
-    //const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("ERC20 bridged token", "BridgedERC20", 18);
+
+    // *********** DELETE THESE LINES ***********
+    console.log("Define proper token name and symbol, then delete this line");
+    const skip = true;
+    if (skip) {
+        return;
+    }
+    // *********** DELETE THESE LINES ***********
+
+    const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("ERC20 bridged token", "BridgedERC20", 18);
     let result = await bridgedERC20.deployed();
 
     // Transaction details
@@ -48,7 +56,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --network " + providerName + " " + bridgedERC20.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_19_bridged_erc20.js --network " + providerName + " " + bridgedERC20.address, { encoding: "utf-8" });
     }
 }
 
