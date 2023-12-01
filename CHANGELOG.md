@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
+[1.1.7]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.6...v1.1.7-post-internal-audit
 [1.1.6]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.5-pre-audit...v1.1.6
 [1.1.5]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.4...v1.1.5 
 [1.1.4]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.3...v1.1.4
@@ -12,6 +13,11 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.1.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.1...v1.1.1
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
+
+## [v1.1.7-post-internal-audit] - 2023-11-30
+- Created and deployed ERC20 token bridging contracts to Polygon mumbai and Ethereum goerli testnets ([#95](https://github.com/valory-xyz/autonolas-governance/pull/95))
+- Updated documentation adn deployment scripts
+- Added unit tests, coverage and bridging integration test scripts
 
 ## [1.1.6] - 2023-09-07
 
@@ -29,7 +35,7 @@ _No bytecode changes_.
 - Updated audit contract setup script
 - Updated documentation
 - Created proposal scripts
-- Created script to check on-chain configutations 
+- Created script to check on-chain configurations 
 
 ## [1.1.4] - 2023-06-21
 
