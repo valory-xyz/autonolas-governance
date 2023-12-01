@@ -29,8 +29,15 @@ async function main() {
     console.log("19. EOA to deploy bridged ERC20 contract");
     const BridgedERC20 = await ethers.getContractFactory("BridgedERC20");
     console.log("You are signing the following transaction: BridgedERC20.connect(EOA).deploy()");
+
+    // *********** DELETE THESE LINES ***********
     console.log("Define proper token name and symbol, then delete this line");
-    return;
+    const skip = true;
+    if (skip) {
+        return;
+    }
+    // *********** DELETE THESE LINES ***********
+
     const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("ERC20 bridged token", "BridgedERC20", 18);
     let result = await bridgedERC20.deployed();
 
