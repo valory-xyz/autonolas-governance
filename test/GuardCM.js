@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
-describe("Community Multisig", function () {
+describe("Community Multisig Guard", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let multiSend;

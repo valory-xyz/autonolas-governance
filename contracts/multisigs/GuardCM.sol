@@ -41,6 +41,10 @@ error ZeroValue();
 /// @param numValues3 Numberf of values in a third array.
 error WrongArrayLength(uint256 numValues1, uint256 numValues2, uint256 numValues3);
 
+/// @dev Provided bridged mediator is not unique.
+/// @param bridgeMediator Bridge mediator address.
+error BridgeMediatorNotUnique(address bridgeMediator);
+
 /// @dev Provided incorrect data length.
 /// @param expected Expected minimum data length.
 /// @param provided Provided data length.
@@ -86,18 +90,6 @@ contract GuardCM {
     event GuardPaused(address indexed account);
     event GuardUnpaused();
 
-    // Owner address
-    address public immutable owner;
-    // Multisig address
-    address public immutable multisig;
-    // Governor address
-    address public governor;
-    // Guard pausing possibility
-    uint8 public paused = 1;
-    
-    // Mapping of address + bytes4 selector => enabled / disabled
-    mapping(uint256 => bool) public mapAllowedTargetSelectors;
-
     // schedule selector
     bytes4 public constant SCHEDULE = bytes4(keccak256(bytes("schedule(address,uint256,bytes,bytes32,bytes32,uint256)")));
     // scheduleBatch selector
@@ -116,9 +108,21 @@ contract GuardCM {
     // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
     uint256 public constant DEFAULT_DATA_LENGTH = 36;
 
+    // Owner address
+    address public immutable owner;
+    // Multisig address
+    address public immutable multisig;
+
+    // Governor address
+    address public governor;
+    // Guard pausing possibility
+    uint8 public paused = 1;
+
+    // Mapping of address + bytes4 selector => enabled / disabled
+    mapping(uint256 => bool) public mapAllowedTargetSelectors;
     // Mapping of bridge mediator address L1 => bridge mediator address L2
     mapping(address => address) public mapBridgeMediatorL1L2s;
-    // Mapping of bridge mediator address L2 => L2 chain Id (for the processing logic)
+    // Mapping of bridge mediator address L2 => L2 chain Id (to choose the processing logic)
     mapping(address => uint256) public mapBridgeMediatorL2ChainIds;
 
     /// @dev GuardCM constructor.
@@ -146,17 +150,15 @@ contract GuardCM {
             revert WrongArrayLength(bridgeMediatorL1s.length, bridgeMediatorL2s.length, chainIds.length);
         }
 
-        // Set all the chain addresses in their map
+        // Link L1 and L2 bridge mediators, set L2 chain Ids
         for (uint256 i = 0; i < chainIds.length; ++i) {
-            if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0) ||
-                mapBridgeMediatorL1L2s[bridgeMediatorL2s[i]] != address(0)) {
-                revert();
+            if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0)) {
+                revert BridgeMediatorNotUnique(bridgeMediatorL1s[i]);
             }
             mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] = bridgeMediatorL2s[i];
 
-            if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0 ||
-                mapBridgeMediatorL2ChainIds[bridgeMediatorL1s[i]] != 0) {
-                revert();
+            if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0) {
+                revert BridgeMediatorNotUnique(bridgeMediatorL2s[i]);
             }
             mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainIds[i];
         }
@@ -194,6 +196,9 @@ contract GuardCM {
         emit GovernorCheckProposalIdChanged(proposalId);
     }
 
+    /// @dev Verifies authorized combinations of target and selector.
+    /// @param target Target address.
+    /// @param data Payload bytes.
     function _verifyData(address target, bytes memory data) internal view {
         // Push a pair of key defining variables into one key
         // target occupies first 160 bits
@@ -207,6 +212,10 @@ contract GuardCM {
         }
     }
 
+    /// @dev Verifies the bridged data for authorized combinations of targets and selectors.
+    /// @notice The processed data is packed as a set of bytes that are assembled using the following parameters:
+    ///         address target, uint96 value, uint32 payloadLength, bytes payload
+    /// @param data Payload bytes.
     function _verifyBridgedData(bytes memory data) internal view {
         // Check for the correct data length
         uint256 dataLength = data.length;
@@ -246,6 +255,10 @@ contract GuardCM {
         }
     }
 
+    /// @dev Processes bridged data: checks the header and verifies the payload.
+    /// @param data Full data bytes with the header.
+    /// @param bridgeMediatorL2 Address of a bridged mediator on L2.
+    /// @param chainId L2 chain Id.
     function _processBridgeData(
         bytes memory data,
         address bridgeMediatorL2,
@@ -279,7 +292,7 @@ contract GuardCM {
                 revert WrongSelector(functionSig, chainId);
             }
 
-            // Copy the data without the selector
+            // Copy the data without a selector
             payload = new bytes(mediatorPayload.length - 4);
             for (uint256 i = 0; i < payload.length; ++i) {
                 payload[i] = mediatorPayload[i + 4];
@@ -302,7 +315,12 @@ contract GuardCM {
             }
 
             // Decode sendMessageToChild payload: fxGovernorTunnel (L2), mediatorPayload (executed on L2)
-            ( , bytes memory mediatorPayload) = abi.decode(payload, (address, bytes));
+            (address fxGovernorTunnel , bytes memory mediatorPayload) = abi.decode(payload, (address, bytes));
+            // Check that the fxGovernorTunnel matches the L2 bridge mediator address
+            if (fxGovernorTunnel != bridgeMediatorL2) {
+                revert WrongL2BridgeMediator(fxGovernorTunnel, bridgeMediatorL2);
+            }
+
             // Verify sendMessageToChild payload
             _verifyBridgedData(mediatorPayload);
         } else {
