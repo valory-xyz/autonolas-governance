@@ -379,7 +379,7 @@ describe("Community Multisig", function () {
             const snapshot = await helpers.takeSnapshot();
 
             // Change the proposal Id to a known one
-            payload = guard.interface.encodeFunctionData("changeGovernorCheckProposalId",
+            const payload = guard.interface.encodeFunctionData("changeGovernorCheckProposalId",
                 ["62151151991217526951504761219057817227643973118811130641152828658327965685127"]);
             await timelock.execute(guard.address, payload);
 
@@ -493,9 +493,6 @@ describe("Community Multisig", function () {
 
             let balance = await ethers.provider.getBalance(multisig.address);
             expect(balance).to.equal(amount);
-
-            // Get the balance before
-            const balanceBefore = await ethers.provider.getBalance(deployer.address);
 
             // Send the funds back
             nonce = await multisig.nonce();
