@@ -1,0 +1,26 @@
+'solc --version' running
+'solc ./GuardCM-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal8/analysis/contracts' running
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Compiled with solc
+Total number of contracts in source files: 3
+Source lines of code (SLOC) in source files: 271
+Number of  assembly lines: 0
+Number of optimization issues: 0
+Number of informational issues: 11
+Number of low issues: 2
+Number of medium issues: 4
+Number of high issues: 1
+
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m    Name   [34m|[0m[96m # functions [34m|[0m[96m ERCS [34m|[0m[96m ERC20 info [34m|[0m[96m Complex code [34m|[0m[96m Features [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m    Enum   [34m|[0m[96m      0      [34m|[0m[96m      [34m|[0m[96m            [34m|[0m[96m      No      [34m|[0m[96m          [34m|[0m[96m
+[34m|[0m[96m IGovernor [34m|[0m[96m      1      [34m|[0m[96m      [34m|[0m[96m            [34m|[0m[96m      No      [34m|[0m[96m          [34m|[0m[96m
+[34m|[0m[96m  GuardCM  [34m|[0m[96m      14     [34m|[0m[96m      [34m|[0m[96m            [34m|[0m[96m     Yes      [34m|[0m[96m Assembly [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[0m
+INFO:Slither:. analyzed (3 contracts)

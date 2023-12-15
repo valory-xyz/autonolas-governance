@@ -1,0 +1,101 @@
+
+Notes: False positive
+INFO:Detectors:
+Potential vulnerable to readonly-reentrancy function (if read in other function) GuardCM.checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) (GuardCM-flatten.sol#388-427):
+	State variables read that were written after the external call(s):
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at paused == 1 (GuardCM-flatten.sol#402)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at to == owner (GuardCM-flatten.sol#404)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at operation == Enum.Operation.DelegateCall (GuardCM-flatten.sol#406)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at revert NoDelegateCall()() (GuardCM-flatten.sol#407)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at END_IF (GuardCM-flatten.sol#406-408)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at data.length < 4 (GuardCM-flatten.sol#411)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at revert IncorrectDataLength(uint256,uint256)(data.length,4) (GuardCM-flatten.sol#412)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at END_IF (GuardCM-flatten.sol#411-413)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at functionSig = bytes4(data) (GuardCM-flatten.sol#416)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at functionSig == SCHEDULE || functionSig == SCHEDULE_BATCH (GuardCM-flatten.sol#419)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at _verifySchedule(data,functionSig) (GuardCM-flatten.sol#420)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at END_IF (GuardCM-flatten.sol#419-421)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at to == multisig (GuardCM-flatten.sol#422)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at revert NoSelfCall()() (GuardCM-flatten.sol#424)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at END_IF (GuardCM-flatten.sol#422-425)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at END_IF (GuardCM-flatten.sol#404-425)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+	- GuardCM.paused (GuardCM-flatten.sol#126) was read at END_IF (GuardCM-flatten.sol#402-426)
+		 This variable was written at (after external call):
+			- paused = 2 (GuardCM-flatten.sol#472)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/readonly_reentrancy.md
+
+Notes: Fasle positive, re-check
+INFO:Detectors:
+Dubious typecast in GuardCM._verifyData(address,bytes) (GuardCM-flatten.sol#209-220):
+	bytes => bytes4 casting occurs in targetSelector |= uint256(uint32(bytes4(data))) << 160 (GuardCM-flatten.sol#214)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4)(target,bytes4(data)) (GuardCM-flatten.sol#218)
+Dubious typecast in GuardCM._processBridgeData(bytes,address,uint256) (GuardCM-flatten.sol#269-336):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (GuardCM-flatten.sol#278)
+	bytes => bytes4 casting occurs in functionSig = bytes4(mediatorPayload) (GuardCM-flatten.sol#297)
+	bytes => bytes4 casting occurs in functionSig_scope_1 = bytes4(data) (GuardCM-flatten.sol#313)
+Dubious typecast in GuardCM.checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) (GuardCM-flatten.sol#388-427):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (GuardCM-flatten.sol#416)
+Dubious typecast in GuardCM.slitherConstructorConstantVariables() (GuardCM-flatten.sol#93-498):
+	bytes32 => bytes4 casting occurs in SCHEDULE = bytes4(keccak256(bytes)(bytes(schedule(address,uint256,bytes,bytes32,bytes32,uint256)))) (GuardCM-flatten.sol#101)
+	bytes32 => bytes4 casting occurs in SCHEDULE_BATCH = bytes4(keccak256(bytes)(bytes(scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)))) (GuardCM-flatten.sol#103)
+	bytes32 => bytes4 casting occurs in REQUIRE_TO_PASS_MESSAGE = bytes4(keccak256(bytes)(bytes(requireToPassMessage(address,bytes,uint256)))) (GuardCM-flatten.sol#105)
+	bytes32 => bytes4 casting occurs in PROCESS_MESSAGE_FROM_FOREIGN = bytes4(keccak256(bytes)(bytes(processMessageFromForeign(bytes)))) (GuardCM-flatten.sol#107)
+	bytes32 => bytes4 casting occurs in SEND_MESSAGE_TO_CHILD = bytes4(keccak256(bytes)(bytes(sendMessageToChild(address,bytes)))) (GuardCM-flatten.sol#109)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Notes: Fasle positive, manager only
+INFO:Detectors:
+Reentrancy in GuardCM.pause() (GuardCM-flatten.sol#464-482):
+	External calls:
+	- state = IGovernor(governor).state(governorCheckProposalId) (GuardCM-flatten.sol#470)
+	State variables written after the call(s):
+	- paused = 2 (GuardCM-flatten.sol#472)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+
+Notes: Fasle positive, manager only
+Reentrancy in GuardCM.pause() (GuardCM-flatten.sol#464-482):
+	External calls:
+	- state = IGovernor(governor).state(governorCheckProposalId) (GuardCM-flatten.sol#470)
+	Event emitted after the call(s):
+	- GuardPaused(msg.sender) (GuardCM-flatten.sol#481)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Notes: Fasle positive
+INFO:Detectors:
+GuardCM._verifyBridgedData(bytes) (GuardCM-flatten.sol#226-263) uses assembly
+	- INLINE ASM (GuardCM-flatten.sol#238-245)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+

@@ -1,0 +1,55 @@
+'solc --version' running
+'solc ./GuardCM-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal8/analysis/contracts' running
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+#######################
+####### GuardCM #######
+#######################
+
+## Constructor Call Sequence
+	- GuardCM
+
+## Constructor Definitions
+
+### GuardCM
+
+     constructor(
+        address _timelock,
+        address _multisig,
+        address _governor,
+        address[] memory bridgeMediatorL1s,
+        address[] memory bridgeMediatorL2s,
+        uint256[] memory chainIds
+    ) {
+        // Check for zero addresses
+        if (_timelock == address(0) || _multisig == address(0) || _governor == address(0)) {
+            revert ZeroAddress();
+        }
+        owner = _timelock;
+        multisig = _multisig;
+        governor = _governor;
+
+        // Check for array correctness
+        if (bridgeMediatorL1s.length != bridgeMediatorL2s.length || bridgeMediatorL1s.length != chainIds.length) {
+            revert WrongArrayLength(bridgeMediatorL1s.length, bridgeMediatorL2s.length, chainIds.length);
+        }
+
+        // Link L1 and L2 bridge mediators, set L2 chain Ids
+        for (uint256 i = 0; i < chainIds.length; ++i) {
+            if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0)) {
+                revert BridgeMediatorNotUnique(bridgeMediatorL1s[i]);
+            }
+            mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] = bridgeMediatorL2s[i];
+
+            if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0) {
+                revert BridgeMediatorNotUnique(bridgeMediatorL2s[i]);
+            }
+            mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainIds[i];
+        }
+    }
+
+INFO:Slither:. analyzed (3 contracts)

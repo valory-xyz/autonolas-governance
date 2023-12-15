@@ -1,0 +1,76 @@
+'solc --version' running
+'solc ./GuardCM-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal8/analysis/contracts' running
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
+Contract Enum
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m Variable [34m|[0m[96m Dependencies [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[0m
+
+INFO:Printers:
+Contract Enum
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m Variable [34m|[0m[96m Dependencies [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[0m
+
+Contract IGovernor
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m Variable [34m|[0m[96m Dependencies [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[0m
+
+Function state(uint256)
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m  Variable  [34m|[0m[96m Dependencies [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m
+[34m|[0m[96m proposalId [34m|[0m[96m      []      [34m|[0m[96m
+[34m|[0m[96m            [34m|[0m[96m      []      [34m|[0m[96m
+[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[34m-[0m[96m[36m+[0m[96m[0m
+Traceback (most recent call last):
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 814, in main_impl
+    ) = process_all(filename, args, detector_classes, printer_classes)
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 102, in process_all
+    ) = process_single(compilation, args, detector_classes, printer_classes)
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 82, in process_single
+    return _process(slither, detector_classes, printer_classes)
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 138, in _process
+    printer_results = slither.run_printers()
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/slither.py", line 236, in run_printers
+    return [p.output(self._crytic_compile.target).data for p in self._printers]
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/slither.py", line 236, in <listcomp>
+    return [p.output(self._crytic_compile.target).data for p in self._printers]
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/printers/summary/data_depenency.py", line 56, in output
+    table.add_row([v.name, sorted(_get(v, f))])
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/printers/summary/data_depenency.py", line 16, in _get
+    {
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/printers/summary/data_depenency.py", line 19, in <setcomp>
+    if not isinstance(d, (TemporaryVariable, ReferenceVariable)) and d.name
+AttributeError: 'ArrayType' object has no attribute 'name'
+ERROR:root:Error in .
+ERROR:root:Traceback (most recent call last):
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 814, in main_impl
+    ) = process_all(filename, args, detector_classes, printer_classes)
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 102, in process_all
+    ) = process_single(compilation, args, detector_classes, printer_classes)
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 82, in process_single
+    return _process(slither, detector_classes, printer_classes)
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/__main__.py", line 138, in _process
+    printer_results = slither.run_printers()
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/slither.py", line 236, in run_printers
+    return [p.output(self._crytic_compile.target).data for p in self._printers]
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/slither.py", line 236, in <listcomp>
+    return [p.output(self._crytic_compile.target).data for p in self._printers]
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/printers/summary/data_depenency.py", line 56, in output
+    table.add_row([v.name, sorted(_get(v, f))])
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/printers/summary/data_depenency.py", line 16, in _get
+    {
+  File "/home/andrey/.local/lib/python3.10/site-packages/slither/printers/summary/data_depenency.py", line 19, in <setcomp>
+    if not isinstance(d, (TemporaryVariable, ReferenceVariable)) and d.name
+AttributeError: 'ArrayType' object has no attribute 'name'
+

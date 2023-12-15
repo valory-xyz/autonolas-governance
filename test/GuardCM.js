@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
-describe("Community Multisig", function () {
+describe("Community Multisig Guard", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let multiSend;
@@ -18,6 +18,8 @@ describe("Community Multisig", function () {
     let governor;
     let signers;
     let deployer;
+    let l1BridgeMediators;
+    let l2BridgeMediators;
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
     const Bytes4Zero = "0x" + "0".repeat(8);
@@ -87,8 +89,11 @@ describe("Community Multisig", function () {
             initialProposalThreshold, quorum);
         await governor.deployed();
 
+        l1BridgeMediators = [signers[1].address, signers[2].address];
+        l2BridgeMediators = [signers[3].address, signers[4].address];
         const GuardCM = await ethers.getContractFactory("GuardCM");
-        guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address);
+        guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
+            l2BridgeMediators, [100, 137]);
         await guard.deployed();
     });
 
@@ -373,6 +378,11 @@ describe("Community Multisig", function () {
             // Take a snapshot of the current state of the blockchain
             const snapshot = await helpers.takeSnapshot();
 
+            // Change the proposal Id to a known one
+            const payload = guard.interface.encodeFunctionData("changeGovernorCheckProposalId",
+                ["62151151991217526951504761219057817227643973118811130641152828658327965685127"]);
+            await timelock.execute(guard.address, payload);
+
             // Setting the CM guard
             let nonce = await multisig.nonce();
             let txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
@@ -483,9 +493,6 @@ describe("Community Multisig", function () {
 
             let balance = await ethers.provider.getBalance(multisig.address);
             expect(balance).to.equal(amount);
-
-            // Get the balance before
-            const balanceBefore = await ethers.provider.getBalance(deployer.address);
 
             // Send the funds back
             nonce = await multisig.nonce();

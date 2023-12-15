@@ -1,8 +1,15 @@
-// SPDX-License-Identifier: MIT
+// Sources flattened with hardhat v2.17.1 https://hardhat.org
+
+// Original license: SPDX_License_Identifier: MIT
 pragma solidity ^0.8.23;
+/// @title Enum - Collection of enums
+/// @author Richard Meissner - <richard@gnosis.pm>
+contract Enum {
+    enum Operation {Call, DelegateCall}
+}
 
-import {Enum} from "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
 
+// File contracts/multisigs/GuardCM.sol
 interface IGovernor {
     function state(uint256 proposalId) external returns (ProposalState);
 }
