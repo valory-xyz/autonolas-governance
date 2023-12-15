@@ -130,13 +130,15 @@ The finalized contract ABIs for deployment and their number of optimization pass
 [ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
 
 ## Bridges
-Depending on the network, the cross-chain functionality enabled is outlined in detail here:
+
+### Cross-chain governance
+Depending on the network, the cross-chain functionalities enabled are outlined in detail here:
 [Cross-chain governance](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
 
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
 use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack_data.js).
 
-### Polygon governance bridge 
+#### Polygon governance bridge 
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon.
 
 For running a test between `goerli` and `mumbai`, run the test script with your own credentials:
@@ -144,7 +146,7 @@ For running a test between `goerli` and `mumbai`, run the test script with your 
 and [`goerli-mumbai` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
-### Gnosis governance bridge
+#### Gnosis governance bridge
 Autonolas will use the [Arbitrary Message Bridge](https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge) developed
 and designed by the Gnosis team to support cross-chain bridging from Ethereum to Gnosis Chain.
 
@@ -152,6 +154,10 @@ For running a test between `goerli` and `chiado`, run the test script with your 
 [`goerli-chiado` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_hello_world.js)
 and [`goerli-chiado` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
+
+### ERC20 token bridging between Polygon and Ethereum
+The contract design facilitating token bridging between the Polygon and Ethereum networks, along with the underlying motivations driving the creation of these contracts, is outlined here:
+[Bridging token](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Bonding_mechanism_with_Polygon_LP_token.pdf?raw=true). 
 
 ### Deployment of bridge-related contracts
 The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here:
