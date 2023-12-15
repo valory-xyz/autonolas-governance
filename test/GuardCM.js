@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
-describe("Community Multisig Guard", function () {
+describe.only("Community Multisig Guard", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let multiSend;
@@ -20,6 +20,7 @@ describe("Community Multisig Guard", function () {
     let deployer;
     let l1BridgeMediators;
     let l2BridgeMediators;
+    const chainIds = [100, 137]
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
     const Bytes4Zero = "0x" + "0".repeat(8);
@@ -93,11 +94,55 @@ describe("Community Multisig Guard", function () {
         l2BridgeMediators = [signers[3].address, signers[4].address];
         const GuardCM = await ethers.getContractFactory("GuardCM");
         guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
-            l2BridgeMediators, [100, 137]);
+            l2BridgeMediators, chainIds);
         await guard.deployed();
     });
 
     context("Initialization", async function () {
+        it("Should not allow zero address inputs and other parameters", async function () {
+            const GuardTest = await ethers.getContractFactory("GuardCM");
+            // Zero addresses check
+            await expect(
+                GuardTest.deploy(AddressZero, AddressZero, AddressZero, [], [], [])
+            ).to.be.revertedWithCustomError(GuardTest, "ZeroAddress");
+
+            await expect(
+                GuardTest.deploy(timelock.address, AddressZero, AddressZero, [], [], [])
+            ).to.be.revertedWithCustomError(GuardTest, "ZeroAddress");
+
+            await expect(
+                GuardTest.deploy(timelock.address, multisig.address, AddressZero, [], [], [])
+            ).to.be.revertedWithCustomError(GuardTest, "ZeroAddress");
+
+            // Incorrect L2 setup
+            await expect(
+                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators, [], [])
+            ).to.be.revertedWithCustomError(GuardTest, "WrongArrayLength");
+
+            await expect(
+                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
+                    l2BridgeMediators, [])
+            ).to.be.revertedWithCustomError(GuardTest, "WrongArrayLength");
+
+            // Duplicated contracts
+            const contractAddresses = [signers[1].address, signers[1].address];
+            await expect(
+                GuardTest.deploy(timelock.address, multisig.address, governor.address, contractAddresses,
+                    l2BridgeMediators, chainIds)
+            ).to.be.revertedWithCustomError(GuardTest, "BridgeMediatorNotUnique");
+
+            await expect(
+                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
+                    contractAddresses, chainIds)
+            ).to.be.revertedWithCustomError(GuardTest, "BridgeMediatorNotUnique");
+
+            // Wrong chain Ids
+            await expect(
+                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
+                    l2BridgeMediators, [1, 2])
+            ).to.be.revertedWithCustomError(GuardTest, "L2ChainIdNotSupported");
+        });
+
         it("Change governor", async function () {
             // Try to change governor not by the timelock
             await expect(

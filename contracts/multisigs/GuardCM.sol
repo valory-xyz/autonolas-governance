@@ -152,15 +152,23 @@ contract GuardCM {
 
         // Link L1 and L2 bridge mediators, set L2 chain Ids
         for (uint256 i = 0; i < chainIds.length; ++i) {
+            // Check the uniqueness of L1 addresses
             if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0)) {
                 revert BridgeMediatorNotUnique(bridgeMediatorL1s[i]);
             }
             mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] = bridgeMediatorL2s[i];
 
+            // Check allowed chain Ids
+            uint256 chainId = chainIds[i];
+            if (chainId != 100 && chainId != 137 && chainId != 10200 && chainId != 80001) {
+                revert L2ChainIdNotSupported(chainId);
+            }
+
+            // Check the uniqueness of L2 addresses
             if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0) {
                 revert BridgeMediatorNotUnique(bridgeMediatorL2s[i]);
             }
-            mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainIds[i];
+            mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainId;
         }
     }
 
@@ -240,6 +248,12 @@ contract GuardCM {
             // Check for the zero address
             if (target == address(0)) {
                 revert ZeroAddress();
+            }
+
+            // Check for the zero payload
+            // We assume there will be no calls by CM where the governance contract need to just send funds on L2
+            if (payloadLength == 0) {
+                revert ZeroValue();
             }
 
             // Get the payload
