@@ -18,8 +18,8 @@ describe.only("Community Multisig Guard", function () {
     let governor;
     let signers;
     let deployer;
-    let l1BridgeMediators;
-    let l2BridgeMediators;
+    const l1BridgeMediators = ["0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e", "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2"];
+    const l2BridgeMediators =["0x15bd56669f57192a97df41a2aa8f4403e9491776", "0x9338b5153ae39bb89f50468e608ed9d764b755fd"];
     const chainIds = [100, 137]
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
@@ -29,6 +29,7 @@ describe.only("Community Multisig Guard", function () {
     const initialVotingPeriod = 10;
     const initialProposalThreshold = ethers.utils.parseEther("5");
     const quorum = 1;
+    const localChainId = 31337;
 
     beforeEach(async function () {
         const GnosisSafe = await ethers.getContractFactory("GnosisSafe");
@@ -90,57 +91,26 @@ describe.only("Community Multisig Guard", function () {
             initialProposalThreshold, quorum);
         await governor.deployed();
 
-        l1BridgeMediators = [signers[1].address, signers[2].address];
-        l2BridgeMediators = [signers[3].address, signers[4].address];
         const GuardCM = await ethers.getContractFactory("GuardCM");
-        guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
-            l2BridgeMediators, chainIds);
+        guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address);
         await guard.deployed();
     });
 
     context("Initialization", async function () {
-        it("Should not allow zero address inputs and other parameters", async function () {
+        it("Should not allow zero address in the constructor", async function () {
             const GuardTest = await ethers.getContractFactory("GuardCM");
             // Zero addresses check
             await expect(
-                GuardTest.deploy(AddressZero, AddressZero, AddressZero, [], [], [])
+                GuardTest.deploy(AddressZero, AddressZero, AddressZero)
             ).to.be.revertedWithCustomError(GuardTest, "ZeroAddress");
 
             await expect(
-                GuardTest.deploy(timelock.address, AddressZero, AddressZero, [], [], [])
+                GuardTest.deploy(timelock.address, AddressZero, AddressZero)
             ).to.be.revertedWithCustomError(GuardTest, "ZeroAddress");
 
             await expect(
-                GuardTest.deploy(timelock.address, multisig.address, AddressZero, [], [], [])
+                GuardTest.deploy(timelock.address, multisig.address, AddressZero)
             ).to.be.revertedWithCustomError(GuardTest, "ZeroAddress");
-
-            // Incorrect L2 setup
-            await expect(
-                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators, [], [])
-            ).to.be.revertedWithCustomError(GuardTest, "WrongArrayLength");
-
-            await expect(
-                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
-                    l2BridgeMediators, [])
-            ).to.be.revertedWithCustomError(GuardTest, "WrongArrayLength");
-
-            // Duplicated contracts
-            const contractAddresses = [signers[1].address, signers[1].address];
-            await expect(
-                GuardTest.deploy(timelock.address, multisig.address, governor.address, contractAddresses,
-                    l2BridgeMediators, chainIds)
-            ).to.be.revertedWithCustomError(GuardTest, "BridgeMediatorNotUnique");
-
-            await expect(
-                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
-                    contractAddresses, chainIds)
-            ).to.be.revertedWithCustomError(GuardTest, "BridgeMediatorNotUnique");
-
-            // Wrong chain Ids
-            await expect(
-                GuardTest.deploy(timelock.address, multisig.address, governor.address, l1BridgeMediators,
-                    l2BridgeMediators, [1, 2])
-            ).to.be.revertedWithCustomError(GuardTest, "L2ChainIdNotSupported");
         });
 
         it("Change governor", async function () {
@@ -180,20 +150,98 @@ describe.only("Community Multisig Guard", function () {
         it("Set target selectors", async function () {
             // Try to set selectors not by the timelock
             await expect(
-                guard.setTargetSelectors([AddressZero], [Bytes4Zero], [true])
+                guard.setTargetSelectors([], [], [], [])
             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
-            // Try to set targets with wrong arrays
+            // Try to set zero values
             let setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
-                [[AddressZero], [Bytes4Zero, Bytes4Zero], [true]]);
+                [[AddressZero], [Bytes4Zero], [0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
             ).to.be.reverted;
 
             setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
-                [[AddressZero], [Bytes4Zero], [true, true]]);
+                [[signers[1].address], [Bytes4Zero], [0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+                [[signers[1].address], ["0xabcdef00"], [0], [true]]);
+            await expect(
+                timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+
+            // Try to set targets with wrong arrays
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+                [[AddressZero], [Bytes4Zero, Bytes4Zero], [0], [true]]);
+            await expect(
+                timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+                [[AddressZero], [Bytes4Zero], [0, 0], [true]]);
+            await expect(
+                timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+                [[AddressZero], [Bytes4Zero], [0], [true, true]]);
+            await expect(
+                timelock.execute(guard.address, setTargetSelectorsPayload)
+            ).to.be.reverted;
+        });
+
+        it("Set bridge mediators", async function () {
+             // Try to set selectors not by the timelock
+             await expect(
+                 guard.setBridgeMediators([], [], [])
+             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
+
+            // Incorrect L2 setup
+            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [l1BridgeMediators, [], []]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [l1BridgeMediators, l2BridgeMediators, []]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            // Duplicated contracts
+            const contractAddresses = [signers[1].address, signers[1].address];
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [contractAddresses, l2BridgeMediators, chainIds]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [l1BridgeMediators, contractAddresses, chainIds]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            // Zero addresses and chain Ids
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [[AddressZero], [AddressZero], [0]]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [[signers[1].address], [AddressZero], [0]]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+                [[signers[1].address], [signers[2].address], [0]]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
         });
 
@@ -275,7 +323,7 @@ describe.only("Community Multisig Guard", function () {
             // Authorize treasury target and selector
             // bytes32(keccak256("pause")) == 0x8456cb59
             const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
-                [[treasury.address], ["0x8456cb59"], [true]]);
+                [[treasury.address], ["0x8456cb59"], [localChainId], [true]]);
             await timelock.execute(guard.address, setTargetSelectorsPayload);
 
             // Create a payload data for the schedule function
@@ -390,7 +438,7 @@ describe.only("Community Multisig Guard", function () {
             // bytes32(keccak256("pause")) == 0x8456cb59
             // bytes32(keccak256("unpause")) == 0x3f4ba83a
             const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
-                [[treasury.address, treasury.address], ["0x8456cb59", "0x3f4ba83a"], [true, true]]);
+                [[treasury.address, treasury.address], ["0x8456cb59", "0x3f4ba83a"], [localChainId, localChainId], [true, true]]);
             await timelock.execute(guard.address, setTargetSelectorsPayload);
 
             // Create a payload data for the schedule function

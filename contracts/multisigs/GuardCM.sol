@@ -85,7 +85,8 @@ error WrongL2BridgeMediator(address provided, address expected);
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 contract GuardCM {
     event GovernorUpdated(address indexed governor);
-    event SetTargetSelectors(address[] indexed targets, bytes4[] indexed selectors, bool[] statuses);
+    event SetTargetSelectors(address[] indexed targets, bytes4[] indexed selectors, uint256[] chainIds, bool[] statuses);
+    event SetBridgeMediators(address[] indexed bridgeMediatorL1s, address[] indexed bridgeMediatorL2s, uint256[] chainIds);
     event GovernorCheckProposalIdChanged(uint256 indexed proposalId);
     event GuardPaused(address indexed account);
     event GuardUnpaused();
@@ -102,11 +103,18 @@ contract GuardCM {
     bytes4 public constant SEND_MESSAGE_TO_CHILD = bytes4(keccak256(bytes("sendMessageToChild(address,bytes)")));
     // Initial check governance proposal Id
     // Calculated from the proposalHash function of the GovernorOLAS with the following parameters:
-    // targets = [address(0)], values = [0], calldatas = [0x], description = ""
+    // targets = [], values = [], calldatas = [], description = ""
     uint256 public governorCheckProposalId = 88250008686885504216650933897987879122244685460173810624866685274624741477673;
-    // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
-    // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
-    uint256 public constant DEFAULT_DATA_LENGTH = 36;
+    // Default data length for L2 extracted message includes the number of bytes of at least
+    // one address (20 bytes or 160 bits), a value (12 bytes or 96 bits), the payload size (4 bytes or 32 bits),
+    // and at least one selector in the extracted payload (4 bytes or 32 bits)
+    uint256 public constant DEFAULT_L2_DATA_LENGTH = 40;
+    // Minimum data length that contains at least a selector (4 bytes or 32 bits)
+    uint256 public constant MIN_DATA_LENGTH = 4;
+    // Minimum payload length for message on Gnosis: selector and 3 full slots
+    uint256 public constant MIN_GNOSIS_PAYLOAD_LENGTH = 100;
+    // Minimum payload length for message on Polygon: selector and 2 slots
+    uint256 public constant MIN_POLYGON_PAYLOAD_LENGTH = 68;
 
     // Owner address
     address public immutable owner;
@@ -132,10 +140,7 @@ contract GuardCM {
     constructor(
         address _timelock,
         address _multisig,
-        address _governor,
-        address[] memory bridgeMediatorL1s,
-        address[] memory bridgeMediatorL2s,
-        uint256[] memory chainIds
+        address _governor
     ) {
         // Check for zero addresses
         if (_timelock == address(0) || _multisig == address(0) || _governor == address(0)) {
@@ -144,32 +149,6 @@ contract GuardCM {
         owner = _timelock;
         multisig = _multisig;
         governor = _governor;
-
-        // Check for array correctness
-        if (bridgeMediatorL1s.length != bridgeMediatorL2s.length || bridgeMediatorL1s.length != chainIds.length) {
-            revert WrongArrayLength(bridgeMediatorL1s.length, bridgeMediatorL2s.length, chainIds.length);
-        }
-
-        // Link L1 and L2 bridge mediators, set L2 chain Ids
-        for (uint256 i = 0; i < chainIds.length; ++i) {
-            // Check the uniqueness of L1 addresses
-            if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0)) {
-                revert BridgeMediatorNotUnique(bridgeMediatorL1s[i]);
-            }
-            mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] = bridgeMediatorL2s[i];
-
-            // Check allowed chain Ids
-            uint256 chainId = chainIds[i];
-            if (chainId != 100 && chainId != 137 && chainId != 10200 && chainId != 80001) {
-                revert L2ChainIdNotSupported(chainId);
-            }
-
-            // Check the uniqueness of L2 addresses
-            if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0) {
-                revert BridgeMediatorNotUnique(bridgeMediatorL2s[i]);
-            }
-            mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainId;
-        }
     }
 
     /// @dev Changes the governor.
@@ -207,32 +186,36 @@ contract GuardCM {
     /// @dev Verifies authorized combinations of target and selector.
     /// @param target Target address.
     /// @param data Payload bytes.
-    function _verifyData(address target, bytes memory data) internal view {
+    /// @param chainId Chain Id.
+    function _verifyData(address target, bytes memory data, uint256 chainId) internal view {
+        // Check for the incorrect data length
+        // We assume there will be no calls by CM where the timelock contract need to send funds
+        if (data.length < MIN_DATA_LENGTH) {
+            revert IncorrectDataLength(data.length, MIN_DATA_LENGTH);
+        }
+
         // Push a pair of key defining variables into one key
         // target occupies first 160 bits
-        uint256 targetSelector = uint256(uint160(target));
+        uint256 targetSelectorChainId = uint256(uint160(target));
         // selector occupies next 32 bits
-        targetSelector |= uint256(uint32(bytes4(data))) << 160;
+        targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160;
+        // chainId occupies next 64 bits
+        targetSelectorChainId |= chainId << 192;
 
         // Check the authorized combination of target and selector
-        if (!mapAllowedTargetSelectors[targetSelector]) {
+        if (!mapAllowedTargetSelectors[targetSelectorChainId]) {
             revert NotAuthorized(target, bytes4(data));
         }
     }
 
     /// @dev Verifies the bridged data for authorized combinations of targets and selectors.
     /// @notice The processed data is packed as a set of bytes that are assembled using the following parameters:
-    ///         address target, uint96 value, uint32 payloadLength, bytes payload
+    ///         address target, uint96 value, uint32 payloadLength, bytes payload.
     /// @param data Payload bytes.
-    function _verifyBridgedData(bytes memory data) internal view {
-        // Check for the correct data length
-        uint256 dataLength = data.length;
-        if (dataLength < DEFAULT_DATA_LENGTH) {
-            revert IncorrectDataLength(DEFAULT_DATA_LENGTH, data.length);
-        }
-
+    /// @param chainId L2 chain Id.
+    function _verifyBridgedData(bytes memory data, uint256 chainId) internal view {
         // Unpack and process the data
-        for (uint256 i = 0; i < dataLength;) {
+        for (uint256 i = 0; i < data.length;) {
             address target;
             uint32 payloadLength;
             // solhint-disable-next-line no-inline-assembly
@@ -250,12 +233,6 @@ contract GuardCM {
                 revert ZeroAddress();
             }
 
-            // Check for the zero payload
-            // We assume there will be no calls by CM where the governance contract need to just send funds on L2
-            if (payloadLength == 0) {
-                revert ZeroValue();
-            }
-
             // Get the payload
             bytes memory payload = new bytes(payloadLength);
             for (uint256 j = 0; j < payloadLength; ++j) {
@@ -265,7 +242,7 @@ contract GuardCM {
             i += payloadLength;
 
             // Verify the scope of the data
-            _verifyData(target, payload);
+            _verifyData(target, payload, chainId);
         }
     }
 
@@ -287,8 +264,14 @@ contract GuardCM {
                 revert WrongSelector(functionSig, chainId);
             }
 
+            // Check if the data length is less than a size of a selector plus the message minimum payload size:
+            // selector (4 bytes) + (address, bytes, uint256) = at least 3 slots of 96 bytes, or 100 bytes in total
+            if (data.length < MIN_GNOSIS_PAYLOAD_LENGTH) {
+                revert IncorrectDataLength(data.length, MIN_GNOSIS_PAYLOAD_LENGTH);
+            }
+
             // Copy the data without the selector
-            bytes memory payload = new bytes(data.length - 4);
+            bytes memory payload = new bytes(data.length - MIN_DATA_LENGTH);
             for (uint256 i = 0; i < payload.length; ++i) {
                 payload[i] = data[i + 4];
             }
@@ -300,6 +283,11 @@ contract GuardCM {
                 revert WrongL2BridgeMediator(homeMediator, bridgeMediatorL2);
             }
 
+            // Check if the data length is less than a size of a selector and a first packed tx that follows it
+            if (mediatorPayload.length < MIN_DATA_LENGTH + DEFAULT_L2_DATA_LENGTH) {
+                revert IncorrectDataLength(mediatorPayload.length, MIN_DATA_LENGTH + DEFAULT_L2_DATA_LENGTH);
+            }
+
             // Check the L2 initial selector
             functionSig = bytes4(mediatorPayload);
             if (functionSig != PROCESS_MESSAGE_FROM_FOREIGN) {
@@ -307,13 +295,13 @@ contract GuardCM {
             }
 
             // Copy the data without a selector
-            payload = new bytes(mediatorPayload.length - 4);
-            for (uint256 i = 0; i < payload.length; ++i) {
-                payload[i] = mediatorPayload[i + 4];
+            bytes memory bridgePayload = new bytes(mediatorPayload.length - MIN_DATA_LENGTH);
+            for (uint256 i = 0; i < bridgePayload.length; ++i) {
+                bridgePayload[i] = mediatorPayload[i + MIN_DATA_LENGTH];
             }
 
             // Verify processMessageFromForeign payload
-            _verifyBridgedData(payload);
+            _verifyBridgedData(payload, chainId);
         // Polygon chains
         } else if (chainId == 137 || chainId == 80001) {
             // Check the L1 initial selector
@@ -322,21 +310,32 @@ contract GuardCM {
                 revert WrongSelector(functionSig, chainId);
             }
 
+            // Check if the data length is less than a size of a selector plus the message minimum payload size:
+            // selector (4 bytes) + (address, bytes) = at least 2 slots of 64 bytes, or 68 bytes in total
+            if (data.length < MIN_POLYGON_PAYLOAD_LENGTH) {
+                revert IncorrectDataLength(data.length, MIN_POLYGON_PAYLOAD_LENGTH);
+            }
+
             // Copy the data without the selector
-            bytes memory payload = new bytes(data.length - 4);
+            bytes memory payload = new bytes(data.length - MIN_DATA_LENGTH);
             for (uint256 i = 0; i < payload.length; ++i) {
-                payload[i] = data[i + 4];
+                payload[i] = data[i + MIN_DATA_LENGTH];
             }
 
             // Decode sendMessageToChild payload: fxGovernorTunnel (L2), mediatorPayload (executed on L2)
-            (address fxGovernorTunnel , bytes memory mediatorPayload) = abi.decode(payload, (address, bytes));
+            (address fxGovernorTunnel, bytes memory mediatorPayload) = abi.decode(payload, (address, bytes));
             // Check that the fxGovernorTunnel matches the L2 bridge mediator address
             if (fxGovernorTunnel != bridgeMediatorL2) {
                 revert WrongL2BridgeMediator(fxGovernorTunnel, bridgeMediatorL2);
             }
 
+            // Check if the data length is less than a size of a first packed tx that follows it
+            if (mediatorPayload.length < DEFAULT_L2_DATA_LENGTH) {
+                revert IncorrectDataLength(mediatorPayload.length, DEFAULT_L2_DATA_LENGTH);
+            }
+
             // Verify sendMessageToChild payload
-            _verifyBridgedData(mediatorPayload);
+            _verifyBridgedData(mediatorPayload, chainId);
         } else {
             revert L2ChainIdNotSupported(chainId);
         }
@@ -347,7 +346,7 @@ contract GuardCM {
     /// @param selector Schedule function selector.
     function _verifySchedule(bytes memory data, bytes4 selector) internal view {
         // Copy the data without the selector
-        bytes memory payload = new bytes(data.length - 4);
+        bytes memory payload = new bytes(data.length - MIN_DATA_LENGTH);
         for (uint256 i = 0; i < payload.length; ++i) {
             payload[i] = data[i + 4];
         }
@@ -381,7 +380,7 @@ contract GuardCM {
                 _processBridgeData(callDatas[i], bridgeMediatorL2, chainId);
             } else {
                 // Verify the data right away as it is not the bridged one
-                _verifyData(targets[i], callDatas[i]);
+                _verifyData(targets[i], callDatas[i], block.chainid);
             }
         }
     }
@@ -415,8 +414,8 @@ contract GuardCM {
                 }
 
                 // Data length is too short: less than a size of a selector
-                if (data.length < 4) {
-                    revert IncorrectDataLength(data.length, 4);
+                if (data.length < MIN_DATA_LENGTH) {
+                    revert IncorrectDataLength(data.length, MIN_DATA_LENGTH);
                 }
 
                 // Get the function signature
@@ -434,33 +433,107 @@ contract GuardCM {
     }
 
     /// @dev Authorizes combinations of targets and selectors.
+    /// @notice It is the contract owner responsibility to set correct L1 chain Ids where the contract is deployed
+    ///         and corresponding supported L2-s, if the contract interacts with them.
     /// @param targets Array of target addresses.
     /// @param selectors Array of selectors for targets.
+    /// @param chainIds Chain Ids.
     /// @param statuses Authorize if true, and restrict otherwise.
-    function setTargetSelectors(address[] memory targets, bytes4[] memory selectors, bool[] memory statuses) external {
+    function setTargetSelectors(
+        address[] memory targets,
+        bytes4[] memory selectors,
+        uint256[] memory chainIds,
+        bool[] memory statuses
+    ) external {
         // Check for the ownership
         if (msg.sender != owner) {
             revert OwnerOnly(msg.sender, owner);
         }
         
         // Check array length
-        if (targets.length != selectors.length || targets.length != statuses.length) {
+        if (targets.length != selectors.length || targets.length != statuses.length || targets.length != chainIds.length) {
             revert WrongArrayLength(targets.length, selectors.length, statuses.length);
         }
 
         // Traverse all the targets and selectors to build their paired values
         for (uint256 i = 0; i < targets.length; ++i) {
+            // Check for zero address targets
+            if (targets[i] == address(0)) {
+                revert ZeroAddress();
+            }
+
+            // Check selector for zero selector value
+            if (selectors[i] == bytes4(0)) {
+                revert ZeroValue();
+            }
+
+            // Check chain Ids to be greater than zero
+            if (chainIds[i] == 0) {
+                revert ZeroValue();
+            }
+
             // Push a pair of key defining variables into one key
             // target occupies first 160 bits
-            uint256 targetSelector = uint256(uint160(targets[i]));
+            uint256 targetSelectorChainId = uint256(uint160(targets[i]));
             // selector occupies next 32 bits
-            targetSelector |= uint256(uint32(selectors[i])) << 160;
+            targetSelectorChainId |= uint256(uint32(selectors[i])) << 160;
+            // chainId occupies next 64 bits
+            targetSelectorChainId |= chainIds[i] << 192;
 
             // Set the status of the target and selector combination
-            mapAllowedTargetSelectors[targetSelector] = statuses[i];
+            mapAllowedTargetSelectors[targetSelectorChainId] = statuses[i];
         }
 
-        emit SetTargetSelectors(targets, selectors, statuses);
+        emit SetTargetSelectors(targets, selectors, chainIds, statuses);
+    }
+
+    /// @dev Sets bridge mediator contracts addresses.
+    /// @notice It is the contract owner responsibility to set correct L1 bridge mediator contracts,
+    ///         corresponding L2 bridge mediator contracts, and supported chain Ids.
+    /// @param bridgeMediatorL1s Bridge mediator contract addresses on L1.
+    /// @param bridgeMediatorL2s Corresponding bridge mediator contract addresses on L2.
+    /// @param chainIds Corresponding L2 chain Ids.
+    function setBridgeMediators(
+        address[] memory bridgeMediatorL1s,
+        address[] memory bridgeMediatorL2s,
+        uint256[] memory chainIds
+    ) external {
+        // Check for the ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+
+        // Check for array correctness
+        if (bridgeMediatorL1s.length != bridgeMediatorL2s.length || bridgeMediatorL1s.length != chainIds.length) {
+            revert WrongArrayLength(bridgeMediatorL1s.length, bridgeMediatorL2s.length, chainIds.length);
+        }
+
+        // Link L1 and L2 bridge mediators, set L2 chain Ids
+        for (uint256 i = 0; i < chainIds.length; ++i) {
+            // Check for zero addresses
+            if (bridgeMediatorL1s[i] == address(0) || bridgeMediatorL2s[i] == address(0)) {
+                revert ZeroAddress();
+            }
+
+            // Check the uniqueness of L1 addresses
+            if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0)) {
+                revert BridgeMediatorNotUnique(bridgeMediatorL1s[i]);
+            }
+            mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] = bridgeMediatorL2s[i];
+
+            // Check chain Ids to be greater than zero
+            if (chainIds[i] == 0) {
+                revert ZeroValue();
+            }
+
+            // Check the uniqueness of L2 addresses
+            if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0) {
+                revert BridgeMediatorNotUnique(bridgeMediatorL2s[i]);
+            }
+            mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainIds[i];
+        }
+
+        emit SetBridgeMediators(bridgeMediatorL1s, bridgeMediatorL2s, chainIds);
     }
 
     /// @dev Pauses the guard restoring a full CM functionality.

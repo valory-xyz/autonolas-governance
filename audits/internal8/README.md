@@ -48,8 +48,9 @@ Only via constructor (re-deploy) we can update mapBridgeMediator ...
 Perhaps update methods does not make sense because custom logic is needed inside function _processBridgeData() for new/updated bridges.
 A clear comment about this needs to be added.
 ```
+[x] fixed
 
-- Assumed that the checked data in _verifyData() is always exists (data.length > 0). For discussion
+- Assumed that the checked data in _verifyData() always exists (data.length > 0). For discussion
 ```
 function _verifyData(address target, bytes memory data) internal view {
         // Push a pair of key defining variables into one key
@@ -69,6 +70,7 @@ so, case _to.call{value: msg.value}("") makes the situation uncertain.
 2. is this allowed for the case L2 (bridge)?
 clearer processing needed
 ```
+[x] fixed
 
 - dataLength < DEFAULT_DATA_LENGTH Does it make sense to check earlier? For discussion
 ```
@@ -80,6 +82,7 @@ if (dataLength < DEFAULT_DATA_LENGTH) {
 }
 moved to _processBridgeData  with modification 
 ```
+[x] fixed
 
 - Pay attention to memory cleaning. For discussion
 ```
@@ -87,6 +90,7 @@ bytes memory payload = new bytes(data.length - 4);
 payload = new bytes(mediatorPayload.length - 4);
 Should we do some kind of memory explicity cleaning?
 ```
+[x] fixed
 
 - "shared" mapAllowedTargetSelectors for all chains. For discussion
 ```
@@ -101,7 +105,7 @@ targetSelector |= uint256(uint32(bytes4(data))) << 160;
 +
 targetSelector |= uint256(chainId) << 192;
 ```
-
+[x] fixed
 
 
 
