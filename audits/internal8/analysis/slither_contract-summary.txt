@@ -1,0 +1,30 @@
+'solc --version' running
+'solc ./GuardCM-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal8/analysis/contracts' running
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+
+INFO:Printers:
++ Contract Enum (Most derived contract)
+
++ Contract IGovernor (Most derived contract)
+  - From IGovernor
+    - state(uint256) (external)
+
++ Contract GuardCM (Most derived contract)
+  - From GuardCM
+    - _processBridgeData(bytes,address,uint256) (internal)
+    - _verifyBridgedData(bytes) (internal)
+    - _verifyData(address,bytes) (internal)
+    - _verifySchedule(bytes,bytes4) (internal)
+    - changeGovernor(address) (external)
+    - changeGovernorCheckProposalId(uint256) (external)
+    - checkAfterExecution(bytes32,bool) (external)
+    - checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) (external)
+    - constructor(address,address,address,address[],address[],uint256[]) (public)
+    - pause() (external)
+    - setTargetSelectors(address[],bytes4[],bool[]) (external)
+    - unpause() (external)
+
+INFO:Slither:. analyzed (3 contracts)
