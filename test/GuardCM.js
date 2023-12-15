@@ -20,7 +20,7 @@ describe.only("Community Multisig Guard", function () {
     let deployer;
     const l1BridgeMediators = ["0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e", "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2"];
     const l2BridgeMediators =["0x15bd56669f57192a97df41a2aa8f4403e9491776", "0x9338b5153ae39bb89f50468e608ed9d764b755fd"];
-    const chainIds = [100, 137]
+    const chainIds = [100, 137];
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
     const Bytes4Zero = "0x" + "0".repeat(8);
@@ -193,10 +193,10 @@ describe.only("Community Multisig Guard", function () {
         });
 
         it("Set bridge mediators", async function () {
-             // Try to set selectors not by the timelock
-             await expect(
-                 guard.setBridgeMediators([], [], [])
-             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
+            // Try to set selectors not by the timelock
+            await expect(
+                guard.setBridgeMediators([], [], [])
+            ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
             // Incorrect L2 setup
             let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
