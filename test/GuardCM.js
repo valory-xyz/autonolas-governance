@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
-describe.only("Community Multisig Guard", function () {
+describe("Community Multisig Guard", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let multiSend;
@@ -19,8 +19,8 @@ describe.only("Community Multisig Guard", function () {
     let signers;
     let deployer;
     const l1BridgeMediators = ["0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e", "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2"];
-    const l2BridgeMediators =["0x15bd56669f57192a97df41a2aa8f4403e9491776", "0x9338b5153ae39bb89f50468e608ed9d764b755fd"];
-    const chainIds = [100, 137];
+    const l2BridgeMediators =["0x15bd56669F57192a97dF41A2aa8f4403e9491776", "0x9338b5153AE39BB89f50468E608eD9d764B755fD"];
+    const l2ChainIds = [100, 137];
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
     const Bytes4Zero = "0x" + "0".repeat(8);
@@ -30,6 +30,11 @@ describe.only("Community Multisig Guard", function () {
     const initialProposalThreshold = ethers.utils.parseEther("5");
     const quorum = 1;
     const localChainId = 31337;
+    const l2Selector = "0x82694b1d";
+    const gnosisContractAddress = "0x9338b5153AE39BB89f50468E608eD9d764B755fD";
+    const gnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124cd9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    const polygonContractAddress = "0xE3607b00E75f6405248323A9417ff6b39B244b50";
+    const polygonPayload = "0xb47204770000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000d0e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d00000000000000000000000034c895f302d0b5cf52ec0edd3945321eb0f83dd50000000000000000000000000000000000000000000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d000000000000000000000000d8bcc126ff31d2582018715d5291a508530587b0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000";
 
     beforeEach(async function () {
         const GnosisSafe = await ethers.getContractFactory("GnosisSafe");
@@ -154,41 +159,41 @@ describe.only("Community Multisig Guard", function () {
             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
             // Try to set zero values
-            let setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            let setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero], [0], [true]]);
             await expect(
-                timelock.execute(guard.address, setTargetSelectorsPayload)
+                timelock.execute(guard.address, setTargetSelectorChainIdsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[signers[1].address], [Bytes4Zero], [0], [true]]);
             await expect(
-                timelock.execute(guard.address, setTargetSelectorsPayload)
+                timelock.execute(guard.address, setTargetSelectorChainIdsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[signers[1].address], ["0xabcdef00"], [0], [true]]);
             await expect(
-                timelock.execute(guard.address, setTargetSelectorsPayload)
+                timelock.execute(guard.address, setTargetSelectorChainIdsPayload)
             ).to.be.reverted;
 
             // Try to set targets with wrong arrays
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero, Bytes4Zero], [0], [true]]);
             await expect(
-                timelock.execute(guard.address, setTargetSelectorsPayload)
+                timelock.execute(guard.address, setTargetSelectorChainIdsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero], [0, 0], [true]]);
             await expect(
-                timelock.execute(guard.address, setTargetSelectorsPayload)
+                timelock.execute(guard.address, setTargetSelectorChainIdsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero], [0], [true, true]]);
             await expect(
-                timelock.execute(guard.address, setTargetSelectorsPayload)
+                timelock.execute(guard.address, setTargetSelectorChainIdsPayload)
             ).to.be.reverted;
         });
 
@@ -308,9 +313,13 @@ describe.only("Community Multisig Guard", function () {
 
             // Authorize treasury target and selector
             // bytes32(keccak256("pause")) == 0x8456cb59
-            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[treasury.address], ["0x8456cb59"], [localChainId], [true]]);
-            await timelock.execute(guard.address, setTargetSelectorsPayload);
+            await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
+            
+            // Check the target-selector-chainId status
+            const status = await guard.getTargetSelectorChainId(treasury.address, "0x8456cb59", localChainId);
+            expect(status).to.equal(true);
 
             // Create a payload data for the schedule function
             let payload = treasury.interface.encodeFunctionData("pause");
@@ -436,9 +445,9 @@ describe.only("Community Multisig Guard", function () {
             // Authorize treasury target and selector
             // bytes32(keccak256("pause")) == 0x8456cb59
             // bytes32(keccak256("unpause")) == 0x3f4ba83a
-            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+            const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[treasury.address, treasury.address], ["0x8456cb59", "0x3f4ba83a"], [localChainId, localChainId], [true, true]]);
-            await timelock.execute(guard.address, setTargetSelectorsPayload);
+            await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
 
             // Create a payload data for the schedule function
             const payloads = [treasury.interface.encodeFunctionData("pause"),
@@ -600,123 +609,120 @@ describe.only("Community Multisig Guard", function () {
         });
     });
 
-    context.skip("Timelock manipulation via the CM across the bridge", async function () {
-        it("CM Guard with a schedule function and bridged data", async function () {
-            // Authorize treasury target and selector
-            // bytes32(keccak256("pause")) == 0x8456cb59
-            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
-                [[treasury.address], ["0x8456cb59"], [localChainId], [true]]);
-            await timelock.execute(guard.address, setTargetSelectorsPayload);
+    context("Timelock manipulation via the CM across the bridge", async function () {
+        it("CM Guard with a bridged data in a schedule function", async function () {
+            // Authorize pre-defined target, selector and chainId
+            const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+                [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [100, 137], [true, true]]);
+            await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
+            
+            // Set bridge mediator contract addresses and chain Ids
+            const setBridgeMediatorChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+                [l1BridgeMediators, l2BridgeMediators, l2ChainIds]);
+            await timelock.execute(guard.address, setBridgeMediatorChainIdsPayload);
 
-            // Create a payload data for the schedule function
-            let payload = treasury.interface.encodeFunctionData("pause");
-
-            // Prepare the CM schedule function call
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
-                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            // Check that the bridge mediators are set correctly
+            for (let i = 0; i < l1BridgeMediators.length; i++) {
+                const result = await guard.getBridgeMediatorChainId(l1BridgeMediators[i]);
+                expect(result.bridgeMediatorL2).to.equal(l2BridgeMediators[i]);
+                expect(result.chainId).to.equal(l2ChainIds[i]);
             }
-            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
-            // Execute after the schedule
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "execute", [treasury.address, payload], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
-            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+            // Check Gnosis payload
+            let txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, gnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
 
-            // Check that the treasury is paused
-            let pausedTreasury = await treasury.paused();
-            expect(pausedTreasury).to.eq(2);
+            // Check Polygon payload
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[1], 0, polygonPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+        });
 
-            // Pause the guard and be able to unpause the treasury even though it's not authorized
-            payload = guard.interface.encodeFunctionData("pause", []);
-            await timelock.execute(guard.address, payload);
+        it("Should fail with the incorrect bridged data in a schedule function", async function () {
+            // Authorize pre-defined target, selector and chainId
+            const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+                [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [10200, 80001], [true, true]]);
+            await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
 
-            payload = treasury.interface.encodeFunctionData("unpause");
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
-                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
-            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+            // Set bridge mediator contract addresses and chain Ids
+            const setBridgeMediatorChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+                [l1BridgeMediators, l2BridgeMediators, [10200, 80001]]);
+            await timelock.execute(guard.address, setBridgeMediatorChainIdsPayload);
 
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "execute", [treasury.address, payload], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
-            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
-
-            pausedTreasury = await treasury.paused();
-            expect(pausedTreasury).to.eq(1);
-
-            // Unpause the guard
-            payload = guard.interface.encodeFunctionData("unpause", []);
-            await timelock.execute(guard.address, payload);
-
-            // Negative checks
-            // Try to call non-authorized selectors
-            payload = treasury.interface.encodeFunctionData("unpause");
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
-                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
+            // Check Gnosis payload
+            // Second payload data has a zero target address
+            let errorGnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124cd9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e44000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            let txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, errorGnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
             await expect(
-                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
-            ).to.be.reverted;
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "ZeroAddress");
 
-            // Try to do a delegatecall with the authorized selector
-            payload = treasury.interface.encodeFunctionData("pause");
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
-                Bytes32Zero, Bytes32Zero, 0], nonce, 1, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
+            // Second payload data does not have a selector
+            errorGnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124cd9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, errorGnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
             await expect(
-                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
-            ).to.be.reverted;
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
 
-            // Try to pass the payload shorter than at least 4 bytes
-            nonce = await multisig.nonce();
-            txHashData.data = "0x00";
-            txHashData.operation = 0;
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
+            // processMessageFromForeign selector is incorrect
+            errorGnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124aa9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, errorGnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
             await expect(
-                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
-            ).to.be.reverted;
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "WrongSelector");
 
-            // Try to have a call to the multisig itself
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(multisig, "getThreshold", [], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
+            // homeMediator address is incorrect
+            errorGnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491775000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124aa9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, errorGnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
             await expect(
-                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
-            ).to.be.reverted;
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "WrongL2BridgeMediator");
 
-            // Try to have a call with just a value send via a Timelock
-            payload = "0x";
-            const amount = ethers.utils.parseEther("1000");
-            nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, amount, payload,
-                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
-            for (let i = 0; i < safeThreshold; i++) {
-                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
-            }
+            // requireToPassMessage selector is incorrect
+            errorGnosisPayload = "0xaa8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124aa9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, errorGnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
             await expect(
-                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
-            ).to.be.reverted;
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "WrongSelector");
+
+            // gnosis payload length is incorrect
+            errorGnosisPayload = "0xdc8601b3";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[0], 0, errorGnosisPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
+
+            // Check Polygon payload
+            // fxGovernorTunnel address is incorrect
+            let errorPolygonPayload = "0xb4720477000000000000000000000000aa38b5153ae39bb89f50468e608ed9d764b755fd000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000d0e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d00000000000000000000000034c895f302d0b5cf52ec0edd3945321eb0f83dd50000000000000000000000000000000000000000000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d000000000000000000000000d8bcc126ff31d2582018715d5291a508530587b0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[1], 0, errorPolygonPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "WrongL2BridgeMediator");
+
+            // sendMessageToChild selector is incorrect
+            errorPolygonPayload = "0xaa7204770000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000d0e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d00000000000000000000000034c895f302d0b5cf52ec0edd3945321eb0f83dd50000000000000000000000000000000000000000000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d000000000000000000000000d8bcc126ff31d2582018715d5291a508530587b0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[1], 0, errorPolygonPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "WrongSelector");
+
+            // polygon payload length is incorrect
+            errorPolygonPayload = "0xb4720477";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[1], 0, errorPolygonPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
         });
     });
 });
