@@ -150,42 +150,42 @@ describe.only("Community Multisig Guard", function () {
         it("Set target selectors", async function () {
             // Try to set selectors not by the timelock
             await expect(
-                guard.setTargetSelectors([], [], [], [])
+                guard.setTargetSelectorChainIds([], [], [], [])
             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
             // Try to set zero values
-            let setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            let setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero], [0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[signers[1].address], [Bytes4Zero], [0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[signers[1].address], ["0xabcdef00"], [0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
             ).to.be.reverted;
 
             // Try to set targets with wrong arrays
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero, Bytes4Zero], [0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero], [0, 0], [true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
             ).to.be.reverted;
 
-            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[AddressZero], [Bytes4Zero], [0], [true, true]]);
             await expect(
                 timelock.execute(guard.address, setTargetSelectorsPayload)
@@ -195,50 +195,36 @@ describe.only("Community Multisig Guard", function () {
         it("Set bridge mediators", async function () {
             // Try to set selectors not by the timelock
             await expect(
-                guard.setBridgeMediators([], [], [])
+                guard.setBridgeMediatorChainIds([], [], [])
             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
             // Incorrect L2 setup
-            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
                 [l1BridgeMediators, [], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
                 [l1BridgeMediators, l2BridgeMediators, []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            // Duplicated contracts
-            const contractAddresses = [signers[1].address, signers[1].address];
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
-                [contractAddresses, l2BridgeMediators, chainIds]);
-            await expect(
-                timelock.execute(guard.address, setBridgeMediatorsPayload)
-            ).to.be.reverted;
-
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
-                [l1BridgeMediators, contractAddresses, chainIds]);
-            await expect(
-                timelock.execute(guard.address, setBridgeMediatorsPayload)
-            ).to.be.reverted;
-
             // Zero addresses and chain Ids
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
                 [[AddressZero], [AddressZero], [0]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
                 [[signers[1].address], [AddressZero], [0]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediators",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
                 [[signers[1].address], [signers[2].address], [0]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
@@ -322,7 +308,7 @@ describe.only("Community Multisig Guard", function () {
 
             // Authorize treasury target and selector
             // bytes32(keccak256("pause")) == 0x8456cb59
-            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[treasury.address], ["0x8456cb59"], [localChainId], [true]]);
             await timelock.execute(guard.address, setTargetSelectorsPayload);
 
@@ -422,6 +408,19 @@ describe.only("Community Multisig Guard", function () {
             await expect(
                 safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
             ).to.be.reverted;
+
+            // Try to have a call with just a value send via a Timelock
+            payload = "0x";
+            const amount = ethers.utils.parseEther("1000");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, amount, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
         });
 
         it("CM Guard with a scheduleBatch function", async function () {
@@ -437,7 +436,7 @@ describe.only("Community Multisig Guard", function () {
             // Authorize treasury target and selector
             // bytes32(keccak256("pause")) == 0x8456cb59
             // bytes32(keccak256("unpause")) == 0x3f4ba83a
-            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectors",
+            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[treasury.address, treasury.address], ["0x8456cb59", "0x3f4ba83a"], [localChainId, localChainId], [true, true]]);
             await timelock.execute(guard.address, setTargetSelectorsPayload);
 
@@ -598,6 +597,126 @@ describe.only("Community Multisig Guard", function () {
 
             balance = await ethers.provider.getBalance(multisig.address);
             expect(balance).to.equal(0);
+        });
+    });
+
+    context.skip("Timelock manipulation via the CM across the bridge", async function () {
+        it("CM Guard with a schedule function and bridged data", async function () {
+            // Authorize treasury target and selector
+            // bytes32(keccak256("pause")) == 0x8456cb59
+            const setTargetSelectorsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+                [[treasury.address], ["0x8456cb59"], [localChainId], [true]]);
+            await timelock.execute(guard.address, setTargetSelectorsPayload);
+
+            // Create a payload data for the schedule function
+            let payload = treasury.interface.encodeFunctionData("pause");
+
+            // Prepare the CM schedule function call
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Execute after the schedule
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "execute", [treasury.address, payload], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Check that the treasury is paused
+            let pausedTreasury = await treasury.paused();
+            expect(pausedTreasury).to.eq(2);
+
+            // Pause the guard and be able to unpause the treasury even though it's not authorized
+            payload = guard.interface.encodeFunctionData("pause", []);
+            await timelock.execute(guard.address, payload);
+
+            payload = treasury.interface.encodeFunctionData("unpause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "execute", [treasury.address, payload], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            pausedTreasury = await treasury.paused();
+            expect(pausedTreasury).to.eq(1);
+
+            // Unpause the guard
+            payload = guard.interface.encodeFunctionData("unpause", []);
+            await timelock.execute(guard.address, payload);
+
+            // Negative checks
+            // Try to call non-authorized selectors
+            payload = treasury.interface.encodeFunctionData("unpause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to do a delegatecall with the authorized selector
+            payload = treasury.interface.encodeFunctionData("pause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 1, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to pass the payload shorter than at least 4 bytes
+            nonce = await multisig.nonce();
+            txHashData.data = "0x00";
+            txHashData.operation = 0;
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to have a call to the multisig itself
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(multisig, "getThreshold", [], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to have a call with just a value send via a Timelock
+            payload = "0x";
+            const amount = ethers.utils.parseEther("1000");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, amount, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
         });
     });
 });

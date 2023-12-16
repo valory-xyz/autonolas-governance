@@ -39,7 +39,8 @@ error ZeroValue();
 /// @param numValues1 Number of values in a first array.
 /// @param numValues2 Numberf of values in a second array.
 /// @param numValues3 Numberf of values in a third array.
-error WrongArrayLength(uint256 numValues1, uint256 numValues2, uint256 numValues3);
+/// @param numValues4 Numberf of values in a fourth array.
+error WrongArrayLength(uint256 numValues1, uint256 numValues2, uint256 numValues3, uint256 numValues4);
 
 /// @dev Provided bridged mediator is not unique.
 /// @param bridgeMediator Bridge mediator address.
@@ -102,8 +103,7 @@ contract GuardCM {
     // sendMessageToChild selector (Polygon)
     bytes4 public constant SEND_MESSAGE_TO_CHILD = bytes4(keccak256(bytes("sendMessageToChild(address,bytes)")));
     // Initial check governance proposal Id
-    // Calculated from the proposalHash function of the GovernorOLAS with the following parameters:
-    // targets = [], values = [], calldatas = [], description = ""
+    // Calculated from the proposalHash function of the GovernorOLAS
     uint256 public governorCheckProposalId = 88250008686885504216650933897987879122244685460173810624866685274624741477673;
     // Default data length for L2 extracted message includes the number of bytes of at least
     // one address (20 bytes or 160 bits), a value (12 bytes or 96 bits), the payload size (4 bytes or 32 bits),
@@ -126,12 +126,10 @@ contract GuardCM {
     // Guard pausing possibility
     uint8 public paused = 1;
 
-    // Mapping of address + bytes4 selector => enabled / disabled
-    mapping(uint256 => bool) public mapAllowedTargetSelectors;
-    // Mapping of bridge mediator address L1 => bridge mediator address L2
-    mapping(address => address) public mapBridgeMediatorL1L2s;
-    // Mapping of bridge mediator address L2 => L2 chain Id (to choose the processing logic)
-    mapping(address => uint256) public mapBridgeMediatorL2ChainIds;
+    // Mapping of (target address | bytes4 selector | uint64 chain Id) => enabled / disabled
+    mapping(uint256 => bool) public mapAllowedTargetSelectorChainIds;
+    // Mapping of bridge mediator address L1 => (bridge mediator L2 address | uint64 supported L2 chain Id)
+    mapping(address => uint256) public mapBridgeMediatorL1L2ChainIds;
 
     /// @dev GuardCM constructor.
     /// @param _timelock Timelock address.
@@ -203,7 +201,7 @@ contract GuardCM {
         targetSelectorChainId |= chainId << 192;
 
         // Check the authorized combination of target and selector
-        if (!mapAllowedTargetSelectors[targetSelectorChainId]) {
+        if (!mapAllowedTargetSelectorChainIds[targetSelectorChainId]) {
             revert NotAuthorized(target, bytes4(data));
         }
     }
@@ -368,13 +366,16 @@ contract GuardCM {
 
         // Traverse all the schedule targets and selectors extracted from calldatas
         for (uint i = 0; i < targets.length; ++i) {
-            // Get the bridgeMediatorL2
-            address bridgeMediatorL2 = mapBridgeMediatorL1L2s[targets[i]];
+            // Get the bridgeMediatorL2 and L2 chain Id, if any
+            uint256 bridgeMediatorL2ChainId = mapBridgeMediatorL1L2ChainIds[targets[i]];
+            // bridgeMediatorL2 occupies first 160 bits
+            address bridgeMediatorL2 = address(uint160(bridgeMediatorL2ChainId));
 
             // Check if the data goes across the bridge
             if (bridgeMediatorL2 != address(0)) {
                 // Get the chain Id
-                uint256 chainId = mapBridgeMediatorL2ChainIds[bridgeMediatorL2];
+                // L2 chain Id occupies next 64 bits
+                uint256 chainId = bridgeMediatorL2ChainId >> 160;
 
                 // Process the bridge logic
                 _processBridgeData(callDatas[i], bridgeMediatorL2, chainId);
@@ -432,14 +433,14 @@ contract GuardCM {
         }
     }
 
-    /// @dev Authorizes combinations of targets and selectors.
+    /// @dev Authorizes combinations of targets, selectors and chain Ids.
     /// @notice It is the contract owner responsibility to set correct L1 chain Ids where the contract is deployed
     ///         and corresponding supported L2-s, if the contract interacts with them.
     /// @param targets Array of target addresses.
     /// @param selectors Array of selectors for targets.
-    /// @param chainIds Chain Ids.
+    /// @param chainIds Chain Ids for authorized functions.
     /// @param statuses Authorize if true, and restrict otherwise.
-    function setTargetSelectors(
+    function setTargetSelectorChainIds(
         address[] memory targets,
         bytes4[] memory selectors,
         uint256[] memory chainIds,
@@ -452,7 +453,7 @@ contract GuardCM {
         
         // Check array length
         if (targets.length != selectors.length || targets.length != statuses.length || targets.length != chainIds.length) {
-            revert WrongArrayLength(targets.length, selectors.length, statuses.length);
+            revert WrongArrayLength(targets.length, selectors.length, statuses.length, statuses.length);
         }
 
         // Traverse all the targets and selectors to build their paired values
@@ -481,19 +482,19 @@ contract GuardCM {
             targetSelectorChainId |= chainIds[i] << 192;
 
             // Set the status of the target and selector combination
-            mapAllowedTargetSelectors[targetSelectorChainId] = statuses[i];
+            mapAllowedTargetSelectorChainIds[targetSelectorChainId] = statuses[i];
         }
 
         emit SetTargetSelectors(targets, selectors, chainIds, statuses);
     }
 
-    /// @dev Sets bridge mediator contracts addresses.
+    /// @dev Sets bridge mediator contracts addresses and L2 chain Ids.
     /// @notice It is the contract owner responsibility to set correct L1 bridge mediator contracts,
     ///         corresponding L2 bridge mediator contracts, and supported chain Ids.
     /// @param bridgeMediatorL1s Bridge mediator contract addresses on L1.
     /// @param bridgeMediatorL2s Corresponding bridge mediator contract addresses on L2.
     /// @param chainIds Corresponding L2 chain Ids.
-    function setBridgeMediators(
+    function setBridgeMediatorChainIds(
         address[] memory bridgeMediatorL1s,
         address[] memory bridgeMediatorL2s,
         uint256[] memory chainIds
@@ -505,7 +506,7 @@ contract GuardCM {
 
         // Check for array correctness
         if (bridgeMediatorL1s.length != bridgeMediatorL2s.length || bridgeMediatorL1s.length != chainIds.length) {
-            revert WrongArrayLength(bridgeMediatorL1s.length, bridgeMediatorL2s.length, chainIds.length);
+            revert WrongArrayLength(bridgeMediatorL1s.length, bridgeMediatorL2s.length, chainIds.length, chainIds.length);
         }
 
         // Link L1 and L2 bridge mediators, set L2 chain Ids
@@ -515,22 +516,18 @@ contract GuardCM {
                 revert ZeroAddress();
             }
 
-            // Check the uniqueness of L1 addresses
-            if (mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] != address(0)) {
-                revert BridgeMediatorNotUnique(bridgeMediatorL1s[i]);
-            }
-            mapBridgeMediatorL1L2s[bridgeMediatorL1s[i]] = bridgeMediatorL2s[i];
-
-            // Check chain Ids to be greater than zero
-            if (chainIds[i] == 0) {
-                revert ZeroValue();
+            // Check supported chain Ids on L2
+            uint256 chainId = chainIds[i];
+            if (chainId != 100 && chainId != 137 && chainId != 10200 && chainId != 80001) {
+                revert L2ChainIdNotSupported(chainId);
             }
 
-            // Check the uniqueness of L2 addresses
-            if (mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] != 0) {
-                revert BridgeMediatorNotUnique(bridgeMediatorL2s[i]);
-            }
-            mapBridgeMediatorL2ChainIds[bridgeMediatorL2s[i]] = chainIds[i];
+            // Push a pair of key defining variables into one key
+            // bridgeMediatorL2 occupies first 160 bits
+            uint256 bridgeMediatorL2ChainId = uint256(uint160(bridgeMediatorL2s[i]));
+            // L2 chain Id occupies next 64 bits
+            bridgeMediatorL2ChainId |= chainId << 160;
+            mapBridgeMediatorL1L2ChainIds[bridgeMediatorL1s[i]] = bridgeMediatorL2ChainId;
         }
 
         emit SetBridgeMediators(bridgeMediatorL1s, bridgeMediatorL2s, chainIds);
@@ -575,4 +572,38 @@ contract GuardCM {
 
     /// @dev Guards the multisig call after its execution.
     function checkAfterExecution(bytes32, bool) external {}
+
+    /// @dev Gets the status of a target-selector-chainId combination.
+    /// @param target Target address.
+    /// @param selector Selector for a target.
+    /// @param chainId Corresponding chain Id.
+    /// @return status True, if the target-selector-chainId combination is authorized.
+    function getTargetSelectorChainId(address target, bytes4 selector, uint256 chainId) external view
+        returns (bool status)
+    {
+        // Push a pair of key defining variables into one key
+        // target occupies first 160 bits
+        uint256 targetSelectorChainId = uint256(uint160(target));
+        // selector occupies next 32 bits
+        targetSelectorChainId |= uint256(uint32(selector)) << 160;
+        // chainId occupies next 64 bits
+        targetSelectorChainId |= chainId << 192;
+        
+        status = mapAllowedTargetSelectorChainIds[targetSelectorChainId];
+    }
+
+    /// @dev Gets the address of a bridge mediator contract address on L2 and corresponding L2 chain Id.
+    /// @param bridgeMediatorL1 Bridge mediator contract addresses on L1.
+    /// @return bridgeMediatorL2 Corresponding bridge mediator contract addresses on L2.
+    /// @return chainId Corresponding L2 chain Ids.
+    function getBridgeMediatorChainId(address bridgeMediatorL1) external view
+        returns (address bridgeMediatorL2, uint256 chainId)
+    {
+        // Get the bridgeMediatorL2 and L2 chain Id
+        uint256 bridgeMediatorL2ChainId = mapBridgeMediatorL1L2ChainIds[bridgeMediatorL1];
+        // bridgeMediatorL2 occupies first 160 bits
+        bridgeMediatorL2 = address(uint160(bridgeMediatorL2ChainId));
+        // L2 chain Id occupies next 64 bits
+        chainId = bridgeMediatorL2ChainId >> 160;
+    }
 }
