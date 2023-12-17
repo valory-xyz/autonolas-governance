@@ -60,7 +60,8 @@ error NoSelfCall();
 /// @dev The combination of target and selector is not authorized.
 /// @param target Target address.
 /// @param selector Function selector.
-error NotAuthorized(address target, bytes4 selector);
+/// @param chainId Chain Id.
+error NotAuthorized(address target, bytes4 selector, uint256 chainId);
 
 /// @dev The proposal is not defeated.
 /// @param proposalId Proposal Id.
@@ -195,7 +196,7 @@ contract GuardCM {
 
         // Check the authorized combination of target and selector
         if (!mapAllowedTargetSelectorChainIds[targetSelectorChainId]) {
-            revert NotAuthorized(target, bytes4(data));
+            revert NotAuthorized(target, bytes4(data), chainId);
         }
     }
 
