@@ -184,7 +184,7 @@ contract GuardCM {
     /// @param target Target address.
     /// @param data Payload bytes.
     /// @param chainId Chain Id.
-    function _verifyData(address target, bytes memory data, uint256 chainId) internal view {
+    function _verifyData(address target, bytes memory data, uint256 chainId) internal {
         // Push a pair of key defining variables into one key
         // target occupies first 160 bits
         uint256 targetSelectorChainId = uint256(uint160(target));
@@ -204,7 +204,7 @@ contract GuardCM {
     ///         address target, uint96 value, uint32 payloadLength, bytes payload.
     /// @param data Payload bytes.
     /// @param chainId L2 chain Id.
-    function _verifyBridgedData(bytes memory data, uint256 chainId) internal view {
+    function _verifyBridgedData(bytes memory data, uint256 chainId) internal {
         // Unpack and process the data
         // We need to skip first 12 bytes as those are zeros from encoding
         for (uint256 i = 0; i < data.length;) {
@@ -251,7 +251,7 @@ contract GuardCM {
         bytes memory data,
         address bridgeMediatorL2,
         uint256 chainId
-    ) internal view
+    ) internal
     {
         // Gnosis chains
         if (chainId == 100 || chainId == 10200) {
@@ -332,7 +332,7 @@ contract GuardCM {
     /// @dev Verifies authorized target and selector in the schedule or scheduleBatch function call.
     /// @param data Data in bytes.
     /// @param selector Schedule function selector.
-    function _verifySchedule(bytes memory data, bytes4 selector) internal view {
+    function _verifySchedule(bytes memory data, bytes4 selector) internal {
         // Copy the data without the selector
         bytes memory payload = new bytes(data.length - SELECTOR_DATA_LENGTH);
         for (uint256 i = 0; i < payload.length; ++i) {
@@ -394,7 +394,7 @@ contract GuardCM {
         address payable,
         bytes memory,
         address
-    ) external view {
+    ) external {
         // Just return if paused
         if (paused == 1) {
             // Call to the timelock
