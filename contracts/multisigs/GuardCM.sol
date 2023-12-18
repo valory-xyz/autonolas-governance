@@ -182,6 +182,7 @@ contract GuardCM {
     }
 
     /// @dev Verifies authorized combinations of target and selector.
+    /// @notice The bottom-most internal function is still not "view" since some reverts are not explicitly handled
     /// @param target Target address.
     /// @param data Payload bytes.
     /// @param chainId Chain Id.
@@ -450,7 +451,7 @@ contract GuardCM {
         
         // Check array length
         if (targets.length != selectors.length || targets.length != statuses.length || targets.length != chainIds.length) {
-            revert WrongArrayLength(targets.length, selectors.length, statuses.length, statuses.length);
+            revert WrongArrayLength(targets.length, selectors.length, statuses.length, chainIds.length);
         }
 
         // Traverse all the targets and selectors to build their paired values
