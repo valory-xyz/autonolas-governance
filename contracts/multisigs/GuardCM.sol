@@ -399,13 +399,13 @@ contract GuardCM {
     ) external {
         // Just return if paused
         if (paused == 1) {
+            // No delegatecall is allowed
+            if (operation == Enum.Operation.DelegateCall) {
+                revert NoDelegateCall();
+            }
+
             // Call to the timelock
             if (to == owner) {
-                // No delegatecall is allowed
-                if (operation == Enum.Operation.DelegateCall) {
-                    revert NoDelegateCall();
-                }
-
                 // Data needs to have enough bytes at least to fit the selector
                 if (data.length < SELECTOR_DATA_LENGTH) {
                     revert IncorrectDataLength(data.length, SELECTOR_DATA_LENGTH);
