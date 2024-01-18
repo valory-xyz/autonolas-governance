@@ -37,6 +37,16 @@
         "name": "GuardCM",
         "artifact": "abis/0.8.21/GuardCM.json",
         "address": "0x1a0bADb278dE44E261DEC9f4225E3DD761336DA8"
+      },
+      {
+        "name": "BridgedERC20",
+        "artifact": "abis/0.8.23/BridgedERC20.json",
+        "address": "0x06512E620A8317da51a73690A596Aca97287b31D"
+      },
+      {
+        "name": "FxERC20RootTunnel",
+        "artifact": "abis/0.8.23/FxERC20RootTunnel.json",
+        "address": "0x1737408def992AF04b29C8Ba4BBcD7397B08c930"
       }
     ]
   },
@@ -78,6 +88,16 @@
         "name": "GuardCM",
         "artifact": "abis/0.8.21/GuardCM.json",
         "address": "0x1F4C3134aFB97DE2BfBBF28894d24F58D0A95eFC"
+      },
+      {
+        "name": "BridgedERC20",
+        "artifact": "abis/0.8.23/BridgedERC20.json",
+        "address": "0x0CF8ad7AD779157a253964036af0e95f625EA27c"
+      },
+      {
+        "name": "FxERC20RootTunnel",
+        "artifact": "abis/0.8.23/FxERC20RootTunnel.json",
+        "address": "0x7E335396a9804097Fd7c04F8b3adc314Ca9398A0"
       }
     ]
   },
@@ -89,6 +109,11 @@
         "name": "FxGovernorTunnel",
         "artifact": "abis/0.8.19/FxGovernorTunnel.json",
         "address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD"
+      },
+      {
+        "name": "FxERC20ChildTunnel",
+        "artifact": "abis/0.8.23/FxERC20ChildTunnel.json",
+        "address": "0x1fe74A08ac89300B102AdCd474C721AE8764E850"
       }
     ]
   },
@@ -100,6 +125,11 @@
         "name": "FxGovernorTunnel",
         "artifact": "abis/0.8.19/FxGovernorTunnel.json",
         "address": "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77"
+      },
+      {
+        "name": "FxERC20ChildTunnel",
+        "artifact": "abis/0.8.23/FxERC20ChildTunnel.json",
+        "address": "0x5b5C7BA8424e6B48f92Ac02980FFc2531c3196DF"
       }
     ]
   },
