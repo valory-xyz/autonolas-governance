@@ -37,9 +37,9 @@ async function main() {
     console.log("4. FxERC20ChildTunnel to set root tunnel to FxERC20RootTunnel");
     const fxERC20ChildTunnel = await ethers.getContractAt("FxERC20ChildTunnel", fxERC20ChildTunnelAddress);
     console.log("You are signing the following transaction: FxERC20ChildTunnel.connect(EOA).setFxRootTunnel(FxERC20RootTunnel)");
-    const gasPriceInGwei = "230";
+    const gasPriceInGwei = "110";
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
-    const result = await fxERC20ChildTunnel.setFxRootTunnel(fxERC20RootTunnelAddress, { gasPrice });
+    const result = await fxERC20ChildTunnel.connect(EOA).setFxRootTunnel(fxERC20RootTunnelAddress, { gasPrice });
 
     // Transaction details
     console.log("Contract deployment: FxERC20ChildTunnel");

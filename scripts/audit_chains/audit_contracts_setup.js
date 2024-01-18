@@ -242,6 +242,20 @@ async function checkGuardCM(chainId, provider, globalsInstance, configContracts,
     customExpect(multisig, globalsInstance["CM"], log + ", function: multisig()");
 }
 
+// Check bridgedERC20: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkBridgedERC20(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const bridgedERC20 = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + bridgedERC20.address;
+    // Check the owner
+    const owner = await bridgedERC20.owner();
+    customExpect(owner, globalsInstance["fxERC20RootTunnelAddress"], log + ", function: owner()");
+}
+
 // Check FxGovernorTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkFxGovernorTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
@@ -258,6 +272,62 @@ async function checkFxGovernorTunnel(chainId, provider, globalsInstance, configC
     // Check fxChild
     const fxChild = await fxGovernorTunnel.fxChild();
     customExpect(fxChild, globalsInstance["fxChildAddress"], log + ", function: fxChild()");
+}
+
+// Check FxERC20ChildTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkFxERC20ChildTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const fxERC20ChildTunnel = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + fxERC20ChildTunnel.address;
+    // Check the child token
+    const childToken = await fxERC20ChildTunnel.childToken();
+    customExpect(childToken, globalsInstance["childTokenAddress"], log + ", function: childToken()");
+
+    // Check the root token
+    const rootToken = await fxERC20ChildTunnel.rootToken();
+    customExpect(rootToken, globalsInstance["bridgedERC20Address"], log + ", function: rootToken()");
+
+    // Check fxChild
+    const fxChild = await fxERC20ChildTunnel.fxChild();
+    customExpect(fxChild, globalsInstance["fxChildAddress"], log + ", function: fxChild()");
+
+    // Check the fxRootTunnel
+    const fxRootTunnel = await fxERC20ChildTunnel.fxRootTunnel();
+    customExpect(fxRootTunnel, globalsInstance["fxERC20RootTunnelAddress"], log + ", function: fxRootTunnel()");
+}
+
+// Check FxERC20RootTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkFxERC20RootTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const fxERC20RootTunnel = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + fxERC20RootTunnel.address;
+    // Check the child token
+    const childToken = await fxERC20RootTunnel.childToken();
+    customExpect(childToken, globalsInstance["childTokenAddress"], log + ", function: childToken()");
+
+    // Check the root token
+    const rootToken = await fxERC20RootTunnel.rootToken();
+    customExpect(rootToken, globalsInstance["bridgedERC20Address"], log + ", function: rootToken()");
+
+    // Check fxRoot
+    const fxRoot = await fxERC20RootTunnel.fxRoot();
+    customExpect(fxRoot, globalsInstance["fxRootAddress"], log + ", function: fxChild()");
+
+    // Check the fxChildTunnel
+    const fxChildTunnel = await fxERC20RootTunnel.fxChildTunnel();
+    customExpect(fxChildTunnel, globalsInstance["fxERC20ChildTunnelAddress"], log + ", function: fxChildTunnel()");
+
+    // Check the checkpointManager
+    const checkpointManager = await fxERC20RootTunnel.checkpointManager();
+    customExpect(checkpointManager, globalsInstance["checkpointManagerAddress"], log + ", function: checkpointManager()");
 }
 
 // Check HomeMediator: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -384,6 +454,12 @@ async function main() {
 
         log = initLog + ", contract: " + "GuardCM";
         await checkGuardCM(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "GuardCM", log);
+
+        log = initLog + ", contract: " + "BridgedERC20";
+        await checkBridgedERC20(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "BridgedERC20", log);
+
+        log = initLog + ", contract: " + "FxERC20RootTunnel";
+        await checkFxERC20RootTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20RootTunnel", log);
     }
 
     // L2 contracts
@@ -392,10 +468,14 @@ async function main() {
 
         const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];
 
-        let log = initLog + ", contract: " + "BridgeMediator";
         if (configs[i]["chainId"] == "137" || configs[i]["chainId"] == "80001") {
+            let log = initLog + ", contract: " + "FxGovernorTunnel";
             await checkFxGovernorTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxGovernorTunnel", log);
+
+            log = initLog + ", contract: " + "FxERC20ChildTunnel";
+            await checkFxERC20ChildTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20ChildTunnel", log);
         } else {
+            let log = initLog + ", contract: " + "HomeMediator";
             await checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log);
         }
     }
