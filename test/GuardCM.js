@@ -607,6 +607,42 @@ describe("Community Multisig Guard", function () {
             balance = await ethers.provider.getBalance(multisig.address);
             expect(balance).to.equal(0);
         });
+
+        it("CM can remove guard through delegatecall", async function () {
+            // Setting the CM guard
+            let nonce = await multisig.nonce();
+            let txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            let signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Attempt to execute an unauthorized call
+            let payload = treasury.interface.encodeFunctionData("pause");
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [treasury.address, 0, payload,
+                Bytes32Zero, Bytes32Zero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Try to deploy and delegatecall to exploit contract
+            const DelegatecallExploitContract = await ethers.getContractFactory("DelegatecallExploit");
+            const exploitContract = await DelegatecallExploitContract.deploy();
+            await exploitContract.deployed();
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(exploitContract, "deleteGuardStorage", [], nonce, 1, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.revertedWithCustomError(guard, "NoDelegateCall");
+        });
     });
 
     context("Timelock manipulation via the CM across the bridge", async function () {
