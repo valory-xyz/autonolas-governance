@@ -1,5 +1,5 @@
 module.exports = [
-    "ERC20 bridged token",
-    "BridgedERC20",
+    "50WMATIC-50OLAS from Polygon (POS)",
+    "W-50WMATIC-50OLAS",
     18
 ];
