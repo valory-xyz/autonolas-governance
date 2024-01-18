@@ -32,7 +32,7 @@ async function main() {
     console.log("21. EOA to change owner of BridgedERC20 to FxERC20RootTunnel");
     const bridgedERC20 = await ethers.getContractAt("BridgedERC20", bridgedERC20Address);
     console.log("You are signing the following transaction: bridgedERC20.connect(EOA).changeOwner(FxERC20RootTunnel)");
-    let result = await bridgedERC20.changeOwner(fxERC20RootTunnelAddress);
+    let result = await bridgedERC20.connect(EOA).changeOwner(fxERC20RootTunnelAddress);
 
     // Transaction details
     console.log("Contract deployment: BridgedERC20");
@@ -42,7 +42,7 @@ async function main() {
     console.log("22. FxERC20RootTunnel to set child tunnel to FxERC20ChildTunnel");
     const fxERC20RootTunnel = await ethers.getContractAt("FxERC20RootTunnel", fxERC20RootTunnelAddress);
     console.log("You are signing the following transaction: fxERC20RootTunnel.connect(EOA).setFxChildTunnel(FxERC20ChildTunnel)");
-    result = await fxERC20RootTunnel.setFxChildTunnel(fxERC20ChildTunnelAddress);
+    result = await fxERC20RootTunnel.connect(EOA).setFxChildTunnel(fxERC20ChildTunnelAddress);
 
     // Transaction details
     console.log("Contract deployment: FxERC20RootTunnel");

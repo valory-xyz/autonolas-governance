@@ -30,15 +30,7 @@ async function main() {
     const BridgedERC20 = await ethers.getContractFactory("BridgedERC20");
     console.log("You are signing the following transaction: BridgedERC20.connect(EOA).deploy()");
 
-    // *********** DELETE THESE LINES ***********
-    console.log("Define proper token name and symbol, then delete this line");
-    const skip = true;
-    if (skip) {
-        return;
-    }
-    // *********** DELETE THESE LINES ***********
-
-    const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("ERC20 bridged token", "BridgedERC20", 18);
+    const bridgedERC20 = await BridgedERC20.connect(EOA).deploy("50WMATIC-50OLAS from Polygon (POS)", "W-50WMATIC-50OLAS", 18);
     let result = await bridgedERC20.deployed();
 
     // Transaction details
