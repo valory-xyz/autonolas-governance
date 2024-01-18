@@ -323,7 +323,7 @@ async function checkFxERC20RootTunnel(chainId, provider, globalsInstance, config
 
     // Check the fxChildTunnel
     const fxChildTunnel = await fxERC20RootTunnel.fxChildTunnel();
-    customExpect(fxChildTunnel, globalsInstance["fxERC20RootTunnelAddress"], log + ", function: fxChildTunnel()");
+    customExpect(fxChildTunnel, globalsInstance["fxERC20ChildTunnelAddress"], log + ", function: fxChildTunnel()");
 
     // Check the checkpointManager
     const checkpointManager = await fxERC20RootTunnel.checkpointManager();
