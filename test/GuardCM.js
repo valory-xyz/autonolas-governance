@@ -608,7 +608,7 @@ describe("Community Multisig Guard", function () {
             expect(balance).to.equal(0);
         });
 
-        it("CM can remove guard through delegatecall", async function () {
+        it("Should fail when CM try to remove guard through the delegatecall", async function () {
             // Setting the CM guard
             let nonce = await multisig.nonce();
             let txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
