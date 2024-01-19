@@ -38,13 +38,12 @@ async function main() {
     const timelockAddress = parsedData.timelockAddress;
     const guardCMAddress = parsedData.guardCMAddress;
 
-    /*
+    
     // Manually set gas limit and gas price
     const gasLimit = 500000;  // Adjust this value based on your needs
     const gasPrice = ethers.utils.parseUnits("50", "gwei");  // Adjust this value based on current gas prices
 
-    */ 
-    
+
     // Construct the payload for the multisig to swap the guard by the Timelock
     const txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guardCMAddress], nonce, 0, 0);
 
