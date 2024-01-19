@@ -36,7 +36,7 @@
       {
         "name": "GuardCM",
         "artifact": "abis/0.8.23/GuardCM.json",
-        "address": "0x1a0bADb278dE44E261DEC9f4225E3DD761336DA8"
+        "address": "0x7bB7998b210cFfE10ca1e41f16341Abe53f76f3a"
       },
       {
         "name": "BridgedERC20",
