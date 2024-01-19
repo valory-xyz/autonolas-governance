@@ -35,9 +35,9 @@ async function main() {
         guardCM.interface.encodeFunctionData("setTargetSelectorChainIds", [[treasuryAddress, treasuryAddress, depositoryAddress,
             serviceRegistryTokenUtilityAddress, serviceRegistryL2PolygonAddress, serviceRegistryL2GnosisAddress,
             serviceRegistryTokenUtilityGnosisAddress],
-            ["0x8456cb59", "0x8f202bf9", "0x58d3ec6a", "0xece53132", "0x9890220b", "0x9890220b", "0xece53132"],
-            [1, 1, 1, 1, 137, 100, 100],
-            [true, true, true, true, true, true, true]])
+        ["0x8456cb59", "0x8f202bf9", "0x58d3ec6a", "0xece53132", "0x9890220b", "0x9890220b", "0xece53132"],
+        [1, 1, 1, 1, 137, 100, 100],
+        [true, true, true, true, true, true, true]])
     ];
     const description = "Guard CM setup";
 

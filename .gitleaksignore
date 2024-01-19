@@ -44,3 +44,6 @@ ad016dbb808b6fa8c8a6a689a7140d68e868414d:scripts/deployment/globals_goerli.json:
 6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/deployment/globals_mainnet.json:generic-api-key:2
 6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:17
 6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:14
+c91f775ec4afeb1737af25b8325201c090d48c23:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:14
+c91f775ec4afeb1737af25b8325201c090d48c23:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:17
+c91f775ec4afeb1737af25b8325201c090d48c23:scripts/deployment/globals_mainnet.json:generic-api-key:2
