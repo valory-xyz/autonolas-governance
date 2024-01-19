@@ -36,3 +36,14 @@ bd442a4d40914bfc4d062cc5625b5b3d532328d8:scripts/deployment/globals_goerli.json:
 bd442a4d40914bfc4d062cc5625b5b3d532328d8:scripts/deployment/globals_goerli.json:generic-api-key:2
 ad016dbb808b6fa8c8a6a689a7140d68e868414d:scripts/deployment/globals_goerli.json:generic-api-key:1
 ad016dbb808b6fa8c8a6a689a7140d68e868414d:scripts/deployment/globals_goerli.json:generic-api-key:2
+84085316cf76a2b672b04ebb059d6708513d60ec:scripts/deployment/globals_mainnet.json:generic-api-key:1
+84085316cf76a2b672b04ebb059d6708513d60ec:scripts/deployment/globals_mainnet.json:generic-api-key:2
+315db969e64f91be368626b58bce68147d1d64ff:scripts/deployment/globals_mainnet.json:generic-api-key:1
+315db969e64f91be368626b58bce68147d1d64ff:scripts/deployment/globals_mainnet.json:generic-api-key:2
+6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/deployment/globals_mainnet.json:generic-api-key:1
+6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/deployment/globals_mainnet.json:generic-api-key:2
+6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:17
+6000d77e8fe678f7e4b0c025bdac834183825afd:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:14
+c91f775ec4afeb1737af25b8325201c090d48c23:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:14
+c91f775ec4afeb1737af25b8325201c090d48c23:scripts/proposals/proposal_04_CM_guard.js:generic-api-key:17
+c91f775ec4afeb1737af25b8325201c090d48c23:scripts/deployment/globals_mainnet.json:generic-api-key:2

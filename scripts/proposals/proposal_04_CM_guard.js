@@ -8,26 +8,38 @@ async function main() {
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
 
-    const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
     const timelockAddress = parsedData.timelockAddress;
     const treasuryAddress = parsedData.treasuryAddress;
     const depositoryAddress = parsedData.depositoryAddress;
-    const serviceRegistryTokenUtilityAddress = parsedData.serviceRegistryTokenUtilityAddress;
+    const serviceRegistryTokenUtilityAddress = "0x3Fb926116D454b95c669B6Bf2E7c3bad8d19affA";
+    const serviceRegistryL2PolygonAddress = "0xE3607b00E75f6405248323A9417ff6b39B244b50";
+    const serviceRegistryL2GnosisAddress = "0x9338b5153AE39BB89f50468E608eD9d764B755fD";
+    const serviceRegistryTokenUtilityGnosisAddress = "0xa45E64d13A30a51b91ae0eb182e88a40e9b18eD8";
     const guardCMAddress = parsedData.guardCMAddress;
+    const AMBContractProxyForeignAddress = "0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e";
+    const homeMediatorAddress = "0x15bd56669F57192a97dF41A2aa8f4403e9491776";
+    const fxRootAddress = parsedData.fxRootAddress;
+    const fxGovernorTunnelAddress = "0x9338b5153AE39BB89f50468E608eD9d764B755fD";
     const CMAddress = parsedData.CM;
 
+
+
     // Obtaining proposal values
-    console.log("Revoking canceller role of CM in the Timelock, updating proposal Id and enabling selectors");
-    const timelock = await ethers.getContractAt("Timelock", timelockAddress);
+    console.log("Guard CM setup");
     const guardCM = await ethers.getContractAt("GuardCM", guardCMAddress);
-    const targets = [guardCMAddress, guardCMAddress, timelockAddress];
-    const values = new Array(3).fill(0);
+    const targets = [guardCMAddress, guardCMAddress];
+    const values = new Array(2).fill(0);
     const callDatas = [
-        guardCM.interface.encodeFunctionData("changeGovernorCheckProposalId", ["88250008686885504216650933897987879122244685460173810624866685274624741477673"]),
-        guardCM.interface.encodeFunctionData("setTargetSelectors", [[treasuryAddress, treasuryAddress, depositoryAddress, serviceRegistryTokenUtilityAddress], [0x8456cb59, 0x8f202bf9, 0x58d3ec6a, 0xece53132], [true, true, true, true]]),
-        timelock.interface.encodeFunctionData("revokeRole", [cancellerRole, CMAddress])
+        guardCM.interface.encodeFunctionData("setBridgeMediatorChainIds", [[AMBContractProxyForeignAddress, fxRootAddress],
+            [homeMediatorAddress, fxGovernorTunnelAddress], ["100", "137"]]),
+        guardCM.interface.encodeFunctionData("setTargetSelectorChainIds", [[treasuryAddress, treasuryAddress, depositoryAddress,
+            serviceRegistryTokenUtilityAddress, serviceRegistryL2PolygonAddress, serviceRegistryL2GnosisAddress,
+            serviceRegistryTokenUtilityGnosisAddress],
+        ["0x8456cb59", "0x8f202bf9", "0x58d3ec6a", "0xece53132", "0x9890220b", "0x9890220b", "0xece53132"],
+        [1, 1, 1, 1, 137, 100, 100],
+        [true, true, true, true, true, true, true]])
     ];
-    const description = "Timelock to revoke CM roles";
+    const description = "Guard CM setup";
 
     // Proposal details
     console.log("targets:", targets);
