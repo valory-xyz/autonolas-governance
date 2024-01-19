@@ -46,7 +46,7 @@ async function main() {
 
     // Construct the payload for the multisig to swap the guard by the Timelock
     const txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guardCMAddress], nonce, 0, 0);
-
+    parsedData.CM
     console.log("Set new guard via Timelock Module");
 
     const targets = [guardCMAddress];
