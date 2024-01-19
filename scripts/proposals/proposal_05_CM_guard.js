@@ -1,3 +1,5 @@
+/*global process*/
+
 const { ethers } = require("hardhat");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
@@ -18,7 +20,7 @@ async function main() {
     const txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guardCMAddress], nonce, 0, 0);
 
     console.log("Set new guard via Timelock Module");
-    const targets = [guardCMAddress];
+    const targets = [multisig.address];
     const values = new Array(1).fill(0);
     const callDatas = [
         multisig.interface.encodeFunctionData("execTransactionFromModule", [txHashData.to, 0, txHashData.data, txHashData.operation])
