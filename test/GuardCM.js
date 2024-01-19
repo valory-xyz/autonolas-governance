@@ -643,6 +643,46 @@ describe("Community Multisig Guard", function () {
                 safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
             ).to.be.revertedWithCustomError(guard, "NoDelegateCall");
         });
+
+        it("Swapping the CM Guard by the Timelock", async function () {
+            // Add timelock as a module
+            let nonce = await multisig.nonce();
+            let txHashData = await safeContracts.buildContractCall(multisig, "enableModule", [timelock.address], nonce, 0, 0);
+            let signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Setting the CM guard to make sure the module can still act on a multisig
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Deploy a new guard
+            const GuardCM = await ethers.getContractFactory("GuardCM");
+            const newGuard = await GuardCM.deploy(timelock.address, multisig.address, governor.address);
+            await newGuard.deployed();
+
+            // Construct the payload for the multisig to swap the guard by the Timelock
+            txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [newGuard.address], nonce, 0, 0);
+
+            // Construct the timelock module transaction
+            const timelockPayload = multisig.interface.encodeFunctionData("execTransactionFromModule", [txHashData.to,
+                0, txHashData.data, txHashData.operation]);
+
+            // Execute the multisend call via the module
+            await timelock.execute(multisig.address, timelockPayload);
+
+            const guardStorageSlot = "0x4a204f620c8c5ccdca3fd54d003badd85ba500436a431f0cbda4f558c93c34c8";
+            const curGuard = await ethers.provider.getStorageAt(multisig.address, guardStorageSlot);
+            const guardAddress = "0x" + curGuard.slice(26);
+            expect(guardAddress).to.equal(newGuard.address.toLowerCase());
+        });
     });
 
     context("Timelock manipulation via the CM across the bridge", async function () {

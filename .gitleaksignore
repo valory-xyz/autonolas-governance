@@ -34,3 +34,5 @@ bd442a4d40914bfc4d062cc5625b5b3d532328d8:scripts/deployment/bridges/polygon/glob
 bd442a4d40914bfc4d062cc5625b5b3d532328d8:scripts/deployment/bridges/polygon/globals_polygon_mumbai.json:generic-api-key:2
 bd442a4d40914bfc4d062cc5625b5b3d532328d8:scripts/deployment/globals_goerli.json:generic-api-key:1
 bd442a4d40914bfc4d062cc5625b5b3d532328d8:scripts/deployment/globals_goerli.json:generic-api-key:2
+ad016dbb808b6fa8c8a6a689a7140d68e868414d:scripts/deployment/globals_goerli.json:generic-api-key:1
+ad016dbb808b6fa8c8a6a689a7140d68e868414d:scripts/deployment/globals_goerli.json:generic-api-key:2
