@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
+[1.1.9]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.7-post-internal-audit...v1.1.8
 [1.1.7]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.6...v1.1.7-post-internal-audit
 [1.1.6]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.5-pre-audit...v1.1.6
@@ -15,8 +16,15 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
 
+## [v1.1.9] - 2024-01-19
+- Refactor `GuardCM` reacting to C4A findings ([#107](https://github.com/valory-xyz/autonolas-governance/pull/107/files))
+- Deployment of refactored `GuardCM` contract
+- Deployment of ERC20 bridge infrastructure contracts between ETH and Polygon ([#106](https://github.com/valory-xyz/autonolas-governance/pull/106/files))
+- Updated documentation
+- Tests coverage
+
 ## [v1.1.8] - 2023-12-18
--  Updated the implementation of `GuardCM` contract for community multisig (CM) guard ([#101](https://github.com/valory-xyz/autonolas-governance/pull/101/files))
+- Updated the implementation of `GuardCM` contract for community multisig (CM) guard ([#101](https://github.com/valory-xyz/autonolas-governance/pull/101/files))
 - Updated documentation
 - Tests coverage
 - Refactor `GuardCM` contract ([#104](https://github.com/valory-xyz/autonolas-governance/pull/104)) reacting to the internal audit ([audit8](https://github.com/valory-xyz/autonolas-governance/tree/main/audits/internal8))
