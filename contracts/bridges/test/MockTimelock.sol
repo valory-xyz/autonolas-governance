@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// IFxStateSender interface
-interface IFxStateSender {
-    function sendMessageToChild(address _receiver, bytes calldata _data) external;
-}
-
 error ExecFailed(address fxRoot, bytes payload);
 
 /// @title MockTimelock - Mock of Timelock contract on the L1 side
@@ -21,8 +16,8 @@ contract MockTimelock {
 
     /// @dev Executes the payload at the Fx Root address.
     /// @param payload Bytes of payload.
-    function execute(bytes memory payload) external {
-        (bool success, ) = fxRoot.call(payload);
+    function execute(bytes memory payload) external payable {
+        (bool success, ) = fxRoot.call{value: msg.value}(payload);
         if (!success) {
             revert ExecFailed(fxRoot, payload);
         }
