@@ -27,7 +27,11 @@ async function main() {
     const CDMProxy = new ethers.Contract(CDMProxyAddress, CDMProxyABI, sepoliaProvider);
 
     // Test deployed OptimismMessenger address on optimisticSepolia
-    const optimismMessengerAddress = "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592";
+    //const optimismMessengerAddress = "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee"; // original
+    const optimismMessengerAddress = "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"; // payable process on L2
+    //const optimismMessengerAddress = "0x4A51C1bcb7B3D80e40263B4b52A7344c45bFf890"; // just events on L2
+    //const optimismMessengerAddress = "0x41EAdB35312A2D4A53D6A6BA87b900CBDc2204a6"; // nonpayable governed by payable timelock
+    const optimismMessengerAddress = "0x0A99582559fd1a13F1910687Dd102cF4C50a6EEE"; // queue
     const optimismMessengerJSON = "artifacts/contracts/bridges/OptimismMessenger.sol/OptimismMessenger.json";
     contractFromJSON = fs.readFileSync(optimismMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
@@ -35,7 +39,8 @@ async function main() {
     const optimismMessenger = new ethers.Contract(optimismMessengerAddress, optimismMessengerABI, optimisticSepoliaProvider);
 
     // Mock Timelock contract address on sepolia (has CDMProxy address in it already)
-    const mockTimelockAddress = "0x43d28764bB39936185c84906983fB57A8A905a4F";
+    //const mockTimelockAddress = "0x7a6ca5BD19EE9182BEe5662008dFF05c60C3A76f"; // original
+    const mockTimelockAddress = "0x43d28764bB39936185c84906983fB57A8A905a4F"; // payable
     const mockTimelockJSON = "artifacts/contracts/bridges/test/MockTimelock.sol/MockTimelock.json";
     contractFromJSON = fs.readFileSync(mockTimelockJSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);
@@ -107,8 +112,8 @@ async function main() {
     // Send the message to optimisticSepolia receiver
     if (!sendFundsFromL1) {
         // Funds are not sent from the L1 side, so if the value in payload is non-zero - make sure the L2 contract is fed
-        const gasLimit = "500000";
-        tx = await mockTimelock.connect(EOAsepolia).execute(timelockPayload, {gasLimit });
+        const gasLimit = "3000000";
+        tx = await mockTimelock.connect(EOAsepolia).execute(timelockPayload, { gasLimit });
         console.log("Timelock data execution hash", tx.hash);
         await tx.wait();
     } else {
