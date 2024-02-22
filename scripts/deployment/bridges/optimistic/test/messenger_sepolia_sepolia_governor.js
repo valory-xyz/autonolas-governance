@@ -31,7 +31,7 @@ async function main() {
     const optimismMessengerAddress = "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"; // payable process on L2
     //const optimismMessengerAddress = "0x4A51C1bcb7B3D80e40263B4b52A7344c45bFf890"; // just events on L2
     //const optimismMessengerAddress = "0x41EAdB35312A2D4A53D6A6BA87b900CBDc2204a6"; // nonpayable governed by payable timelock
-    const optimismMessengerAddress = "0x0A99582559fd1a13F1910687Dd102cF4C50a6EEE"; // queue
+    //const optimismMessengerAddress = "0x0A99582559fd1a13F1910687Dd102cF4C50a6EEE"; // queue
     const optimismMessengerJSON = "artifacts/contracts/bridges/OptimismMessenger.sol/OptimismMessenger.json";
     contractFromJSON = fs.readFileSync(optimismMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
