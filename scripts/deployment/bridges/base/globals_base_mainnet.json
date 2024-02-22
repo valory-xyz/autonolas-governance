@@ -1,0 +1,1 @@
+{"contractVerification":true,"useLedger":true,"derivationPath":"m/44'/60'/2'/0/0","providerName":"base","gasPriceInGwei":"2","networkURL":"https://mainnet.base.org","L1CrossDomainMessengerProxyAddress":"0x866E82a600A1414e583f7F13623F1aC5d58b0Afa","timelockAddress":"0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE","optimismMessengerAddress":""}
