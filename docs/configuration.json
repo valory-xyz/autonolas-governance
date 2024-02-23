@@ -154,5 +154,49 @@
         "address": "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"
       }
     ]
+  },
+  {
+    "name": "optimistic",
+    "chainId": "10",
+    "contracts": [
+      {
+        "name": "OptimismMessenger",
+        "artifact": "abis/0.8.23/OptimismMessenger.json",
+        "address": ""
+      }
+    ]
+  },
+  {
+    "name": "optimisticSepolia",
+    "chainId": "11155420",
+    "contracts": [
+      {
+        "name": "OptimismMessenger",
+        "artifact": "abis/0.8.23/OptimismMessenger.json",
+        "address": "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"
+      }
+    ]
+  },
+  {
+    "name": "base",
+    "chainId": "8453",
+    "contracts": [
+      {
+        "name": "OptimismMessenger",
+        "artifact": "abis/0.8.23/OptimismMessenger.json",
+        "address": ""
+      }
+    ]
+  },
+  {
+    "name": "baseSepolia",
+    "chainId": "84532",
+    "contracts": [
+      {
+        "name": "OptimismMessenger",
+        "artifact": "abis/0.8.23/OptimismMessenger.json",
+        "address": "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee"
+      }
+    ]
   }
 ]
