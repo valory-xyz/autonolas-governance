@@ -4,6 +4,9 @@ const { ethers } = require("ethers");
 const { expect } = require("chai");
 const fs = require("fs");
 
+const verifyRepo = false;
+const verifySetup = true;
+
 // Custom expect that is wrapped into try / catch block
 function customExpect(arg1, arg2, log) {
     try {
@@ -345,7 +348,25 @@ async function checkHomeMediator(chainId, provider, globalsInstance, configContr
 
     // Check AMBContractProxyHomeAddress
     const proxyHome = await homeMediator.AMBContractProxyHome();
-    customExpect(proxyHome, globalsInstance["AMBContractProxyHomeAddress"], log + ", function: AMBContractProxyHomeAddress()");
+    customExpect(proxyHome, globalsInstance["AMBContractProxyHomeAddress"], log + ", function: AMBContractProxyHome()");
+}
+
+// Check OptimismMessenger: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkOptimismMessenger(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const optimismMessenger = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + optimismMessenger.address;
+    // Check the foreign governor
+    const foreignGovernor = await optimismMessenger.foreignGovernor();
+    customExpect(foreignGovernor, globalsInstance["timelockAddress"], log + ", function: foreignGovernor()");
+
+    // Check AMBContractProxyHomeAddress
+    const proxyHome = await optimismMessenger.CDMContractProxyHome();
+    customExpect(proxyHome, globalsInstance["L2CrossDomainMessengerAddress"], log + ", function: CDMContractProxyHome()");
 }
 
 async function main() {
@@ -363,123 +384,143 @@ async function main() {
 
     const numChains = configs.length;
     // ################################# VERIFY CONTRACTS WITH REPO #################################
-    // For now gnosis chains are not supported
-    const networks = {
-        "mainnet": "etherscan",
-        "goerli": "goerli.etherscan",
-        "polygon": "polygonscan",
-        "polygonMumbai": "testnet.polygonscan"
-    };
+    if (verifyRepo) {
+        // For now gnosis chains are not supported
+        const networks = {
+            "mainnet": "etherscan",
+            "goerli": "goerli.etherscan",
+            "polygon": "polygonscan",
+            "polygonMumbai": "testnet.polygonscan",
+            "optimistic": "optimistic.etherscan"
+        };
 
-    console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
+        console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
 
-    // Traverse all chains
-    for (let i = 0; i < numChains; i++) {
-        // Skip gnosis chains
-        if (!networks[configs[i]["name"]]) {
-            continue;
-        }
-
-        console.log("\n\nNetwork:", configs[i]["name"]);
-        const network = networks[configs[i]["name"]];
-        const contracts = configs[i]["contracts"];
-
-        // Verify contracts
-        for (let j = 0; j < contracts.length; j++) {
-            console.log("Checking " + contracts[j]["name"]);
-            const execSync = require("child_process").execSync;
-            try {
-                execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
-            } catch (error) {
+        // Traverse all chains
+        for (let i = 0; i < numChains; i++) {
+            // Skip gnosis chains
+            if (!networks[configs[i]["name"]]) {
                 continue;
+            }
+
+            console.log("\n\nNetwork:", configs[i]["name"]);
+            const network = networks[configs[i]["name"]];
+            const contracts = configs[i]["contracts"];
+
+            // Verify contracts
+            for (let j = 0; j < contracts.length; j++) {
+                console.log("Checking " + contracts[j]["name"]);
+                const execSync = require("child_process").execSync;
+                try {
+                    execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
+                } catch (error) {
+                    continue;
+                }
             }
         }
     }
     // ################################# /VERIFY CONTRACTS WITH REPO #################################
 
     // ################################# VERIFY CONTRACTS SETUP #################################
-    const globalNames = {
-        "mainnet": "scripts/deployment/globals_mainnet.json",
-        "goerli": "scripts/deployment/globals_goerli.json",
-        "polygon": "scripts/deployment/bridges/polygon/globals_polygon_mainnet.json",
-        "polygonMumbai": "scripts/deployment/bridges/polygon/globals_polygon_mumbai.json",
-        "gnosis": "scripts/deployment/bridges/gnosis/globals_gnosis_mainnet.json",
-        "chiado": "scripts/deployment/bridges/gnosis/globals_gnosis_chiado.json"
-    };
+    if (verifySetup) {
+        const globalNames = {
+            "mainnet": "scripts/deployment/globals_mainnet.json",
+            "goerli": "scripts/deployment/globals_goerli.json",
+            "polygon": "scripts/deployment/bridges/polygon/globals_polygon_mainnet.json",
+            "polygonMumbai": "scripts/deployment/bridges/polygon/globals_polygon_mumbai.json",
+            "gnosis": "scripts/deployment/bridges/gnosis/globals_gnosis_mainnet.json",
+            "chiado": "scripts/deployment/bridges/gnosis/globals_gnosis_chiado.json",
+            "optimistic": "scripts/deployment/bridges/optimistic/globals_optimistic_mainnet.json",
+            "optimisticSepolia": "scripts/deployment/bridges/optimistic/globals_optimistic_sepolia.json",
+            "base": "scripts/deployment/bridges/base/globals_base_mainnet.json",
+            "baseSepolia": "scripts/deployment/bridges/base/globals_base_sepolia.json"
+        };
 
-    const providerLinks = {
-        "mainnet": "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MAINNET,
-        "goerli": "https://eth-goerli.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_GOERLI,
-        "polygon": "https://polygon-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MATIC,
-        "polygonMumbai": "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MUMBAI,
-        "gnosis": "https://rpc.gnosischain.com",
-        "chiado": "https://rpc.chiadochain.net"
-    };
+        const providerLinks = {
+            "mainnet": "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MAINNET,
+            "goerli": "https://eth-goerli.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_GOERLI,
+            "polygon": "https://polygon-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MATIC,
+            "polygonMumbai": "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MUMBAI,
+            "gnosis": "https://rpc.gnosischain.com",
+            "chiado": "https://rpc.chiadochain.net",
+            "optimistic": "https://optimism.drpc.org",
+            "optimisticSepolia": "https://sepolia.optimism.io",
+            "base": "https://mainnet.base.org",
+            "baseSepolia": "https://sepolia.base.org"
+        };
 
-    // Get all the globals processed
-    const globals = new Array();
-    const providers = new Array();
-    for (let i = 0; i < numChains; i++) {
-        const dataJSON = fs.readFileSync(globalNames[configs[i]["name"]], "utf8");
-        globals.push(JSON.parse(dataJSON));
-        const provider = new ethers.providers.JsonRpcProvider(providerLinks[configs[i]["name"]]);
-        providers.push(provider);
-    }
+        // Get all the globals processed
+        const globals = new Array();
+        const providers = new Array();
+        for (let i = 0; i < numChains; i++) {
+            const dataJSON = fs.readFileSync(globalNames[configs[i]["name"]], "utf8");
+            globals.push(JSON.parse(dataJSON));
+            const provider = new ethers.providers.JsonRpcProvider(providerLinks[configs[i]["name"]]);
+            providers.push(provider);
+        }
 
-    console.log("\nVerifying deployed contracts setup... If no error is output, then the contracts are correct.");
+        console.log("\nVerifying deployed contracts setup... If no error is output, then the contracts are correct.");
 
-    // L1 contracts
-    for (let i = 0; i < 2; i++) {
-        console.log("\n######## Verifying setup on CHAIN ID", configs[i]["chainId"]);
+        // L1 contracts
+        for (let i = 0; i < 2; i++) {
+            console.log("\n######## Verifying setup on CHAIN ID", configs[i]["chainId"]);
 
-        const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];
+            const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];
 
-        let log = initLog + ", contract: " + "OLAS";
-        await checkOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OLAS", log);
+            let log = initLog + ", contract: " + "OLAS";
+            await checkOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OLAS", log);
 
-        log = initLog + ", contract: " + "Timelock";
-        await checkTimelock(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "Timelock", log);
+            log = initLog + ", contract: " + "Timelock";
+            await checkTimelock(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "Timelock", log);
 
-        log = initLog + ", contract: " + "veOLAS";
-        await checkVEOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "veOLAS", log);
+            log = initLog + ", contract: " + "veOLAS";
+            await checkVEOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "veOLAS", log);
 
-        log = initLog + ", contract: " + "buOLAS";
-        await checkBUOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "buOLAS", log);
+            log = initLog + ", contract: " + "buOLAS";
+            await checkBUOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "buOLAS", log);
 
-        log = initLog + ", contract: " + "wveOLAS";
-        await checkWrappedVEOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "wveOLAS", log);
+            log = initLog + ", contract: " + "wveOLAS";
+            await checkWrappedVEOLAS(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "wveOLAS", log);
 
-        log = initLog + ", contract: " + "GovernorOLAS";
-        await checkGovernorOLAS(configs[i]["chainId"], providers[i], globals[i], globals[0], configs[i]["contracts"], "GovernorOLAS", log);
+            log = initLog + ", contract: " + "GovernorOLAS";
+            await checkGovernorOLAS(configs[i]["chainId"], providers[i], globals[i], globals[0], configs[i]["contracts"], "GovernorOLAS", log);
 
-        log = initLog + ", contract: " + "GuardCM";
-        await checkGuardCM(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "GuardCM", log);
+            log = initLog + ", contract: " + "GuardCM";
+            await checkGuardCM(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "GuardCM", log);
 
-        log = initLog + ", contract: " + "BridgedERC20";
-        await checkBridgedERC20(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "BridgedERC20", log);
+            log = initLog + ", contract: " + "BridgedERC20";
+            await checkBridgedERC20(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "BridgedERC20", log);
 
-        log = initLog + ", contract: " + "FxERC20RootTunnel";
-        await checkFxERC20RootTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20RootTunnel", log);
-    }
+            log = initLog + ", contract: " + "FxERC20RootTunnel";
+            await checkFxERC20RootTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20RootTunnel", log);
+        }
 
-    // L2 contracts
-    for (let i = 2; i < numChains; i++) {
-        console.log("\n######## Verifying setup on CHAIN ID", configs[i]["chainId"]);
+        // L2 contracts
+        for (let i = 2; i < numChains; i++) {
+            // Skip chains that are not yet fully setup
+            if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453") {
+                continue;
+            }
 
-        const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];
+            console.log("\n######## Verifying setup on CHAIN ID", configs[i]["chainId"]);
 
-        if (configs[i]["chainId"] == "137" || configs[i]["chainId"] == "80001") {
-            let log = initLog + ", contract: " + "FxGovernorTunnel";
-            await checkFxGovernorTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxGovernorTunnel", log);
+            const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];
 
-            log = initLog + ", contract: " + "FxERC20ChildTunnel";
-            await checkFxERC20ChildTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20ChildTunnel", log);
-        } else {
-            let log = initLog + ", contract: " + "HomeMediator";
-            await checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log);
+            if (configs[i]["chainId"] == "137" || configs[i]["chainId"] == "80001") {
+                let log = initLog + ", contract: " + "FxGovernorTunnel";
+                await checkFxGovernorTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxGovernorTunnel", log);
+
+                log = initLog + ", contract: " + "FxERC20ChildTunnel";
+                await checkFxERC20ChildTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20ChildTunnel", log);
+            } else if (configs[i]["chainId"] == "100" || configs[i]["chainId"] == "10200") {
+                let log = initLog + ", contract: " + "HomeMediator";
+                await checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log);
+            } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "11155420" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "84532") {
+                let log = initLog + ", contract: " + "OptimismMessenger";
+                await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
+            }
         }
     }
-
     // ################################# /VERIFY CONTRACTS SETUP #################################
 }
 
