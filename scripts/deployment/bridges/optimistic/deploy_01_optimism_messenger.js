@@ -12,25 +12,12 @@ async function main() {
     const derivationPath = parsedData.derivationPath;
     const providerName = parsedData.providerName;
     const gasPriceInGwei = parsedData.gasPriceInGwei;
-    let EOA;
 
-    let networkURL;
-    if (providerName === "gnosis") {
-        if (!process.env.GNOSISSCAN_API_KEY) {
-            console.log("set GNOSISSCAN_API_KEY env variable");
-            return;
-        }
-        networkURL = "https://rpc.gnosischain.com";
-    } else if (providerName === "chiado") {
-        networkURL = "https://rpc.chiadochain.net";
-    } else {
-        console.log("Unknown network provider", providerName);
-        return;
-    }
-
+    const networkURL = parsedData.networkURL;
     const provider = new ethers.providers.JsonRpcProvider(networkURL);
     const signers = await ethers.getSigners();
 
+    let EOA;
     if (useLedger) {
         EOA = new LedgerSigner(provider, derivationPath);
     } else {
@@ -42,25 +29,25 @@ async function main() {
 
     // Transaction signing and execution
     console.log("1. EOA to deploy home mediator contract");
-    const HomeMediator = await ethers.getContractFactory("HomeMediator");
-    console.log("You are signing the following transaction: HomeMediator.connect(EOA).deploy(AMBContractProxyHomeAddress, timelockAddress)");
+    const OptimismMessenger = await ethers.getContractFactory("OptimismMessenger");
+    console.log("You are signing the following transaction: OptimismMessenger.connect(EOA).deploy(L2CrossDomainMessengerAddress, timelockAddress)");
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
-    const homeMediator = await HomeMediator.connect(EOA).deploy(parsedData.AMBContractProxyHomeAddress, parsedData.timelockAddress, { gasPrice });
-    const result = await homeMediator.deployed();
+    const optimismMessenger = await OptimismMessenger.connect(EOA).deploy(parsedData.L2CrossDomainMessengerAddress, parsedData.timelockAddress, { gasPrice });
+    const result = await optimismMessenger.deployed();
 
     // Transaction details
-    console.log("Contract deployment: HomeMediator");
-    console.log("Contract address:", homeMediator.address);
+    console.log("Contract deployment: OptimismMessenger");
+    console.log("Contract address:", optimismMessenger.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // Writing updated parameters back to the JSON file
-    parsedData.homeMediatorAddress = homeMediator.address;
+    parsedData.optimismMessengerAddress = optimismMessenger.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/gnosis/verify_01_home_mediator.js --network " + providerName + " " + homeMediator.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/optimistic/verify_01_home_mediator.js --network " + providerName + " " + optimismMessenger.address, { encoding: "utf-8" });
     }
 }
 
