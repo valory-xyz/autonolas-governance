@@ -57,7 +57,7 @@ contract OptimismMessenger {
     // Foreign governor address on L1 that is authorized to propagate the transaction execution across the bridge
     address public foreignGovernor;
 
-    /// @dev HomeMediator constructor.
+    /// @dev OptimismMessenger constructor.
     /// @param _CDMContractProxyHome CDM Contract Proxy (Home) address (Optimism).
     /// @param _foreignGovernor Foreign Governor address (ETH).
     constructor(address _CDMContractProxyHome, address _foreignGovernor) {
@@ -77,7 +77,7 @@ contract OptimismMessenger {
 
     /// @dev Changes the Foreign Governor address (original Timelock).
     /// @notice The only way to change the Foreign Governor address is by the Timelock on L1 to request that change.
-    ///         This triggers a self-contract transaction of HomeMediator that changes the Foreign Governor address.
+    ///         This triggers a self-contract transaction of OptimismMessenger that changes the Foreign Governor address.
     /// @param newForeignGovernor New Foreign Governor address.
     function changeForeignGovernor(address newForeignGovernor) external {
         // Check if the change is authorized by the previous governor itself
