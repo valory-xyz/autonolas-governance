@@ -66,12 +66,12 @@ async function main() {
 
     // Send funds to the WormholeMessenger contract
     let tx;
-//    if (!sendFundsFromL1) {
-//        // Feed the contract with funds on the L2 side
-//        tx = await EOAceloAlfajores.sendTransaction({to: wormholeMessenger.address, value: amountToSend});
-//        console.log("Send CELO hash", tx.hash);
-//        await tx.wait();
-//    }
+    if (!sendFundsFromL1) {
+        // Feed the contract with funds on the L2 side
+        tx = await EOAceloAlfajores.sendTransaction({to: wormholeMessenger.address, value: amountToSend});
+        console.log("Send CELO hash", tx.hash);
+        await tx.wait();
+    }
 
     // Pack the first part of  with the zero payload
     let target = EOAceloAlfajores.address;
