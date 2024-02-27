@@ -5,5 +5,6 @@ const parsedData = JSON.parse(dataFromJSON);
 
 module.exports = [
     parsedData.L2WormholeRelayerAddress,
-    parsedData.timelockAddress
+    parsedData.timelockAddress,
+    parsedData.sourceGovernorChainId
 ];

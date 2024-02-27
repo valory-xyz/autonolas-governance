@@ -13,7 +13,20 @@ async function main() {
     const providerName = parsedData.providerName;
     const gasPriceInGwei = parsedData.gasPriceInGwei;
 
-    const networkURL = parsedData.networkURL;
+    let networkURL = parsedData.networkURL;
+    if (providerName === "polygon") {
+        if (!process.env.ALCHEMY_API_KEY_MATIC) {
+            console.log("set ALCHEMY_API_KEY_MATIC env variable");
+        }
+        networkURL += process.env.ALCHEMY_API_KEY_MATIC;
+    } else if (providerName === "polygonMumbai") {
+        if (!process.env.ALCHEMY_API_KEY_MUMBAI) {
+            console.log("set ALCHEMY_API_KEY_MUMBAI env variable");
+            return;
+        }
+        networkURL += process.env.ALCHEMY_API_KEY_MUMBAI;
+    }
+
     const provider = new ethers.providers.JsonRpcProvider(networkURL);
     const signers = await ethers.getSigners();
 

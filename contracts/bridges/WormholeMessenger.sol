@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.23;
 
 /// @dev Provided zero address.
 error ZeroAddress();
+
+/// @dev Provided zero value.
+error ZeroValue();
 
 /// @dev Only self contract is allowed to call the function.
 /// @param sender Sender address.
@@ -44,38 +47,45 @@ error InsufficientBalance(uint256 value, uint256 balance);
 /// @param payload Provided payload.
 error TargetExecFailed(address target, uint256 value, bytes payload);
 
-/// @title WormholeMessenger - Smart contract for the governor Wormhole bridge implementation
+/// @title WormholeMessenger - Smart contract for the governor bridge communication via wormhole
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract WormholeMessenger {
     event FundsReceived(address indexed sender, uint256 value);
     event SourceGovernorUpdated(address indexed sourceMessageSender);
-    event MessageReceived(address indexed sourceMessageSender, bytes data, bytes32 deliveryHash, uint16 sourceChain);
+    event MessageReceived(address indexed sourceMessageSender, bytes data, bytes32 deliveryHash, uint256 sourceChain);
 
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
     // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
     uint256 public constant DEFAULT_DATA_LENGTH = 36;
-    // Source governor chain Id
-    uint16 public constant SOURCE_GOVERNOR_CHAIN_ID = 2;
     // L2 Wormhole Relayer address that receives the message across the bridge from the source L1 network
     address public immutable wormholeRelayer;
+    // Source governor chain Id
+    uint16 public immutable sourceGovernorChainId;
     // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
     address public sourceGovernor;
     // Mapping of delivery hashes
     mapping(bytes32 => bool) public mapDeliveryHashes;
 
     /// @dev WormholeMessenger constructor.
-    /// @param _wormholeRelayer L2 Wormhole Relayer.
-    /// @param _sourceGovernor Source Governor address (ETH).
-    constructor(address _wormholeRelayer, address _sourceGovernor) {
-        // Check fo zero addresses
+    /// @param _wormholeRelayer L2 Wormhole Relayer address.
+    /// @param _sourceGovernor Source governor address (ETH).
+    /// @param _sourceGovernorChainId Source governor wormhole format chain Id.
+    constructor(address _wormholeRelayer, address _sourceGovernor, uint16 _sourceGovernorChainId) {
+        // Check for zero addresses
         if (_wormholeRelayer == address(0) || _sourceGovernor == address(0)) {
             revert ZeroAddress();
         }
 
+        // Check source governor chain Id
+        if (_sourceGovernorChainId == 0) {
+            revert ZeroValue();
+        }
+
         wormholeRelayer = _wormholeRelayer;
         sourceGovernor = _sourceGovernor;
+        sourceGovernorChainId = _sourceGovernorChainId;
     }
 
     /// @dev Receives native network token.
@@ -103,38 +113,17 @@ contract WormholeMessenger {
         emit SourceGovernorUpdated(newSourceGovernor);
     }
 
-    /// @dev Processes a message received from the L2 Wormhole Relayer contract.
+    /// @dev Processes a message received from L2 Wormhole Relayer contract.
     /// @notice The sender must be the Source Governor address (Timelock).
-    /// @param data Bytes message sent from the L2 Wormhole Relayer contract. The data must be encoded as a set of
+    /// @param data Bytes message sent from L2 Wormhole Relayer contract. The data must be encoded as a set of
     ///        continuous transactions packed into a single buffer, where each transaction is composed as follows:
     ///        - target address of 20 bytes (160 bits);
     ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts;
     ///        - payload length of 4 bytes (32 bits), as 2^32 - 1 characters is more than enough to fill a whole block;
     ///        - payload as bytes, with the length equal to the specified payload length.
-    /**
-     * @notice When a `send` is performed with this contract as the target, this function will be
-     *     invoked by the WormholeRelayer contract
-     *
-     * NOTE: This function should be restricted such that only the Wormhole Relayer contract can call it.
-     *
-     * We also recommend that this function checks that `sourceChain` and `sourceAddress` are indeed who
-     *       you expect to have requested the calling of `send` on the source chain
-     *
-     * The invocation of this function corresponding to the `send` request will have msg.value equal
-     *   to the receiverValue specified in the send request.
-     *
-     * If the invocation of this function reverts or exceeds the gas limit
-     *   specified by the send requester, this delivery will result in a `ReceiverFailure`.
-     *
-     * @param data - an arbitrary message which was included in the delivery by the
-     *     requester. This message's signature will already have been verified (as long as msg.sender is the Wormhole Relayer contract)
-     *
-     * @param sourceAddress - the (wormhole format) address on the sending chain which requested
-     *     this delivery.
-     * @param sourceChain - the wormhole chain ID where this delivery was requested.
-     * @param deliveryHash - the VAA hash of the deliveryVAA.
-     *
-     */
+    /// @param sourceAddress The (wormhole format) address on the sending chain which requested this delivery.
+    /// @param sourceChain The wormhole chain Id where this delivery was requested.
+    /// @param deliveryHash - the VAA hash of the deliveryVAA.
     function receiveWormholeMessages(
         bytes memory data,
         bytes[] memory,
@@ -142,29 +131,28 @@ contract WormholeMessenger {
         uint16 sourceChain,
         bytes32 deliveryHash
     ) external payable {
-        // Check for the L2 Wormhole Relayer address
+        // Check L2 Wormhole Relayer address
         if (msg.sender != wormholeRelayer) {
             revert wormholeRelayerOnly(msg.sender, wormholeRelayer);
         }
 
-        if (sourceChain != SOURCE_GOVERNOR_CHAIN_ID) {
-            revert WrongSourceChainId(sourceChain, SOURCE_GOVERNOR_CHAIN_ID);
+        // Check the source chain Id
+        if (sourceChain != sourceGovernorChainId) {
+            revert WrongSourceChainId(sourceChain, sourceGovernorChainId);
         }
 
-        // Check for the Source Governor address
+        // Check for the source governor address
         address governor = sourceGovernor;
         address bridgeGovernor = address(uint160(uint256(sourceAddress)));
-
         if (bridgeGovernor != governor) {
             revert SourceGovernorOnly(bridgeGovernor, governor);
         }
 
-        // Check the delivery hash for uniqueness
+        // Check the delivery hash uniqueness
         if (mapDeliveryHashes[deliveryHash]) {
             revert AlreadyDelivered(deliveryHash);
-        } else {
-            mapDeliveryHashes[deliveryHash] = true;
         }
+        mapDeliveryHashes[deliveryHash] = true;
 
         // Check for the correct data length
         uint256 dataLength = data.length;

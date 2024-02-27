@@ -45,7 +45,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/celo/test/verify_00_mock_timelock.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/wormhole/test/verify_00_mock_timelock.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
     }
 }
 

@@ -13,7 +13,20 @@ async function main() {
     const providerName = parsedData.providerName;
     const gasPriceInGwei = parsedData.gasPriceInGwei;
 
-    const networkURL = parsedData.networkURL;
+    let networkURL = parsedData.networkURL;
+    if (providerName === "polygon") {
+        if (!process.env.ALCHEMY_API_KEY_MATIC) {
+            console.log("set ALCHEMY_API_KEY_MATIC env variable");
+        }
+        networkURL += process.env.ALCHEMY_API_KEY_MATIC;
+    } else if (providerName === "polygonMumbai") {
+        if (!process.env.ALCHEMY_API_KEY_MUMBAI) {
+            console.log("set ALCHEMY_API_KEY_MUMBAI env variable");
+            return;
+        }
+        networkURL += process.env.ALCHEMY_API_KEY_MUMBAI;
+    }
+
     const provider = new ethers.providers.JsonRpcProvider(networkURL);
     const signers = await ethers.getSigners();
 
@@ -30,9 +43,10 @@ async function main() {
     // Transaction signing and execution
     console.log("1. EOA to deploy home mediator contract");
     const WormholeMessenger = await ethers.getContractFactory("WormholeMessenger");
-    console.log("You are signing the following transaction: WormholeMessenger.connect(EOA).deploy(L2WormholeRelayerAddress, timelockAddress)");
+    console.log("You are signing the following transaction: WormholeMessenger.connect(EOA).deploy(L2WormholeRelayerAddress, timelockAddress, sourceGovernorChainId)");
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
-    const wormholeMessenger = await WormholeMessenger.connect(EOA).deploy(parsedData.L2WormholeRelayerAddress, parsedData.timelockAddress, { gasPrice });
+    const wormholeMessenger = await WormholeMessenger.connect(EOA).deploy(parsedData.L2WormholeRelayerAddress,
+        parsedData.timelockAddress, parsedData.sourceGovernorChainId, { gasPrice });
     const result = await wormholeMessenger.deployed();
 
     // Transaction details
@@ -47,7 +61,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/celo/verify_01_home_mediator.js --network " + providerName + " " + wormholeMessenger.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/wormhole/verify_01_wormhole_messenger.js --network " + providerName + " " + wormholeMessenger.address, { encoding: "utf-8" });
     }
 }
 
