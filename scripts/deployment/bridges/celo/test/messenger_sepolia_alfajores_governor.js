@@ -5,11 +5,11 @@ const { ethers } = require("ethers");
 const sendFundsFromL1 = false;
 
 async function main() {
-    const ALCHEMY_API_KEY_GOERLI = process.env.ALCHEMY_API_KEY_GOERLI;
-    const goerliURL = "https://eth-goerli.g.alchemy.com/v2/" + ALCHEMY_API_KEY_GOERLI;
-    const goerliProvider = new ethers.providers.JsonRpcProvider(goerliURL);
-    await goerliProvider.getBlockNumber().then((result) => {
-        console.log("Current block number goerli: " + result);
+    const ALCHEMY_API_KEY_SEPOLIA = process.env.ALCHEMY_API_KEY_SEPOLIA;
+    const sepoliaURL = "https://eth-sepolia.g.alchemy.com/v2/" + ALCHEMY_API_KEY_SEPOLIA;
+    const sepoliaProvider = new ethers.providers.JsonRpcProvider(sepoliaURL);
+    await sepoliaProvider.getBlockNumber().then((result) => {
+        console.log("Current block number sepolia: " + result);
     });
 
     const celoAlfajoresURL = "https://alfajores-forno.celo-testnet.org";
@@ -19,31 +19,31 @@ async function main() {
     });
 
     const fs = require("fs");
-    // WormholeRelayer address on goerli
-    const wormholeRelayerAddress = "0x28D8F1Be96f97C1387e94A53e00eCcFb4E75175a";
+    // WormholeRelayer address on sepolia
+    const wormholeRelayerAddress = "0x7B1bD7a6b4E61c2a123AC6BC2cbfC614437D0470";
     const wormholeRelayerJSON = "abis/test/WormholeRelayer.json";
     let contractFromJSON = fs.readFileSync(wormholeRelayerJSON, "utf8");
     const wormholeRelayerABI = JSON.parse(contractFromJSON);
-    const wormholeRelayer = new ethers.Contract(wormholeRelayerAddress, wormholeRelayerABI, goerliProvider);
+    const wormholeRelayer = new ethers.Contract(wormholeRelayerAddress, wormholeRelayerABI, sepoliaProvider);
 
     // Test deployed WormholeMessenger address on celoAlfajores
-    const wormholeMessengerAddress = "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee"; // payable process on L2
+    const wormholeMessengerAddress = "0x9dEc6B62c197268242A768dc3b153AE7a2701396"; // payable process on L2
     const wormholeMessengerJSON = "artifacts/contracts/bridges/WormholeMessenger.sol/WormholeMessenger.json";
     contractFromJSON = fs.readFileSync(wormholeMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
     const wormholeMessengerABI = parsedFile["abi"];
     const wormholeMessenger = new ethers.Contract(wormholeMessengerAddress, wormholeMessengerABI, celoAlfajoresProvider);
 
-    // Mock Timelock contract address on goerli (has WormholeRelayer address in it already)
-    const mockTimelockAddress = "0xE5Da5F4d8644A271226161a859c1177C5214c54e"; // payable
+    // Mock Timelock contract address on sepolia (has WormholeRelayer address in it already)
+    const mockTimelockAddress = "0x14CF2e543AB75B321bcf84C3AcC88d570Ccf9106"; // payable
     const mockTimelockJSON = "artifacts/contracts/bridges/test/MockTimelock.sol/MockTimelock.json";
     contractFromJSON = fs.readFileSync(mockTimelockJSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);
     const mockTimelockABI = parsedFile["abi"];
-    const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, goerliProvider);
+    const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, sepoliaProvider);
 
     // ChildMockERC20 address on celoAlfajores
-    const mockChildERC20Address = "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77";
+    const mockChildERC20Address = "0xB575dd20281c63288428DD58e5f579CC7d6aae4d";
     const mockChildERC20JSON = "artifacts/contracts/bridges/test/ChildMockERC20.sol/ChildMockERC20.json";
     contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);
@@ -52,10 +52,10 @@ async function main() {
 
     // Get the EOA
     const account = ethers.utils.HDNode.fromMnemonic(process.env.TESTNET_MNEMONIC).derivePath("m/44'/60'/0'/0/0");
-    const EOAgoerli = new ethers.Wallet(account, goerliProvider);
+    const EOAsepolia = new ethers.Wallet(account, sepoliaProvider);
     const EOAceloAlfajores = new ethers.Wallet(account, celoAlfajoresProvider);
-    console.log("EOA address",EOAgoerli.address);
-    if (EOAceloAlfajores.address == EOAgoerli.address) {
+    console.log("EOA address",EOAsepolia.address);
+    if (EOAceloAlfajores.address == EOAsepolia.address) {
         console.log("Correct wallet setup");
     }
 
@@ -108,7 +108,7 @@ async function main() {
         wormholeMessengerAddress, data, 0, minGasLimit]);
 
     // Send the message to celoAlfajores receiver
-    tx = await mockTimelock.connect(EOAgoerli).execute(timelockPayload, { value: transferCost.nativePriceQuote });
+    tx = await mockTimelock.connect(EOAsepolia).execute(timelockPayload, { value: transferCost.nativePriceQuote });
     console.log("Timelock data execution hash", tx.hash);
     await tx.wait();
 

@@ -10,7 +10,7 @@ async function main() {
     let parsedData = JSON.parse(dataFromJSON);
     const useLedger = parsedData.useLedger;
     const derivationPath = parsedData.derivationPath;
-    const providerName = "goerli";
+    const providerName = "sepolia";
     const gasPriceInGwei = parsedData.gasPriceInGwei;
     let EOA;
 

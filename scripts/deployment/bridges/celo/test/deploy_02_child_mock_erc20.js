@@ -28,7 +28,7 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("2. EOA to deploy child mock ERC20 contract and change its owner to the FxGovernorTunnel");
+    console.log("2. EOA to deploy child mock ERC20 contract and change its owner to the WormholeMessenger");
     const ChildMockERC20 = await ethers.getContractFactory("ChildMockERC20");
     console.log("You are signing the following transaction: ChildMockERC20.connect(EOA).deploy()");
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
