@@ -24,7 +24,7 @@ error WrongSourceChainId(uint256 received, uint256 required);
 
 /// @dev Only on behalf of `sourceGovernor` the function is allowed to process the data.
 /// @param sender Sender address.
-/// @param sourceGovernor Required Source Governor address.
+/// @param sourceGovernor Required source governor address.
 error SourceGovernorOnly(address sender, address sourceGovernor);
 
 /// @dev The message with a specified hash has already been delivered.
@@ -93,10 +93,10 @@ contract WormholeMessenger {
         emit FundsReceived(msg.sender, msg.value);
     }
 
-    /// @dev Changes the Source Governor address (original Timelock).
-    /// @notice The only way to change the Source Governor address is by the Timelock on L1 to request that change.
-    ///         This triggers a self-contract transaction of WormholeMessenger that changes the Source Governor address.
-    /// @param newSourceGovernor New Source Governor address.
+    /// @dev Changes the source governor address (original Timelock).
+    /// @notice The only way to change the source governor address is by the Timelock on L1 to request that change.
+    ///         This triggers a self-contract transaction of WormholeMessenger that changes the source governor address.
+    /// @param newSourceGovernor New source governor address.
     function changeSourceGovernor(address newSourceGovernor) external {
         // Check if the change is authorized by the previous governor itself
         // This is possible only if all the checks in the message process function pass and the contract calls itself
@@ -114,7 +114,7 @@ contract WormholeMessenger {
     }
 
     /// @dev Processes a message received from L2 Wormhole Relayer contract.
-    /// @notice The sender must be the Source Governor address (Timelock).
+    /// @notice The sender must be the source governor address (Timelock).
     /// @param data Bytes message sent from L2 Wormhole Relayer contract. The data must be encoded as a set of
     ///        continuous transactions packed into a single buffer, where each transaction is composed as follows:
     ///        - target address of 20 bytes (160 bits);
@@ -123,7 +123,7 @@ contract WormholeMessenger {
     ///        - payload as bytes, with the length equal to the specified payload length.
     /// @param sourceAddress The (wormhole format) address on the sending chain which requested this delivery.
     /// @param sourceChain The wormhole chain Id where this delivery was requested.
-    /// @param deliveryHash - the VAA hash of the deliveryVAA.
+    /// @param deliveryHash The VAA hash of the deliveryVAA.
     function receiveWormholeMessages(
         bytes memory data,
         bytes[] memory,
