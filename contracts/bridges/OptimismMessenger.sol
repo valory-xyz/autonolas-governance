@@ -38,7 +38,7 @@ contract OptimismMessenger is BridgeMessenger {
     /// @notice The only way to change the source governor address is by the Timelock on L1 to request that change.
     ///         This triggers a self-contract transaction of BridgeMessenger that changes the source governor address.
     /// @param newSourceGovernor New source governor address.
-    function changeSourceGovernor(address newSourceGovernor) external virtual {
+    function changeSourceGovernor(address newSourceGovernor) external {
         // Check if the change is authorized by the previous governor itself
         // This is possible only if all the checks in the message process function pass and the contract calls itself
         if (msg.sender != address(this)) {
