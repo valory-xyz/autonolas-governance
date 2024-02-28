@@ -21,6 +21,8 @@ An internal audit with a focus on `ERC20 bridging via fx-tunnel` is located in t
 
 An internal audit with a focus on `Update for Community Multisig (CM)` is located in this folder: [internal audit 8](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal8).
 
+An internal audit with a focus on `OptimismMesseger and WormholeMessenger` is located in this folder: [internal audit 9](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal9).
+
 ### External audit
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
 the recommendations are addressed here: [feedback](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Addressing%20Initial%20ApeWorX%20Recommentations.pdf).

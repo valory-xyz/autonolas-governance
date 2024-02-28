@@ -1,0 +1,84 @@
+
+'solc --version' running
+'solc ./WormholeMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+
+False positive. Size of bytes data controlled by Governance. 
+INFO:Detectors:
+OptimismMessenger.processMessageFromForeign(bytes) (OptimismMessenger-flatten.sol#108-172) has external calls inside a loop: (success) = target.call{value: value}(payload) (OptimismMessenger-flatten.sol#164)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in OptimismMessenger.processMessageFromForeign(bytes) (OptimismMessenger-flatten.sol#108-172):
+	External calls:
+	- bridgeGovernor = ICrossDomainMessenger(CDMContractProxyHome).xDomainMessageSender() (OptimismMessenger-flatten.sol#116)
+	- (success) = target.call{value: value}(payload) (OptimismMessenger-flatten.sol#164)
+	External calls sending eth:
+	- (success) = target.call{value: value}(payload) (OptimismMessenger-flatten.sol#164)
+	Event emitted after the call(s):
+	- MessageReceived(governor,data) (OptimismMessenger-flatten.sol#171)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+False positive. Safe by design and tests.
+INFO:Detectors:
+OptimismMessenger.processMessageFromForeign(bytes) (OptimismMessenger-flatten.sol#108-172) uses assembly
+	- INLINE ASM (OptimismMessenger-flatten.sol#133-143)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+
+False positive. Safe by design and tests.
+INFO:Detectors:
+Low level call in OptimismMessenger.processMessageFromForeign(bytes) (OptimismMessenger-flatten.sol#108-172):
+	- (success) = target.call{value: value}(payload) (OptimismMessenger-flatten.sol#164)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+
+Not issue.
+INFO:Detectors:
+Variable OptimismMessenger.CDMContractProxyHome (OptimismMessenger-flatten.sol#58) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+
+Not issue, but can imporoved.
+INFO:Detectors:
+Function OptimismMessenger.processMessageFromForeign(bytes) (OptimismMessenger-flatten.sol#108-172) contains magic numbers: 20, 12, 4
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive. Immutables are stored directly in the deployed bytecode, meaning that they are not stored at a fixed offset in storage like regular state variables
+INFO:Detectors:
+In a function OptimismMessenger.processMessageFromForeign(bytes) (OptimismMessenger-flatten.sol#108-172) variable OptimismMessenger.CDMContractProxyHome (OptimismMessenger-flatten.sol#58) is read multiple times
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/multiple_storage_read.md
+
+Not issue, double checks by Wormhole examples.
+INFO:Detectors:
+Dubious typecast in WormholeMessenger.receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (WormholeMessenger-flatten.sol#130-211):
+	uint256 => uint160 casting occurs in bridgeGovernor = address(uint160(uint256(sourceAddress))) (WormholeMessenger-flatten.sol#149)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+False positive. Size of bytes data controlled by Governance. 
+INFO:Detectors:
+WormholeMessenger.receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (WormholeMessenger-flatten.sol#130-211) has external calls inside a loop: (success) = target.call{value: value}(payload) (WormholeMessenger-flatten.sol#203)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+False positive, as reentrancy not possible.
+INFO:Detectors:
+Reentrancy in WormholeMessenger.receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (WormholeMessenger-flatten.sol#130-211):
+	External calls:
+	- (success) = target.call{value: value}(payload) (WormholeMessenger-flatten.sol#203)
+	Event emitted after the call(s):
+	- MessageReceived(governor,data,deliveryHash,sourceChain) (WormholeMessenger-flatten.sol#210)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+False positive. Safe by design and tests.
+INFO:Detectors:
+WormholeMessenger.receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (WormholeMessenger-flatten.sol#130-211) uses assembly
+	- INLINE ASM (WormholeMessenger-flatten.sol#172-182)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+False positive. Safe by design and tests.
+INFO:Detectors:
+Low level call in WormholeMessenger.receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (WormholeMessenger-flatten.sol#130-211):
+	- (success) = target.call{value: value}(payload) (WormholeMessenger-flatten.sol#203)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+
+Not issue, but can imporoved.
+INFO:Detectors:
+Function WormholeMessenger.receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (WormholeMessenger-flatten.sol#130-211) contains magic numbers: 20, 12, 4
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+INFO:Slither:. analyzed (3 contracts with 108 detectors), 17 result(s) found
