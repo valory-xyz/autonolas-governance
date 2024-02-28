@@ -29,6 +29,11 @@ interface IBridgeErrors {
     /// @param sourceGovernor Required source governor address.
     error SourceGovernorOnly(address sender, address sourceGovernor);
 
+    /// @dev Only on behalf of `sourceGovernor` the function is allowed to process the data.
+    /// @param sender Sender address.
+    /// @param sourceGovernor Required source governor address.
+    error SourceGovernorOnly32(bytes32 sender, bytes32 sourceGovernor);
+
     /// @dev The message with a specified hash has already been delivered.
     /// @param deliveryHash Delivery hash.
     error AlreadyDelivered(bytes32 deliveryHash);

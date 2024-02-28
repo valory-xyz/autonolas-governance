@@ -20,6 +20,7 @@ File                       |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovere
   WormholeMessenger.sol    |        0 |        0 |        0 |        0 |... 201,202,207 |
 ```
 Pay attention, please! No tests for contract on scope.
+[x] Fixed
 
 #### Wormhole security list
 https://docs.wormhole.com/wormhole/quick-start/cross-chain-dev/standard-relayer#other-considerations
@@ -35,6 +36,7 @@ Refunding overpayment of gasLimit - [?] - requires discussion
 Refunding overpayment of value sent - [?] - requires discussion
 ref: https://github.com/wormhole-foundation/hello-wormhole/blob/main/src/extensions/HelloWormholeRefunds.sol
 ```
+[x] Good point, need to set up these parameters and call the corresponding function on the L1 Relayer (added to test scripts)
 
 ### Security issues
 Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal9/analysis/slither_full.txt) <br>
@@ -56,6 +58,8 @@ so avoid casting bytes32 to address EVM.
         }
 ref: https://github.com/wormhole-foundation/wormhole-solidity-sdk/blob/main/src/Base.sol#L30C52-L30C74 SDK of Wormhole
 ```
+[x] Fixed
+
 ##### Re-design contracts
 Part of the code is common and has the nature of a repeatable pattern for all contracts. <br>
 It makes sense to separate it into a separate contract and replace magic numbers (20,12,4) with constants.
@@ -109,6 +113,7 @@ It makes sense to separate it into a separate contract and replace magic numbers
             }
         }
 ```
+[x] Fixed
 
 
 

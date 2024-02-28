@@ -8,12 +8,15 @@ import {BridgeMessenger} from "./BridgeMessenger.sol";
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract WormholeMessenger is BridgeMessenger {
-    event MessageReceived(address indexed sourceMessageSender, bytes data, bytes32 deliveryHash, uint256 sourceChain);
+    event SourceGovernorUpdated(bytes32 indexed sourceGovernor);
+    event MessageReceived(bytes32 indexed sourceMessageSender, bytes data, bytes32 deliveryHash, uint256 sourceChain);
 
     // L2 Wormhole Relayer address that receives the message across the bridge from the source L1 network
     address public immutable wormholeRelayer;
     // Source governor chain Id
     uint16 public immutable sourceGovernorChainId;
+    // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
+    bytes32 public sourceGovernor;
     // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
     mapping(bytes32 => bool) public mapDeliveryHashes;
 
@@ -21,20 +24,40 @@ contract WormholeMessenger is BridgeMessenger {
     /// @param _wormholeRelayer L2 Wormhole Relayer address.
     /// @param _sourceGovernor Source governor address (ETH).
     /// @param _sourceGovernorChainId Source governor wormhole format chain Id.
-    constructor(address _wormholeRelayer, address _sourceGovernor, uint16 _sourceGovernorChainId) {
+    constructor(address _wormholeRelayer, bytes32 _sourceGovernor, uint16 _sourceGovernorChainId) {
         // Check for zero addresses
-        if (_wormholeRelayer == address(0) || _sourceGovernor == address(0)) {
+        if (_wormholeRelayer == address(0)) {
             revert ZeroAddress();
         }
 
         // Check source governor chain Id
-        if (_sourceGovernorChainId == 0) {
+        if (_sourceGovernor == 0 || _sourceGovernorChainId == 0) {
             revert ZeroValue();
         }
 
         wormholeRelayer = _wormholeRelayer;
         sourceGovernor = _sourceGovernor;
         sourceGovernorChainId = _sourceGovernorChainId;
+    }
+
+    /// @dev Changes the source governor address (original Timelock).
+    /// @notice The only way to change the source governor address is by the Timelock on L1 to request that change.
+    ///         This triggers a self-contract transaction of BridgeMessenger that changes the source governor address.
+    /// @param newSourceGovernor New source governor address.
+    function changeSourceGovernor(bytes32 newSourceGovernor) external virtual {
+        // Check if the change is authorized by the previous governor itself
+        // This is possible only if all the checks in the message process function pass and the contract calls itself
+        if (msg.sender != address(this)) {
+            revert SelfCallOnly(msg.sender, address(this));
+        }
+
+        // Check for the zero address
+        if (newSourceGovernor == 0) {
+            revert ZeroValue();
+        }
+
+        sourceGovernor = newSourceGovernor;
+        emit SourceGovernorUpdated(newSourceGovernor);
     }
 
     /// @dev Processes a message received from L2 Wormhole Relayer contract.
@@ -66,10 +89,9 @@ contract WormholeMessenger is BridgeMessenger {
         }
 
         // Check for the source governor address
-        address governor = sourceGovernor;
-        address bridgeGovernor = address(uint160(uint256(sourceAddress)));
-        if (bridgeGovernor != governor) {
-            revert SourceGovernorOnly(bridgeGovernor, governor);
+        bytes32 governor = sourceGovernor;
+        if (governor != sourceAddress) {
+            revert SourceGovernorOnly32(sourceAddress, governor);
         }
 
         // Check the delivery hash uniqueness

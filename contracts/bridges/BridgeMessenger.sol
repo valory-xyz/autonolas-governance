@@ -9,37 +9,14 @@ import {IBridgeErrors} from "../interfaces/IBridgeErrors.sol";
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 abstract contract BridgeMessenger is IBridgeErrors {
     event FundsReceived(address indexed sender, uint256 value);
-    event SourceGovernorUpdated(address indexed sourceGovernor);
 
     // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
     // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
     uint256 public constant DEFAULT_DATA_LENGTH = 36;
-    // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
-    address public sourceGovernor;
 
     /// @dev Receives native network token.
     receive() external payable {
         emit FundsReceived(msg.sender, msg.value);
-    }
-
-    /// @dev Changes the source governor address (original Timelock).
-    /// @notice The only way to change the source governor address is by the Timelock on L1 to request that change.
-    ///         This triggers a self-contract transaction of BridgeMessenger that changes the source governor address.
-    /// @param newSourceGovernor New source governor address.
-    function changeSourceGovernor(address newSourceGovernor) external virtual {
-        // Check if the change is authorized by the previous governor itself
-        // This is possible only if all the checks in the message process function pass and the contract calls itself
-        if (msg.sender != address(this)) {
-            revert SelfCallOnly(msg.sender, address(this));
-        }
-
-        // Check for the zero address
-        if (newSourceGovernor == address(0)) {
-            revert ZeroAddress();
-        }
-
-        sourceGovernor = newSourceGovernor;
-        emit SourceGovernorUpdated(newSourceGovernor);
     }
 
     /// @dev Processes received data.

@@ -13,10 +13,13 @@ interface ICrossDomainMessenger {
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract OptimismMessenger is BridgeMessenger {
+    event SourceGovernorUpdated(address indexed sourceGovernor);
     event MessageReceived(address indexed sourceMessageSender, bytes data);
 
     // CDM Contract Proxy (Home) address on L2 that receives the message across the bridge from the source L1 network
     address public immutable CDMContractProxyHome;
+    // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
+    address public sourceGovernor;
 
     /// @dev OptimismMessenger constructor.
     /// @param _CDMContractProxyHome CDM Contract Proxy (Home) address (Optimism).
@@ -29,6 +32,26 @@ contract OptimismMessenger is BridgeMessenger {
 
         CDMContractProxyHome = _CDMContractProxyHome;
         sourceGovernor = _sourceGovernor;
+    }
+
+    /// @dev Changes the source governor address (original Timelock).
+    /// @notice The only way to change the source governor address is by the Timelock on L1 to request that change.
+    ///         This triggers a self-contract transaction of BridgeMessenger that changes the source governor address.
+    /// @param newSourceGovernor New source governor address.
+    function changeSourceGovernor(address newSourceGovernor) external virtual {
+        // Check if the change is authorized by the previous governor itself
+        // This is possible only if all the checks in the message process function pass and the contract calls itself
+        if (msg.sender != address(this)) {
+            revert SelfCallOnly(msg.sender, address(this));
+        }
+
+        // Check for the zero address
+        if (newSourceGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        sourceGovernor = newSourceGovernor;
+        emit SourceGovernorUpdated(newSourceGovernor);
     }
 
     /// @dev Processes a message received from the CDM Contract Proxy (Home) contract.
