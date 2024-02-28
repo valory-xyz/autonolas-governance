@@ -102,9 +102,9 @@ async function main() {
     const balanceETHBefore = await celoAlfajoresProvider.getBalance(EOAceloAlfajores.address);
 
     // Build the final payload to be passed from the imaginary Timelock
-    const sendPayloadSelector = "0x8fecdd02";
+    const sendPayloadSelector = "0x4b5ca6f4";
     const timelockPayload = await wormholeRelayer.interface.encodeFunctionData(sendPayloadSelector, [targetChain,
-        wormholeMessengerAddress, data, 0, minGasLimit]);
+        wormholeMessengerAddress, data, 0, minGasLimit, targetChain, wormholeMessengerAddress]);
 
     // Send the message to celoAlfajores receiver
     tx = await mockTimelock.connect(EOAsepolia).execute(timelockPayload, { value: transferCost.nativePriceQuote });
