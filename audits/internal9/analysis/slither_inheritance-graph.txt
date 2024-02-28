@@ -1,0 +1,14 @@
+'solc --version' running
+'solc ./OptimismMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+Compilation warnings/errors on ./OptimismMessenger-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> OptimismMessenger-flatten.sol
+
+
+'solc --version' running
+'solc ./WormholeMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+INFO:Printers:Inheritance Graph: ./OptimismMessenger-flatten.sol.inheritance-graph.dot
+
+INFO:Printers:Inheritance Graph: ./WormholeMessenger-flatten.sol.inheritance-graph.dot
+
+INFO:Slither:. analyzed (3 contracts)
