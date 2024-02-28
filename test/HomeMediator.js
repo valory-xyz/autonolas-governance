@@ -16,7 +16,7 @@ describe("HomeMediator", function () {
         deployer = signers[0];
 
         // Deploy the mock of AMBMediator contract
-        const AMBMediator = await ethers.getContractFactory("MockAMBMediator");
+        const AMBMediator = await ethers.getContractFactory("MockL2Relayer");
         ambMediator = await AMBMediator.deploy(deployer.address, deployer.address);
         await ambMediator.deployed();
 
@@ -26,7 +26,7 @@ describe("HomeMediator", function () {
         await homeMediator.deployed();
 
         // Change the HomeMediator contract address in the AMBMediator
-        await ambMediator.changeHomeMediator(homeMediator.address);
+        await ambMediator.changeBridgeMessenger(homeMediator.address);
 
         // OLAS represents a contract deployed on L2
         const OLAS = await ethers.getContractFactory("OLAS");

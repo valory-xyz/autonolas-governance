@@ -1,71 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-/// @dev Provided zero address.
-error ZeroAddress();
-
-/// @dev Provided zero value.
-error ZeroValue();
-
-/// @dev Only self contract is allowed to call the function.
-/// @param sender Sender address.
-/// @param instance Required contract instance address.
-error SelfCallOnly(address sender, address instance);
-
-/// @dev Only `wormholeRelayer` is allowed to call the function.
-/// @param sender Sender address.
-/// @param wormholeRelayer Required L2 Wormhole Relayer address.
-error wormholeRelayerOnly(address sender, address wormholeRelayer);
-
-/// @dev Wrong source chain Id.
-/// @param received Chain Id received.
-/// @param required Required chain Id.
-error WrongSourceChainId(uint256 received, uint256 required);
-
-/// @dev Only on behalf of `sourceGovernor` the function is allowed to process the data.
-/// @param sender Sender address.
-/// @param sourceGovernor Required source governor address.
-error SourceGovernorOnly(address sender, address sourceGovernor);
-
-/// @dev The message with a specified hash has already been delivered.
-/// @param deliveryHash Delivery hash.
-error AlreadyDelivered(bytes32 deliveryHash);
-
-/// @dev Provided incorrect data length.
-/// @param expected Expected minimum data length.
-/// @param provided Provided data length.
-error IncorrectDataLength(uint256 expected, uint256 provided);
-
-/// @dev Provided value is bigger than the actual balance.
-/// @param value Provided value.
-/// @param balance Actual balance.
-error InsufficientBalance(uint256 value, uint256 balance);
-
-/// @dev Target execution failed.
-/// @param target Target address.
-/// @param value Provided value.
-/// @param payload Provided payload.
-error TargetExecFailed(address target, uint256 value, bytes payload);
+import {BridgeMessenger} from "./BridgeMessenger.sol";
 
 /// @title WormholeMessenger - Smart contract for the governor bridge communication via wormhole
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
-contract WormholeMessenger {
-    event FundsReceived(address indexed sender, uint256 value);
-    event SourceGovernorUpdated(address indexed sourceMessageSender);
+contract WormholeMessenger is BridgeMessenger {
     event MessageReceived(address indexed sourceMessageSender, bytes data, bytes32 deliveryHash, uint256 sourceChain);
 
-    // Default payload data length includes the number of bytes of at least one address (20 bytes or 160 bits),
-    // value (12 bytes or 96 bits) and the payload size (4 bytes or 32 bits)
-    uint256 public constant DEFAULT_DATA_LENGTH = 36;
     // L2 Wormhole Relayer address that receives the message across the bridge from the source L1 network
     address public immutable wormholeRelayer;
     // Source governor chain Id
     uint16 public immutable sourceGovernorChainId;
     // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
-    address public sourceGovernor;
-    // Mapping of delivery hashes
     mapping(bytes32 => bool) public mapDeliveryHashes;
 
     /// @dev WormholeMessenger constructor.
@@ -88,31 +37,6 @@ contract WormholeMessenger {
         sourceGovernorChainId = _sourceGovernorChainId;
     }
 
-    /// @dev Receives native network token.
-    receive() external payable {
-        emit FundsReceived(msg.sender, msg.value);
-    }
-
-    /// @dev Changes the source governor address (original Timelock).
-    /// @notice The only way to change the source governor address is by the Timelock on L1 to request that change.
-    ///         This triggers a self-contract transaction of WormholeMessenger that changes the source governor address.
-    /// @param newSourceGovernor New source governor address.
-    function changeSourceGovernor(address newSourceGovernor) external {
-        // Check if the change is authorized by the previous governor itself
-        // This is possible only if all the checks in the message process function pass and the contract calls itself
-        if (msg.sender != address(this)) {
-            revert SelfCallOnly(msg.sender, address(this));
-        }
-
-        // Check for the zero address
-        if (newSourceGovernor == address(0)) {
-            revert ZeroAddress();
-        }
-
-        sourceGovernor = newSourceGovernor;
-        emit SourceGovernorUpdated(newSourceGovernor);
-    }
-
     /// @dev Processes a message received from L2 Wormhole Relayer contract.
     /// @notice The sender must be the source governor address (Timelock).
     /// @param data Bytes message sent from L2 Wormhole Relayer contract. The data must be encoded as a set of
@@ -133,7 +57,7 @@ contract WormholeMessenger {
     ) external payable {
         // Check L2 Wormhole Relayer address
         if (msg.sender != wormholeRelayer) {
-            revert wormholeRelayerOnly(msg.sender, wormholeRelayer);
+            revert TargetRelayerOnly(msg.sender, wormholeRelayer);
         }
 
         // Check the source chain Id
@@ -154,54 +78,8 @@ contract WormholeMessenger {
         }
         mapDeliveryHashes[deliveryHash] = true;
 
-        // Check for the correct data length
-        uint256 dataLength = data.length;
-        if (dataLength < DEFAULT_DATA_LENGTH) {
-            revert IncorrectDataLength(DEFAULT_DATA_LENGTH, data.length);
-        }
-
-        // Unpack and process the data
-        for (uint256 i = 0; i < dataLength;) {
-            address target;
-            uint96 value;
-            uint32 payloadLength;
-            // solhint-disable-next-line no-inline-assembly
-            assembly {
-                // First 20 bytes is the address (160 bits)
-                i := add(i, 20)
-                target := mload(add(data, i))
-                // Offset the data by 12 bytes of value (96 bits)
-                i := add(i, 12)
-                value := mload(add(data, i))
-                // Offset the data by 4 bytes of payload length (32 bits)
-                i := add(i, 4)
-                payloadLength := mload(add(data, i))
-            }
-
-            // Check for the zero address
-            if (target == address(0)) {
-                revert ZeroAddress();
-            }
-
-            // Check for the value compared to the contract's balance
-            if (value > address(this).balance) {
-                revert InsufficientBalance(value, address(this).balance);
-            }
-
-            // Get the payload
-            bytes memory payload = new bytes(payloadLength);
-            for (uint256 j = 0; j < payloadLength; ++j) {
-                payload[j] = data[i + j];
-            }
-            // Offset the data by the payload number of bytes
-            i += payloadLength;
-
-            // Call the target with the provided payload
-            (bool success, ) = target.call{value: value}(payload);
-            if (!success) {
-                revert TargetExecFailed(target, value, payload);
-            }
-        }
+        // Process the data
+        _processData(data);
 
         // Emit received message
         emit MessageReceived(governor, data, deliveryHash, sourceChain);

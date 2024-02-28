@@ -2,6 +2,7 @@
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("buOLAS", function () {
     let olas;
@@ -406,6 +407,29 @@ describe("buOLAS", function () {
             await expect(
                 bu.transferFrom(deployer, user, oneOLASBalance)
             ).to.be.revertedWithCustomError(bu, "NonTransferable");
+        });
+    });
+
+    context("Time sensitive functions.", async function () {
+        it("Should fail when creating a lock after the year of 2106", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            const account = signers[1].address;
+            await olas.approve(bu.address, oneOLASBalance);
+
+            // Define 4 years for the lock duration
+            const numSteps = 4;
+
+            // Move time to the year 2106
+            const year2106 = 4291821394;
+            await helpers.time.increase(year2106);
+            await expect(
+                bu.createLockFor(account, oneOLASBalance, numSteps)
+            ).to.be.revertedWithCustomError(bu, "Overflow");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 });
