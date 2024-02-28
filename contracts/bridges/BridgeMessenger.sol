@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import {IBridgeErrors} from "../interfaces/IBridgeErrors.sol";
 
-/// @title BridgeMessenger - Smart contract for the governor bridge communication via wormhole
+/// @title BridgeMessenger - Abstract smart contract for the bridge communication data processing
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
@@ -20,7 +20,7 @@ abstract contract BridgeMessenger is IBridgeErrors {
     }
 
     /// @dev Processes received data.
-    /// @param data Bytes message sent from L2 Wormhole Relayer contract. The data must be encoded as a set of
+    /// @param data Bytes message sent from L2 Relayer contract. The data must be encoded as a set of
     ///        continuous transactions packed into a single buffer, where each transaction is composed as follows:
     ///        - target address of 20 bytes (160 bits);
     ///        - value of 12 bytes (96 bits), as a limit for all of Autonolas ecosystem contracts;
