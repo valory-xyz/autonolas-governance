@@ -1,0 +1,30 @@
+'solc --version' running
+'solc ./OptimismMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+Compilation warnings/errors on ./OptimismMessenger-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> OptimismMessenger-flatten.sol
+
+
+'solc --version' running
+'solc ./WormholeMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+INFO:Printers:
++ Contract ICrossDomainMessenger (Most derived contract)
+  - From ICrossDomainMessenger
+    - xDomainMessageSender() (external)
+
++ Contract OptimismMessenger (Most derived contract)
+  - From OptimismMessenger
+    - changeForeignGovernor(address) (external)
+    - constructor(address,address) (public)
+    - processMessageFromForeign(bytes) (external)
+    - receive() (external)
+
+INFO:Printers:
++ Contract WormholeMessenger (Most derived contract)
+  - From WormholeMessenger
+    - changeSourceGovernor(address) (external)
+    - constructor(address,address,uint16) (public)
+    - receive() (external)
+    - receiveWormholeMessages(bytes,bytes[],bytes32,uint16,bytes32) (external)
+
+INFO:Slither:. analyzed (3 contracts)

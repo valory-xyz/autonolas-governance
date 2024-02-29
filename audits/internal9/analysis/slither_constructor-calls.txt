@@ -1,0 +1,60 @@
+'solc --version' running
+'solc ./OptimismMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+Compilation warnings/errors on ./OptimismMessenger-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> OptimismMessenger-flatten.sol
+
+
+'solc --version' running
+'solc ./WormholeMessenger-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal9/analysis/contracts' running
+INFO:Printers:
+#################################
+####### OptimismMessenger #######
+#################################
+
+## Constructor Call Sequence
+	- OptimismMessenger
+
+## Constructor Definitions
+
+### OptimismMessenger
+
+     constructor(address _CDMContractProxyHome, address _foreignGovernor) {
+        // Check fo zero addresses
+        if (_CDMContractProxyHome == address(0) || _foreignGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        CDMContractProxyHome = _CDMContractProxyHome;
+        foreignGovernor = _foreignGovernor;
+    }
+
+INFO:Printers:
+#################################
+####### WormholeMessenger #######
+#################################
+
+## Constructor Call Sequence
+	- WormholeMessenger
+
+## Constructor Definitions
+
+### WormholeMessenger
+
+     constructor(address _wormholeRelayer, address _sourceGovernor, uint16 _sourceGovernorChainId) {
+        // Check for zero addresses
+        if (_wormholeRelayer == address(0) || _sourceGovernor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        // Check source governor chain Id
+        if (_sourceGovernorChainId == 0) {
+            revert ZeroValue();
+        }
+
+        wormholeRelayer = _wormholeRelayer;
+        sourceGovernor = _sourceGovernor;
+        sourceGovernorChainId = _sourceGovernorChainId;
+    }
+
+INFO:Slither:. analyzed (3 contracts)
