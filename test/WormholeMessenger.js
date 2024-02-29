@@ -3,30 +3,34 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("HomeMediator", function () {
-    let ambMediator;
-    let homeMediator;
+describe("WormholeMessenger", function () {
+    let targetRelayer;
+    let wormholeMessenger;
     let olas;
     let signers;
     let deployer;
     const AddressZero = ethers.constants.AddressZero;
+    const Bytes32Zero = "0x" + "0".repeat(64);
+    const sourceChain = 2;
+    const addressPrefix = "0x" + "0".repeat(24);
 
     beforeEach(async function () {
         signers = await ethers.getSigners();
         deployer = signers[0];
 
-        // Deploy the mock of AMBMediator contract
-        const AMBMediator = await ethers.getContractFactory("MockL2Relayer");
-        ambMediator = await AMBMediator.deploy(deployer.address, deployer.address);
-        await ambMediator.deployed();
+        // Deploy the mock of TargetRelayer contract
+        const TargetRelayer = await ethers.getContractFactory("MockL2Relayer");
+        targetRelayer = await TargetRelayer.deploy(deployer.address, deployer.address);
+        await targetRelayer.deployed();
 
         // The deployer is the analogue of the Timelock on L1 and the FxRoot mock on L1 as well
-        const HomeMediator = await ethers.getContractFactory("HomeMediator");
-        homeMediator = await HomeMediator.deploy(ambMediator.address, deployer.address);
-        await homeMediator.deployed();
+        const WormholeMessenger = await ethers.getContractFactory("WormholeMessenger");
+        wormholeMessenger = await WormholeMessenger.deploy(targetRelayer.address,
+            addressPrefix + deployer.address.slice(2), sourceChain);
+        await wormholeMessenger.deployed();
 
-        // Change the HomeMediator contract address in the AMBMediator
-        await ambMediator.changeBridgeMessenger(homeMediator.address);
+        // Change the WormholeMessenger contract address in the TargetRelayer
+        await targetRelayer.changeBridgeMessenger(wormholeMessenger.address);
 
         // OLAS represents a contract deployed on L2
         const OLAS = await ethers.getContractFactory("OLAS");
@@ -36,40 +40,50 @@ describe("HomeMediator", function () {
 
     context("Initialization", async function () {
         it("Deploying with zero addresses", async function () {
-            const HomeMediator = await ethers.getContractFactory("HomeMediator");
+            const WormholeMessenger = await ethers.getContractFactory("WormholeMessenger");
             await expect(
-                HomeMediator.deploy(AddressZero, AddressZero)
-            ).to.be.revertedWithCustomError(homeMediator, "ZeroAddress");
+                WormholeMessenger.deploy(AddressZero, Bytes32Zero, 0)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "ZeroAddress");
 
             await expect(
-                HomeMediator.deploy(signers[1].address, AddressZero)
-            ).to.be.revertedWithCustomError(homeMediator, "ZeroAddress");
+                WormholeMessenger.deploy(signers[1].address, Bytes32Zero, 0)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "ZeroValue");
+
+            await expect(
+                WormholeMessenger.deploy(signers[1].address, addressPrefix + signers[2].address.slice(2), 0)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "ZeroValue");
         });
     });
 
-    context("Process message from foreign", async function () {
-        it("Should fail when trying to call from incorrect contract addresses", async function () {
+    context("Process message from source", async function () {
+        it("Should fail when trying to call from incorrect contract addresses and chain Id", async function () {
             await expect(
-                homeMediator.connect(deployer).processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "AMBContractProxyHomeOnly");
+                wormholeMessenger.connect(deployer).receiveWormholeMessages("0x", [], Bytes32Zero, 0, Bytes32Zero)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "TargetRelayerOnly");
 
-            // Simulate incorrect foreignGovernor address
-            await ambMediator.changeForeignGovernor(AddressZero);
+            // Simulate incorrect sourceGovernor address
+            await targetRelayer.changeSourceGovernor(AddressZero);
             await expect(
-                ambMediator.processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "ForeignGovernorOnly");
+                targetRelayer.receiveWormholeMessages("0x")
+            ).to.be.revertedWithCustomError(wormholeMessenger, "SourceGovernorOnly32");
+
+            // Simulate incorrect source chain Id
+            await targetRelayer.changeSourceChain(0);
+            await expect(
+                targetRelayer.receiveWormholeMessages("0x")
+            ).to.be.revertedWithCustomError(wormholeMessenger, "WrongSourceChainId");
         });
 
         it("Should fail when trying to process message with the incorrect minimal payload length", async function () {
             await expect(
-                ambMediator.processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "IncorrectDataLength");
+                targetRelayer.receiveWormholeMessages("0x")
+            ).to.be.revertedWithCustomError(wormholeMessenger, "IncorrectDataLength");
         });
 
-        it("Should fail when trying to change the foreign governor from any other contract / EOA", async function () {
+        it("Should fail when trying to change the source governor from any other contract / EOA", async function () {
             await expect(
-                homeMediator.connect(deployer).changeForeignGovernor(signers[1].address)
-            ).to.be.revertedWithCustomError(homeMediator, "SelfCallOnly");
+                wormholeMessenger.connect(deployer).changeSourceGovernor(addressPrefix + signers[1].address.slice(2))
+            ).to.be.revertedWithCustomError(wormholeMessenger, "SelfCallOnly");
         });
 
         it("Should fail when trying to call with the zero address", async function () {
@@ -82,8 +96,8 @@ describe("HomeMediator", function () {
             );
 
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "ZeroAddress");
+                targetRelayer.receiveWormholeMessages(data)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "ZeroAddress");
         });
 
         it("Should fail when trying to call with the incorrectly provided payload", async function () {
@@ -97,13 +111,13 @@ describe("HomeMediator", function () {
             );
 
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "TargetExecFailed");
+                targetRelayer.receiveWormholeMessages(data)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "TargetExecFailed");
         });
 
         it("Unpack the data and call one specified target on the OLAS contract", async function () {
-            // Minter of OLAS must be the homeMediator contract
-            await olas.connect(deployer).changeMinter(homeMediator.address);
+            // Minter of OLAS must be the wormholeMessenger contract
+            await olas.connect(deployer).changeMinter(wormholeMessenger.address);
 
             // OLAS contract across the bridge must mint 100 OLAS for the deployer
             const amountToMint = 100;
@@ -119,22 +133,27 @@ describe("HomeMediator", function () {
             );
 
             // Execute the unpacked transaction
-            await ambMediator.processMessageFromForeign(data);
+            await targetRelayer.receiveWormholeMessages(data);
 
             // Check that OLAS tokens were minted to the deployer
             const balance = Number(await olas.balanceOf(deployer.address));
             expect(balance).to.equal(amountToMint);
+
+            // Try to unpack with the same delivery hash
+            await expect(
+                targetRelayer.receiveWormholeMessages(data)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "AlreadyDelivered");
         });
 
         it("Unpack the data and call two specified targets on the OLAS contract", async function () {
-            // Minter of OLAS must be the homeMediator contract
-            await olas.connect(deployer).changeMinter(homeMediator.address);
-            // Change OLAS owner to the homeMediator contract
-            await olas.connect(deployer).changeOwner(homeMediator.address);
+            // Minter of OLAS must be the wormholeMessenger contract
+            await olas.connect(deployer).changeMinter(wormholeMessenger.address);
+            // Change OLAS owner to the wormholeMessenger contract
+            await olas.connect(deployer).changeOwner(wormholeMessenger.address);
 
             // FxGivernorTunnel changes the minter to self as being the owner, then mint 100 OLAS for the deployer
             const amountToMint = 100;
-            const payloads = [olas.interface.encodeFunctionData("changeMinter", [homeMediator.address]),
+            const payloads = [olas.interface.encodeFunctionData("changeMinter", [wormholeMessenger.address]),
                 olas.interface.encodeFunctionData("mint", [deployer.address, amountToMint])];
 
             // Pack the data into one contiguous buffer
@@ -151,18 +170,19 @@ describe("HomeMediator", function () {
             }
 
             // Execute the unpacked transaction
-            await ambMediator.processMessageFromForeign(data);
+            await targetRelayer.receiveWormholeMessages(data);
 
             // Check that OLAS tokens were minted to the deployer
             const balance = Number(await olas.balanceOf(deployer.address));
             expect(balance).to.equal(amountToMint);
         });
 
-        it("Change the foreign governor", async function () {
-            const rawPayload = homeMediator.interface.encodeFunctionData("changeForeignGovernor", [signers[1].address]);
+        it("Change the source governor", async function () {
+            const rawPayload = wormholeMessenger.interface.encodeFunctionData("changeSourceGovernor",
+                [addressPrefix + signers[1].address.slice(2)]);
 
             // Pack the data into one contiguous buffer
-            const target = homeMediator.address;
+            const target = wormholeMessenger.address;
             const value = 0;
             const payload = ethers.utils.arrayify(rawPayload);
             const data = ethers.utils.solidityPack(
@@ -171,18 +191,18 @@ describe("HomeMediator", function () {
             );
 
             // Execute the unpacked transaction
-            await ambMediator.processMessageFromForeign(data);
+            await targetRelayer.receiveWormholeMessages(data);
 
-            // Check that the new foreign governor is signers[1].address
-            const foreignGovernor = await homeMediator.foreignGovernor();
-            expect(foreignGovernor).to.equal(signers[1].address);
+            // Check that the new source governor is signers[1].address
+            const sourceGovernor = await wormholeMessenger.sourceGovernor();
+            expect(sourceGovernor).to.equal((addressPrefix + signers[1].address.slice(2)).toLowerCase());
         });
 
-        it("Should fail when trying to change the foreign governor to the zero address", async function () {
-            const rawPayload = homeMediator.interface.encodeFunctionData("changeForeignGovernor", [AddressZero]);
+        it("Should fail when trying to change the source governor to the zero address", async function () {
+            const rawPayload = wormholeMessenger.interface.encodeFunctionData("changeSourceGovernor", [Bytes32Zero]);
 
             // Pack the data into one contiguous buffer
-            const target = homeMediator.address;
+            const target = wormholeMessenger.address;
             const value = 0;
             const payload = ethers.utils.arrayify(rawPayload);
             const data = ethers.utils.solidityPack(
@@ -192,8 +212,8 @@ describe("HomeMediator", function () {
 
             // Execute the unpacked transaction
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "TargetExecFailed");
+                targetRelayer.receiveWormholeMessages(data)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "TargetExecFailed");
         });
 
         it("Unpack the data and call one specified target to send funds", async function () {
@@ -209,15 +229,15 @@ describe("HomeMediator", function () {
 
             // Try to execute the unpacked transaction without the contract having enough balance
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "InsufficientBalance");
+                targetRelayer.receiveWormholeMessages(data)
+            ).to.be.revertedWithCustomError(wormholeMessenger, "InsufficientBalance");
 
             // Send funds to the contract
-            await deployer.sendTransaction({to: homeMediator.address, value: amount});
+            await deployer.sendTransaction({to: wormholeMessenger.address, value: amount});
 
             // Now the funds can be transferred
             const balanceBefore = await ethers.provider.getBalance(deployer.address);
-            const tx = await ambMediator.processMessageFromForeign(data);
+            const tx = await targetRelayer.receiveWormholeMessages(data);
             const receipt = await tx.wait();
             const gasCost = ethers.BigNumber.from(receipt.gasUsed).mul(ethers.BigNumber.from(tx.gasPrice));
             const balanceAfter = await ethers.provider.getBalance(deployer.address);
@@ -228,8 +248,8 @@ describe("HomeMediator", function () {
         it("Unpack the data and call one specified target to send funds and to mint OLAS", async function () {
             const amount = ethers.utils.parseEther("1");
             const amountToMint = 100;
-            // Minter of OLAS must be the homeMediator contract
-            await olas.connect(deployer).changeMinter(homeMediator.address);
+            // Minter of OLAS must be the wormholeMessenger contract
+            await olas.connect(deployer).changeMinter(wormholeMessenger.address);
 
             // Pack the first part of data with the zero payload
             let target = deployer.address;
@@ -252,11 +272,11 @@ describe("HomeMediator", function () {
             ).slice(2);
 
             // Send funds to the contract
-            await deployer.sendTransaction({to: homeMediator.address, value: amount});
+            await deployer.sendTransaction({to: wormholeMessenger.address, value: amount});
 
             // Execute the function and check for the deployer balance
             const balanceBefore = await ethers.provider.getBalance(deployer.address);
-            const tx = await ambMediator.processMessageFromForeign(data);
+            const tx = await targetRelayer.receiveWormholeMessages(data);
             const receipt = await tx.wait();
             const gasCost = ethers.BigNumber.from(receipt.gasUsed).mul(ethers.BigNumber.from(tx.gasPrice));
             const balanceAfter = await ethers.provider.getBalance(deployer.address);
