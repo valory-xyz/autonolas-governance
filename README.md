@@ -155,14 +155,46 @@ For running a test between `goerli` and `chiado`, run the test script with your 
 and [`goerli-chiado` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
-### ERC20 token bridging between Polygon and Ethereum
-The contract design facilitating token bridging between the Polygon and Ethereum networks, along with the underlying motivations driving the creation of these contracts, is outlined here:
-[Bridging token](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Bonding_mechanism_with_Polygon_LP_token.pdf?raw=true). 
+#### Arbitrum governance bridge
+Autonolas will use the [Address Aliasing](https://docs.arbitrum.io/arbos/l1-to-l2-messaging#address-aliasing) mechanism
+in order to directly send messages between L1 and L2 via the Inbox.
+
+#### Optimism and Base governance bridge
+Autonolas will use the [L1 Cross Domain Messenger](https://docs.optimism.io/builders/dapp-developers/bridging/messaging)
+developed and designed by the Optimism team to support cross-chain bridging from Ethereum to Optimism / Base Chains.
+
+For running a test between L1 `sepolia` and L2 `sepolia`, run the test script with your own credentials:
+[`sepolia-optimistic-sepolia` governor bridge test](scripts/deployment/bridges/optimistic/test/messenger_sepolia_optimistic_sepolia_governor.js)
+and [`sepolia-base-sepolia` governor bridge test](scripts/deployment/bridges/optimistic/test/messenger_sepolia_base_sepolia_governor.js).
+Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
+
+#### Wormhole governance bridge
+Note that if a native bridge is not available on a specific network, the [Wormhole](https://docs.wormhole.com/wormhole/)
+message passing protocol is utilized in order to manage the data transfer between L1 and L2-s. For example, this is
+the case for the Celo network.
+
+For running a test between L1 `sepolia` and L2 `celo alfajores`, run the test script with your own credentials:
+[`sepolia-celo-alfajores` governor bridge test](scripts/deployment/bridges/wormhole/test/messenger_sepolia_celo_alfajores_governor.js).
+Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 ### Deployment of bridge-related contracts
 The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here:
 - [bridges-polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon);
-- [bridges-gnosis](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis).
+- [bridges-gnosis](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis);
+- [bridges-optimism-base](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/optimistic);
+- [bridges-wormhole](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/wormhole).
+
+### ERC20 token bridging
+Autonolas will use native bridges for ERC20 token transfers, where possible. If a native bridge is not available or
+does not correspond to all the required specifications, the [Wormhole Portal](https://portalbridge.com/advanced-tools/#/transfer)
+is utilized in order to manage the ERC20 token transfers between L1 and L2-s.
+
+For more information about OLAS bridging see [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/olas_bridging.md)  
+
+#### Special case (currently not utilized): ERC20 token bridging between Polygon and Ethereum
+The contract design facilitating token bridging between the Polygon and Ethereum networks, along with the underlying
+motivations driving the creation of these contracts, is outlined here:
+[Bridging token](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Bonding_mechanism_with_Polygon_LP_token.pdf?raw=true).
 
 The description of ERC20 token bridging deployment between Polygon and Ethereum can be found here:
 [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).

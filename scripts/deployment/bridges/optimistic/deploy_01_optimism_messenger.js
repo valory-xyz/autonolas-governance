@@ -47,7 +47,7 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/optimistic/verify_01_home_mediator.js --network " + providerName + " " + optimismMessenger.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/optimistic/verify_01_optimism_messenger.js --network " + providerName + " " + optimismMessenger.address, { encoding: "utf-8" });
     }
 }
 

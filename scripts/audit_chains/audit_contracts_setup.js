@@ -364,9 +364,31 @@ async function checkOptimismMessenger(chainId, provider, globalsInstance, config
     const foreignGovernor = await optimismMessenger.foreignGovernor();
     customExpect(foreignGovernor, globalsInstance["timelockAddress"], log + ", function: foreignGovernor()");
 
-    // Check AMBContractProxyHomeAddress
+    // Check L2CrossDomainMessengerAddress
     const proxyHome = await optimismMessenger.CDMContractProxyHome();
     customExpect(proxyHome, globalsInstance["L2CrossDomainMessengerAddress"], log + ", function: CDMContractProxyHome()");
+}
+
+// Check WormholeMessenger: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkWormholeMessenger(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const wormholeMessenger = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + wormholeMessenger.address;
+    // Check the source governor
+    const foreignGovernor = await wormholeMessenger.sourceGovernor();
+    customExpect(foreignGovernor, globalsInstance["timelockAddress"], log + ", function: sourceGovernor()");
+
+    // Check L2WormholeRelayerAddress
+    const proxyHome = await wormholeMessenger.wormholeRelayer();
+    customExpect(proxyHome, globalsInstance["L2WormholeRelayerAddress"], log + ", function: wormholeRelayer()");
+
+    // Check source governor chain Id
+    const proxyHome = await wormholeMessenger.sourceGovernorChainId();
+    customExpect(proxyHome, globalsInstance["sourceGovernorChainId"], log + ", function: sourceGovernorChainId()");
 }
 
 async function main() {
@@ -433,7 +455,9 @@ async function main() {
             "optimistic": "scripts/deployment/bridges/optimistic/globals_optimistic_mainnet.json",
             "optimisticSepolia": "scripts/deployment/bridges/optimistic/globals_optimistic_sepolia.json",
             "base": "scripts/deployment/bridges/base/globals_base_mainnet.json",
-            "baseSepolia": "scripts/deployment/bridges/base/globals_base_sepolia.json"
+            "baseSepolia": "scripts/deployment/bridges/base/globals_base_sepolia.json",
+            "celo": "scripts/deployment/bridges/wormhole/globals_celo_mainnet.json",
+            "celoAlfajores": "scripts/deployment/bridges/wormhole/globals_celo_alfajores.json"
         };
 
         const providerLinks = {
@@ -446,7 +470,9 @@ async function main() {
             "optimistic": "https://optimism.drpc.org",
             "optimisticSepolia": "https://sepolia.optimism.io",
             "base": "https://mainnet.base.org",
-            "baseSepolia": "https://sepolia.base.org"
+            "baseSepolia": "https://sepolia.base.org",
+            "celo": "https://forno.celo.org",
+            "celoAlfajores": "https://alfajores-forno.celo-testnet.org"
         };
 
         // Get all the globals processed
@@ -498,7 +524,7 @@ async function main() {
         // L2 contracts
         for (let i = 2; i < numChains; i++) {
             // Skip chains that are not yet fully setup
-            if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453") {
+            if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "42220") {
                 continue;
             }
 
@@ -518,6 +544,9 @@ async function main() {
             } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "11155420" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "84532") {
                 let log = initLog + ", contract: " + "OptimismMessenger";
                 await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
+            } else if (configs[i]["chainId"] == "42220" || configs[i]["chainId"] == "44787") {
+                let log = initLog + ", contract: " + "WormholeMessenger";
+                await checkWormholeMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "WormholeMessenger", log);
             }
         }
     }
