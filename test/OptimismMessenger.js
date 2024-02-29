@@ -3,9 +3,9 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("HomeMediator", function () {
-    let ambMediator;
-    let homeMediator;
+describe("OptimismMessenger", function () {
+    let cdmContractProxy;
+    let optimismMessenger;
     let olas;
     let signers;
     let deployer;
@@ -15,18 +15,18 @@ describe("HomeMediator", function () {
         signers = await ethers.getSigners();
         deployer = signers[0];
 
-        // Deploy the mock of AMBMediator contract
-        const AMBMediator = await ethers.getContractFactory("MockL2Relayer");
-        ambMediator = await AMBMediator.deploy(deployer.address, deployer.address);
-        await ambMediator.deployed();
+        // Deploy the mock of CDMContractProxy contract
+        const CDMContractProxy = await ethers.getContractFactory("MockL2Relayer");
+        cdmContractProxy = await CDMContractProxy.deploy(deployer.address, deployer.address);
+        await cdmContractProxy.deployed();
 
         // The deployer is the analogue of the Timelock on L1 and the FxRoot mock on L1 as well
-        const HomeMediator = await ethers.getContractFactory("HomeMediator");
-        homeMediator = await HomeMediator.deploy(ambMediator.address, deployer.address);
-        await homeMediator.deployed();
+        const OptimismMessenger = await ethers.getContractFactory("OptimismMessenger");
+        optimismMessenger = await OptimismMessenger.deploy(cdmContractProxy.address, deployer.address);
+        await optimismMessenger.deployed();
 
-        // Change the HomeMediator contract address in the AMBMediator
-        await ambMediator.changeBridgeMessenger(homeMediator.address);
+        // Change the OptimismMessenger contract address in the CDMContractProxy
+        await cdmContractProxy.changeBridgeMessenger(optimismMessenger.address);
 
         // OLAS represents a contract deployed on L2
         const OLAS = await ethers.getContractFactory("OLAS");
@@ -36,40 +36,40 @@ describe("HomeMediator", function () {
 
     context("Initialization", async function () {
         it("Deploying with zero addresses", async function () {
-            const HomeMediator = await ethers.getContractFactory("HomeMediator");
+            const OptimismMessenger = await ethers.getContractFactory("OptimismMessenger");
             await expect(
-                HomeMediator.deploy(AddressZero, AddressZero)
-            ).to.be.revertedWithCustomError(homeMediator, "ZeroAddress");
+                OptimismMessenger.deploy(AddressZero, AddressZero)
+            ).to.be.revertedWithCustomError(optimismMessenger, "ZeroAddress");
 
             await expect(
-                HomeMediator.deploy(signers[1].address, AddressZero)
-            ).to.be.revertedWithCustomError(homeMediator, "ZeroAddress");
+                OptimismMessenger.deploy(signers[1].address, AddressZero)
+            ).to.be.revertedWithCustomError(optimismMessenger, "ZeroAddress");
         });
     });
 
-    context("Process message from foreign", async function () {
+    context("Process message from source", async function () {
         it("Should fail when trying to call from incorrect contract addresses", async function () {
             await expect(
-                homeMediator.connect(deployer).processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "AMBContractProxyHomeOnly");
+                optimismMessenger.connect(deployer).processMessageFromSource("0x")
+            ).to.be.revertedWithCustomError(optimismMessenger, "TargetRelayerOnly");
 
-            // Simulate incorrect foreignGovernor address
-            await ambMediator.changeForeignGovernor(AddressZero);
+            // Simulate incorrect sourceGovernor address
+            await cdmContractProxy.changeSourceGovernor(AddressZero);
             await expect(
-                ambMediator.processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "ForeignGovernorOnly");
+                cdmContractProxy.processMessageFromSource("0x")
+            ).to.be.revertedWithCustomError(optimismMessenger, "SourceGovernorOnly");
         });
 
         it("Should fail when trying to process message with the incorrect minimal payload length", async function () {
             await expect(
-                ambMediator.processMessageFromForeign("0x")
-            ).to.be.revertedWithCustomError(homeMediator, "IncorrectDataLength");
+                cdmContractProxy.processMessageFromSource("0x")
+            ).to.be.revertedWithCustomError(optimismMessenger, "IncorrectDataLength");
         });
 
-        it("Should fail when trying to change the foreign governor from any other contract / EOA", async function () {
+        it("Should fail when trying to change the source governor from any other contract / EOA", async function () {
             await expect(
-                homeMediator.connect(deployer).changeForeignGovernor(signers[1].address)
-            ).to.be.revertedWithCustomError(homeMediator, "SelfCallOnly");
+                optimismMessenger.connect(deployer).changeSourceGovernor(signers[1].address)
+            ).to.be.revertedWithCustomError(optimismMessenger, "SelfCallOnly");
         });
 
         it("Should fail when trying to call with the zero address", async function () {
@@ -82,8 +82,8 @@ describe("HomeMediator", function () {
             );
 
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "ZeroAddress");
+                cdmContractProxy.processMessageFromSource(data)
+            ).to.be.revertedWithCustomError(optimismMessenger, "ZeroAddress");
         });
 
         it("Should fail when trying to call with the incorrectly provided payload", async function () {
@@ -97,13 +97,13 @@ describe("HomeMediator", function () {
             );
 
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "TargetExecFailed");
+                cdmContractProxy.processMessageFromSource(data)
+            ).to.be.revertedWithCustomError(optimismMessenger, "TargetExecFailed");
         });
 
         it("Unpack the data and call one specified target on the OLAS contract", async function () {
-            // Minter of OLAS must be the homeMediator contract
-            await olas.connect(deployer).changeMinter(homeMediator.address);
+            // Minter of OLAS must be the optimismMessenger contract
+            await olas.connect(deployer).changeMinter(optimismMessenger.address);
 
             // OLAS contract across the bridge must mint 100 OLAS for the deployer
             const amountToMint = 100;
@@ -119,7 +119,7 @@ describe("HomeMediator", function () {
             );
 
             // Execute the unpacked transaction
-            await ambMediator.processMessageFromForeign(data);
+            await cdmContractProxy.processMessageFromSource(data);
 
             // Check that OLAS tokens were minted to the deployer
             const balance = Number(await olas.balanceOf(deployer.address));
@@ -127,14 +127,14 @@ describe("HomeMediator", function () {
         });
 
         it("Unpack the data and call two specified targets on the OLAS contract", async function () {
-            // Minter of OLAS must be the homeMediator contract
-            await olas.connect(deployer).changeMinter(homeMediator.address);
-            // Change OLAS owner to the homeMediator contract
-            await olas.connect(deployer).changeOwner(homeMediator.address);
+            // Minter of OLAS must be the optimismMessenger contract
+            await olas.connect(deployer).changeMinter(optimismMessenger.address);
+            // Change OLAS owner to the optimismMessenger contract
+            await olas.connect(deployer).changeOwner(optimismMessenger.address);
 
             // FxGivernorTunnel changes the minter to self as being the owner, then mint 100 OLAS for the deployer
             const amountToMint = 100;
-            const payloads = [olas.interface.encodeFunctionData("changeMinter", [homeMediator.address]),
+            const payloads = [olas.interface.encodeFunctionData("changeMinter", [optimismMessenger.address]),
                 olas.interface.encodeFunctionData("mint", [deployer.address, amountToMint])];
 
             // Pack the data into one contiguous buffer
@@ -151,18 +151,18 @@ describe("HomeMediator", function () {
             }
 
             // Execute the unpacked transaction
-            await ambMediator.processMessageFromForeign(data);
+            await cdmContractProxy.processMessageFromSource(data);
 
             // Check that OLAS tokens were minted to the deployer
             const balance = Number(await olas.balanceOf(deployer.address));
             expect(balance).to.equal(amountToMint);
         });
 
-        it("Change the foreign governor", async function () {
-            const rawPayload = homeMediator.interface.encodeFunctionData("changeForeignGovernor", [signers[1].address]);
+        it("Change the source governor", async function () {
+            const rawPayload = optimismMessenger.interface.encodeFunctionData("changeSourceGovernor", [signers[1].address]);
 
             // Pack the data into one contiguous buffer
-            const target = homeMediator.address;
+            const target = optimismMessenger.address;
             const value = 0;
             const payload = ethers.utils.arrayify(rawPayload);
             const data = ethers.utils.solidityPack(
@@ -171,18 +171,18 @@ describe("HomeMediator", function () {
             );
 
             // Execute the unpacked transaction
-            await ambMediator.processMessageFromForeign(data);
+            await cdmContractProxy.processMessageFromSource(data);
 
-            // Check that the new foreign governor is signers[1].address
-            const foreignGovernor = await homeMediator.foreignGovernor();
-            expect(foreignGovernor).to.equal(signers[1].address);
+            // Check that the new source governor is signers[1].address
+            const sourceGovernor = await optimismMessenger.sourceGovernor();
+            expect(sourceGovernor).to.equal(signers[1].address);
         });
 
-        it("Should fail when trying to change the foreign governor to the zero address", async function () {
-            const rawPayload = homeMediator.interface.encodeFunctionData("changeForeignGovernor", [AddressZero]);
+        it("Should fail when trying to change the source governor to the zero address", async function () {
+            const rawPayload = optimismMessenger.interface.encodeFunctionData("changeSourceGovernor", [AddressZero]);
 
             // Pack the data into one contiguous buffer
-            const target = homeMediator.address;
+            const target = optimismMessenger.address;
             const value = 0;
             const payload = ethers.utils.arrayify(rawPayload);
             const data = ethers.utils.solidityPack(
@@ -192,8 +192,8 @@ describe("HomeMediator", function () {
 
             // Execute the unpacked transaction
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "TargetExecFailed");
+                cdmContractProxy.processMessageFromSource(data)
+            ).to.be.revertedWithCustomError(optimismMessenger, "TargetExecFailed");
         });
 
         it("Unpack the data and call one specified target to send funds", async function () {
@@ -209,15 +209,15 @@ describe("HomeMediator", function () {
 
             // Try to execute the unpacked transaction without the contract having enough balance
             await expect(
-                ambMediator.processMessageFromForeign(data)
-            ).to.be.revertedWithCustomError(homeMediator, "InsufficientBalance");
+                cdmContractProxy.processMessageFromSource(data)
+            ).to.be.revertedWithCustomError(optimismMessenger, "InsufficientBalance");
 
             // Send funds to the contract
-            await deployer.sendTransaction({to: homeMediator.address, value: amount});
+            await deployer.sendTransaction({to: optimismMessenger.address, value: amount});
 
             // Now the funds can be transferred
             const balanceBefore = await ethers.provider.getBalance(deployer.address);
-            const tx = await ambMediator.processMessageFromForeign(data);
+            const tx = await cdmContractProxy.processMessageFromSource(data);
             const receipt = await tx.wait();
             const gasCost = ethers.BigNumber.from(receipt.gasUsed).mul(ethers.BigNumber.from(tx.gasPrice));
             const balanceAfter = await ethers.provider.getBalance(deployer.address);
@@ -228,8 +228,8 @@ describe("HomeMediator", function () {
         it("Unpack the data and call one specified target to send funds and to mint OLAS", async function () {
             const amount = ethers.utils.parseEther("1");
             const amountToMint = 100;
-            // Minter of OLAS must be the homeMediator contract
-            await olas.connect(deployer).changeMinter(homeMediator.address);
+            // Minter of OLAS must be the optimismMessenger contract
+            await olas.connect(deployer).changeMinter(optimismMessenger.address);
 
             // Pack the first part of data with the zero payload
             let target = deployer.address;
@@ -252,11 +252,11 @@ describe("HomeMediator", function () {
             ).slice(2);
 
             // Send funds to the contract
-            await deployer.sendTransaction({to: homeMediator.address, value: amount});
+            await deployer.sendTransaction({to: optimismMessenger.address, value: amount});
 
             // Execute the function and check for the deployer balance
             const balanceBefore = await ethers.provider.getBalance(deployer.address);
-            const tx = await ambMediator.processMessageFromForeign(data);
+            const tx = await cdmContractProxy.processMessageFromSource(data);
             const receipt = await tx.wait();
             const gasCost = ethers.BigNumber.from(receipt.gasUsed).mul(ethers.BigNumber.from(tx.gasPrice));
             const balanceAfter = await ethers.provider.getBalance(deployer.address);
