@@ -379,16 +379,16 @@ async function checkWormholeMessenger(chainId, provider, globalsInstance, config
 
     log += ", address: " + wormholeMessenger.address;
     // Check the source governor
-    const foreignGovernor = await wormholeMessenger.sourceGovernor();
-    customExpect(foreignGovernor, globalsInstance["timelockAddress"], log + ", function: sourceGovernor()");
+    const sourceGovernor = await wormholeMessenger.sourceGovernor();
+    customExpect(sourceGovernor, globalsInstance["timelockAddress"], log + ", function: sourceGovernor()");
 
     // Check L2WormholeRelayerAddress
-    const proxyHome = await wormholeMessenger.wormholeRelayer();
-    customExpect(proxyHome, globalsInstance["L2WormholeRelayerAddress"], log + ", function: wormholeRelayer()");
+    const wormholeRelayer = await wormholeMessenger.wormholeRelayer();
+    customExpect(wormholeRelayer, globalsInstance["L2WormholeRelayerAddress"], log + ", function: wormholeRelayer()");
 
     // Check source governor chain Id
-    const proxyHome = await wormholeMessenger.sourceGovernorChainId();
-    customExpect(proxyHome, globalsInstance["sourceGovernorChainId"], log + ", function: sourceGovernorChainId()");
+    const sourceGovernorChainId = await wormholeMessenger.sourceGovernorChainId();
+    customExpect(sourceGovernorChainId, globalsInstance["sourceGovernorChainId"], log + ", function: sourceGovernorChainId()");
 }
 
 async function main() {
