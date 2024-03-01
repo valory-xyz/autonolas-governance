@@ -33,11 +33,11 @@ The changelog leading to the implementation of `wveOLAS` can be found here: [Cha
 
 To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list_governance.pdf?raw=true)
 
-In order to manage cross-bridge transactions via the `Timelock` contract on the Polygon network, the Fx Governor Tunnel contract is implemented:
-- [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol).
-
-In order to manage cross-bridge transactions via the `Timelock` contract on the Gnosis network, the Home Mediator contract is implemented:
-- [HomeMediator](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/HomeMediator.sol).
+In order to manage cross-bridge transactions via the `Timelock` contract on L2 networks, the following contracts are implemented:
+- Polygon PoS: [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol);
+- Gnosis: [HomeMediator](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/HomeMediator.sol);
+- Optimism and Base: [OptimismMessenger](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/OptimismMessenger.sol);
+- L2 networks without own native bridge: [WormholeMessenger](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/WormholeMessenger.sol);
 
 The functionality thereby enabled is outlined in detail here: [Cross-chain governance: from Ethereum to Polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf?raw=true).
 
@@ -47,7 +47,7 @@ The functionality thereby enabled is outlined in detail here: [Cross-chain gover
 ### Prerequisites
 - This repository follows the standard [`Hardhat`](https://hardhat.org/tutorial/) development process.
 - The code is written on Solidity starting from version `0.8.15`.
-- The standard versions of Node.js along with Yarn are required to proceed further (confirmed to work with Yarn `1.22.10` and npx/npm `6.14.11` and node `v12.22.0`).
+- The standard versions of Node.js along with Yarn are required to proceed further (confirmed to work with Yarn `1.22.10` and npx/npm `10.1.0` and node `v18.17.0`).
 
 ### Install the dependencies
 The project has submodules to get the dependencies. Make sure you run `git clone --recursive` or init the submodules yourself.
@@ -231,6 +231,10 @@ The governance contracts and the rest was inspired and based on the following so
 - [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts).
 
 The bridging contracts were based on and inspired by the following sources:
-- [Polygon](https://github.com/maticnetwork).
-- [fx-portal](https://github.com/fx-portal).
-- [Gnosis Chain Docs](https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge).
+- [Polygon](https://github.com/maticnetwork);
+- [fx-portal](https://github.com/fx-portal);
+- [Gnosis Docs](https://docs.gnosischain.com/bridges/tokenbridge/amb-bridge);
+- [Arbitrum Docs](https://docs.arbitrum.io);
+- [Optimism Docs](https://docs.optimism.io);
+- [Base Docs](https://docs.base.org);
+- [Wormhole Docs](https://docs.wormhole.com/).
