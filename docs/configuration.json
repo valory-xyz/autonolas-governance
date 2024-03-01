@@ -198,5 +198,27 @@
         "address": "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee"
       }
     ]
+  },
+  {
+    "name": "celo",
+    "chainId": "42220",
+    "contracts": [
+      {
+        "name": "WormholeMessenger",
+        "artifact": "abis/0.8.23/WormholeMessenger.json",
+        "address": ""
+      }
+    ]
+  },
+  {
+    "name": "celoAlfajores",
+    "chainId": "44787",
+    "contracts": [
+      {
+        "name": "WormholeMessenger",
+        "artifact": "abis/0.8.23/WormholeMessenger.json",
+        "address": "0x945550dECe7E40ae70C6ebf5699637927eAF13E9"
+      }
+    ]
   }
 ]
