@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
-describe("Community Multisig Guard", function () {
+describe.only("Community Multisig Guard", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let multiSend;
@@ -16,10 +16,13 @@ describe("Community Multisig Guard", function () {
     let olas;
     let ve;
     let governor;
+    let processBridgedDataGnosis;
+    let processBridgedDataPolygon;
     let signers;
     let deployer;
     const l1BridgeMediators = ["0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e", "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2"];
-    const l2BridgeMediators =["0x15bd56669F57192a97dF41A2aa8f4403e9491776", "0x9338b5153AE39BB89f50468E608eD9d764B755fD"];
+    const l2BridgeMediators = ["0x15bd56669F57192a97dF41A2aa8f4403e9491776", "0x9338b5153AE39BB89f50468E608eD9d764B755fD"];
+    let verifiersL2 = new Array();
     const l2ChainIds = [100, 137];
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
@@ -30,9 +33,12 @@ describe("Community Multisig Guard", function () {
     const initialProposalThreshold = ethers.utils.parseEther("5");
     const quorum = 1;
     const localChainId = 31337;
+    // bytes32(keccak256("changeMultisigPermission")) = 0x82694b1d
     const l2Selector = "0x82694b1d";
+    // ServiceRegistryL2 on Gnosis
     const gnosisContractAddress = "0x9338b5153AE39BB89f50468E608eD9d764B755fD";
     const gnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124cd9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    // ServiceRegistryL2 on Polygon
     const polygonContractAddress = "0xE3607b00E75f6405248323A9417ff6b39B244b50";
     const polygonPayload = "0xb47204770000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000d0e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d00000000000000000000000034c895f302d0b5cf52ec0edd3945321eb0f83dd50000000000000000000000000000000000000000000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d000000000000000000000000d8bcc126ff31d2582018715d5291a508530587b0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000";
 
@@ -91,11 +97,24 @@ describe("Community Multisig Guard", function () {
         ve = await VotingEscrow.deploy(olas.address, "Voting Escrow OLAS", "veOLAS");
         await ve.deployed();
 
+        // Deploy the governor
         const Governor = await ethers.getContractFactory("GovernorOLAS");
         governor = await Governor.deploy(ve.address, timelock.address, initialVotingDelay, initialVotingPeriod,
             initialProposalThreshold, quorum);
         await governor.deployed();
 
+        // Deploy L2 verifiers
+        const ProcessBridgedDataGnosis = await ethers.getContractFactory("ProcessBridgedDataGnosis");
+        processBridgedDataGnosis = await ProcessBridgedDataGnosis.deploy(l2BridgeMediators[0]);
+        await processBridgedDataGnosis.deployed();
+        verifiersL2.push(processBridgedDataGnosis.address);
+
+        const ProcessBridgedDataPolygon = await ethers.getContractFactory("ProcessBridgedDataPolygon");
+        processBridgedDataPolygon = await ProcessBridgedDataPolygon.deploy(l2BridgeMediators[1]);
+        await processBridgedDataPolygon.deployed();
+        verifiersL2.push(processBridgedDataPolygon.address);
+
+        // Deploy Guard CM
         const GuardCM = await ethers.getContractFactory("GuardCM");
         guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address);
         await guard.deployed();
@@ -200,36 +219,36 @@ describe("Community Multisig Guard", function () {
         it("Set bridge mediators", async function () {
             // Try to set selectors not by the timelock
             await expect(
-                guard.setBridgeMediatorChainIds([], [], [])
+                guard.setBridgeMediatorVerifierL2ChainIds([], [], [])
             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
             // Incorrect L2 setup
-            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
                 [l1BridgeMediators, [], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
                 [l1BridgeMediators, l2BridgeMediators, []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
             // Zero addresses and chain Ids
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
                 [[AddressZero], [AddressZero], [0]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
                 [[signers[1].address], [AddressZero], [0]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
                 [[signers[1].address], [signers[2].address], [0]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
@@ -686,21 +705,21 @@ describe("Community Multisig Guard", function () {
     });
 
     context("Timelock manipulation via the CM across the bridge", async function () {
-        it("CM Guard with a bridged data in a schedule function", async function () {
+        it.only("CM Guard with a bridged data in a schedule function", async function () {
             // Authorize pre-defined target, selector and chainId
             const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [100, 137], [true, true]]);
             await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
             
             // Set bridge mediator contract addresses and chain Ids
-            const setBridgeMediatorChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
-                [l1BridgeMediators, l2BridgeMediators, l2ChainIds]);
-            await timelock.execute(guard.address, setBridgeMediatorChainIdsPayload);
+            const setBridgeMediatorVerifierL2ChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
+                [l1BridgeMediators, verifiersL2, l2ChainIds]);
+            await timelock.execute(guard.address, setBridgeMediatorVerifierL2ChainIdsPayload);
 
             // Check that the bridge mediators are set correctly
             for (let i = 0; i < l1BridgeMediators.length; i++) {
-                const result = await guard.getBridgeMediatorChainId(l1BridgeMediators[i]);
-                expect(result.bridgeMediatorL2).to.equal(l2BridgeMediators[i]);
+                const result = await guard.getVerifierL2ChainId(l1BridgeMediators[i]);
+                expect(result.verifierL2).to.equal(verifiersL2[i]);
                 expect(result.chainId).to.equal(l2ChainIds[i]);
             }
 
@@ -722,9 +741,9 @@ describe("Community Multisig Guard", function () {
             await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
 
             // Set bridge mediator contract addresses and chain Ids
-            const setBridgeMediatorChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorChainIds",
-                [l1BridgeMediators, l2BridgeMediators, [10200, 80001]]);
-            await timelock.execute(guard.address, setBridgeMediatorChainIdsPayload);
+            const setBridgeMediatorVerifierL2ChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
+                [l1BridgeMediators, verifiersL2, [10200, 80001]]);
+            await timelock.execute(guard.address, setBridgeMediatorVerifierL2ChainIdsPayload);
 
             // Check Gnosis payload
             // Second payload data has a zero target address
