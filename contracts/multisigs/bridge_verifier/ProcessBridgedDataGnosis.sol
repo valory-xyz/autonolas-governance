@@ -23,7 +23,7 @@ error WrongL2BridgeMediator(address provided, address expected);
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract ProcessBridgedDataGnosis is VerifyBridgedData {
-    // requireToPassMessage selector (Gnosis chain)
+    // requireToPassMessage selector in bridge mediator L1
     bytes4 public constant REQUIRE_TO_PASS_MESSAGE = bytes4(keccak256(bytes("requireToPassMessage(address,bytes,uint256)")));
     // processMessageFromForeign selector (Gnosis chain)
     bytes4 public constant PROCESS_MESSAGE_FROM_FOREIGN = bytes4(keccak256(bytes("processMessageFromForeign(bytes)")));
@@ -57,7 +57,7 @@ contract ProcessBridgedDataGnosis is VerifyBridgedData {
             payload[i] = data[i + 4];
         }
 
-        // Decode the requireToPassMessage payload: homeMediator (L2), mediatorPayload (need decoding), requestGasLimit
+        // Decode the requireToPassMessage payload: homeMediator (L2), mediatorPayload (needs decoding), requestGasLimit
         (address homeMediator, bytes memory mediatorPayload, ) = abi.decode(payload, (address, bytes, uint256));
         // Check that the home mediator matches the L2 bridge mediator address
         if (homeMediator != bridgeMediatorL2) {

@@ -36,10 +36,10 @@ enum ProposalState {
 struct BridgeParams {
     // Data verifier contract for calls executed on L2
     address verifierL2;
-    // Chain Id: this value cannot practically be bigger than `floor(MAX_UINT64 / 2) - 36` as per EIP 2294
-    uint64 chainId;
     // Bridge mediator (data receiving) contract on L2
     address bridgeMediatorL2;
+    // Chain Id: this value cannot practically be bigger than `floor(MAX_UINT64 / 2) - 36` as per EIP 2294
+    uint64 chainId;
 }
 
 /// @dev Only `owner` has a privilege, but the `sender` was provided.
@@ -60,9 +60,9 @@ error ZeroValue();
 
 /// @dev Wrong length of two arrays.
 /// @param numValues1 Number of values in a first array.
-/// @param numValues2 Numberf of values in a second array.
-/// @param numValues3 Numberf of values in a third array.
-/// @param numValues4 Numberf of values in a fourth array.
+/// @param numValues2 Number of of values in a second array.
+/// @param numValues3 Number of of values in a third array.
+/// @param numValues4 Number of of values in a fourth array.
 error WrongArrayLength(uint256 numValues1, uint256 numValues2, uint256 numValues3, uint256 numValues4);
 
 /// @dev Provided incorrect data length.
@@ -91,8 +91,8 @@ error L2ChainIdNotSupported(uint256 chainId);
 contract GuardCM is VerifyData {
     event GovernorUpdated(address indexed governor);
     event SetTargetSelectors(address[] indexed targets, bytes4[] indexed selectors, uint256[] chainIds, bool[] statuses);
-    event SetBridgeMediators(address[] indexed bridgeMediatorL1s, address[] indexed verifierL2s, uint256[] chainIds,
-        address[] indexed bridgeMediatorL2s);
+    event SetBridgeMediators(address[] indexed bridgeMediatorL1s, address[] indexed verifierL2s,
+        address[] indexed bridgeMediatorL2s, uint256[] chainIds);
     event GovernorCheckProposalIdChanged(uint256 indexed proposalId);
     event GuardPaused(address indexed account);
     event GuardUnpaused();
@@ -379,10 +379,10 @@ contract GuardCM is VerifyData {
             // Set bridge params
             BridgeParams storage bridgeParams = mapBridgeMediatorL1BridgeParams[bridgeMediatorL1s[i]];
             bridgeParams.verifierL2 = verifierL2s[i];
-            bridgeParams.chainId = uint64(chainIds[i]);
             bridgeParams.bridgeMediatorL2 = bridgeMediatorL2s[i];
+            bridgeParams.chainId = uint64(chainIds[i]);
         }
-        emit SetBridgeMediators(bridgeMediatorL1s, verifierL2s, chainIds, bridgeMediatorL2s);
+        emit SetBridgeMediators(bridgeMediatorL1s, verifierL2s, bridgeMediatorL2s, chainIds);
     }
 
     /// @dev Pauses the guard restoring a full CM functionality.

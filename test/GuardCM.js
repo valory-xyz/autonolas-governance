@@ -776,7 +776,7 @@ describe("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
+            ).to.be.revertedWithCustomError(processBridgedDataGnosis, "DataLengthIncorrect");
 
             // processMessageFromForeign selector is incorrect
             errorGnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124aa9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -808,7 +808,7 @@ describe("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
+            ).to.be.revertedWithCustomError(processBridgedDataGnosis, "IncorrectDataLength");
 
             // Check Polygon payload
             // fxGovernorTunnel address is incorrect
@@ -833,7 +833,7 @@ describe("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
+            ).to.be.revertedWithCustomError(processBridgedDataPolygon, "IncorrectDataLength");
 
             // Restore to the state of the snapshot
             await snapshot.restore();

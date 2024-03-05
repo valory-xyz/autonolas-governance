@@ -23,7 +23,7 @@ error WrongL2BridgeMediator(address provided, address expected);
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract ProcessBridgedDataPolygon is VerifyBridgedData {
-    // sendMessageToChild selector (Polygon)
+    // sendMessageToChild selector in bridge mediator L1
     bytes4 public constant SEND_MESSAGE_TO_CHILD = bytes4(keccak256(bytes("sendMessageToChild(address,bytes)")));
     // Minimum payload length for message on Polygon accounting for all required encoding and at least one selector
     uint256 public constant MIN_POLYGON_PAYLOAD_LENGTH = 164;

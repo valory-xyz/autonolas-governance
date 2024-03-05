@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {VerifyData} from "./VerifyData.sol";
+import {VerifyData} from "../VerifyData.sol";
 
 /// @dev Provided zero address.
 error ZeroAddress();
@@ -9,7 +9,7 @@ error ZeroAddress();
 /// @dev Provided incorrect data length.
 /// @param expected Expected minimum data length.
 /// @param provided Provided data length.
-error IncorrectDataLength(uint256 expected, uint256 provided);
+error DataLengthIncorrect(uint256 expected, uint256 provided);
 
 /// @title VerifyBridgedData - Smart contract for verifying the Guard CM bridged data
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
@@ -57,7 +57,7 @@ abstract contract VerifyBridgedData is VerifyData {
 
             // The payload length must be at least of the a function selector size
             if (payloadLength < SELECTOR_DATA_LENGTH) {
-                revert IncorrectDataLength(payloadLength, SELECTOR_DATA_LENGTH);
+                revert DataLengthIncorrect(payloadLength, SELECTOR_DATA_LENGTH);
             }
 
             // Get the payload
