@@ -370,7 +370,6 @@ contract GuardCM is VerifyData {
             verifierL2ChainId |= chainId << 160;
             mapBridgeMediatorL1VerifierL2ChainIds[bridgeMediatorL1s[i]] = verifierL2ChainId;
         }
-
         emit SetBridgeMediators(bridgeMediatorL1s, verifierL2s, chainIds);
     }
 

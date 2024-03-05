@@ -22,7 +22,7 @@ describe("Community Multisig Guard", function () {
     let deployer;
     const l1BridgeMediators = ["0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e", "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2"];
     const l2BridgeMediators = ["0x15bd56669F57192a97dF41A2aa8f4403e9491776", "0x9338b5153AE39BB89f50468E608eD9d764B755fD"];
-    let verifiersL2 = new Array();
+    const verifiersL2 = new Array(2);
     const l2ChainIds = [100, 137];
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
@@ -107,12 +107,12 @@ describe("Community Multisig Guard", function () {
         const ProcessBridgedDataGnosis = await ethers.getContractFactory("ProcessBridgedDataGnosis");
         processBridgedDataGnosis = await ProcessBridgedDataGnosis.deploy(l2BridgeMediators[0]);
         await processBridgedDataGnosis.deployed();
-        verifiersL2.push(processBridgedDataGnosis.address);
+        verifiersL2[0] = processBridgedDataGnosis.address;
 
         const ProcessBridgedDataPolygon = await ethers.getContractFactory("ProcessBridgedDataPolygon");
         processBridgedDataPolygon = await ProcessBridgedDataPolygon.deploy(l2BridgeMediators[1]);
         await processBridgedDataPolygon.deployed();
-        verifiersL2.push(processBridgedDataPolygon.address);
+        verifiersL2[1] = processBridgedDataPolygon.address;
 
         // Deploy Guard CM
         const GuardCM = await ethers.getContractFactory("GuardCM");
@@ -664,6 +664,9 @@ describe("Community Multisig Guard", function () {
         });
 
         it("Swapping the CM Guard by the Timelock", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             // Add timelock as a module
             let nonce = await multisig.nonce();
             let txHashData = await safeContracts.buildContractCall(multisig, "enableModule", [timelock.address], nonce, 0, 0);
@@ -701,11 +704,17 @@ describe("Community Multisig Guard", function () {
             const curGuard = await ethers.provider.getStorageAt(multisig.address, guardStorageSlot);
             const guardAddress = "0x" + curGuard.slice(26);
             expect(guardAddress).to.equal(newGuard.address.toLowerCase());
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 
     context("Timelock manipulation via the CM across the bridge", async function () {
         it("CM Guard with a bridged data in a schedule function", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             // Authorize pre-defined target, selector and chainId
             const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [100, 137], [true, true]]);
@@ -732,9 +741,15 @@ describe("Community Multisig Guard", function () {
             txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[1], 0, polygonPayload,
                 Bytes32Zero, Bytes32Zero, 0]);
             await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Should fail with the incorrect bridged data in a schedule function", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             // Authorize pre-defined target, selector and chainId
             const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [10200, 80001], [true, true]]);
@@ -818,6 +833,9 @@ describe("Community Multisig Guard", function () {
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
             ).to.be.revertedWithCustomError(guard, "IncorrectDataLength");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 });
