@@ -33,10 +33,10 @@ contract ProcessBridgedDataPolygon is VerifyBridgedData {
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
     /// @param chainId L2 chain Id.
-    function _processBridgeData(
+    function processBridgeData(
         bytes memory data,
         uint256 chainId
-    ) internal
+    ) external override
     {
         // Check the L1 initial selector
         bytes4 functionSig = bytes4(data);

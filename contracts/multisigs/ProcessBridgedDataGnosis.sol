@@ -38,7 +38,7 @@ contract ProcessBridgedDataGnosis is VerifyBridgedData {
     function processBridgeData(
         bytes memory data,
         uint256 chainId
-    ) external
+    ) external override
     {
         // Check the L1 initial selector
         bytes4 functionSig = bytes4(data);

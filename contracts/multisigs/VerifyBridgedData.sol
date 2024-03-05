@@ -29,6 +29,14 @@ abstract contract VerifyBridgedData is VerifyData {
         bridgeMediatorL2 = _bridgeMediatorL2;
     }
 
+    /// @dev Processes bridged data: checks the header and verifies the payload.
+    /// @param data Full data bytes with the header.
+    /// @param chainId L2 chain Id.
+    function processBridgeData(
+        bytes memory data,
+        uint256 chainId
+    ) external virtual;
+
     /// @dev Verifies the bridged data for authorized combinations of targets and selectors.
     /// @notice The processed data is packed as a set of bytes that are assembled using the following parameters:
     ///         address target, uint96 value, uint32 payloadLength, bytes payload.

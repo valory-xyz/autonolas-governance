@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const safeContracts = require("@gnosis.pm/safe-contracts");
 
-describe.only("Community Multisig Guard", function () {
+describe("Community Multisig Guard", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let multiSend;
@@ -705,7 +705,7 @@ describe.only("Community Multisig Guard", function () {
     });
 
     context("Timelock manipulation via the CM across the bridge", async function () {
-        it.only("CM Guard with a bridged data in a schedule function", async function () {
+        it("CM Guard with a bridged data in a schedule function", async function () {
             // Authorize pre-defined target, selector and chainId
             const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
                 [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [100, 137], [true, true]]);
@@ -768,7 +768,7 @@ describe.only("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "WrongSelector");
+            ).to.be.revertedWithCustomError(processBridgedDataGnosis, "WrongSelector");
 
             // homeMediator address is incorrect
             errorGnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491775000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124aa9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -776,7 +776,7 @@ describe.only("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "WrongL2BridgeMediator");
+            ).to.be.revertedWithCustomError(processBridgedDataGnosis, "WrongL2BridgeMediator");
 
             // requireToPassMessage selector is incorrect
             errorGnosisPayload = "0xaa8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124aa9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -784,7 +784,7 @@ describe.only("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "WrongSelector");
+            ).to.be.revertedWithCustomError(processBridgedDataGnosis, "WrongSelector");
 
             // gnosis payload length is incorrect
             errorGnosisPayload = "0xdc8601b3";
@@ -801,7 +801,7 @@ describe.only("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "WrongL2BridgeMediator");
+            ).to.be.revertedWithCustomError(processBridgedDataPolygon, "WrongL2BridgeMediator");
 
             // sendMessageToChild selector is incorrect
             errorPolygonPayload = "0xaa7204770000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000d0e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d00000000000000000000000034c895f302d0b5cf52ec0edd3945321eb0f83dd50000000000000000000000000000000000000000000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d000000000000000000000000d8bcc126ff31d2582018715d5291a508530587b0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000";
@@ -809,7 +809,7 @@ describe.only("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
-            ).to.be.revertedWithCustomError(guard, "WrongSelector");
+            ).to.be.revertedWithCustomError(processBridgedDataPolygon, "WrongSelector");
 
             // polygon payload length is incorrect
             errorPolygonPayload = "0xb4720477";
