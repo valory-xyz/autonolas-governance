@@ -11,9 +11,11 @@ interface IGovernor {
 interface IBridgeVerifier {
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
+    /// @param bridgeMediatorL2 Address of a bridged mediator on L2.
     /// @param chainId L2 chain Id.
     function processBridgeData(
         bytes memory data,
+        address bridgeMediatorL2,
         uint256 chainId
     ) external;
 }
@@ -28,6 +30,16 @@ enum ProposalState {
     Queued,
     Expired,
     Executed
+}
+
+// Struct for bridge parameters
+struct BridgeParams {
+    // Data verifier contract for calls executed on L2
+    address verifierL2;
+    // Chain Id: this value cannot practically be bigger than `floor(MAX_UINT64 / 2) - 36` as per EIP 2294
+    uint64 chainId;
+    // Bridge mediator (data receiving) contract on L2
+    address bridgeMediatorL2;
 }
 
 /// @dev Only `owner` has a privilege, but the `sender` was provided.
@@ -79,7 +91,8 @@ error L2ChainIdNotSupported(uint256 chainId);
 contract GuardCM is VerifyData {
     event GovernorUpdated(address indexed governor);
     event SetTargetSelectors(address[] indexed targets, bytes4[] indexed selectors, uint256[] chainIds, bool[] statuses);
-    event SetBridgeMediators(address[] indexed bridgeMediatorL1s, address[] indexed verifierL2s, uint256[] chainIds);
+    event SetBridgeMediators(address[] indexed bridgeMediatorL1s, address[] indexed verifierL2s, uint256[] chainIds,
+        address[] indexed bridgeMediatorL2s);
     event GovernorCheckProposalIdChanged(uint256 indexed proposalId);
     event GuardPaused(address indexed account);
     event GuardUnpaused();
@@ -97,6 +110,8 @@ contract GuardCM is VerifyData {
     uint256 public constant MIN_SCHEDULE_DATA_LENGTH = 260;
     // Minimum data length that contains at least a selector (4 bytes or 32 bits)
     uint256 public constant SELECTOR_DATA_LENGTH = 4;
+    // Maximum chain Id as per EVM specs
+    uint256 public constant MAX_CHAIN_ID = type(uint64).max / 2 - 36;
 
     // Owner address
     address public immutable owner;
@@ -108,8 +123,8 @@ contract GuardCM is VerifyData {
     // Guard pausing possibility
     uint8 public paused = 1;
 
-    // Mapping of bridge mediator address L1 => (L2 verifier address | uint64 supported L2 chain Id)
-    mapping(address => uint256) public mapBridgeMediatorL1VerifierL2ChainIds;
+    // Mapping of L1 bridge mediator => (L2 verifier | uint64 supported L2 chain Id | L2 bridge mediator)
+    mapping(address => BridgeParams) public mapBridgeMediatorL1BridgeParams;
 
     /// @dev GuardCM constructor.
     /// @param _timelock Timelock address.
@@ -189,19 +204,13 @@ contract GuardCM is VerifyData {
         // Traverse all the schedule targets and selectors extracted from calldatas
         for (uint i = 0; i < targets.length; ++i) {
             // Get the verifierL2 and L2 chain Id, if any
-            uint256 verifierL2ChainId = mapBridgeMediatorL1VerifierL2ChainIds[targets[i]];
-            // verifierL2 occupies first 160 bits
-            address verifierL2 = address(uint160(verifierL2ChainId));
+            BridgeParams memory bridgeParams = mapBridgeMediatorL1BridgeParams[targets[i]];
 
             // Check if the data goes across the bridge
-            if (verifierL2 != address(0)) {
-                // Get the chain Id
-                // L2 chain Id occupies next 64 bits
-                uint256 chainId = verifierL2ChainId >> 160;
-
+            if (bridgeParams.verifierL2 != address(0)) {
                 // Process the bridge logic
-                (bool success, bytes memory returndata) = verifierL2.delegatecall(abi.encodeWithSelector(
-                    IBridgeVerifier.processBridgeData.selector, callDatas[i], chainId));
+                (bool success, bytes memory returndata) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(
+                    IBridgeVerifier.processBridgeData.selector, callDatas[i], bridgeParams.bridgeMediatorL2, bridgeParams.chainId));
                 // Process unsuccessful delegatecall
                 if (!success) {
                     // Get the revert message bytes
@@ -329,16 +338,18 @@ contract GuardCM is VerifyData {
         emit SetTargetSelectors(targets, selectors, chainIds, statuses);
     }
 
-    /// @dev Sets bridge mediator and L2 verifier contracts addresses and L2 chain Ids.
+    /// @dev Sets bridge mediator and L2 verifier contracts addresses on L1 and L2 chain Ids.
     /// @notice It is the contract owner responsibility to set correct L1 bridge mediator contracts,
     ///         corresponding L2 verifier contracts, and supported chain Ids.
     /// @param bridgeMediatorL1s Bridge mediator contract addresses on L1.
-    /// @param verifierL2s Corresponding L2 verifier contract addresses.
+    /// @param verifierL2s Corresponding L2 verifier contract addresses on L1.
     /// @param chainIds Corresponding L2 chain Ids.
-    function setBridgeMediatorVerifierL2ChainIds(
+    /// @param bridgeMediatorL2s Corresponding L2 bridge mediators.
+    function setBridgeMediatorL1BridgeParams(
         address[] memory bridgeMediatorL1s,
         address[] memory verifierL2s,
-        uint256[] memory chainIds
+        uint256[] memory chainIds,
+        address[] memory bridgeMediatorL2s
     ) external {
         // Check for the ownership
         if (msg.sender != owner) {
@@ -346,31 +357,32 @@ contract GuardCM is VerifyData {
         }
 
         // Check for array correctness
-        if (bridgeMediatorL1s.length != verifierL2s.length || bridgeMediatorL1s.length != chainIds.length) {
-            revert WrongArrayLength(bridgeMediatorL1s.length, verifierL2s.length, chainIds.length, chainIds.length);
+        if (bridgeMediatorL1s.length != verifierL2s.length || bridgeMediatorL1s.length != chainIds.length ||
+            bridgeMediatorL1s.length != bridgeMediatorL2s.length) {
+            revert WrongArrayLength(bridgeMediatorL1s.length, verifierL2s.length, chainIds.length, bridgeMediatorL2s.length);
         }
 
-        // Link L1 and L2 bridge mediators, set L2 chain Ids
+        // Link L1 and L2 bridge mediators, set L2 chain Ids and L2 verifiers
         for (uint256 i = 0; i < chainIds.length; ++i) {
             // Check for zero addresses
+            // Note that bridgeMediatorL2-s can be zero addresses, for example, for Arbitrum case
             if (bridgeMediatorL1s[i] == address(0) || verifierL2s[i] == address(0)) {
                 revert ZeroAddress();
             }
 
             // Check chain Id
             uint256 chainId = chainIds[i];
-            if (chainId == 0) {
+            if (chainId == 0 || chainId > MAX_CHAIN_ID) {
                 revert L2ChainIdNotSupported(chainId);
             }
             
-            // Push a pair of key defining variables into one key
-            // verifierL2 occupies first 160 bits
-            uint256 verifierL2ChainId = uint256(uint160(verifierL2s[i]));
-            // L2 chain Id occupies next 64 bits
-            verifierL2ChainId |= chainId << 160;
-            mapBridgeMediatorL1VerifierL2ChainIds[bridgeMediatorL1s[i]] = verifierL2ChainId;
+            // Set bridge params
+            BridgeParams storage bridgeParams = mapBridgeMediatorL1BridgeParams[bridgeMediatorL1s[i]];
+            bridgeParams.verifierL2 = verifierL2s[i];
+            bridgeParams.chainId = uint64(chainIds[i]);
+            bridgeParams.bridgeMediatorL2 = bridgeMediatorL2s[i];
         }
-        emit SetBridgeMediators(bridgeMediatorL1s, verifierL2s, chainIds);
+        emit SetBridgeMediators(bridgeMediatorL1s, verifierL2s, chainIds, bridgeMediatorL2s);
     }
 
     /// @dev Pauses the guard restoring a full CM functionality.
@@ -430,20 +442,5 @@ contract GuardCM is VerifyData {
         targetSelectorChainId |= chainId << 192;
 
         status = mapAllowedTargetSelectorChainIds[targetSelectorChainId];
-    }
-
-    /// @dev Gets the address of an L2 verifier contract address and corresponding L2 chain Id.
-    /// @param bridgeMediatorL1 Bridge mediator contract addresses on L1.
-    /// @return verifierL2 Corresponding L2 verifier contract addresses.
-    /// @return chainId Corresponding L2 chain Id.
-    function getVerifierL2ChainId(address bridgeMediatorL1) external view
-        returns (address verifierL2, uint256 chainId)
-    {
-        // Get the verifierL2 and L2 chain Id
-        uint256 verifierL2ChainId = mapBridgeMediatorL1VerifierL2ChainIds[bridgeMediatorL1];
-        // verifierL2 occupies first 160 bits
-        verifierL2 = address(uint160(verifierL2ChainId));
-        // L2 chain Id occupies next 64 bits
-        chainId = verifierL2ChainId >> 160;
     }
 }

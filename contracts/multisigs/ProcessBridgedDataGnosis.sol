@@ -30,13 +30,13 @@ contract ProcessBridgedDataGnosis is VerifyBridgedData {
     // Minimum payload length for message on Gnosis accounting for all required encoding and at least one selector
     uint256 public constant MIN_GNOSIS_PAYLOAD_LENGTH = 292;
 
-    constructor(address _bridgeMediatorL2) VerifyBridgedData(_bridgeMediatorL2) {}
-
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
+    /// @param bridgeMediatorL2 Address of a bridged mediator on L2.
     /// @param chainId L2 chain Id.
     function processBridgeData(
         bytes memory data,
+        address bridgeMediatorL2,
         uint256 chainId
     ) external override
     {

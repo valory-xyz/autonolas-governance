@@ -18,22 +18,14 @@ error IncorrectDataLength(uint256 expected, uint256 provided);
 abstract contract VerifyBridgedData is VerifyData {
     // Minimum data length that contains at least a selector (4 bytes or 32 bits)
     uint256 public constant SELECTOR_DATA_LENGTH = 4;
-    // L2 bridge mediator
-    address public immutable bridgeMediatorL2;
-
-    constructor(address _bridgeMediatorL2) {
-        // Check zero address
-        if (_bridgeMediatorL2 == address(0)) {
-            revert ZeroAddress();
-        }
-        bridgeMediatorL2 = _bridgeMediatorL2;
-    }
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
+    /// @param bridgeMediatorL2 Address of a bridged mediator on L2.
     /// @param chainId L2 chain Id.
     function processBridgeData(
         bytes memory data,
+        address bridgeMediatorL2,
         uint256 chainId
     ) external virtual;
 

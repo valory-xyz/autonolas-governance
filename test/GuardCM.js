@@ -105,12 +105,12 @@ describe("Community Multisig Guard", function () {
 
         // Deploy L2 verifiers
         const ProcessBridgedDataGnosis = await ethers.getContractFactory("ProcessBridgedDataGnosis");
-        processBridgedDataGnosis = await ProcessBridgedDataGnosis.deploy(l2BridgeMediators[0]);
+        processBridgedDataGnosis = await ProcessBridgedDataGnosis.deploy();
         await processBridgedDataGnosis.deployed();
         verifiersL2[0] = processBridgedDataGnosis.address;
 
         const ProcessBridgedDataPolygon = await ethers.getContractFactory("ProcessBridgedDataPolygon");
-        processBridgedDataPolygon = await ProcessBridgedDataPolygon.deploy(l2BridgeMediators[1]);
+        processBridgedDataPolygon = await ProcessBridgedDataPolygon.deploy();
         await processBridgedDataPolygon.deployed();
         verifiersL2[1] = processBridgedDataPolygon.address;
 
@@ -219,37 +219,37 @@ describe("Community Multisig Guard", function () {
         it("Set bridge mediators", async function () {
             // Try to set selectors not by the timelock
             await expect(
-                guard.setBridgeMediatorVerifierL2ChainIds([], [], [])
+                guard.setBridgeMediatorL1BridgeParams([], [], [], [])
             ).to.be.revertedWithCustomError(guard, "OwnerOnly");
 
             // Incorrect L2 setup
-            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [l1BridgeMediators, [], []]);
+            let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [l1BridgeMediators, [], [], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [l1BridgeMediators, l2BridgeMediators, []]);
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [l1BridgeMediators, l2BridgeMediators, [], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
             // Zero addresses and chain Ids
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [[AddressZero], [AddressZero], [0]]);
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [[AddressZero], [AddressZero], [0], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [[signers[1].address], [AddressZero], [0]]);
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [[signers[1].address], [AddressZero], [0], [AddressZero]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
-            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [[signers[1].address], [signers[2].address], [0]]);
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [[signers[1].address], [signers[2].address], [0], [AddressZero]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
@@ -721,15 +721,16 @@ describe("Community Multisig Guard", function () {
             await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
             
             // Set bridge mediator contract addresses and chain Ids
-            const setBridgeMediatorVerifierL2ChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [l1BridgeMediators, verifiersL2, l2ChainIds]);
-            await timelock.execute(guard.address, setBridgeMediatorVerifierL2ChainIdsPayload);
+            const setBridgeMediatorL1BridgeParamsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [l1BridgeMediators, verifiersL2, l2ChainIds, l2BridgeMediators]);
+            await timelock.execute(guard.address, setBridgeMediatorL1BridgeParamsPayload);
 
             // Check that the bridge mediators are set correctly
             for (let i = 0; i < l1BridgeMediators.length; i++) {
-                const result = await guard.getVerifierL2ChainId(l1BridgeMediators[i]);
+                const result = await guard.mapBridgeMediatorL1BridgeParams(l1BridgeMediators[i]);
                 expect(result.verifierL2).to.equal(verifiersL2[i]);
                 expect(result.chainId).to.equal(l2ChainIds[i]);
+                expect(result.bridgeMediatorL2).to.equal(l2BridgeMediators[i]);
             }
 
             // Check Gnosis payload
@@ -756,9 +757,9 @@ describe("Community Multisig Guard", function () {
             await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
 
             // Set bridge mediator contract addresses and chain Ids
-            const setBridgeMediatorVerifierL2ChainIdsPayload = guard.interface.encodeFunctionData("setBridgeMediatorVerifierL2ChainIds",
-                [l1BridgeMediators, verifiersL2, [10200, 80001]]);
-            await timelock.execute(guard.address, setBridgeMediatorVerifierL2ChainIdsPayload);
+            const setBridgeMediatorL1BridgeParamsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [l1BridgeMediators, verifiersL2, [10200, 80001], l2BridgeMediators]);
+            await timelock.execute(guard.address, setBridgeMediatorL1BridgeParamsPayload);
 
             // Check Gnosis payload
             // Second payload data has a zero target address
