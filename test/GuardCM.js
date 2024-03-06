@@ -18,6 +18,9 @@ describe("Community Multisig Guard", function () {
     let governor;
     let processBridgedDataGnosis;
     let processBridgedDataPolygon;
+    let processBridgedDataArbitrum;
+    let processBridgedDataOptimism;
+    let processBridgedDataWormhole;
     let signers;
     let deployer;
 
