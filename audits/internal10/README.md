@@ -30,6 +30,7 @@ File                                  |  % Stmts | % Branch |  % Funcs |  % Line
 --------------------------------------|----------|----------|----------|----------|----------------|
 ```
 Please, pay attention. More tests are needed and magic offsets (like MIN_ARBITRUM_PAYLOAD_LENGTH) can only be checked during testing
+[x] fixed
 
 ### Storage timelock
 Using sol2uml tools: https://github.com/naddison36/sol2uml <br>
@@ -50,6 +51,7 @@ Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (ProcessBridge
 	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (ProcessBridgedDataArbitrum-flatten.sol#30)
 	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (ProcessBridgedDataArbitrum-flatten.sol#36)
 ```
+[x] fixed
 
 - Checking for verifierL2s is contract in set function.
 ```
@@ -61,6 +63,7 @@ because if verifierL2s[i] is EOA
 bridgeParams.verifierL2.delegatecall - always success, 
 ref: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol#L124
 ```
+[x] fixed
 
 - Needing fix revert message
 ```
@@ -69,9 +72,4 @@ revert("Function call reverted");
 replace to error-style message 
 revert FailedInnerCall();
 ```
-
-
-
-
-
- 
+[x] fixed

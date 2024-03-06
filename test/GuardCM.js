@@ -20,27 +20,88 @@ describe("Community Multisig Guard", function () {
     let processBridgedDataPolygon;
     let signers;
     let deployer;
-    const l1BridgeMediators = ["0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e", "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2"];
-    const l2BridgeMediators = ["0x15bd56669F57192a97dF41A2aa8f4403e9491776", "0x9338b5153AE39BB89f50468E608eD9d764B755fD"];
-    const verifiersL2 = new Array(2);
-    const l2ChainIds = [100, 137];
+
     const AddressZero = "0x" + "0".repeat(40);
     const Bytes32Zero = "0x" + "0".repeat(64);
     const Bytes4Zero = "0x" + "0".repeat(8);
-    const safeThreshold = 7;
-    const initialVotingDelay = 5;
-    const initialVotingPeriod = 10;
-    const initialProposalThreshold = ethers.utils.parseEther("5");
-    const quorum = 1;
-    const localChainId = 31337;
-    // bytes32(keccak256("changeMultisigPermission")) = 0x82694b1d
-    const l2Selector = "0x82694b1d";
+
+    const l1BridgeMediators = [
+        // gnosis (AMBProxyForeign)
+        "0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e",
+        // polygon (FxRoot)
+        "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2",
+        // arbitrum (Inbox)
+        "0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f",
+        // arbitrum (Inbox)
+        "0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f",
+        // optimism (L1CrossDomainMessenger)
+        "0x25ace71c97B33Cc4729CF772ae268934F7ab5fA1",
+        // celo (L1WormholeRelayer)
+        "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911",
+        // celo (L1WormholeRelayer)
+        "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"
+    ];
+    const l2BridgeMediators = [
+        // gnosis (HomeMediator)
+        "0x15bd56669F57192a97dF41A2aa8f4403e9491776",
+        // polygon (FxGovernorTunnel)
+        "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+        // arbitrum (None)
+        AddressZero,
+        // arbitrum (None)
+        AddressZero,
+        // optimism (OptimismMessenger)
+        "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592",
+        // celo (WormholeMessenger)
+        "0x945550dECe7E40ae70C6ebf5699637927eAF13E9",
+        // celo (WormholeMessenger)
+        "0x945550dECe7E40ae70C6ebf5699637927eAF13E9"
+    ];
+
+    // gnosis, polygon, arbitrum, arbitrum, optimism, celo, celo
+    const l2ChainIds = [100, 137, 42161, 42161, 10, 42220, 42220];
+    const verifiersL2 = new Array(l2ChainIds.length);
+    // bytes4(keccak256("changeMultisigPermission")) = 0x82694b1d
+    const l2SelectorPermission = "0x82694b1d";
+    // bytes4(keccak256("mint")) = 0x40c10f19
+    const l2SelectorMint = "0x40c10f19";
+    const l2Selectors = [l2SelectorPermission, l2SelectorPermission, l2SelectorMint, l2SelectorMint, l2SelectorMint,
+        l2SelectorMint, l2SelectorMint];
+
     // ServiceRegistryL2 on Gnosis
     const gnosisContractAddress = "0x9338b5153AE39BB89f50468E608eD9d764B755fD";
     const gnosisPayload = "0xdc8601b300000000000000000000000015bd56669f57192a97df41a2aa8f4403e9491776000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000124cd9e30d9000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000d09338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd0000000000000000000000000000004482694b1d0000000000000000000000006e7f594f680f7abad18b7a63de50f0fee47dfd0600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     // ServiceRegistryL2 on Polygon
     const polygonContractAddress = "0xE3607b00E75f6405248323A9417ff6b39B244b50";
     const polygonPayload = "0xb47204770000000000000000000000009338b5153ae39bb89f50468e608ed9d764b755fd000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000d0e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d00000000000000000000000034c895f302d0b5cf52ec0edd3945321eb0f83dd50000000000000000000000000000000000000000000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000000000004482694b1d000000000000000000000000d8bcc126ff31d2582018715d5291a508530587b0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000";
+    // ERC20 mock token on Arbitrum
+    const arbitrumContractAddress = "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee";
+    const arbitrumPayload = "0x679b6ded000000000000000000000000edd71796b90eacc56b074c39bac90ed2ca6d93ee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005f3207567800000000000000000000000052370ee170c0e2767b32687166791973a0de796600000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000ac7e0000000000000000000000000000000000000000000000000000000005f5e1000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000";
+    const arbitrumPayload2 = "0x6e6e8a6a000000000000000000000000edd71796b90eacc56b074c39bac90ed2ca6d93ee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005f3207567800000000000000000000000052370ee170c0e2767b32687166791973a0de796600000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000ac7e0000000000000000000000000000000000000000000000000000000005f5e1000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000";
+    // ERC20 mock token on Optimism
+    const optimismContractAddress = "0x118173028162C1b7c6Bf8488bd5dA2abd7c30F9D";
+    const optimismPayload = "0x3dbb202b000000000000000000000000670ac235ee13c0b2a5065282bbb0c61cfb354592000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e848000000000000000000000000000000000000000000000000000000000000000c4d3042d2b00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000068118173028162c1b7c6bf8488bd5da2abd7c30f9d0000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    // ERC20 mock token on Celo
+    const celoContractAddress = "0x34235f9D447f9F54167e2Ac7A0F4283cB3fAD669";
+    const celoPayload = "0x4b5ca6f4000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000945550dece7e40ae70c6ebf5699637927eaf13e900000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001e8480000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000945550dece7e40ae70c6ebf5699637927eaf13e9000000000000000000000000000000000000000000000000000000000000006834235f9d447f9f54167e2ac7a0f4283cb3fad6690000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de79660000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000";
+    const celoPayload2 = "0x8fecdd02000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000945550dece7e40ae70c6ebf5699637927eaf13e900000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001e8480000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000945550dece7e40ae70c6ebf5699637927eaf13e9000000000000000000000000000000000000000000000000000000000000006834235f9d447f9f54167e2ac7a0f4283cb3fad6690000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de79660000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000";
+
+    const l2ContractAddresses = [
+        gnosisContractAddress,
+        polygonContractAddress,
+        arbitrumContractAddress,
+        arbitrumContractAddress,
+        optimismContractAddress,
+        celoContractAddress,
+        celoContractAddress
+    ];
+
+    const safeThreshold = 7;
+    const initialVotingDelay = 5;
+    const initialVotingPeriod = 10;
+    const initialProposalThreshold = ethers.utils.parseEther("5");
+    const quorum = 1;
+    const localChainId = 31337;
 
     beforeEach(async function () {
         const GnosisSafe = await ethers.getContractFactory("GnosisSafe");
@@ -113,6 +174,23 @@ describe("Community Multisig Guard", function () {
         processBridgedDataPolygon = await ProcessBridgedDataPolygon.deploy();
         await processBridgedDataPolygon.deployed();
         verifiersL2[1] = processBridgedDataPolygon.address;
+
+        const ProcessBridgedDataArbitrum = await ethers.getContractFactory("ProcessBridgedDataArbitrum");
+        processBridgedDataArbitrum = await ProcessBridgedDataArbitrum.deploy();
+        await processBridgedDataArbitrum.deployed();
+        verifiersL2[2] = processBridgedDataArbitrum.address;
+        verifiersL2[3] = processBridgedDataArbitrum.address;
+
+        const ProcessBridgedDataOptimism = await ethers.getContractFactory("ProcessBridgedDataOptimism");
+        processBridgedDataOptimism = await ProcessBridgedDataOptimism.deploy();
+        await processBridgedDataOptimism.deployed();
+        verifiersL2[4] = processBridgedDataOptimism.address;
+
+        const ProcessBridgedDataWormhole = await ethers.getContractFactory("ProcessBridgedDataWormhole");
+        processBridgedDataWormhole = await ProcessBridgedDataWormhole.deploy();
+        await processBridgedDataWormhole.deployed();
+        verifiersL2[5] = processBridgedDataWormhole.address;
+        verifiersL2[6] = processBridgedDataWormhole.address;
 
         // Deploy Guard CM
         const GuardCM = await ethers.getContractFactory("GuardCM");
@@ -224,20 +302,26 @@ describe("Community Multisig Guard", function () {
 
             // Incorrect L2 setup
             let setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
-                [l1BridgeMediators, [], [], []]);
+                [[l1BridgeMediators[0]], [], [], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
             setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
-                [l1BridgeMediators, l2BridgeMediators, [], []]);
+                [[l1BridgeMediators[0]], [verifiersL2[0]], [], []]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [[l1BridgeMediators[0]], [verifiersL2[0]], [0], []]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
             // Zero addresses and chain Ids
             setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
-                [[AddressZero], [AddressZero], [0], []]);
+                [[AddressZero], [AddressZero], [0], [AddressZero]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
@@ -248,8 +332,22 @@ describe("Community Multisig Guard", function () {
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
 
+            // L2 verifier is an EOA
             setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
                 [[signers[1].address], [signers[2].address], [0], [AddressZero]]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            // Chain Id is out of bounds
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [[l1BridgeMediators[0]], [verifiersL2[0]], [0], [AddressZero]]);
+            await expect(
+                timelock.execute(guard.address, setBridgeMediatorsPayload)
+            ).to.be.reverted;
+
+            setBridgeMediatorsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [[l1BridgeMediators[0]], [verifiersL2[0]], [ethers.constants.MaxUint256], [AddressZero]]);
             await expect(
                 timelock.execute(guard.address, setBridgeMediatorsPayload)
             ).to.be.reverted;
@@ -716,8 +814,9 @@ describe("Community Multisig Guard", function () {
             const snapshot = await helpers.takeSnapshot();
 
             // Authorize pre-defined target, selector and chainId
+            const permissions = new Array(l2ChainIds.length).fill(true);
             const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
-                [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [100, 137], [true, true]]);
+                [l2ContractAddresses, l2Selectors, l2ChainIds, permissions]);
             await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
             
             // Set bridge mediator contract addresses and chain Ids
@@ -743,6 +842,31 @@ describe("Community Multisig Guard", function () {
                 Bytes32Zero, Bytes32Zero, 0]);
             await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
 
+            // Check Arbitrum payload
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[2], 0, arbitrumPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+
+            // Check Arbitrum payload2
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[2], 0, arbitrumPayload2,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+
+            // Check Optimism payload
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[4], 0, optimismPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+
+            // Check celo payload
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[5], 0, celoPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+
+            // Check celo payload2
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[6], 0, celoPayload2,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero);
+
             // Restore to the state of the snapshot
             await snapshot.restore();
         });
@@ -752,13 +876,14 @@ describe("Community Multisig Guard", function () {
             const snapshot = await helpers.takeSnapshot();
 
             // Authorize pre-defined target, selector and chainId
+            const permissions = new Array(l2ChainIds.length).fill(true);
             const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
-                [[gnosisContractAddress, polygonContractAddress], [l2Selector, l2Selector], [10200, 80001], [true, true]]);
+                [l2ContractAddresses, l2Selectors, l2ChainIds, permissions]);
             await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
 
             // Set bridge mediator contract addresses and chain Ids
             const setBridgeMediatorL1BridgeParamsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
-                [l1BridgeMediators, verifiersL2, [10200, 80001], l2BridgeMediators]);
+                [l1BridgeMediators, verifiersL2, l2ChainIds, l2BridgeMediators]);
             await timelock.execute(guard.address, setBridgeMediatorL1BridgeParamsPayload);
 
             // Check Gnosis payload
@@ -834,6 +959,81 @@ describe("Community Multisig Guard", function () {
             await expect(
                 guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
             ).to.be.revertedWithCustomError(processBridgedDataPolygon, "IncorrectDataLength");
+
+            // Check Arbitrum payload
+            // createRetryableTicket or unsafeCreateRetryableTicket selector is incorrect
+            let errorArbitrumPayload = "0x679b6de1";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[2], 0, errorArbitrumPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataArbitrum, "WrongSelector");
+
+            // arbitrum payload length is incorrect
+            errorArbitrumPayload = "0x679b6ded";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[2], 0, errorArbitrumPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataArbitrum, "IncorrectDataLength");
+
+            // Check Optimism payload
+            // optimismMessenger address is incorrect
+            let errorOptimismPayload = "0x3dbb202b000000000000000000000000670ac235ee13c0b2a5065282bbb0c61cfb354590000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e848000000000000000000000000000000000000000000000000000000000000000c4d3042d2b00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000068118173028162c1b7c6bf8488bd5da2abd7c30f9d0000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[4], 0, errorOptimismPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "WrongL2BridgeMediator");
+
+            // processMessageFromSource selector is incorrect
+            errorOptimismPayload = "0x3dbb202b000000000000000000000000670ac235ee13c0b2a5065282bbb0c61cfb354592000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000001e848000000000000000000000000000000000000000000000000000000000000000c4d3042d2a00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000068118173028162c1b7c6bf8488bd5da2abd7c30f9d0000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de7966000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[4], 0, errorOptimismPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "WrongSelector");
+
+            // optimism sendMessage selector is incorrect
+            errorOptimismPayload = "0x3dbb202a";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[4], 0, errorOptimismPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "WrongSelector");
+
+            // optimism payload length is incorrect
+            errorOptimismPayload = "0x3dbb202b00";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[4], 0, errorOptimismPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "IncorrectDataLength");
+
+            // Check Celo payload
+            // wormholeMessenger address is incorrect
+            let errorCeloPayload = "0x4b5ca6f4000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000945550dece7e40ae70c6ebf5699637927eaf13e800000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001e8480000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000945550dece7e40ae70c6ebf5699637927eaf13e9000000000000000000000000000000000000000000000000000000000000006834235f9d447f9f54167e2ac7a0f4283cb3fad6690000000000000000000000000000004440c10f1900000000000000000000000052370ee170c0e2767b32687166791973a0de79660000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[5], 0, errorCeloPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "WrongL2BridgeMediator");
+
+            // wormhole sendPayloadToEvm selector is incorrect
+            errorCeloPayload = "0x4b5ca6f0";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[5], 0, errorCeloPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "WrongSelector");
+
+            // celo payload length is incorrect
+            errorCeloPayload = "0x4b5ca6f400";
+            txData = await timelock.interface.encodeFunctionData("schedule", [l1BridgeMediators[5], 0, errorCeloPayload,
+                Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataOptimism, "IncorrectDataLength");
 
             // Restore to the state of the snapshot
             await snapshot.restore();

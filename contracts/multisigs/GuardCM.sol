@@ -81,6 +81,13 @@ error NoSelfCall();
 /// @param state Current proposal state.
 error NotDefeated(uint256 proposalId, ProposalState state);
 
+/// @dev Delegatecall reverted.
+error DelegateCallFailed();
+
+/// @dev Only the contract address is allowed, but the EOA account was provided.
+/// @param account Account address.
+error ContractOnly(address account);
+
 /// @dev Passed L2 chain Id is not supported.
 /// @param chainId L2 chain Id.
 error L2ChainIdNotSupported(uint256 chainId);
@@ -209,18 +216,18 @@ contract GuardCM is VerifyData {
             // Check if the data goes across the bridge
             if (bridgeParams.verifierL2 != address(0)) {
                 // Process the bridge logic
-                (bool success, bytes memory returndata) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(
+                (bool success, bytes memory returnData) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(
                     IBridgeVerifier.processBridgeData.selector, callDatas[i], bridgeParams.bridgeMediatorL2, bridgeParams.chainId));
                 // Process unsuccessful delegatecall
                 if (!success) {
                     // Get the revert message bytes
-                    if (returndata.length > 0) {
+                    if (returnData.length > 0) {
                         assembly {
-                            let returndata_size := mload(returndata)
-                            revert(add(32, returndata), returndata_size)
+                            let returnDataSize := mload(returnData)
+                            revert(add(32, returnData), returnDataSize)
                         }
                     } else {
-                        revert("Function call reverted");
+                        revert DelegateCallFailed();
                     }
                 }
             } else {
@@ -368,6 +375,11 @@ contract GuardCM is VerifyData {
             // Note that bridgeMediatorL2-s can be zero addresses, for example, for Arbitrum case
             if (bridgeMediatorL1s[i] == address(0) || verifierL2s[i] == address(0)) {
                 revert ZeroAddress();
+            }
+
+            // Check that the verifier is a contract
+            if (verifierL2s[i].code.length == 0) {
+                revert ContractOnly(verifierL2s[i]);
             }
 
             // Check chain Id
