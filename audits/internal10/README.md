@@ -29,7 +29,7 @@ File                                  |  % Stmts | % Branch |  % Funcs |  % Line
   VerifyBridgedData.sol               |      100 |      100 |      100 |      100 |                |
 --------------------------------------|----------|----------|----------|----------|----------------|
 ```
-Please, pay attention.
+Please, pay attention. More tests are needed and magic offsets (like MIN_ARBITRUM_PAYLOAD_LENGTH) can only be checked during testing
 
 ### Storage timelock
 Using sol2uml tools: https://github.com/naddison36/sol2uml <br>
