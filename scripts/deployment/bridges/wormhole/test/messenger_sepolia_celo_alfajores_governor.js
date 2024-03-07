@@ -42,7 +42,7 @@ async function main() {
     const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, sepoliaProvider);
 
     // ChildMockERC20 address on celoAlfajores
-    const mockChildERC20Address = "0x34235f9D447f9F54167e2Ac7A0F4283cB3fAD669";
+    const mockChildERC20Address = "0xE16adc7777B7C2a0d35033bd3504C028AB28EE8b";
     const mockChildERC20JSON = "artifacts/contracts/bridges/test/ChildMockERC20.sol/ChildMockERC20.json";
     contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);
