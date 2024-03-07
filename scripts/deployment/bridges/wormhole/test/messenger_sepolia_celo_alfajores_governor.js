@@ -26,7 +26,7 @@ async function main() {
     const wormholeRelayer = new ethers.Contract(wormholeRelayerAddress, wormholeRelayerABI, sepoliaProvider);
 
     // Test deployed WormholeMessenger address on celoAlfajores
-    const wormholeMessengerAddress = "0x945550dECe7E40ae70C6ebf5699637927eAF13E9"; // payable process on L2
+    const wormholeMessengerAddress = "0x118173028162C1b7c6Bf8488bd5dA2abd7c30F9D"; // payable process on L2
     const wormholeMessengerJSON = "artifacts/contracts/bridges/WormholeMessenger.sol/WormholeMessenger.json";
     contractFromJSON = fs.readFileSync(wormholeMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
