@@ -4,7 +4,7 @@ const { ethers } = require("ethers");
 const { expect } = require("chai");
 const fs = require("fs");
 
-const verifyRepo = false;
+const verifyRepo = true;
 const verifySetup = true;
 
 // Custom expect that is wrapped into try / catch block
@@ -361,8 +361,8 @@ async function checkOptimismMessenger(chainId, provider, globalsInstance, config
 
     log += ", address: " + optimismMessenger.address;
     // Check the foreign governor
-    const foreignGovernor = await optimismMessenger.foreignGovernor();
-    customExpect(foreignGovernor, globalsInstance["timelockAddress"], log + ", function: foreignGovernor()");
+    const sourceGovernor = await optimismMessenger.sourceGovernor();
+    customExpect(sourceGovernor, globalsInstance["timelockAddress"], log + ", function: sourceGovernor()");
 
     // Check L2CrossDomainMessengerAddress
     const proxyHome = await optimismMessenger.CDMContractProxyHome();
@@ -380,7 +380,7 @@ async function checkWormholeMessenger(chainId, provider, globalsInstance, config
     log += ", address: " + wormholeMessenger.address;
     // Check the source governor
     const sourceGovernor = await wormholeMessenger.sourceGovernor();
-    customExpect(sourceGovernor, globalsInstance["timelockAddress"], log + ", function: sourceGovernor()");
+    customExpect(sourceGovernor, globalsInstance["timelockAddress"].toLowerCase(), log + ", function: sourceGovernor()");
 
     // Check L2WormholeRelayerAddress
     const wormholeRelayer = await wormholeMessenger.wormholeRelayer();
@@ -388,7 +388,7 @@ async function checkWormholeMessenger(chainId, provider, globalsInstance, config
 
     // Check source governor chain Id
     const sourceGovernorChainId = await wormholeMessenger.sourceGovernorChainId();
-    customExpect(sourceGovernorChainId, globalsInstance["sourceGovernorChainId"], log + ", function: sourceGovernorChainId()");
+    customExpect(sourceGovernorChainId.toString(), globalsInstance["sourceGovernorChainId"], log + ", function: sourceGovernorChainId()");
 }
 
 async function main() {
@@ -454,8 +454,8 @@ async function main() {
             "chiado": "scripts/deployment/bridges/gnosis/globals_gnosis_chiado.json",
             "optimistic": "scripts/deployment/bridges/optimistic/globals_optimistic_mainnet.json",
             "optimisticSepolia": "scripts/deployment/bridges/optimistic/globals_optimistic_sepolia.json",
-            "base": "scripts/deployment/bridges/base/globals_base_mainnet.json",
-            "baseSepolia": "scripts/deployment/bridges/base/globals_base_sepolia.json",
+            "base": "scripts/deployment/bridges/optimistic/globals_base_mainnet.json",
+            "baseSepolia": "scripts/deployment/bridges/optimistic/globals_base_sepolia.json",
             "celo": "scripts/deployment/bridges/wormhole/globals_celo_mainnet.json",
             "celoAlfajores": "scripts/deployment/bridges/wormhole/globals_celo_alfajores.json"
         };
@@ -523,11 +523,6 @@ async function main() {
 
         // L2 contracts
         for (let i = 2; i < numChains; i++) {
-            // Skip chains that are not yet fully setup
-            if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "42220") {
-                continue;
-            }
-
             console.log("\n######## Verifying setup on CHAIN ID", configs[i]["chainId"]);
 
             const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];

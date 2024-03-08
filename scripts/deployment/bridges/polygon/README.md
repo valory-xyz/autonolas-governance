@@ -19,6 +19,7 @@ Parameters of the `globals.json` file:
 - `contractVerification`: flag for verifying contracts in deployment scripts (`true`) or skipping it (`false`);
 - `useLedger`: flag whether to use the hardware wallet (`true`) or proceed with the seed-phrase accounts (`false`);
 - `derivationPath`: string with the derivation path;
+- `providerName`: a network type (see `hardhat.config.js` for the network configurations);
 - `fxChildAddress`: (Polygon) Fx Child contract address serving as a system processor of inbound calls across the bridge;
 - `timelockAddress`: Timelock address on the root L1 network;
 
