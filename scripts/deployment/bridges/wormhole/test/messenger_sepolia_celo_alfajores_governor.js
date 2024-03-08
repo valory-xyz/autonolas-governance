@@ -26,7 +26,7 @@ async function main() {
     const wormholeRelayer = new ethers.Contract(wormholeRelayerAddress, wormholeRelayerABI, sepoliaProvider);
 
     // Test deployed WormholeMessenger address on celoAlfajores
-    const wormholeMessengerAddress = "0x118173028162C1b7c6Bf8488bd5dA2abd7c30F9D"; // payable process on L2
+    const wormholeMessengerAddress = "0xadBBC3FE82836366Bb178Fd210d4dd915e9B3415"; // payable process on L2
     const wormholeMessengerJSON = "artifacts/contracts/bridges/WormholeMessenger.sol/WormholeMessenger.json";
     contractFromJSON = fs.readFileSync(wormholeMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
@@ -42,7 +42,7 @@ async function main() {
     const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, sepoliaProvider);
 
     // ChildMockERC20 address on celoAlfajores
-    const mockChildERC20Address = "0xE16adc7777B7C2a0d35033bd3504C028AB28EE8b";
+    const mockChildERC20Address = "0xd6AA4Ec948d84f6Db8EEf25104CeE0Ecd280C74e";
     const mockChildERC20JSON = "artifacts/contracts/bridges/test/ChildMockERC20.sol/ChildMockERC20.json";
     contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);

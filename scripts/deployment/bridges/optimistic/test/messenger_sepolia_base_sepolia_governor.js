@@ -27,7 +27,7 @@ async function main() {
     const CDMProxy = new ethers.Contract(CDMProxyAddress, CDMProxyABI, sepoliaProvider);
 
     // Test deployed OptimismMessenger address on baseSepolia
-    const optimismMessengerAddress = "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee"; // payable process on L2
+    const optimismMessengerAddress = "0x6f7661F52fE1919996d0A4F68D09B344093a349d"; // payable process on L2
     const optimismMessengerJSON = "artifacts/contracts/bridges/OptimismMessenger.sol/OptimismMessenger.json";
     contractFromJSON = fs.readFileSync(optimismMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
@@ -43,7 +43,7 @@ async function main() {
     const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, sepoliaProvider);
 
     // ChildMockERC20 address on baseSepolia
-    const mockChildERC20Address = "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77";
+    const mockChildERC20Address = "0xc2c7E40674f1C7Bb99eFe5680Efd79842502bED4";
     const mockChildERC20JSON = "artifacts/contracts/bridges/test/ChildMockERC20.sol/ChildMockERC20.json";
     contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);

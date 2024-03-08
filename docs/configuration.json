@@ -162,7 +162,7 @@
       {
         "name": "OptimismMessenger",
         "artifact": "abis/0.8.23/OptimismMessenger.json",
-        "address": ""
+        "address": "0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c"
       }
     ]
   },
@@ -173,7 +173,7 @@
       {
         "name": "OptimismMessenger",
         "artifact": "abis/0.8.23/OptimismMessenger.json",
-        "address": "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"
+        "address": "0xaC26774616bbeD41b0CB69EA2ae7de366F430b23"
       }
     ]
   },
@@ -184,7 +184,7 @@
       {
         "name": "OptimismMessenger",
         "artifact": "abis/0.8.23/OptimismMessenger.json",
-        "address": ""
+        "address": "0xE49CB081e8d96920C38aA7AB90cb0294ab4Bc8EA"
       }
     ]
   },
@@ -195,7 +195,7 @@
       {
         "name": "OptimismMessenger",
         "artifact": "abis/0.8.23/OptimismMessenger.json",
-        "address": "0xeDd71796B90eaCc56B074C39BAC90ED2Ca6D93Ee"
+        "address": "0x6f7661F52fE1919996d0A4F68D09B344093a349d"
       }
     ]
   },
@@ -206,7 +206,7 @@
       {
         "name": "WormholeMessenger",
         "artifact": "abis/0.8.23/WormholeMessenger.json",
-        "address": ""
+        "address": "0x397125902ED2cA2d42104F621f448A2cE1bC8Fb7"
       }
     ]
   },
@@ -217,7 +217,7 @@
       {
         "name": "WormholeMessenger",
         "artifact": "abis/0.8.23/WormholeMessenger.json",
-        "address": "0x945550dECe7E40ae70C6ebf5699637927eAF13E9"
+        "address": "0xadBBC3FE82836366Bb178Fd210d4dd915e9B3415"
       }
     ]
   }
