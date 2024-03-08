@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
+[1.1.10]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.7-post-internal-audit...v1.1.8
 [1.1.7]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.6...v1.1.7-post-internal-audit
@@ -15,6 +16,13 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.1.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.1...v1.1.1
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
+
+## [v1.1.10] - 2024-03-08
+- Created `OptimismMessenger` contract to serve as a bridge mediator on Optimism and Base networks ([#114](https://github.com/valory-xyz/autonolas-governance/pull/114/files))
+- Created `WormholeMessenger` contracts to serve as a bridge mediator on Celo and other L2 networks ([#116](https://github.com/valory-xyz/autonolas-governance/pull/116/files))
+- Deploying `OptimismMessenger` to Optimism and Base, deploying `WormholeMessenger` on Celo
+- Updated documentation
+- Tests coverage
 
 ## [v1.1.9] - 2024-01-19
 - Refactor `GuardCM` reacting to C4A findings ([#107](https://github.com/valory-xyz/autonolas-governance/pull/107/files))

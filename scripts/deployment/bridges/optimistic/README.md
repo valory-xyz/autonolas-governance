@@ -19,7 +19,9 @@ Create a `globals.json` file in the root folder, or copy it from the file with p
 Parameters of the `globals.json` file:
 - `contractVerification`: flag for verifying contracts in deployment scripts (`true`) or skipping it (`false`);
 - `useLedger`: flag whether to use the hardware wallet (`true`) or proceed with the seed-phrase accounts (`false`);
-- `derivationPath`: string with the derivation path;
+- `providerName`: a network type (see `hardhat.config.js` for the network configurations);
+- `gasPriceInGwei`: gas price in Gwei;
+- `networkURL`: string with the network RPC URL;
 - `gasPriceInGwei`: gas price in Gwei;
 - `L2CrossDomainMessengerAddress`: (Optimism and Base) CFM Contract Proxy address serving as a system processor of inbound calls across the bridge;
 - `timelockAddress`: Timelock address on the root L1 network;

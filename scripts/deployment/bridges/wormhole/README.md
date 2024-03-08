@@ -20,7 +20,9 @@ Parameters of the `globals.json` file:
 - `contractVerification`: flag for verifying contracts in deployment scripts (`true`) or skipping it (`false`);
 - `useLedger`: flag whether to use the hardware wallet (`true`) or proceed with the seed-phrase accounts (`false`);
 - `derivationPath`: string with the derivation path;
+- `providerName`: a network type (see `hardhat.config.js` for the network configurations);
 - `gasPriceInGwei`: gas price in Gwei;
+- `networkURL`: string with the network RPC URL;
 - `L2WormholeRelayerAddress`: L2 WormholeRelayer address serving as a system processor of inbound calls across the bridge;
 - `timelockAddress`: Timelock address on the root L1 network;
 - `sourceGovernorChainId`: Source chain Id of the Governor on L1 using the Wormhole classification (2 for mainnet, 10002 for Sepolia)
