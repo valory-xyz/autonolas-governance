@@ -44,7 +44,6 @@ interface IVEOLAS {
 
 contract VoteWeighting is IErrors {
     event OwnerUpdated(address indexed owner);
-    event NewTypeWeight(uint256 time, uint256 weight, uint256 total_weight);
     event NewGaugeWeight(address indexed gauge_address, uint256 weight, uint256 total_weight);
     event VoteForGauge(address indexed user, address indexed gauge_addr, uint256 weight);
     event NewGauge(address addr, uint256 weight);
@@ -122,7 +121,7 @@ contract VoteWeighting is IErrors {
 
     /// @notice Fill sum of gauge weights for the same type week-over-week for missed checkins and return the sum for the future week.
     /// @return Sum of weights.
-    function _get_sum() internal returns (uint256) {
+    function _getSum() internal returns (uint256) {
         uint256 t = time_sum;
         if (t > 0) {
             Point memory pt = points_sum[t];
@@ -155,7 +154,7 @@ contract VoteWeighting is IErrors {
     /// @notice Fill historic gauge weights week-over-week for missed checkins and return the total for the future week.
     /// @param gauge_addr Address of the gauge.
     /// @return Gauge weight.
-    function _get_weight(address gauge_addr) internal returns (uint256) {
+    function _getWeight(address gauge_addr) internal returns (uint256) {
         uint256 t = time_weight[gauge_addr];
         if (t > 0) {
             Point memory pt = points_weight[gauge_addr][t];
@@ -198,7 +197,7 @@ contract VoteWeighting is IErrors {
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
 
         if (weight > 0) {
-            uint256 _old_sum = _get_sum();
+            uint256 _old_sum = _getSum();
 
             points_sum[next_time].bias = weight + _old_sum;
             time_sum = next_time;
@@ -216,21 +215,70 @@ contract VoteWeighting is IErrors {
 
     /// @notice Checkpoint to fill data common for all gauges.
     function checkpoint() external {
-        _get_sum();
+        _getSum();
     }
 
     /// @notice Checkpoint to fill data for both a specific gauge and common for all gauges.
     /// @param addr Gauge address.
     function checkpoint_gauge(address addr) external {
-        _get_weight(addr);
-        _get_sum();
+        _getWeight(addr);
+        _getSum();
+    }
+
+    /// @notice Get Gauge relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18).
+    ///         Inflation which will be received by it is inflation_rate * relative_weight / 1e18.
+    /// @param addr Gauge address.
+    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @return Value of relative weight normalized to 1e18.
+    function _gauge_relative_weight(address addr, uint256 time) internal view returns (uint256) {
+        uint256 t = time / WEEK * WEEK;
+        uint256 _total_sum = points_sum[t].bias;
+
+        if (_total_sum > 0) {
+            uint256 _gauge_weight = points_weight[addr][t].bias;
+            return 1e18 * _gauge_weight / _total_sum;
+        } else {
+            return 0;
+        }
+    }
+
+    /// @notice Get Gauge relative weight (not more than 1.0) normalized to 1e18.
+    ///         (e.g. 1.0 == 1e18). Inflation which will be received by it is
+    ///         inflation_rate * relative_weight / 1e18.
+    /// @param addr Gauge address.
+    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @return Value of relative weight normalized to 1e18.
+    function gauge_relative_weight(address addr, uint256 time) external view returns (uint256) {
+        return _gauge_relative_weight(addr, time);
+    }
+
+    /// @notice Get gauge weight normalized to 1e18 and also fill all the unfilled values for type and gauge records.
+    /// @dev Any address can call, however nothing is recorded if the values are filled already.
+    /// @param addr Gauge address.
+    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @return Value of relative weight normalized to 1e18.
+    function gauge_relative_weight_write(address addr, uint256 time) external returns (uint256) {
+        _getWeight(addr);
+        _getSum();
+        return _gauge_relative_weight(addr, time);
+    }
+
+    /// @notice Get gauge weight normalized to 1e18 and also fill all the unfilled values for type and gauge records.
+    /// @dev Any address can call, however nothing is recorded if the values are filled already.
+    /// @param addr Gauge address.
+    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @return Value of relative weight normalized to 1e18.
+    function gauge_relative_weight_write_now(address addr) external returns (uint256) {
+        _getWeight(addr);
+        _getSum();
+        return _gauge_relative_weight(addr, block.timestamp);
     }
 
     function _change_gauge_weight(address addr, uint256 weight) internal {
         // Change gauge weight
         // Only needed when testing in reality
-        uint256 old_gauge_weight = _get_weight(addr);
-        uint256 old_sum = _get_sum();
+        uint256 old_gauge_weight = _getWeight(addr);
+        uint256 old_sum = _getSum();
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
 
         points_weight[addr][next_time].bias = weight;
@@ -291,8 +339,8 @@ contract VoteWeighting is IErrors {
         // Remove old and schedule new slope changes
         // Remove slope changes for old slopes
         // Schedule recording of initial slope for next_time
-        points_weight[_gauge_addr][next_time].bias = _maxAndSub(_get_weight(_gauge_addr) + new_bias, old_bias);
-        points_sum[next_time].bias = _maxAndSub(_get_sum() + new_bias, old_bias);
+        points_weight[_gauge_addr][next_time].bias = _maxAndSub(_getWeight(_gauge_addr) + new_bias, old_bias);
+        points_sum[next_time].bias = _maxAndSub(_getSum() + new_bias, old_bias);
         if (old_slope.end > next_time) {
             points_weight[_gauge_addr][next_time].slope = _maxAndSub(points_weight[_gauge_addr][next_time].slope + new_slope.slope, old_slope.slope);
             points_sum[next_time].slope = _maxAndSub(points_sum[next_time].slope + new_slope.slope, old_slope.slope);
@@ -332,5 +380,21 @@ contract VoteWeighting is IErrors {
     //@return Sum of gauge weights.
     function getWeightsSum() external view returns (uint256) {
         return points_sum[time_sum].bias;
+    }
+
+    /// @notice Gets Gauge relative weight normalized to 1e18 at the last available timestamp.
+    /// @param addr Gauge address.
+    /// @param time Relative weight at the last available timestamp (must be recorded before that).
+    /// @return Value of relative weight normalized to 1e18.
+    function gauge_relative_weight_last(address addr) external view returns (uint256) {
+        return _gauge_relative_weight(addr, time_sum);
+    }
+
+    /// @notice Gets Gauge relative weight normalized to 1e18 at the block timestamp.
+    /// @param addr Gauge address.
+    /// @param time Relative weight at the block timestamp.
+    /// @return Value of relative weight normalized to 1e18.
+    function gauge_relative_weight_now(address addr) external view returns (uint256) {
+        return _gauge_relative_weight(addr, block.timestamp);
     }
 }
