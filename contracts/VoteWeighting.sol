@@ -60,10 +60,7 @@ contract VoteWeighting is IErrors {
 
     // Gauge parameters
     // All numbers are "fixed point" on the basis of 1e18
-    uint256 public n_gauges;
-
-    // Needed for enumeration
-    address[1000000000] public gauges;
+    address[] public gauges;
 
     // user -> gauge_addr -> VotedSlope
     mapping(address => mapping(address => VotedSlope)) public vote_user_slopes;
@@ -92,11 +89,6 @@ contract VoteWeighting is IErrors {
     // last scheduled time (next week)
     uint256 public time_sum;
 
-    // time -> total weight
-    mapping(uint256 => uint256) public points_total;
-    // last scheduled time
-    uint256 public time_total;
-
     /// @notice Contract constructor.
     /// @param _ve `VotingEscrow` contract address.
     constructor(address _ve) {
@@ -108,7 +100,7 @@ contract VoteWeighting is IErrors {
         // Set initial parameters
         owner = msg.sender;
         ve = _ve;
-        time_total = block.timestamp / WEEK * WEEK;
+        time_sum = block.timestamp / WEEK * WEEK;
     }
 
     /// @dev Changes the owner address.
@@ -133,7 +125,6 @@ contract VoteWeighting is IErrors {
     function _get_sum() internal returns (uint256) {
         uint256 t = time_sum;
         if (t > 0) {
-            // TODO: Memory or storage?
             Point memory pt = points_sum[t];
             for (uint256 i = 0; i < 500; i++) {
                 if (t > block.timestamp) {
@@ -149,7 +140,7 @@ contract VoteWeighting is IErrors {
                     pt.bias = 0;
                     pt.slope = 0;
                 }
-                // TODO: ensure to have a deep copy
+
                 points_sum[t] = pt;
                 if (t > block.timestamp) {
                     time_sum = t;
@@ -159,39 +150,6 @@ contract VoteWeighting is IErrors {
         } else {
             return 0;
         }
-    }
-
-    /// @notice Fill historic total weights week-over-week for missed checkins and return the total for the future week.
-    /// @return Total weight.
-    function _get_total() internal returns (uint256) {
-        uint256 t = time_total;
-
-        if (t > block.timestamp) {
-            // If we have already checkpointed - still need to change the value
-            t -= WEEK;
-        }
-
-        uint256 pt = points_total[t];
-
-        _get_sum();
-
-        for (uint256 i = 0; i < 500; i++) {
-            if (t > block.timestamp) {
-                break;
-            }
-            t += WEEK;
-            pt = 0;
-
-            uint256 type_sum = points_sum[t].bias;
-            pt = type_sum;
-
-            points_total[t] = pt;
-
-            if (t > block.timestamp) {
-                time_total = t;
-            }
-        }
-        return pt;
     }
 
     /// @notice Fill historic gauge weights week-over-week for missed checkins and return the total for the future week.
@@ -215,7 +173,7 @@ contract VoteWeighting is IErrors {
                     pt.bias = 0;
                     pt.slope = 0;
                 }
-                // TODO: Make sure about deep copy
+
                 points_weight[gauge_addr][t] = pt;
                 if (t > block.timestamp) {
                     time_weight[gauge_addr] = t;
@@ -235,20 +193,15 @@ contract VoteWeighting is IErrors {
         // TODO: Check that the addr was not added before?
         //require(gauge_types_[addr] == 0, "Cannot add the same gauge twice");
 
-        uint256 n = n_gauges;
-        n_gauges = n + 1;
-        gauges[n] = addr;
+        gauges.push(addr);
 
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
 
         if (weight > 0) {
             uint256 _old_sum = _get_sum();
-            uint256 _old_total = _get_total();
 
             points_sum[next_time].bias = weight + _old_sum;
             time_sum = next_time;
-            points_total[next_time] = _old_total + weight;
-            time_total = next_time;
 
             points_weight[addr][next_time].bias = weight;
         }
@@ -263,14 +216,14 @@ contract VoteWeighting is IErrors {
 
     /// @notice Checkpoint to fill data common for all gauges.
     function checkpoint() external {
-        _get_total();
+        _get_sum();
     }
 
     /// @notice Checkpoint to fill data for both a specific gauge and common for all gauges.
     /// @param addr Gauge address.
     function checkpoint_gauge(address addr) external {
         _get_weight(addr);
-        _get_total();
+        _get_sum();
     }
 
     function _change_gauge_weight(address addr, uint256 weight) internal {
@@ -278,7 +231,6 @@ contract VoteWeighting is IErrors {
         // Only needed when testing in reality
         uint256 old_gauge_weight = _get_weight(addr);
         uint256 old_sum = _get_sum();
-        uint256 _total_weight = _get_total();
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
 
         points_weight[addr][next_time].bias = weight;
@@ -288,11 +240,7 @@ contract VoteWeighting is IErrors {
         points_sum[next_time].bias = new_sum;
         time_sum = next_time;
 
-        _total_weight = _total_weight + new_sum - old_sum;
-        points_total[next_time] = _total_weight;
-        time_total = next_time;
-
-        emit NewGaugeWeight(addr, weight, _total_weight);
+        emit NewGaugeWeight(addr, weight, new_sum);
     }
 
     /// @notice Change weight of gauge `addr` to `weight`.
@@ -307,33 +255,33 @@ contract VoteWeighting is IErrors {
     /// @param _gauge_addr Gauge which `msg.sender` votes for.
     /// @param _user_weight Weight for a gauge in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
     function vote_for_gauge_weights(address _gauge_addr, uint256 _user_weight) external {
-        address escrow = ve;
-        PointVoting memory pv = IVEOLAS(escrow).getLastUserPoint(msg.sender);
+        PointVoting memory pv = IVEOLAS(ve).getLastUserPoint(msg.sender);
         uint256 slope = uint256(uint128(pv.slope));
-        uint256 lock_end = IVEOLAS(escrow).lockedEnd(msg.sender);
+        uint256 lock_end = IVEOLAS(ve).lockedEnd(msg.sender);
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
 
         require(lock_end > next_time, "Your token lock expires too soon");
         require(_user_weight >= 0 && _user_weight <= 10000, "You used all your voting power");
         require(block.timestamp >= last_user_vote[msg.sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often");
 
-        // Prepare slopes and biases in memory
-        // TODO: check memory vs storage
+        // Prepare old and new slopes and biases
         VotedSlope memory old_slope = vote_user_slopes[msg.sender][_gauge_addr];
-        uint256 old_dt;
+        uint256 old_bias;
         if (old_slope.end > next_time) {
-            old_dt = old_slope.end - next_time;
+            old_bias = old_slope.slope * (old_slope.end - next_time);
         }
-        uint256 old_bias = old_slope.slope * old_dt;
 
-        // TODO: check memory vs storage
         VotedSlope memory new_slope = VotedSlope({
             slope: slope * _user_weight / 10000,
             end: lock_end,
             power: _user_weight
         });
-        uint256 new_dt = lock_end - next_time; // dev: raises when expired
-        uint256 new_bias = new_slope.slope * new_dt;
+
+        // Check for the lock end expiration
+        if (next_time > lock_end) {
+            revert LockExpired(msg.sender, lock_end, next_time);
+        }
+        uint256 new_bias = new_slope.slope * (lock_end - next_time);
 
         uint256 power_used = vote_user_power[msg.sender];
         power_used = power_used + new_slope.power - old_slope.power;
@@ -343,16 +291,11 @@ contract VoteWeighting is IErrors {
         // Remove old and schedule new slope changes
         // Remove slope changes for old slopes
         // Schedule recording of initial slope for next_time
-        uint256 old_weight_bias = _get_weight(_gauge_addr);
-        uint256 old_weight_slope = points_weight[_gauge_addr][next_time].slope;
-        uint256 old_sum_bias = _get_sum();
-        uint256 old_sum_slope = points_sum[next_time].slope;
-
-        points_weight[_gauge_addr][next_time].bias = max(old_weight_bias + new_bias, old_bias) - old_bias;
-        points_sum[next_time].bias = max(old_sum_bias + new_bias, old_bias) - old_bias;
+        points_weight[_gauge_addr][next_time].bias = _maxAndSub(_get_weight(_gauge_addr) + new_bias, old_bias);
+        points_sum[next_time].bias = _maxAndSub(_get_sum() + new_bias, old_bias);
         if (old_slope.end > next_time) {
-            points_weight[_gauge_addr][next_time].slope = max(old_weight_slope + new_slope.slope, old_slope.slope) - old_slope.slope;
-            points_sum[next_time].slope = max(old_sum_slope + new_slope.slope, old_slope.slope) - old_slope.slope;
+            points_weight[_gauge_addr][next_time].slope = _maxAndSub(points_weight[_gauge_addr][next_time].slope + new_slope.slope, old_slope.slope);
+            points_sum[next_time].slope = _maxAndSub(points_sum[next_time].slope + new_slope.slope, old_slope.slope);
         } else {
             points_weight[_gauge_addr][next_time].slope += new_slope.slope;
             points_sum[next_time].slope += new_slope.slope;
@@ -366,8 +309,6 @@ contract VoteWeighting is IErrors {
         changes_weight[_gauge_addr][new_slope.end] += new_slope.slope;
         changes_sum[new_slope.end] += new_slope.slope;
 
-        _get_total();
-
         vote_user_slopes[msg.sender][_gauge_addr] = new_slope;
 
         // Record last action time
@@ -376,8 +317,8 @@ contract VoteWeighting is IErrors {
         emit VoteForGauge(msg.sender, _gauge_addr, _user_weight);
     }
 
-    function max(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a > b ? a : b;
+    function _maxAndSub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a > b ? a - b : 0;
     }
 
     /// @notice Get current gauge weight.
@@ -386,17 +327,10 @@ contract VoteWeighting is IErrors {
     function getGaugeWeight(address addr) external view returns (uint256) {
         return points_weight[addr][time_weight[addr]].bias;
     }
-
-    /// @notice Get current total (type-weighted) weight.
-    /// @return Total weight.
-    function getTotalWeight() external view returns (uint256) {
-        return points_total[time_total];
-    }
-
-    // TODO: Not needed?
-    //@notice Get sum of gauge weights per type.
+    
+    //@notice Get sum of gauge weights.
     //@return Sum of gauge weights.
-    function getWeightsSumPerType() external view returns (uint256) {
+    function getWeightsSum() external view returns (uint256) {
         return points_sum[time_sum].bias;
     }
 }
