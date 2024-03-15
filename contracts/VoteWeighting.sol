@@ -57,9 +57,11 @@ contract VoteWeighting is IErrors {
     // Contract owner address
     address public owner;
 
-    // Gauge parameters
-    // All numbers are "fixed point" on the basis of 1e18
+    // TODO: Convert both to cyclic map
+    // Set of gauges
     address[] public gauges;
+    // mapping of gauges
+    mapping(address => bool) public mapGauges;
 
     // user -> gauge_addr -> VotedSlope
     mapping(address => mapping(address => VotedSlope)) public vote_user_slopes;
@@ -155,6 +157,11 @@ contract VoteWeighting is IErrors {
     /// @param gauge_addr Address of the gauge.
     /// @return Gauge weight.
     function _getWeight(address gauge_addr) internal returns (uint256) {
+        // Check that the gauge exists
+        if (!mapGauges[gauge_addr]) {
+            revert("Does not exist");
+        }
+
         uint256 t = time_weight[gauge_addr];
         if (t > 0) {
             Point memory pt = points_weight[gauge_addr][t];
@@ -188,9 +195,10 @@ contract VoteWeighting is IErrors {
     /// @param addr Gauge address.
     /// @param weight Gauge weight.
     function add_gauge(address addr, uint256 weight) external {
-        require(msg.sender == owner, "Only owner can add gauge");
-        // TODO: Check that the addr was not added before?
-        //require(gauge_types_[addr] == 0, "Cannot add the same gauge twice");
+        if (mapGauges[addr]) {
+            revert("Cannot add the same gauge twice");
+        }
+        mapGauges[addr] = true;
 
         gauges.push(addr);
 
@@ -266,7 +274,6 @@ contract VoteWeighting is IErrors {
     /// @notice Get gauge weight normalized to 1e18 and also fill all the unfilled values for type and gauge records.
     /// @dev Any address can call, however nothing is recorded if the values are filled already.
     /// @param addr Gauge address.
-    /// @param time Relative weight at the specified timestamp in the past or present.
     /// @return Value of relative weight normalized to 1e18.
     function gauge_relative_weight_write_now(address addr) external returns (uint256) {
         _getWeight(addr);
@@ -384,7 +391,6 @@ contract VoteWeighting is IErrors {
 
     /// @notice Gets Gauge relative weight normalized to 1e18 at the last available timestamp.
     /// @param addr Gauge address.
-    /// @param time Relative weight at the last available timestamp (must be recorded before that).
     /// @return Value of relative weight normalized to 1e18.
     function gauge_relative_weight_last(address addr) external view returns (uint256) {
         return _gauge_relative_weight(addr, time_sum);
@@ -392,7 +398,6 @@ contract VoteWeighting is IErrors {
 
     /// @notice Gets Gauge relative weight normalized to 1e18 at the block timestamp.
     /// @param addr Gauge address.
-    /// @param time Relative weight at the block timestamp.
     /// @return Value of relative weight normalized to 1e18.
     function gauge_relative_weight_now(address addr) external view returns (uint256) {
         return _gauge_relative_weight(addr, block.timestamp);
