@@ -28,7 +28,7 @@ contract ProcessBridgedDataOptimism is VerifyBridgedData {
     // processMessageFromSource selector (Optimism and Base chains)
     bytes4 public constant PROCESS_MESSAGE_FROM_SOURCE = bytes4(keccak256(bytes("processMessageFromSource(bytes)")));
     // Minimum payload length for message on Optimism accounting for all required encoding and at least one selector
-    uint256 public constant MIN_OPTIMISM_PAYLOAD_LENGTH = 264;
+    uint256 public constant MIN_OPTIMISM_PAYLOAD_LENGTH = 292;
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.

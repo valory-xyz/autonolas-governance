@@ -28,7 +28,7 @@ contract ProcessBridgedDataWormhole is VerifyBridgedData {
     // sendPayloadToEvm selector in bridge mediator L1
     bytes4 public constant SEND_MESSAGE = bytes4(keccak256(bytes("sendPayloadToEvm(uint16,address,bytes,uint256,uint256)")));
     // Minimum payload length for message sent via Wormhole accounting for all required encoding and at least one selector
-    uint256 public constant MIN_OPTIMISM_PAYLOAD_LENGTH = 520;
+    uint256 public constant MIN_OPTIMISM_PAYLOAD_LENGTH = 324;
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
