@@ -193,8 +193,7 @@ contract VoteWeighting is IErrors {
 
     /// @notice Add gauge `addr` of type `gauge_type` with weight `weight`.
     /// @param addr Gauge address.
-    /// @param weight Gauge weight.
-    function add_gauge(address addr, uint256 weight) external {
+    function add_gauge(address addr) external {
         if (mapGauges[addr]) {
             revert("Cannot add the same gauge twice");
         }
@@ -203,15 +202,6 @@ contract VoteWeighting is IErrors {
         gauges.push(addr);
 
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
-
-        if (weight > 0) {
-            uint256 _old_sum = _getSum();
-
-            points_sum[next_time].bias = weight + _old_sum;
-            time_sum = next_time;
-
-            points_weight[addr][next_time].bias = weight;
-        }
 
         if (time_sum == 0) {
             time_sum = next_time;
@@ -281,6 +271,7 @@ contract VoteWeighting is IErrors {
         return _gauge_relative_weight(addr, block.timestamp);
     }
 
+    // TODO: Supposedly this can only bring weight to zero if something went wrong with the contract
     function _change_gauge_weight(address addr, uint256 weight) internal {
         // Change gauge weight
         // Only needed when testing in reality
