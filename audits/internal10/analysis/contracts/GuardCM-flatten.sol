@@ -1,9 +1,52 @@
-// SPDX-License-Identifier: MIT
+// Sources flattened with hardhat v2.20.1 https://hardhat.org
+// File contracts/multisigs/VerifyData.sol
+
+// Original license: SPDX_License_Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {Enum} from "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
-import {VerifyData} from "./VerifyData.sol";
+/// @title Enum - Collection of enums
+/// @author Richard Meissner - <richard@gnosis.pm>
+contract Enum {
+    enum Operation {Call, DelegateCall}
+}
 
+/// @dev The combination of target and selector is not authorized.
+/// @param target Target address.
+/// @param selector Function selector.
+/// @param chainId Chain Id.
+error NotAuthorized(address target, bytes4 selector, uint256 chainId);
+
+/// @title VerifyData - Smart contract for verifying the Guard CM data
+/// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
+/// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
+/// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
+abstract contract VerifyData {
+    // Mapping of (target address | bytes4 selector | uint64 chain Id) => enabled / disabled
+    mapping(uint256 => bool) public mapAllowedTargetSelectorChainIds;
+
+    /// @dev Verifies authorized combinations of target and selector.
+    /// @notice The bottom-most internal function is still not "view" since some reverts are not explicitly handled
+    /// @param target Target address.
+    /// @param data Payload bytes.
+    /// @param chainId Chain Id.
+    function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+        // Push a pair of key defining variables into one key
+        // target occupies first 160 bits
+        uint256 targetSelectorChainId = uint256(uint160(target));
+        // selector occupies next 32 bits
+        targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160;
+        // chainId occupies next 64 bits
+        targetSelectorChainId |= chainId << 192;
+
+        // Check the authorized combination of target and selector
+        if (!mapAllowedTargetSelectorChainIds[targetSelectorChainId]) {
+            revert NotAuthorized(target, bytes4(data), chainId);
+        }
+    }
+}
+
+
+// File contracts/multisigs/GuardCM.sol
 interface IGovernor {
     function state(uint256 proposalId) external returns (ProposalState);
 }
@@ -80,13 +123,6 @@ error NoSelfCall();
 /// @param proposalId Proposal Id.
 /// @param state Current proposal state.
 error NotDefeated(uint256 proposalId, ProposalState state);
-
-/// @dev Delegatecall reverted.
-error DelegateCallFailed();
-
-/// @dev Only the contract address is allowed, but the EOA account was provided.
-/// @param account Account address.
-error ContractOnly(address account);
 
 /// @dev Passed L2 chain Id is not supported.
 /// @param chainId L2 chain Id.
@@ -216,18 +252,18 @@ contract GuardCM is VerifyData {
             // Check if the data goes across the bridge
             if (bridgeParams.verifierL2 != address(0)) {
                 // Process the bridge logic
-                (bool success, bytes memory returnData) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(
+                (bool success, bytes memory returndata) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(
                     IBridgeVerifier.processBridgeData.selector, callDatas[i], bridgeParams.bridgeMediatorL2, bridgeParams.chainId));
                 // Process unsuccessful delegatecall
                 if (!success) {
                     // Get the revert message bytes
-                    if (returnData.length > 0) {
+                    if (returndata.length > 0) {
                         assembly {
-                            let returnDataSize := mload(returnData)
-                            revert(add(32, returnData), returnDataSize)
+                            let returndata_size := mload(returndata)
+                            revert(add(32, returndata), returndata_size)
                         }
                     } else {
-                        revert DelegateCallFailed();
+                        revert("Function call reverted");
                     }
                 }
             } else {
@@ -375,11 +411,6 @@ contract GuardCM is VerifyData {
             // Note that bridgeMediatorL2-s can be zero addresses, for example, for Arbitrum case
             if (bridgeMediatorL1s[i] == address(0) || verifierL2s[i] == address(0)) {
                 revert ZeroAddress();
-            }
-
-            // Check that the verifier is a contract
-            if (verifierL2s[i].code.length == 0) {
-                revert ContractOnly(verifierL2s[i]);
             }
 
             // Check chain Id

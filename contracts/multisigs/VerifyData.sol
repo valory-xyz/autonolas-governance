@@ -25,13 +25,14 @@ abstract contract VerifyData {
         // target occupies first 160 bits
         uint256 targetSelectorChainId = uint256(uint160(target));
         // selector occupies next 32 bits
-        targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160;
+        bytes4 targetSelector = bytes4(data);
+        targetSelectorChainId |= uint256(uint32(targetSelector)) << 160;
         // chainId occupies next 64 bits
         targetSelectorChainId |= chainId << 192;
 
         // Check the authorized combination of target and selector
         if (!mapAllowedTargetSelectorChainIds[targetSelectorChainId]) {
-            revert NotAuthorized(target, bytes4(data), chainId);
+            revert NotAuthorized(target, targetSelector, chainId);
         }
     }
 }

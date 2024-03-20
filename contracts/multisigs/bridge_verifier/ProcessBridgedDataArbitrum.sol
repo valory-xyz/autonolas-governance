@@ -13,22 +13,17 @@ error IncorrectDataLength(uint256 expected, uint256 provided);
 /// @param chainId Chain Id.
 error WrongSelector(bytes4 functionSig, uint256 chainId);
 
-/// @dev Provided wrong L2 bridge mediator address.
-/// @param provided Provided address.
-/// @param expected Expected address.
-error WrongL2BridgeMediator(address provided, address expected);
-
 /// @title ProcessBridgedDataArbitrum - Smart contract for verifying the Guard CM bridged data on Arbitrum
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract ProcessBridgedDataArbitrum is VerifyBridgedData {
     // unsafeCreateRetryableTicket selector in bridge mediator L1
-    bytes4 public constant CREATE_TICKET_UNSAFE = bytes4(keccak256(bytes("unsafeCreateRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,uint256,bytes)")));
+    bytes4 public constant CREATE_TICKET_UNSAFE = bytes4(keccak256(bytes("unsafeCreateRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)")));
     // createRetryableTicket selector in bridge mediator L1
-    bytes4 public constant CREATE_TICKET = bytes4(keccak256(bytes("createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,uint256,bytes)")));
+    bytes4 public constant CREATE_TICKET = bytes4(keccak256(bytes("createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)")));
     // Minimum payload length for message on Arbitrum accounting for all required encoding and at least one selector
-    uint256 public constant MIN_ARBITRUM_PAYLOAD_LENGTH = 584;
+    uint256 public constant MIN_ARBITRUM_PAYLOAD_LENGTH = 324;
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
@@ -57,8 +52,8 @@ contract ProcessBridgedDataArbitrum is VerifyBridgedData {
         }
 
         // Decode the payload depending on the selector
-        (address targetAddress, , , , , , , , bytes memory targetPayload) =
-            abi.decode(payload, (address, uint256, uint256, address, address, uint256, uint256, uint256, bytes));
+        (address targetAddress, , , , , , , bytes memory targetPayload) =
+            abi.decode(payload, (address, uint256, uint256, address, address, uint256, uint256, bytes));
 
         // Verify the scope of the data
         _verifyData(targetAddress, targetPayload, chainId);
