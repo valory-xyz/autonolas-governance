@@ -1,0 +1,257 @@
+
+False positive. Ref: /// @notice The bottom-most internal function is still not "view" since some reverts are not explicitly handled
+Warning: Function state mutability can be restricted to view
+
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+False positive.
+INFO:Detectors:
+VerifyData.mapAllowedTargetSelectorChainIds (ProcessBridgedDataArbitrum-flatten.sol#18) is never initialized. It is used in:
+	- VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataArbitrum-flatten.sol#25-38)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-state-variables
+
+Not issue, but good point for optimizing.
+INFO:Detectors:
+Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataArbitrum-flatten.sol#25-38):
+	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (ProcessBridgedDataArbitrum-flatten.sol#30)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (ProcessBridgedDataArbitrum-flatten.sol#36)
+
+False positive.
+Dubious typecast in ProcessBridgedDataArbitrum.processBridgeData(bytes,address,uint256) (ProcessBridgedDataArbitrum-flatten.sol#144-173):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (ProcessBridgedDataArbitrum-flatten.sol#151)
+Dubious typecast in ProcessBridgedDataArbitrum.slitherConstructorConstantVariables() (ProcessBridgedDataArbitrum-flatten.sol#133-174):
+	bytes32 => bytes4 casting occurs in CREATE_TICKET_UNSAFE = bytes4(keccak256(bytes)(bytes(unsafeCreateRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,uint256,bytes)))) (ProcessBridgedDataArbitrum-flatten.sol#135)
+	bytes32 => bytes4 casting occurs in CREATE_TICKET = bytes4(keccak256(bytes)(bytes(createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,uint256,bytes)))) (ProcessBridgedDataArbitrum-flatten.sol#137)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Not issue.
+INFO:Detectors:
+VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataArbitrum-flatten.sol#74-111) uses assembly
+	- INLINE ASM (ProcessBridgedDataArbitrum-flatten.sol#81-88)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+False positive.
+INFO:Detectors:
+VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataArbitrum-flatten.sol#74-111) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+
+Not issue.
+INFO:Detectors:
+Function VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataArbitrum-flatten.sol#74-111) contains magic numbers: 20, 16
+Function VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataArbitrum-flatten.sol#25-38) contains magic numbers: 160, 192
+Function ProcessBridgedDataArbitrum.processBridgeData(bytes,address,uint256) (ProcessBridgedDataArbitrum-flatten.sol#144-173) contains magic number: 4
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive.
+INFO:Detectors:
+VerifyData.mapAllowedTargetSelectorChainIds (ProcessBridgedDataWormhole-flatten.sol#18) is never initialized. It is used in:
+	- VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataWormhole-flatten.sol#25-38)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-state-variables
+
+
+False positive.
+INFO:Detectors:
+Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataWormhole-flatten.sol#25-38):
+	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (ProcessBridgedDataWormhole-flatten.sol#30)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (ProcessBridgedDataWormhole-flatten.sol#36)
+Dubious typecast in ProcessBridgedDataWormhole.processBridgeData(bytes,address,uint256) (ProcessBridgedDataWormhole-flatten.sol#148-189):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (ProcessBridgedDataWormhole-flatten.sol#155)
+Dubious typecast in ProcessBridgedDataWormhole.slitherConstructorConstantVariables() (ProcessBridgedDataWormhole-flatten.sol#136-190):
+	bytes32 => bytes4 casting occurs in SEND_MESSAGE_REFUND = bytes4(keccak256(bytes)(bytes(sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)))) (ProcessBridgedDataWormhole-flatten.sol#138)
+	bytes32 => bytes4 casting occurs in SEND_MESSAGE = bytes4(keccak256(bytes)(bytes(sendPayloadToEvm(uint16,address,bytes,uint256,uint256)))) (ProcessBridgedDataWormhole-flatten.sol#140)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+
+False positive.
+INFO:Detectors:
+VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataWormhole-flatten.sol#74-111) uses assembly
+	- INLINE ASM (ProcessBridgedDataWormhole-flatten.sol#81-88)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+
+Not issue.
+INFO:Detectors:
+Function VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataWormhole-flatten.sol#74-111) contains magic numbers: 20, 16
+Function VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataWormhole-flatten.sol#25-38) contains magic numbers: 160, 192
+Function ProcessBridgedDataWormhole.processBridgeData(bytes,address,uint256) (ProcessBridgedDataWormhole-flatten.sol#148-189) contains magic number: 4
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive. trusted destinations.
+INFO:Detectors:
+GuardCM._verifySchedule(bytes,bytes4) (GuardCM-flatten.sol#225-274) uses delegatecall to a input-controlled function id
+	- (success,returndata) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(IBridgeVerifier.processBridgeData.selector,callDatas[i_scope_0],bridgeParams.bridgeMediatorL2,bridgeParams.chainId)) (GuardCM-flatten.sol#255-256)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#controlled-delegatecall
+
+Probably False positive. Disputed question.
+INFO:Detectors:
+Manipulated call found: (success,returndata) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(IBridgeVerifier.processBridgeData.selector,callDatas[i_scope_0],bridgeParams.bridgeMediatorL2,bridgeParams.chainId)) (GuardCM-flatten.sol#255-256) in GuardCM._verifySchedule(bytes,bytes4) (GuardCM-flatten.sol#225-274)
+Only the calldata could be manipulated
+	The calldata could be manipulated through GuardCM.checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) (GuardCM-flatten.sol#282-327)
+	The calldata could be manipulated through GuardCM.setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[]) (GuardCM-flatten.sol#391-429)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/arbitrary_call.md
+
+Not issue. For optimization
+INFO:Detectors:
+Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (GuardCM-flatten.sol#32-45):
+	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (GuardCM-flatten.sol#37)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (GuardCM-flatten.sol#43)
+Dubious typecast in GuardCM.checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) (GuardCM-flatten.sol#282-327):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (GuardCM-flatten.sol#310)
+Dubious typecast in GuardCM.setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[]) (GuardCM-flatten.sol#391-429):
+	uint256 => uint64 casting occurs in bridgeParams.chainId = uint64(chainIds[i]) (GuardCM-flatten.sol#426)
+
+Not issue. See above.
+Dubious typecast in GuardCM.slitherConstructorConstantVariables() (GuardCM-flatten.sol#134-489):
+	bytes32 => bytes4 casting occurs in SCHEDULE = bytes4(keccak256(bytes)(bytes(schedule(address,uint256,bytes,bytes32,bytes32,uint256)))) (GuardCM-flatten.sol#144)
+	bytes32 => bytes4 casting occurs in SCHEDULE_BATCH = bytes4(keccak256(bytes)(bytes(scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)))) (GuardCM-flatten.sol#146)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+False positive.
+INFO:Detectors:
+Reentrancy in GuardCM.pause() (GuardCM-flatten.sol#436-454):
+	External calls:
+	- state = IGovernor(governor).state(governorCheckProposalId) (GuardCM-flatten.sol#442)
+	State variables written after the call(s):
+	- paused = 2 (GuardCM-flatten.sol#444)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+
+False positive.
+Reentrancy in GuardCM.pause() (GuardCM-flatten.sol#436-454):
+	External calls:
+	- state = IGovernor(governor).state(governorCheckProposalId) (GuardCM-flatten.sol#442)
+	Event emitted after the call(s):
+	- GuardPaused(msg.sender) (GuardCM-flatten.sol#453)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Not issue.
+INFO:Detectors:
+GuardCM._verifySchedule(bytes,bytes4) (GuardCM-flatten.sol#225-274) uses assembly
+	- INLINE ASM (GuardCM-flatten.sol#261-264)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+
+Not issue.
+INFO:Detectors:
+Low level call in GuardCM._verifySchedule(bytes,bytes4) (GuardCM-flatten.sol#225-274):
+	- (success,returndata) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(IBridgeVerifier.processBridgeData.selector,callDatas[i_scope_0],bridgeParams.bridgeMediatorL2,bridgeParams.chainId)) (GuardCM-flatten.sol#255-256)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+
+Not issue.
+INFO:Detectors:
+Variable GuardCM.setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[]).bridgeMediatorL1s (GuardCM-flatten.sol#392) is too similar to GuardCM.setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[]).bridgeMediatorL2s (GuardCM-flatten.sol#395)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#variable-names-too-similar
+INFO:Detectors:
+Function VerifyData._verifyData(address,bytes,uint256) (GuardCM-flatten.sol#32-45) contains magic numbers: 160, 192
+Function GuardCM._verifySchedule(bytes,bytes4) (GuardCM-flatten.sol#225-274) contains magic numbers: 4, 32
+Function GuardCM.setTargetSelectorChainIds(address[],bytes4[],uint256[],bool[]) (GuardCM-flatten.sol#336-382) contains magic numbers: 160, 192
+Function GuardCM.getTargetSelectorChainId(address,bytes4,uint256) (GuardCM-flatten.sol#476-488) contains magic numbers: 160, 192
+Function GuardCM.slitherConstructorVariables() (GuardCM-flatten.sol#134-489) contains magic number: 88250008686885504216650933897987879122244685460173810624866685274624741477673
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive.
+INFO:Detectors:
+VerifyData.mapAllowedTargetSelectorChainIds (ProcessBridgedDataGnosis-flatten.sol#18) is never initialized. It is used in:
+	- VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataGnosis-flatten.sol#25-38)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-state-variables
+
+False positive. See above.
+INFO:Detectors:
+Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataGnosis-flatten.sol#25-38):
+	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (ProcessBridgedDataGnosis-flatten.sol#30)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (ProcessBridgedDataGnosis-flatten.sol#36)
+Dubious typecast in ProcessBridgedDataGnosis.processBridgeData(bytes,address,uint256) (ProcessBridgedDataGnosis-flatten.sol#147-194):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (ProcessBridgedDataGnosis-flatten.sol#154)
+	bytes => bytes4 casting occurs in functionSig = bytes4(mediatorPayload) (ProcessBridgedDataGnosis-flatten.sol#178)
+Dubious typecast in ProcessBridgedDataGnosis.slitherConstructorConstantVariables() (ProcessBridgedDataGnosis-flatten.sol#135-195):
+	bytes32 => bytes4 casting occurs in REQUIRE_TO_PASS_MESSAGE = bytes4(keccak256(bytes)(bytes(requireToPassMessage(address,bytes,uint256)))) (ProcessBridgedDataGnosis-flatten.sol#137)
+	bytes32 => bytes4 casting occurs in PROCESS_MESSAGE_FROM_FOREIGN = bytes4(keccak256(bytes)(bytes(processMessageFromForeign(bytes)))) (ProcessBridgedDataGnosis-flatten.sol#139)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Not issue.
+INFO:Detectors:
+VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataGnosis-flatten.sol#74-111) uses assembly
+	- INLINE ASM (ProcessBridgedDataGnosis-flatten.sol#81-88)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+Not issue.
+INFO:Detectors:
+Function VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataGnosis-flatten.sol#74-111) contains magic numbers: 20, 16
+Function VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataGnosis-flatten.sol#25-38) contains magic numbers: 160, 192
+Function ProcessBridgedDataGnosis.processBridgeData(bytes,address,uint256) (ProcessBridgedDataGnosis-flatten.sol#147-194) contains magic number: 4
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive. Not in storage.
+INFO:Detectors:
+In a function ProcessBridgedDataGnosis.processBridgeData(bytes,address,uint256) (ProcessBridgedDataGnosis-flatten.sol#147-194) variable VerifyBridgedData.SELECTOR_DATA_LENGTH (ProcessBridgedDataGnosis-flatten.sol#57) is read multiple times
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/multiple_storage_read.md
+
+False positive. 
+INFO:Detectors:
+VerifyData.mapAllowedTargetSelectorChainIds (ProcessBridgedDataPolygon-flatten.sol#19) is never initialized. It is used in:
+	- VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataPolygon-flatten.sol#26-39)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-state-variables
+
+False positive. See above.
+INFO:Detectors:
+Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataPolygon-flatten.sol#26-39):
+	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (ProcessBridgedDataPolygon-flatten.sol#31)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (ProcessBridgedDataPolygon-flatten.sol#37)
+Dubious typecast in ProcessBridgedDataPolygon.processBridgeData(bytes,address,uint256) (ProcessBridgedDataPolygon-flatten.sol#147-179):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (ProcessBridgedDataPolygon-flatten.sol#154)
+Dubious typecast in ProcessBridgedDataPolygon.slitherConstructorConstantVariables() (ProcessBridgedDataPolygon-flatten.sol#137-180):
+	bytes32 => bytes4 casting occurs in SEND_MESSAGE_TO_CHILD = bytes4(keccak256(bytes)(bytes(sendMessageToChild(address,bytes)))) (ProcessBridgedDataPolygon-flatten.sol#139)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Not issue.
+INFO:Detectors:
+VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataPolygon-flatten.sol#75-112) uses assembly
+	- INLINE ASM (ProcessBridgedDataPolygon-flatten.sol#82-89)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+Not issue.
+INFO:Detectors:
+Function VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataPolygon-flatten.sol#75-112) contains magic numbers: 20, 16
+Function VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataPolygon-flatten.sol#26-39) contains magic numbers: 160, 192
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive.
+INFO:Detectors:
+VerifyData.mapAllowedTargetSelectorChainIds (ProcessBridgedDataOptimism-flatten.sol#18) is never initialized. It is used in:
+	- VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataOptimism-flatten.sol#25-38)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-state-variables
+
+False positive. See above.
+INFO:Detectors:
+Dubious typecast in VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataOptimism-flatten.sol#25-38):
+	bytes => bytes4 casting occurs in targetSelectorChainId |= uint256(uint32(bytes4(data))) << 160 (ProcessBridgedDataOptimism-flatten.sol#30)
+	bytes => bytes4 casting occurs in revert NotAuthorized(address,bytes4,uint256)(target,bytes4(data),chainId) (ProcessBridgedDataOptimism-flatten.sol#36)
+Dubious typecast in ProcessBridgedDataOptimism.processBridgeData(bytes,address,uint256) (ProcessBridgedDataOptimism-flatten.sol#147-194):
+	bytes => bytes4 casting occurs in functionSig = bytes4(data) (ProcessBridgedDataOptimism-flatten.sol#154)
+	bytes => bytes4 casting occurs in functionSig = bytes4(mediatorPayload) (ProcessBridgedDataOptimism-flatten.sol#178)
+Dubious typecast in ProcessBridgedDataOptimism.slitherConstructorConstantVariables() (ProcessBridgedDataOptimism-flatten.sol#135-195):
+	bytes32 => bytes4 casting occurs in SEND_MESSAGE = bytes4(keccak256(bytes)(bytes(sendMessage(address,bytes,uint32)))) (ProcessBridgedDataOptimism-flatten.sol#137)
+	bytes32 => bytes4 casting occurs in PROCESS_MESSAGE_FROM_SOURCE = bytes4(keccak256(bytes)(bytes(processMessageFromSource(bytes)))) (ProcessBridgedDataOptimism-flatten.sol#139)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+Not issue.
+INFO:Detectors:
+VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataOptimism-flatten.sol#74-111) uses assembly
+	- INLINE ASM (ProcessBridgedDataOptimism-flatten.sol#81-88)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+
+Not issue.
+INFO:Detectors:
+Function VerifyBridgedData._verifyBridgedData(bytes,uint256) (ProcessBridgedDataOptimism-flatten.sol#74-111) contains magic numbers: 20, 16
+Function VerifyData._verifyData(address,bytes,uint256) (ProcessBridgedDataOptimism-flatten.sol#25-38) contains magic numbers: 160, 192
+Function ProcessBridgedDataOptimism.processBridgeData(bytes,address,uint256) (ProcessBridgedDataOptimism-flatten.sol#147-194) contains magic number: 4
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
+
+False positive.
+INFO:Detectors:
+In a function ProcessBridgedDataOptimism.processBridgeData(bytes,address,uint256) (ProcessBridgedDataOptimism-flatten.sol#147-194) variable VerifyBridgedData.SELECTOR_DATA_LENGTH (ProcessBridgedDataOptimism-flatten.sol#57) is read multiple times
+

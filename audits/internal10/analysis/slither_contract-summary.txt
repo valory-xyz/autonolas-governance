@@ -1,0 +1,195 @@
+'solc --version' running
+'solc ./ProcessBridgedDataArbitrum-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataArbitrum-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataArbitrum-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataWormhole-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataWormhole-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataWormhole-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./GuardCM-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+Warning: Function state mutability can be restricted to view
+  --> GuardCM-flatten.sol:32:5:
+   |
+32 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataGnosis-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataGnosis-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataGnosis-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataPolygon-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataPolygon-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataPolygon-flatten.sol:26:5:
+   |
+26 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataOptimism-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataOptimism-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataOptimism-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+INFO:Printers:
++ Contract VerifyData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+
++ Contract VerifyBridgedData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+    - processBridgeData(bytes,address,uint256) (external)
+
++ Contract ProcessBridgedDataArbitrum (Most derived contract)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From ProcessBridgedDataArbitrum
+    - processBridgeData(bytes,address,uint256) (external)
+
+INFO:Printers:
++ Contract VerifyData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+
++ Contract VerifyBridgedData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+    - processBridgeData(bytes,address,uint256) (external)
+
++ Contract ProcessBridgedDataWormhole (Most derived contract)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From ProcessBridgedDataWormhole
+    - processBridgeData(bytes,address,uint256) (external)
+
+INFO:Printers:
++ Contract Enum (Most derived contract)
+
++ Contract VerifyData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+
++ Contract IGovernor (Most derived contract)
+  - From IGovernor
+    - state(uint256) (external)
+
++ Contract IBridgeVerifier (Most derived contract)
+  - From IBridgeVerifier
+    - processBridgeData(bytes,address,uint256) (external)
+
++ Contract GuardCM (Most derived contract)
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From GuardCM
+    - _verifySchedule(bytes,bytes4) (internal)
+    - changeGovernor(address) (external)
+    - changeGovernorCheckProposalId(uint256) (external)
+    - checkAfterExecution(bytes32,bool) (external)
+    - checkTransaction(address,uint256,bytes,Enum.Operation,uint256,uint256,uint256,address,address,bytes,address) (external)
+    - constructor(address,address,address) (public)
+    - getTargetSelectorChainId(address,bytes4,uint256) (external)
+    - pause() (external)
+    - setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[]) (external)
+    - setTargetSelectorChainIds(address[],bytes4[],uint256[],bool[]) (external)
+    - unpause() (external)
+
+INFO:Printers:
++ Contract VerifyData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+
++ Contract VerifyBridgedData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+    - processBridgeData(bytes,address,uint256) (external)
+
++ Contract ProcessBridgedDataGnosis (Most derived contract)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From ProcessBridgedDataGnosis
+    - processBridgeData(bytes,address,uint256) (external)
+
+INFO:Printers:
++ Contract VerifyData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+
++ Contract VerifyBridgedData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+    - processBridgeData(bytes,address,uint256) (external)
+
++ Contract ProcessBridgedDataPolygon (Most derived contract)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From ProcessBridgedDataPolygon
+    - processBridgeData(bytes,address,uint256) (external)
+
+INFO:Printers:
++ Contract VerifyData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+
++ Contract VerifyBridgedData
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+    - processBridgeData(bytes,address,uint256) (external)
+
++ Contract ProcessBridgedDataOptimism (Most derived contract)
+  - From VerifyBridgedData
+    - _verifyBridgedData(bytes,uint256) (internal)
+  - From VerifyData
+    - _verifyData(address,bytes,uint256) (internal)
+  - From ProcessBridgedDataOptimism
+    - processBridgeData(bytes,address,uint256) (external)
+
+INFO:Slither:. analyzed (20 contracts)

@@ -1,0 +1,85 @@
+'solc --version' running
+'solc ./ProcessBridgedDataArbitrum-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataArbitrum-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataArbitrum-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataWormhole-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataWormhole-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataWormhole-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./GuardCM-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./GuardCM-flatten.sol:
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> GuardCM-flatten.sol
+
+Warning: Function state mutability can be restricted to view
+  --> GuardCM-flatten.sol:32:5:
+   |
+32 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataGnosis-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataGnosis-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataGnosis-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataPolygon-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataPolygon-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataPolygon-flatten.sol:26:5:
+   |
+26 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'solc --version' running
+'solc ./ProcessBridgedDataOptimism-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal10/analysis/contracts' running
+Compilation warnings/errors on ./ProcessBridgedDataOptimism-flatten.sol:
+Warning: Function state mutability can be restricted to view
+  --> ProcessBridgedDataOptimism-flatten.sol:25:5:
+   |
+25 |     function _verifyData(address target, bytes memory data, uint256 chainId) internal {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+INFO:Printers:Call Graph: ./ProcessBridgedDataArbitrum-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./ProcessBridgedDataArbitrum-flatten.sol.ProcessBridgedDataArbitrum.call-graph.dot
+
+INFO:Printers:Call Graph: ./ProcessBridgedDataWormhole-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./ProcessBridgedDataWormhole-flatten.sol.ProcessBridgedDataWormhole.call-graph.dot
+
+INFO:Printers:Call Graph: ./GuardCM-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./GuardCM-flatten.sol.Enum.call-graph.dot
+Call Graph: ./GuardCM-flatten.sol.IGovernor.call-graph.dot
+Call Graph: ./GuardCM-flatten.sol.IBridgeVerifier.call-graph.dot
+Call Graph: ./GuardCM-flatten.sol.GuardCM.call-graph.dot
+
+INFO:Printers:Call Graph: ./ProcessBridgedDataGnosis-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./ProcessBridgedDataGnosis-flatten.sol.ProcessBridgedDataGnosis.call-graph.dot
+
+INFO:Printers:Call Graph: ./ProcessBridgedDataPolygon-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./ProcessBridgedDataPolygon-flatten.sol.ProcessBridgedDataPolygon.call-graph.dot
+
+INFO:Printers:Call Graph: ./ProcessBridgedDataOptimism-flatten.sol.all_contracts.call-graph.dot
+Call Graph: ./ProcessBridgedDataOptimism-flatten.sol.ProcessBridgedDataOptimism.call-graph.dot
+
+INFO:Slither:. analyzed (20 contracts)

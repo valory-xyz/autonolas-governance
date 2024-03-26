@@ -99,7 +99,7 @@ async function main() {
     const balanceETHBefore = await baseSepoliaProvider.getBalance(EOAbaseSepolia.address);
 
     // Build the final payload to be passed from the imaginary Timelock
-    const messengerPayload = await optimismMessenger.interface.encodeFunctionData("processMessageFromForeign", [data]);
+    const messengerPayload = await optimismMessenger.interface.encodeFunctionData("processMessageFromSource", [data]);
     const minGasLimit = "2000000";
     const timelockPayload = await CDMProxy.interface.encodeFunctionData("sendMessage", [optimismMessengerAddress,
         messengerPayload, minGasLimit]);

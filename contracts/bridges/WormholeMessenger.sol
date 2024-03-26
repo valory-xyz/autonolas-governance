@@ -17,7 +17,7 @@ contract WormholeMessenger is BridgeMessenger {
     uint16 public immutable sourceGovernorChainId;
     // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
     bytes32 public sourceGovernor;
-    // Source governor address on L1 that is authorized to propagate the transaction execution across the bridge
+    // Map of delivery hashes
     mapping(bytes32 => bool) public mapDeliveryHashes;
 
     /// @dev WormholeMessenger constructor.
