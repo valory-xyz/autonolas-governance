@@ -34,6 +34,8 @@ async function main() {
     const fxChildTunnelABI = parsedFile["abi"];
     const fxChildTunnel = new ethers.Contract(fxChildTunnelAddress, fxChildTunnelABI, mumbaiProvider);
     const verifyFxChildAddress = await fxChildTunnel.fxChild();
+
+    const fxChildAddress = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
     if (fxChildAddress == verifyFxChildAddress) {
         console.log("Successfully connected to the test fxChildTunnel contract");
     }

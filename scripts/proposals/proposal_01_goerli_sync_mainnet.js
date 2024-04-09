@@ -7,9 +7,7 @@ async function main() {
     const globalsFile = "globals.json";
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
-    const providerName = parsedData.providerName;
 
-    const provider = await ethers.providers.getDefaultProvider(providerName);
     const signers = await ethers.getSigners();
 
     // EOA address

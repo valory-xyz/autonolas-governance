@@ -11,7 +11,6 @@ async function main() {
     const useLedger = parsedData.useLedger;
     const derivationPath = parsedData.derivationPath;
     const providerName = "sepolia";
-    const gasPriceInGwei = parsedData.gasPriceInGwei;
     let EOA;
 
     const provider = await ethers.providers.getDefaultProvider(providerName);

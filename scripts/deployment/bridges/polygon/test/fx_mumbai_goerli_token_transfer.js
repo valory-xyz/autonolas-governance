@@ -18,37 +18,14 @@ async function main() {
     });
 
     const fs = require("fs");
-    // FxRoot address on goerli
-    const fxRootAddress = "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA";
-    const fxRootJSON = "artifacts/lib/fx-portal/contracts/FxRoot.sol/FxRoot.json";
-    let contractFromJSON = fs.readFileSync(fxRootJSON, "utf8");
-    let parsedFile = JSON.parse(contractFromJSON);
-    const fxRootABI = parsedFile["abi"];
-    const fxRoot = new ethers.Contract(fxRootAddress, fxRootABI, goerliProvider);
-
-    // FxChild address on mumbai
-    const fxChildAddress = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
-    const fxChildJSON = "artifacts/lib/fx-portal/contracts/FxChild.sol/FxChild.json";
-    contractFromJSON = fs.readFileSync(fxChildJSON, "utf8");
-    parsedFile = JSON.parse(contractFromJSON);
-    const fxChildABI = parsedFile["abi"];
-    const fxChild = new ethers.Contract(fxChildAddress, fxChildABI, mumbaiProvider);
 
     // ChildMockERC20 address on mumbai
     const mockChildERC20Address = "0xeB49bE5DF00F74bd240DE4535DDe6Bc89CEfb994";
     const mockChildERC20JSON = "artifacts/contracts/bridges/test/ChildMockERC20.sol/ChildMockERC20.json";
-    contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
-    parsedFile = JSON.parse(contractFromJSON);
+    let contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
+    let parsedFile = JSON.parse(contractFromJSON);
     const mockChildERC20ABI = parsedFile["abi"];
     const mockChildERC20 = new ethers.Contract(mockChildERC20Address, mockChildERC20ABI, mumbaiProvider);
-
-    // BridgedERC20 address on goerli
-    const bridgedERC20Address = "0x88e4ad16Bd4953Bbe74589942b368969037a7d81";
-    const bridgedERC20JSON = "artifacts/contracts/bridges/BridgedERC20.sol/BridgedERC20.json";
-    contractFromJSON = fs.readFileSync(bridgedERC20JSON, "utf8");
-    parsedFile = JSON.parse(contractFromJSON);
-    const bridgedERC20ABI = parsedFile["abi"];
-    const bridgedERC20 = new ethers.Contract(bridgedERC20Address, bridgedERC20ABI, goerliProvider);
 
     // Test deployed FxERC20ChildTunnel address on mumbai
     const fxERC20ChildTunnelAddress = "0x1d333b46dB6e8FFd271b6C2D2B254868BD9A2dbd";
@@ -58,6 +35,9 @@ async function main() {
     const fxERC20ChildTunnelABI = parsedFile["abi"];
     const fxERC20ChildTunnel = new ethers.Contract(fxERC20ChildTunnelAddress, fxERC20ChildTunnelABI, mumbaiProvider);
     const verifyFxChildAddress = await fxERC20ChildTunnel.fxChild();
+
+    // FxChild address on mumbai
+    const fxChildAddress = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
     if (fxChildAddress == verifyFxChildAddress) {
         console.log("Successfully connected to the test fxERC20ChildTunnel contract");
     }
@@ -70,6 +50,9 @@ async function main() {
     const fxERC20RootTunnelABI = parsedFile["abi"];
     const fxERC20RootTunnel = new ethers.Contract(fxERC20RootTunnelAddress, fxERC20RootTunnelABI, goerliProvider);
     const verifyFxRootAddress = await fxERC20RootTunnel.fxRoot();
+
+    // FxRoot address on goerli
+    const fxRootAddress = "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA";
     if (fxRootAddress == verifyFxRootAddress) {
         console.log("Successfully connected to the test fxERC20RootTunnel contract");
     }

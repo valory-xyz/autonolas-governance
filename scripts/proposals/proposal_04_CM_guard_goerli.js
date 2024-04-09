@@ -8,7 +8,6 @@ async function main() {
     const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
     let parsedData = JSON.parse(dataFromJSON);
 
-    const timelockAddress = parsedData.timelockAddress;
     const treasuryAddress = parsedData.treasuryAddress;
     const depositoryAddress = "0x5FDc466f4A7547c876eF40CD30fFA2A89F1EcDE7";
     const serviceRegistryTokenUtilityAddress = "0x6d9b08701Af43D68D991c074A27E4d90Af7f2276";
@@ -21,7 +20,6 @@ async function main() {
     const homeMediatorAddress = "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592";
     const fxRootAddress = "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA"; 
     const fxGovernorTunnelAddress = "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77";
-    const CMAddress = parsedData.CM;
 
 
 

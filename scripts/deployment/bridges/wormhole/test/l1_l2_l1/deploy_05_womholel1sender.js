@@ -11,7 +11,6 @@ async function main() {
     const useLedger = parsedData.useLedger;
     const derivationPath = parsedData.derivationPath;
     const providerName = parsedData.providerName;
-    const gasPriceInGwei = parsedData.gasPriceInGwei;
     let EOA;
 
     const provider = new ethers.providers.JsonRpcProvider(parsedData.networkURL);
