@@ -3,6 +3,22 @@ pragma solidity ^0.8.23;
 
 import "./interfaces/IErrors.sol";
 
+interface IVEOLAS {
+    /// @dev Gets the `account`'s lock end time.
+    /// @param account Account address.
+    /// @return unlockTime Lock end time.
+    function lockedEnd(address account) external view returns (uint256 unlockTime);
+
+    /// @dev Gets the most recently recorded user point for `account`.
+    /// @param account Account address.
+    /// @return pv Last checkpoint.
+    function getLastUserPoint(address account) external view returns (PointVoting memory pv);
+}
+
+error NomineeDoesNotExist(address nominee, uint256 chainId);
+error NomineeAlreadyExists(address nominee, uint256 chainId);
+error VoteTooOften(address voter, uint256 curTime, uint256 nextAllowedVotingTime);
+
 struct Point {
     uint256 bias;
     uint256 slope;
@@ -30,18 +46,6 @@ struct PointVoting {
     uint128 balance;
 }
 
-interface IVEOLAS {
-    /// @dev Gets the `account`'s lock end time.
-    /// @param account Account address.
-    /// @return unlockTime Lock end time.
-    function lockedEnd(address account) external view returns (uint256 unlockTime);
-
-    /// @dev Gets the most recently recorded user point for `account`.
-    /// @param account Account address.
-    /// @return pv Last checkpoint.
-    function getLastUserPoint(address account) external view returns (PointVoting memory pv);
-}
-
 contract VoteWeighting is IErrors {
     event OwnerUpdated(address indexed owner);
     event NewNomineeWeight(address indexed nominee, uint256 chainId, uint256 weight, uint256 totalWeight);
@@ -52,6 +56,8 @@ contract VoteWeighting is IErrors {
     uint256 public constant WEEK = 604800;
     // Cannot change weight votes more often than once in 10 days
     uint256 public constant WEIGHT_VOTE_DELAY = 864000;
+    // Max weight amount
+    uint256 public constant MAX_WEIGHT = 10000;
     // Maximum chain Id as per EVM specs
     uint256 public constant MAX_CHAIN_ID = type(uint64).max / 2 - 36;
     // veOLAS contract address
@@ -169,7 +175,7 @@ contract VoteWeighting is IErrors {
 
         // Check that the nominee exists
         if (!mapNominees[nomineeChainId]) {
-            revert("Does not exist");
+            revert NomineeDoesNotExist(nominee, chainId);
         }
 
         uint256 t = timeWeight[nomineeChainId];
@@ -222,7 +228,7 @@ contract VoteWeighting is IErrors {
         nomineeChainId |= chainId << 160;
 
         if (mapNominees[nomineeChainId]) {
-            revert("Cannot add the same nominee twice");
+            revert NomineeAlreadyExists(nominee, chainId);
         }
         mapNominees[nomineeChainId] = true;
 
@@ -346,15 +352,27 @@ contract VoteWeighting is IErrors {
         uint256 nomineeChainId = uint256(uint160(nominee));
         // chain Id occupies no more than next 64 bits
         nomineeChainId |= chainId << 160;
-
-        PointVoting memory pv = IVEOLAS(ve).getLastUserPoint(msg.sender);
-        uint256 slope = uint256(uint128(pv.slope));
+        
+        uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
         uint256 lock_end = IVEOLAS(ve).lockedEnd(msg.sender);
         uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
 
-        require(lock_end > next_time, "Your token lock expires too soon");
-        require(weight >= 0 && weight <= 10000, "You used all your voting power");
-        require(block.timestamp >= lastUserVote[msg.sender][nomineeChainId] + WEIGHT_VOTE_DELAY, "Cannot vote so often");
+        // TODO: check if next_time == lock_end is ok?
+        // Check for the lock end expiration
+        if (next_time > lock_end) {
+            revert LockExpired(msg.sender, lock_end, next_time);
+        }
+
+        // Check for the weight number
+        if (weight > MAX_WEIGHT) {
+            revert Overflow(weight, MAX_WEIGHT);
+        }
+
+        // Check for the last voting time
+        uint256 nextAllowedVotingTime = lastUserVote[msg.sender][nomineeChainId] + WEIGHT_VOTE_DELAY;
+        if (nextAllowedVotingTime > block.timestamp) {
+            revert VoteTooOften(msg.sender, block.timestamp, nextAllowedVotingTime);
+        }
 
         // Prepare old and new slopes and biases
         VotedSlope memory old_slope = voteUserSlopes[msg.sender][nomineeChainId];
@@ -364,21 +382,19 @@ contract VoteWeighting is IErrors {
         }
 
         VotedSlope memory new_slope = VotedSlope({
-            slope: slope * weight / 10000,
+            slope: slope * weight / MAX_WEIGHT,
             end: lock_end,
             power: weight
         });
 
-        // Check for the lock end expiration
-        if (next_time > lock_end) {
-            revert LockExpired(msg.sender, lock_end, next_time);
-        }
         uint256 new_bias = new_slope.slope * (lock_end - next_time);
 
         uint256 power_used = voteUserPower[msg.sender];
         power_used = power_used + new_slope.power - old_slope.power;
         voteUserPower[msg.sender] = power_used;
-        require(power_used >= 0 && power_used <= 10000, "Used too much power");
+        if (power_used > MAX_WEIGHT) {
+            revert Overflow(power_used, MAX_WEIGHT);
+        }
 
         // Remove old and schedule new slope changes
         // Remove slope changes for old slopes
