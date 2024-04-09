@@ -96,7 +96,7 @@ contract VoteWeighting is IErrors {
     /// @param _ve `VotingEscrow` contract address.
     constructor(address _ve) {
         // Check for the zero address
-        if (_ve != address(0)) {
+        if (_ve == address(0)) {
             revert ZeroAddress();
         }
 
@@ -326,6 +326,7 @@ contract VoteWeighting is IErrors {
         emit NewNomineeWeight(nominee, chainId, weight, newSum);
     }
 
+    // TODO Shall we allow any weight change, or just set it to zero?
     /// @notice Change weight of nominee `addr` to `weight`.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
@@ -377,7 +378,7 @@ contract VoteWeighting is IErrors {
         uint256 power_used = voteUserPower[msg.sender];
         power_used = power_used + new_slope.power - old_slope.power;
         voteUserPower[msg.sender] = power_used;
-        require(power_used >= 0 && power_used <= 10000, 'Used too much power');
+        require(power_used >= 0 && power_used <= 10000, "Used too much power");
 
         // Remove old and schedule new slope changes
         // Remove slope changes for old slopes
