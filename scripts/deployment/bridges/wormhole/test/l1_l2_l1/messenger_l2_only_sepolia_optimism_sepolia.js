@@ -45,7 +45,7 @@ async function main() {
     const transferCost = await wormholeRelayer["quoteEVMDeliveryPrice(uint16,uint256,uint256)"](targetChain, 0, minGasLimit);
 
     // Send the message to optimisticSepolia receiver
-    tx = await wormholeMessenger.connect(EOAoptimisticSepolia).sendMessage({ value: transferCost.nativePriceQuote });
+    const tx = await wormholeMessenger.connect(EOAoptimisticSepolia).sendMessage({ value: transferCost.nativePriceQuote });
     console.log("Execution hash", tx.hash);
     await tx.wait();
     // https://wormholescan.io/#/tx/0xef934da740738881b3069373602a64148944e15ae3b5da2c2630f85886ae6453?network=TESTNET

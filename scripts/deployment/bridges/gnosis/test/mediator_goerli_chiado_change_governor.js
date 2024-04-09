@@ -52,10 +52,10 @@ async function main() {
     // Home Mediator to change the foreign governor address
     const rawPayload = homeMediator.interface.encodeFunctionData("changeForeignGovernor", [EOAchiado.address]);
     // Pack the second part of data
-    target = homeMediatorAddress;
-    value = 0;
+    const target = homeMediatorAddress;
+    const value = 0;
     const payload = ethers.utils.arrayify(rawPayload);
-    data = ethers.utils.solidityPack(
+    const data = ethers.utils.solidityPack(
         ["address", "uint96", "uint32", "bytes"],
         [target, value, payload.length, payload]
     );
@@ -67,7 +67,7 @@ async function main() {
         mediatorPayload, requestGasLimit]);
 
     // Send the message to chiado receiver
-    tx = await mockTimelock.connect(EOAgoerli).execute(timelockPayload);
+    const tx = await mockTimelock.connect(EOAgoerli).execute(timelockPayload);
     console.log("Timelock data execution hash", tx.hash);
     await tx.wait();
 }
