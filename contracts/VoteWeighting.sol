@@ -47,7 +47,6 @@ struct PointVoting {
 }
 
 contract VoteWeighting is IErrors {
-    event OwnerUpdated(address indexed owner);
     event NewNomineeWeight(address indexed nominee, uint256 chainId, uint256 weight, uint256 totalWeight);
     event VoteForNominee(address indexed user, address indexed nominee, uint256 chainId, uint256 weight);
     event NewNominee(address nominee, uint256 chainId);
@@ -62,8 +61,6 @@ contract VoteWeighting is IErrors {
     uint256 public constant MAX_CHAIN_ID = type(uint64).max / 2 - 36;
     // veOLAS contract address
     address public immutable ve;
-    // Contract owner address
-    address public owner;
 
     // TODO: Convert both to cyclic map
     // Set of (chainId | nominee)
@@ -98,7 +95,7 @@ contract VoteWeighting is IErrors {
     // last scheduled time (next week)
     uint256 public timeSum;
 
-    /// @notice Contract constructor.
+    /// @dev Contract constructor.
     /// @param _ve `VotingEscrow` contract address.
     constructor(address _ve) {
         // Check for the zero address
@@ -107,29 +104,11 @@ contract VoteWeighting is IErrors {
         }
 
         // Set initial parameters
-        owner = msg.sender;
         ve = _ve;
         timeSum = block.timestamp / WEEK * WEEK;
     }
 
-    /// @dev Changes the owner address.
-    /// @param newOwner Address of a new owner.
-    function changeOwner(address newOwner) external {
-        // Check for the contract ownership
-        if (msg.sender != owner) {
-            revert OwnerOnly(msg.sender, owner);
-        }
-
-        // Check for the zero address
-        if (newOwner == address(0)) {
-            revert ZeroAddress();
-        }
-
-        owner = newOwner;
-        emit OwnerUpdated(newOwner);
-    }
-
-    /// @notice Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
+    /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
     /// @return Sum of weights.
     function _getSum() internal returns (uint256) {
         uint256 t = timeSum;
@@ -140,11 +119,11 @@ contract VoteWeighting is IErrors {
                     break;
                 }
                 t += WEEK;
-                uint256 d_bias = pt.slope * WEEK;
-                if (pt.bias > d_bias) {
-                    pt.bias -= d_bias;
-                    uint256 d_slope = changesSum[t];
-                    pt.slope -= d_slope;
+                uint256 dBias = pt.slope * WEEK;
+                if (pt.bias > dBias) {
+                    pt.bias -= dBias;
+                    uint256 dSlope = changesSum[t];
+                    pt.slope -= dSlope;
                 } else {
                     pt.bias = 0;
                     pt.slope = 0;
@@ -161,7 +140,7 @@ contract VoteWeighting is IErrors {
         }
     }
 
-    /// @notice Fill historic nominee weights week-over-week for missed checkins and return the total for the future week.
+    /// @dev Fill historic nominee weights week-over-week for missed checkins and return the total for the future week.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @return Nominee weight.
@@ -186,11 +165,11 @@ contract VoteWeighting is IErrors {
                     break;
                 }
                 t += WEEK;
-                uint256 d_bias = pt.slope * WEEK;
-                if (pt.bias > d_bias) {
-                    pt.bias -= d_bias;
-                    uint256 d_slope = changesWeight[nomineeChainId][t];
-                    pt.slope -= d_slope;
+                uint256 dBias = pt.slope * WEEK;
+                if (pt.bias > dBias) {
+                    pt.bias -= dBias;
+                    uint256 dSlope = changesWeight[nomineeChainId][t];
+                    pt.slope -= dSlope;
                 } else {
                     pt.bias = 0;
                     pt.slope = 0;
@@ -207,7 +186,7 @@ contract VoteWeighting is IErrors {
         }
     }
 
-    /// @notice Add nominee address along with the chain Id.
+    /// @dev Add nominee address along with the chain Id.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     function addNominee(address nominee, uint256 chainId) external {
@@ -234,22 +213,22 @@ contract VoteWeighting is IErrors {
 
         nomineeAccounts.push(nomineeChainId);
 
-        uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
 
         if (timeSum == 0) {
-            timeSum = next_time;
+            timeSum = nextTime;
         }
-        timeWeight[nomineeChainId] = next_time;
+        timeWeight[nomineeChainId] = nextTime;
 
         emit NewNominee(nominee, chainId);
     }
 
-    /// @notice Checkpoint to fill data common for all nominees.
+    /// @dev Checkpoint to fill data common for all nominees.
     function checkpoint() external {
         _getSum();
     }
 
-    /// @notice Checkpoint to fill data for both a specific nominee and common for all nominees.
+    /// @dev Checkpoint to fill data for both a specific nominee and common for all nominees.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     function checkpointNominee(address nominee, uint256 chainId) external {
@@ -257,7 +236,7 @@ contract VoteWeighting is IErrors {
         _getSum();
     }
 
-    /// @notice Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18).
+    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18).
     ///         Inflation which will be received by it is inflation_rate * relativeWeight / 1e18.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
@@ -265,7 +244,7 @@ contract VoteWeighting is IErrors {
     /// @return Value of relative weight normalized to 1e18.
     function _nomineeRelativeWeight(address nominee, uint256 chainId, uint256 time) internal view returns (uint256) {
         uint256 t = time / WEEK * WEEK;
-        uint256 _totalSum = pointsSum[t].bias;
+        uint256 totalSum = pointsSum[t].bias;
 
         // Push a pair of key defining variables into one key
         // nominee occupies first 160 bits
@@ -273,15 +252,15 @@ contract VoteWeighting is IErrors {
         // chain Id occupies no more than next 64 bits
         nomineeChainId |= chainId << 160;
 
-        if (_totalSum > 0) {
-            uint256 _nomineeWeight = pointsWeight[nomineeChainId][t].bias;
-            return 1e18 * _nomineeWeight / _totalSum;
+        if (totalSum > 0) {
+            uint256 nomineeWeight = pointsWeight[nomineeChainId][t].bias;
+            return 1e18 * nomineeWeight / totalSum;
         } else {
             return 0;
         }
     }
 
-    /// @notice Get Nominee relative weight (not more than 1.0) normalized to 1e18.
+    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18.
     ///         (e.g. 1.0 == 1e18). Inflation which will be received by it is
     ///         inflation_rate * relativeWeight / 1e18.
     /// @param nominee Address of the nominee.
@@ -292,8 +271,8 @@ contract VoteWeighting is IErrors {
         return _nomineeRelativeWeight(nominee, chainId, time);
     }
 
-    /// @notice Get nominee weight normalized to 1e18 and also fill all the unfilled values for type and nominee records.
-    /// @dev Any address can call, however nothing is recorded if the values are filled already.
+    /// @dev Get nominee weight normalized to 1e18 and also fill all the unfilled values for type and nominee records.
+    /// @notice Any address can call, however nothing is recorded if the values are filled already.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
@@ -302,44 +281,6 @@ contract VoteWeighting is IErrors {
         _getWeight(nominee, chainId);
         _getSum();
         return _nomineeRelativeWeight(nominee, chainId, time);
-    }
-
-    // TODO: Supposedly this can only bring weight to zero if something went wrong with the contract
-    /// @dev Change weight of `nominee` to `weight`.
-    /// @param nominee Address of the nominee.
-    /// @param chainId Chain Id.
-    /// @param weight New nominee weight.
-    function _changeNomineeWeight(address nominee, uint256 chainId, uint256 weight) internal {
-        // Change nominee weight
-        // Only needed when testing in reality
-        uint256 old_nomineeWeight = _getWeight(nominee, chainId);
-        uint256 oldSum = _getSum();
-        uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
-
-        // Push a pair of key defining variables into one key
-        // nominee occupies first 160 bits
-        uint256 nomineeChainId = uint256(uint160(nominee));
-        // chain Id occupies no more than next 64 bits
-        nomineeChainId |= chainId << 160;
-
-        pointsWeight[nomineeChainId][next_time].bias = weight;
-        timeWeight[nomineeChainId] = next_time;
-
-        uint256 newSum = oldSum + weight - old_nomineeWeight;
-        pointsSum[next_time].bias = newSum;
-        timeSum = next_time;
-
-        emit NewNomineeWeight(nominee, chainId, weight, newSum);
-    }
-
-    // TODO Shall we allow any weight change, or just set it to zero?
-    /// @notice Change weight of nominee `addr` to `weight`.
-    /// @param nominee Address of the nominee.
-    /// @param chainId Chain Id.
-    /// @param weight New nominee weight.
-    function changeNomineeWeight(address nominee, uint256 chainId, uint256 weight) external {
-        require(msg.sender == owner, "Only owner can change nominee weight");
-        _changeNomineeWeight(nominee, chainId, weight);
     }
 
     /// @notice Allocate voting power for changing pool weights.
@@ -354,13 +295,13 @@ contract VoteWeighting is IErrors {
         nomineeChainId |= chainId << 160;
         
         uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
-        uint256 lock_end = IVEOLAS(ve).lockedEnd(msg.sender);
-        uint256 next_time = (block.timestamp + WEEK) / WEEK * WEEK;
+        uint256 lockEnd = IVEOLAS(ve).lockedEnd(msg.sender);
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
 
-        // TODO: check if next_time == lock_end is ok?
+        // TODO: check if nextTime == lockEnd is ok?
         // Check for the lock end expiration
-        if (next_time > lock_end) {
-            revert LockExpired(msg.sender, lock_end, next_time);
+        if (nextTime > lockEnd) {
+            revert LockExpired(msg.sender, lockEnd, nextTime);
         }
 
         // Check for the weight number
@@ -375,49 +316,49 @@ contract VoteWeighting is IErrors {
         }
 
         // Prepare old and new slopes and biases
-        VotedSlope memory old_slope = voteUserSlopes[msg.sender][nomineeChainId];
-        uint256 old_bias;
-        if (old_slope.end > next_time) {
-            old_bias = old_slope.slope * (old_slope.end - next_time);
+        VotedSlope memory oldSlope = voteUserSlopes[msg.sender][nomineeChainId];
+        uint256 oldBias;
+        if (oldSlope.end > nextTime) {
+            oldBias = oldSlope.slope * (oldSlope.end - nextTime);
         }
 
-        VotedSlope memory new_slope = VotedSlope({
+        VotedSlope memory newSlope = VotedSlope({
             slope: slope * weight / MAX_WEIGHT,
-            end: lock_end,
+            end: lockEnd,
             power: weight
         });
 
-        uint256 new_bias = new_slope.slope * (lock_end - next_time);
+        uint256 newBias = newSlope.slope * (lockEnd - nextTime);
 
-        uint256 power_used = voteUserPower[msg.sender];
-        power_used = power_used + new_slope.power - old_slope.power;
-        voteUserPower[msg.sender] = power_used;
-        if (power_used > MAX_WEIGHT) {
-            revert Overflow(power_used, MAX_WEIGHT);
+        uint256 powerUsed = voteUserPower[msg.sender];
+        powerUsed = powerUsed + newSlope.power - oldSlope.power;
+        voteUserPower[msg.sender] = powerUsed;
+        if (powerUsed > MAX_WEIGHT) {
+            revert Overflow(powerUsed, MAX_WEIGHT);
         }
 
         // Remove old and schedule new slope changes
         // Remove slope changes for old slopes
-        // Schedule recording of initial slope for next_time
-        pointsWeight[nomineeChainId][next_time].bias = _maxAndSub(_getWeight(nominee, chainId) + new_bias, old_bias);
-        pointsSum[next_time].bias = _maxAndSub(_getSum() + new_bias, old_bias);
-        if (old_slope.end > next_time) {
-            pointsWeight[nomineeChainId][next_time].slope = _maxAndSub(pointsWeight[nomineeChainId][next_time].slope + new_slope.slope, old_slope.slope);
-            pointsSum[next_time].slope = _maxAndSub(pointsSum[next_time].slope + new_slope.slope, old_slope.slope);
+        // Schedule recording of initial slope for nextTime
+        pointsWeight[nomineeChainId][nextTime].bias = _maxAndSub(_getWeight(nominee, chainId) + newBias, oldBias);
+        pointsSum[nextTime].bias = _maxAndSub(_getSum() + newBias, oldBias);
+        if (oldSlope.end > nextTime) {
+            pointsWeight[nomineeChainId][nextTime].slope = _maxAndSub(pointsWeight[nomineeChainId][nextTime].slope + newSlope.slope, oldSlope.slope);
+            pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope + newSlope.slope, oldSlope.slope);
         } else {
-            pointsWeight[nomineeChainId][next_time].slope += new_slope.slope;
-            pointsSum[next_time].slope += new_slope.slope;
+            pointsWeight[nomineeChainId][nextTime].slope += newSlope.slope;
+            pointsSum[nextTime].slope += newSlope.slope;
         }
-        if (old_slope.end > block.timestamp) {
+        if (oldSlope.end > block.timestamp) {
             // Cancel old slope changes if they still didn't happen
-            changesWeight[nomineeChainId][old_slope.end] -= old_slope.slope;
-            changesSum[old_slope.end] -= old_slope.slope;
+            changesWeight[nomineeChainId][oldSlope.end] -= oldSlope.slope;
+            changesSum[oldSlope.end] -= oldSlope.slope;
         }
         // Add slope changes for new slopes
-        changesWeight[nomineeChainId][new_slope.end] += new_slope.slope;
-        changesSum[new_slope.end] += new_slope.slope;
+        changesWeight[nomineeChainId][newSlope.end] += newSlope.slope;
+        changesSum[newSlope.end] += newSlope.slope;
 
-        voteUserSlopes[msg.sender][nomineeChainId] = new_slope;
+        voteUserSlopes[msg.sender][nomineeChainId] = newSlope;
 
         // Record last action time
         lastUserVote[msg.sender][nomineeChainId] = block.timestamp;
