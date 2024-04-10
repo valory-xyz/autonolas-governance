@@ -62,11 +62,11 @@ contract VoteWeighting is IErrors {
     // veOLAS contract address
     address public immutable ve;
 
-    // TODO: Convert both to cyclic map
+    // TODO: Convert both to cyclic map?
     // Set of (chainId | nominee)
-    uint256[] public nomineeAccounts;
-    // Mapping of (chainId | nominee)
-    mapping(uint256 => bool) public mapNominees;
+    uint256[] public setNominees;
+    // Mapping of (chainId | nominee) => nominee Id
+    mapping(uint256 => uint256) public mapNomineeIds;
 
     // user -> (chainId | nominee) -> VotedSlope
     mapping(address => mapping(uint256 => VotedSlope)) public voteUserSlopes;
@@ -106,38 +106,36 @@ contract VoteWeighting is IErrors {
         // Set initial parameters
         ve = _ve;
         timeSum = block.timestamp / WEEK * WEEK;
+        setNominees.push(0);
     }
 
     /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
     /// @return Sum of weights.
     function _getSum() internal returns (uint256) {
+        // t is always > 0 as it is set in the constructor
         uint256 t = timeSum;
-        if (t > 0) {
-            Point memory pt = pointsSum[t];
-            for (uint256 i = 0; i < 500; i++) {
-                if (t > block.timestamp) {
-                    break;
-                }
-                t += WEEK;
-                uint256 dBias = pt.slope * WEEK;
-                if (pt.bias > dBias) {
-                    pt.bias -= dBias;
-                    uint256 dSlope = changesSum[t];
-                    pt.slope -= dSlope;
-                } else {
-                    pt.bias = 0;
-                    pt.slope = 0;
-                }
-
-                pointsSum[t] = pt;
-                if (t > block.timestamp) {
-                    timeSum = t;
-                }
+        Point memory pt = pointsSum[t];
+        for (uint256 i = 0; i < 500; i++) {
+            if (t > block.timestamp) {
+                break;
             }
-            return pt.bias;
-        } else {
-            return 0;
+            t += WEEK;
+            uint256 dBias = pt.slope * WEEK;
+            if (pt.bias > dBias) {
+                pt.bias -= dBias;
+                uint256 dSlope = changesSum[t];
+                pt.slope -= dSlope;
+            } else {
+                pt.bias = 0;
+                pt.slope = 0;
+            }
+
+            pointsSum[t] = pt;
+            if (t > block.timestamp) {
+                timeSum = t;
+            }
         }
+        return pt.bias;
     }
 
     /// @dev Fill historic nominee weights week-over-week for missed checkins and return the total for the future week.
@@ -153,37 +151,34 @@ contract VoteWeighting is IErrors {
         nomineeChainId |= chainId << 160;
 
         // Check that the nominee exists
-        if (!mapNominees[nomineeChainId]) {
+        if (mapNomineeIds[nomineeChainId] == 0) {
             revert NomineeDoesNotExist(nominee, chainId);
         }
 
+        // t is always > 0 as it is set during the addNominee() call
         uint256 t = timeWeight[nomineeChainId];
-        if (t > 0) {
-            Point memory pt = pointsWeight[nomineeChainId][t];
-            for (uint256 i = 0; i < 500; i++) {
-                if (t > block.timestamp) {
-                    break;
-                }
-                t += WEEK;
-                uint256 dBias = pt.slope * WEEK;
-                if (pt.bias > dBias) {
-                    pt.bias -= dBias;
-                    uint256 dSlope = changesWeight[nomineeChainId][t];
-                    pt.slope -= dSlope;
-                } else {
-                    pt.bias = 0;
-                    pt.slope = 0;
-                }
-
-                pointsWeight[nomineeChainId][t] = pt;
-                if (t > block.timestamp) {
-                    timeWeight[nomineeChainId] = t;
-                }
+        Point memory pt = pointsWeight[nomineeChainId][t];
+        for (uint256 i = 0; i < 500; i++) {
+            if (t > block.timestamp) {
+                break;
             }
-            return pt.bias;
-        } else {
-            return 0;
+            t += WEEK;
+            uint256 dBias = pt.slope * WEEK;
+            if (pt.bias > dBias) {
+                pt.bias -= dBias;
+                uint256 dSlope = changesWeight[nomineeChainId][t];
+                pt.slope -= dSlope;
+            } else {
+                pt.bias = 0;
+                pt.slope = 0;
+            }
+
+            pointsWeight[nomineeChainId][t] = pt;
+            if (t > block.timestamp) {
+                timeWeight[nomineeChainId] = t;
+            }
         }
+        return pt.bias;
     }
 
     /// @dev Add nominee address along with the chain Id.
@@ -196,7 +191,10 @@ contract VoteWeighting is IErrors {
         }
 
         // Check for the chain Id
-        if (chainId == 0 || chainId > MAX_CHAIN_ID) {
+        if (chainId == 0) {
+            revert ZeroValue();
+        }
+        else if (chainId > MAX_CHAIN_ID) {
             revert Overflow(chainId, MAX_CHAIN_ID);
         }
 
@@ -206,18 +204,15 @@ contract VoteWeighting is IErrors {
         // chain Id occupies no more than next 64 bits
         nomineeChainId |= chainId << 160;
 
-        if (mapNominees[nomineeChainId]) {
+        // Check for the nominee existence
+        if (mapNomineeIds[nomineeChainId] > 0) {
             revert NomineeAlreadyExists(nominee, chainId);
         }
-        mapNominees[nomineeChainId] = true;
-
-        nomineeAccounts.push(nomineeChainId);
+        mapNomineeIds[nomineeChainId] = setNominees.length;
+        // Push the nominee into the list
+        setNominees.push(nomineeChainId);
 
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
-
-        if (timeSum == 0) {
-            timeSum = nextTime;
-        }
         timeWeight[nomineeChainId] = nextTime;
 
         emit NewNominee(nominee, chainId);
@@ -241,8 +236,8 @@ contract VoteWeighting is IErrors {
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
-    /// @return Value of relative weight normalized to 1e18.
-    function _nomineeRelativeWeight(address nominee, uint256 chainId, uint256 time) internal view returns (uint256) {
+    /// @return weight Value of relative weight normalized to 1e18.
+    function _nomineeRelativeWeight(address nominee, uint256 chainId, uint256 time) internal view returns (uint256 weight) {
         uint256 t = time / WEEK * WEEK;
         uint256 totalSum = pointsSum[t].bias;
 
@@ -254,9 +249,7 @@ contract VoteWeighting is IErrors {
 
         if (totalSum > 0) {
             uint256 nomineeWeight = pointsWeight[nomineeChainId][t].bias;
-            return 1e18 * nomineeWeight / totalSum;
-        } else {
-            return 0;
+            weight = 1e18 * nomineeWeight / totalSum;
         }
     }
 
@@ -283,7 +276,7 @@ contract VoteWeighting is IErrors {
         return _nomineeRelativeWeight(nominee, chainId, time);
     }
 
-    /// @notice Allocate voting power for changing pool weights.
+    /// @dev Allocate voting power for changing pool weights.
     /// @param nominee Address of the nominee the `msg.sender` votes for.
     /// @param chainId Chain Id.
     /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
@@ -293,14 +286,13 @@ contract VoteWeighting is IErrors {
         uint256 nomineeChainId = uint256(uint160(nominee));
         // chain Id occupies no more than next 64 bits
         nomineeChainId |= chainId << 160;
-        
+
         uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
         uint256 lockEnd = IVEOLAS(ve).lockedEnd(msg.sender);
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
 
-        // TODO: check if nextTime == lockEnd is ok?
         // Check for the lock end expiration
-        if (nextTime > lockEnd) {
+        if (nextTime >= lockEnd) {
             revert LockExpired(msg.sender, lockEnd, nextTime);
         }
 
@@ -366,7 +358,7 @@ contract VoteWeighting is IErrors {
         emit VoteForNominee(msg.sender, nominee, chainId, weight);
     }
 
-    /// @notice Allocate voting power for changing pool weights in batch.
+    /// @dev Allocate voting power for changing pool weights in batch.
     /// @param nominees Set of nominees the `msg.sender` votes for.
     /// @param chainIds Set of corresponding chain Ids.
     /// @param weights Weights for a nominees in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
@@ -389,7 +381,7 @@ contract VoteWeighting is IErrors {
         return a > b ? a - b : 0;
     }
 
-    /// @notice Get current nominee weight.
+    /// @dev Get current nominee weight.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @return Nominee weight.
@@ -403,9 +395,93 @@ contract VoteWeighting is IErrors {
         return pointsWeight[nomineeChainId][timeWeight[nomineeChainId]].bias;
     }
     
-    /// @notice Get sum of nominee weights.
+    /// @dev Get sum of nominee weights.
     /// @return Sum of nominee weights.
     function getWeightsSum() external view returns (uint256) {
         return pointsSum[timeSum].bias;
+    }
+
+    /// @dev Get the number of nominees.
+    /// @notice The zero-th default nominee Id with id == 0 does not count.
+    /// @return Total number of nominees.
+    function getNumNominees() external view returns (uint256) {
+        return setNominees.length - 1;
+    }
+
+    /// @dev Gets the nominee Id in the global nominees set.
+    /// @param nominee Nominee address.
+    /// @param chainId Chain Id.
+    /// @return id Nominee Id in the global set of (nominee | chainId) values.
+    function getNomineeId(address nominee, uint256 chainId) external view returns (uint256 id) {
+        // Push a pair of key defining variables into one key
+        // nominee occupies first 160 bits
+        uint256 nomineeChainId = uint256(uint160(nominee));
+        // chain Id occupies no more than next 64 bits
+        nomineeChainId |= chainId << 160;
+
+        id = mapNomineeIds[nomineeChainId];
+    }
+
+    /// @dev Get the nominee address and its corresponding chain Id.
+    /// @notice The zero-th default nominee Id with id == 0 does not count.
+    /// @param id Nominee Id in the global set of (nominee | chainId) values.
+    /// @return nominee Nominee address.
+    /// @return chainId Chain Id.
+    function getNominee(uint256 id) external view returns (address nominee, uint256 chainId) {
+        // Get the total number of nominees in the contract
+        uint256 totalNumNominees = setNominees.length - 1;
+        // Check for the zero id or the overflow
+        if (id == 0) {
+            revert ZeroValue();
+        } else if (id > totalNumNominees) {
+            revert Overflow(id, totalNumNominees);
+        }
+        
+        uint256 nomineeChainId = setNominees[id];
+        // Extract the nominee address
+        nominee = address(uint160(uint256(nomineeChainId)));
+        // Extract chain Id
+        chainId = nomineeChainId >> 160;
+    }
+
+    /// @dev Get the set of nominee addresses and corresponding chain Ids.
+    /// @notice The zero-th default nominee Id with id == 0 does not count.
+    /// @param startId Start Id of the nominee in the global set of (nominee | chainId) values.
+    /// @param numNominees Number of nominees to get.
+    /// @return nominees Set of nominee addresses.
+    /// @return chainIds Set of corresponding chain Ids.
+    function getNominees(
+        uint256 startId,
+        uint256 numNominees
+    ) external view returns (address[] memory nominees, uint256[] memory chainIds)
+    {
+        // Check for the zero id or the overflow
+        if (startId == 0 || numNominees == 0) {
+            revert ZeroValue();
+        }
+
+        // Get the last nominee Id requested
+        uint256 endId = startId + numNominees;
+        // Get the total number of nominees in the contract with the zero-th nominee
+        uint256 totalNumNominees = setNominees.length;
+
+        // Check for the overflow
+        if (endId > totalNumNominees) {
+            revert Overflow(endId, totalNumNominees);
+        }
+
+        // Allocate 
+        nominees = new address[](numNominees);
+        chainIds = new uint256[](numNominees);
+
+        // Traverse selected nominees
+        for (uint256 i = 0; i < numNominees; ++i) {
+            uint256 id = i + startId;
+            uint256 nomineeChainId = setNominees[id];
+            // Extract the nominee address
+            nominees[i] = address(uint160(uint256(nomineeChainId)));
+            // Extract chain Id
+            chainIds[i] = nomineeChainId >> 160;
+        }
     }
 }
