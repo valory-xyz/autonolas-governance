@@ -295,7 +295,7 @@ describe("Voting Escrow OLAS", function () {
             const nextTime = getNextTime(block.timestamp);
 
             // Check relative weights that must represent a half for each
-            weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
+            const weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
             expect(Number(weight) / E18).to.equal(1);
 
             // Restore to the state of the snapshot
