@@ -329,5 +329,90 @@ describe("Voting Escrow OLAS", function () {
                 expect(Number(weight) / E18).to.equal(0.5);
             }
         });
+
+        it("Voting several times week after week", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Lock one OLAS into veOLAS
+            await olas.approve(ve.address, oneOLASBalance);
+            await ve.createLock(oneOLASBalance, oneYear);
+
+            // Add a nominee
+            const nominee = signers[1].address;
+            await vw.addNominee(nominee, chainId);
+
+            // Vote for the nominee
+            await vw.voteForNomineeWeights(nominee, chainId, maxVoteWeight);
+
+            // Wait for next two weeks (must pass 10 days where one cannot vote)
+            await helpers.time.increase(oneWeek * 2);
+
+            // Vote for the nominee again
+            await vw.voteForNomineeWeights(nominee, chainId, maxVoteWeight);
+
+            // Get the next point timestamp where votes are written after voting
+            const block = await ethers.provider.getBlock("latest");
+            const nextTime = getNextTime(block.timestamp);
+
+            // Check relative weights that must represent a half for each
+            const weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
+            expect(Number(weight) / E18).to.equal(1);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
+
+        it("Voting with veOLAS lock changing", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Add nominees
+            const numNominees = 2;
+            const nominees = [signers[2].address, signers[3].address];
+            for (let i = 0; i < numNominees; i++) {
+                await vw.addNominee(nominees[i], chainId);
+            }
+
+            // Lock one OLAS into veOLAS by deployer and another account
+            await olas.approve(ve.address, oneOLASBalance);
+            await ve.createLock(oneOLASBalance, oneYear);
+            const user = signers[1];
+            await olas.transfer(user.address, oneOLASBalance);
+            await olas.connect(user).approve(ve.address, oneOLASBalance);
+            await ve.connect(user).createLock(oneOLASBalance, oneYear);
+
+            // Vote for the nominee by the deployer
+            await vw.voteForNomineeWeights(nominees[0], chainId, maxVoteWeight);
+            // Vote for the nominee by the user
+            await vw.connect(user).voteForNomineeWeights(nominees[1], chainId, maxVoteWeight);
+
+            // Deployer increases the OLAS amount in veOLAS
+            await olas.approve(ve.address, oneOLASBalance);
+            await ve.increaseAmount(oneOLASBalance);
+
+            // Wait for several weeks
+            await helpers.time.increase(oneWeek * 3);
+
+            // Vote for the nominee by the deployer
+            await vw.voteForNomineeWeights(nominees[0], chainId, maxVoteWeight);
+            // Vote for the nominee by the user
+            await vw.connect(user).voteForNomineeWeights(nominees[1], chainId, maxVoteWeight);
+
+            // Get the next point timestamp where votes are written after voting
+            let block = await ethers.provider.getBlock("latest");
+            let nextTime = getNextTime(block.timestamp);
+
+            // Check relative weights that must represent a half for each
+            const weights = [
+                await vw.nomineeRelativeWeight(nominees[0], chainId, nextTime),
+                await vw.nomineeRelativeWeight(nominees[1], chainId, nextTime)
+            ];
+            // nominees[0] weight: 666666666680682666, nominees[1] weight: 333333333319317333; the ratio is 2:1
+            expect(Number(weights[0]) / E18).to.be.greaterThan(Number(weights[1]) / E18);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
     });
 });
