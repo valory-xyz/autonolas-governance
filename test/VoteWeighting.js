@@ -115,10 +115,6 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Get nominees", async function () {
-            // Lock one OLAS into veOLAS
-            await olas.approve(ve.address, oneOLASBalance);
-            await ve.createLock(oneOLASBalance, oneYear);
-
             // Add a nominee
             await vw.addNominee(signers[1].address, chainId);
 
@@ -142,6 +138,19 @@ describe("Voting Escrow OLAS", function () {
             ).to.be.revertedWithCustomError(vw, "Overflow");
             await expect(
                 vw.getNominees(1, 2)
+            ).to.be.revertedWithCustomError(vw, "Overflow");
+
+            // Add one more nominee
+            await vw.addNominee(signers[1].address, chainId + 1);
+            // Try to get the nonexistent nominee
+            await expect(
+                vw.getNominee(3)
+            ).to.be.revertedWithCustomError(vw, "Overflow");
+            await expect(
+                vw.getNominees(2, 2)
+            ).to.be.revertedWithCustomError(vw, "Overflow");
+            await expect(
+                vw.getNominees(1, 3)
             ).to.be.revertedWithCustomError(vw, "Overflow");
         });
     });
