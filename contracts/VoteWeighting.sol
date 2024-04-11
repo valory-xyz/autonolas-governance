@@ -52,11 +52,11 @@ contract VoteWeighting is IErrors {
     event NewNominee(address nominee, uint256 chainId);
 
     // 7 * 86400 seconds - all future times are rounded by week
-    uint256 public constant WEEK = 604800;
+    uint256 public constant WEEK = 604_800;
     // Cannot change weight votes more often than once in 10 days
-    uint256 public constant WEIGHT_VOTE_DELAY = 864000;
+    uint256 public constant WEIGHT_VOTE_DELAY = 864_000;
     // Max weight amount
-    uint256 public constant MAX_WEIGHT = 10000;
+    uint256 public constant MAX_WEIGHT = 10_000;
     // Maximum chain Id as per EVM specs
     uint256 public constant MAX_CHAIN_ID = type(uint64).max / 2 - 36;
     // veOLAS contract address
