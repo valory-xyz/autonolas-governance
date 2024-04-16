@@ -10,7 +10,7 @@ describe("buOLAS", function () {
     let signers;
     const initialMint = "1000000000000000000000000"; // 1000000
     const oneYear = 365 * 86400;
-    const quarterOLABalance = ethers.utils.parseEther("0.25");
+    const quarterOLASBalance = ethers.utils.parseEther("0.25");
     const oneOLASBalance = ethers.utils.parseEther("1");
     const twoOLASBalance = ethers.utils.parseEther("2");
     const AddressZero = "0x" + "0".repeat(40);
@@ -128,7 +128,7 @@ describe("buOLAS", function () {
             ethers.provider.send("evm_mine");
             // Now the releasable amount must be equal to 1/4 of the total amount
             amount = await bu.releasableAmount(account.address);
-            expect(amount).to.equal(quarterOLABalance);
+            expect(amount).to.equal(quarterOLASBalance);
 
             // Move five years in time
             ethers.provider.send("evm_increaseTime", [5 * oneYear + 100]);
@@ -167,7 +167,7 @@ describe("buOLAS", function () {
             // Withdraw must be equal to 1/4 of the total amount
             expect(await olas.balanceOf(account.address)).to.equal(0);
             await bu.connect(account).withdraw();
-            expect(await olas.balanceOf(account.address)).to.equal(quarterOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(quarterOLASBalance);
 
             // Try to withdraw more now
             await expect(
@@ -198,10 +198,10 @@ describe("buOLAS", function () {
             ethers.provider.send("evm_increaseTime", [oneYear + 100]);
             ethers.provider.send("evm_mine");
             // Withdraw must be equal to rounded 1/3 of the total amount
-            const thirdOLABalance = new ethers.BigNumber.from(oneOLASBalance).div(numSteps);
+            const thirdOLASBalance = new ethers.BigNumber.from(oneOLASBalance).div(numSteps);
             await bu.connect(account).withdraw();
-            const recoveredFullBalance = thirdOLABalance.mul(numSteps);
-            expect(await olas.balanceOf(account.address)).to.equal(thirdOLABalance);
+            const recoveredFullBalance = thirdOLASBalance.mul(numSteps);
+            expect(await olas.balanceOf(account.address)).to.equal(thirdOLASBalance);
             // This proves that we can potentially lose only 1e(-18) tokens if we call revoke on non divisible remainder
             expect(recoveredFullBalance.add(1)).to.equal(oneOLASBalance);
 
@@ -240,7 +240,7 @@ describe("buOLAS", function () {
             await bu.connect(owner).revoke([account.address]);
             // The buOLAS balanceOf must be equal to the releasable amount after the revoke
             balance = await bu.balanceOf(account.address);
-            expect(balance).to.equal(quarterOLABalance);
+            expect(balance).to.equal(quarterOLASBalance);
 
             // Move time after the full lock duration
             ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
@@ -248,7 +248,7 @@ describe("buOLAS", function () {
 
             // The releasable amount must still be the 1/4 amount, since the rest was revoked
             let amount = await bu.releasableAmount(account.address);
-            expect(amount).to.equal(quarterOLABalance);
+            expect(amount).to.equal(quarterOLASBalance);
 
             // Withdraw must be equal to 1/4 of the total amount since another 3/4 has been revoked
             expect(await olas.balanceOf(account.address)).to.equal(0);
@@ -257,7 +257,7 @@ describe("buOLAS", function () {
             expect(supply).to.equal(oneOLASBalance);
             // Withdraw what we can for the account
             await bu.connect(account).withdraw();
-            expect(await olas.balanceOf(account.address)).to.equal(quarterOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(quarterOLASBalance);
             // Now the balance is zero, since the rest of 3/4 tokens were burned
             supply = await bu.totalSupply();
             expect(supply).to.equal(0);
@@ -290,21 +290,21 @@ describe("buOLAS", function () {
             // Revoke at this point of time
             await bu.connect(owner).revoke([account.address]);
             // The buOLAS balanceOf must be equal to the releasable amount after the revoke, which is 1/3
-            const thirdOLABalance = new ethers.BigNumber.from(oneOLASBalance).div(numSteps);
+            const thirdOLASBalance = new ethers.BigNumber.from(oneOLASBalance).div(numSteps);
             const balance = await bu.balanceOf(account.address);
-            expect(balance).to.equal(thirdOLABalance);
+            expect(balance).to.equal(thirdOLASBalance);
 
             // The releasable amount must be the 1/3 amount, since the rest 1/3 was revoked
             let amount = await bu.releasableAmount(account.address);
-            expect(amount).to.equal(thirdOLABalance);
+            expect(amount).to.equal(thirdOLASBalance);
 
-            const twoThirdsOLABalance = thirdOLABalance.mul(2);
+            const twoThirdsOLASBalance = thirdOLASBalance.mul(2);
             // Before the withdraw the total supply is equal to 2/3 of the full balance, since 1/3 was already withdrawn
             let supply = await bu.totalSupply();
-            expect(supply).to.equal(twoThirdsOLABalance.add(1));
+            expect(supply).to.equal(twoThirdsOLASBalance.add(1));
             // Withdraw what we can for the account, after which the balance is 2/3 of the initial balance
             await bu.connect(account).withdraw();
-            expect(await olas.balanceOf(account.address)).to.equal(twoThirdsOLABalance);
+            expect(await olas.balanceOf(account.address)).to.equal(twoThirdsOLASBalance);
             // Now the balance is zero, since the rest of 1/3 tokens were burned
             supply = await bu.totalSupply();
             expect(supply).to.equal(0);

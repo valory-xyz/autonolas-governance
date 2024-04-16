@@ -26,14 +26,6 @@ async function main() {
     const fxRootABI = parsedFile["abi"];
     const fxRoot = new ethers.Contract(fxRootAddress, fxRootABI, goerliProvider);
 
-    // FxChild address on mumbai
-    const fxChildAddress = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
-    const fxChildJSON = "artifacts/fx-portal/contracts/FxChild.sol/FxChild.json";
-    contractFromJSON = fs.readFileSync(fxChildJSON, "utf8");
-    parsedFile = JSON.parse(contractFromJSON);
-    const fxChildABI = parsedFile["abi"];
-    const fxChild = new ethers.Contract(fxChildAddress, fxChildABI, mumbaiProvider);
-
     // Test deployed FxChildTunnel address on mumbai
     const fxChildTunnelAddress = "0x31D3202d8744B16A120117A053459DDFAE93c855";
     const fxChildTunnelJSON = "artifacts/contracts/bridges/test/FxChildTunnel.sol/FxChildTunnel.json";
@@ -42,6 +34,8 @@ async function main() {
     const fxChildTunnelABI = parsedFile["abi"];
     const fxChildTunnel = new ethers.Contract(fxChildTunnelAddress, fxChildTunnelABI, mumbaiProvider);
     const verifyFxChildAddress = await fxChildTunnel.fxChild();
+
+    const fxChildAddress = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
     if (fxChildAddress == verifyFxChildAddress) {
         console.log("Successfully connected to the test fxChildTunnel contract");
     }

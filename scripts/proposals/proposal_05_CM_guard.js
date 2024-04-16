@@ -13,7 +13,6 @@ async function main() {
     const multisig = await ethers.getContractAt("GnosisSafe", parsedData.CM);
     const nonce = await multisig.nonce();
 
-    const timelockAddress = parsedData.timelockAddress;
     const guardCMAddress = parsedData.guardCMAddress;
 
     // Construct the payload for the multisig to swap the guard by the Timelock
