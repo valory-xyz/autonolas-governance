@@ -4,6 +4,22 @@ pragma solidity ^0.8.23;
 import "./interfaces/IErrors.sol";
 
 interface IVEOLAS {
+    // Structure for voting escrow points
+    // The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
+    struct PointVoting {
+        // w(i) = at + b (bias)
+        int128 bias;
+        // dw / dt = a (slope)
+        int128 slope;
+        // Timestamp. It will never practically be bigger than 2^64 - 1
+        uint64 ts;
+        // Block number. It will not be bigger than the timestamp
+        uint64 blockNumber;
+        // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.
+        // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
+        uint128 balance;
+    }
+
     /// @dev Gets the `account`'s lock end time.
     /// @param account Account address.
     /// @return unlockTime Lock end time.
@@ -28,22 +44,6 @@ struct VotedSlope {
     uint256 slope;
     uint256 power;
     uint256 end;
-}
-
-// Structure for voting escrow points
-// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
-struct PointVoting {
-    // w(i) = at + b (bias)
-    int128 bias;
-    // dw / dt = a (slope)
-    int128 slope;
-    // Timestamp. It will never practically be bigger than 2^64 - 1
-    uint64 ts;
-    // Block number. It will not be bigger than the timestamp
-    uint64 blockNumber;
-    // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.
-    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1
-    uint128 balance;
 }
 
 contract VoteWeighting is IErrors {
@@ -231,15 +231,20 @@ contract VoteWeighting is IErrors {
         _getSum();
     }
 
-    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18).
+    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18) and a sum of weights.
     ///         Inflation which will be received by it is inflation_rate * relativeWeight / 1e18.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
     /// @return weight Value of relative weight normalized to 1e18.
-    function _nomineeRelativeWeight(address nominee, uint256 chainId, uint256 time) internal view returns (uint256 weight) {
+    /// @return totalSum Sum of nominee weights.
+    function _nomineeRelativeWeight(
+        address nominee,
+        uint256 chainId,
+        uint256 time
+    ) internal view returns (uint256 weight, uint256 totalSum) {
         uint256 t = time / WEEK * WEEK;
-        uint256 totalSum = pointsSum[t].bias;
+        totalSum = pointsSum[t].bias;
 
         // Push a pair of key defining variables into one key
         // nominee occupies first 160 bits
@@ -253,27 +258,38 @@ contract VoteWeighting is IErrors {
         }
     }
 
-    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18.
+    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 and the sum of weights.
     ///         (e.g. 1.0 == 1e18). Inflation which will be received by it is
     ///         inflation_rate * relativeWeight / 1e18.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
-    /// @return Value of relative weight normalized to 1e18.
-    function nomineeRelativeWeight(address nominee, uint256 chainId, uint256 time) external view returns (uint256) {
-        return _nomineeRelativeWeight(nominee, chainId, time);
+    /// @return weight Value of relative weight normalized to 1e18.
+    /// @return totalSum Sum of nominee weights.
+    function nomineeRelativeWeight(
+        address nominee,
+        uint256 chainId,
+        uint256 time
+    ) external view returns (uint256 weight, uint256 totalSum) {
+        (weight, totalSum) =  _nomineeRelativeWeight(nominee, chainId, time);
     }
 
     /// @dev Get nominee weight normalized to 1e18 and also fill all the unfilled values for type and nominee records.
+    ///      Also, get the total sum of all the nominee weights.
     /// @notice Any address can call, however nothing is recorded if the values are filled already.
     /// @param nominee Address of the nominee.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
-    /// @return Value of relative weight normalized to 1e18.
-    function nomineeRelativeWeightWrite(address nominee, uint256 chainId, uint256 time) external returns (uint256) {
+    /// @return weight Value of relative weight normalized to 1e18.
+    /// @return totalSum Sum of nominee weights.
+    function nomineeRelativeWeightWrite(
+        address nominee,
+        uint256 chainId,
+        uint256 time
+    ) external returns (uint256 weight, uint256 totalSum) {
         _getWeight(nominee, chainId);
         _getSum();
-        return _nomineeRelativeWeight(nominee, chainId, time);
+        (weight, totalSum) =  _nomineeRelativeWeight(nominee, chainId, time);
     }
 
     /// @dev Allocate voting power for changing pool weights.
