@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./interfaces/IErrors.sol";
+import {IErrors} from "./interfaces/IErrors.sol";
 
 interface IVEOLAS {
     // Structure for voting escrow points
