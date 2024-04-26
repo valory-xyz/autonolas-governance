@@ -18,10 +18,19 @@ describe("Voting Escrow OLAS", function () {
     const E18 = 10**18;
     const oneOLASBalance = ethers.utils.parseEther("1");
     const AddressZero = ethers.constants.AddressZero;
+    const HashZero = ethers.constants.HashZero;
     const maxU256 = ethers.constants.MaxUint256;
 
     function getNextTime(ts) {
         return Math.floor((ts + oneWeek) / oneWeek) * oneWeek;
+    }
+
+    function convertAddressToBytes32(account) {
+        return ("0x" + "0".repeat(24) + account.slice(2)).toLowerCase();
+    }
+
+    function convertBytes32ToAddress(account) {
+        return "0x" + account.slice(26);
     }
 
     beforeEach(async function () {
@@ -59,39 +68,52 @@ describe("Voting Escrow OLAS", function () {
 
     context("Adding nominees", async function () {
         it("Should fail with wrong nominee params", async function () {
+            let nominee = signers[1].address;
             // Lock one OLAS into veOLAS
             await olas.approve(ve.address, oneOLASBalance);
             await ve.createLock(oneOLASBalance, oneYear);
 
             // Try to add a zero address nominee
             await expect(
-                vw.addNominee(AddressZero, chainId)
+                vw.addNomineeEVM(AddressZero, chainId)
             ).to.be.revertedWithCustomError(vw, "ZeroAddress");
 
             // Try to add a zero chain Id
             await expect(
-                vw.addNominee(signers[1].address, 0)
+                vw.addNomineeEVM(nominee, 0)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
 
             // Try to add an overflow chain Id
-            let overflowChainId = await vw.MAX_CHAIN_ID();
-            overflowChainId = overflowChainId.add(1);
+            const maxEVMChainId = await vw.MAX_EVM_CHAIN_ID();
+            const overflowChainId = maxEVMChainId.add(1);
             await expect(
-                vw.addNominee(signers[1].address, overflowChainId)
+                vw.addNomineeEVM(nominee, overflowChainId)
             ).to.be.revertedWithCustomError(vw, "Overflow");
+
+            // Try to add an underflow chain Id for the non-EVM chain
+            nominee = convertAddressToBytes32(nominee);
+            await expect(
+                vw.addNomineeNonEVM(nominee, maxEVMChainId)
+            ).to.be.revertedWithCustomError(vw, "Underflow");
+
+            // Try to add a non-EVM nominee with a zero address
+            await expect(
+                vw.addNomineeNonEVM(HashZero, chainId)
+            ).to.be.revertedWithCustomError(vw, "ZeroAddress");
         });
 
         it("Add nominee", async function () {
+            let nominee = signers[1].address;
             // Lock one OLAS into veOLAS
             await olas.approve(ve.address, oneOLASBalance);
             await ve.createLock(oneOLASBalance, oneYear);
 
             // Add a nominee
-            await vw.addNominee(signers[1].address, chainId);
+            await vw.addNomineeEVM(nominee, chainId);
 
             // Try to add the same nominee
             await expect(
-                vw.addNominee(signers[1].address, chainId)
+                vw.addNomineeEVM(nominee, chainId)
             ).to.be.revertedWithCustomError(vw, "NomineeAlreadyExists");
 
             // Check the nominee setup
@@ -99,24 +121,30 @@ describe("Voting Escrow OLAS", function () {
             expect(numNominees).to.equal(1);
 
             const nomineeChainId = await vw.getNominee(1);
-            expect(nomineeChainId.nominee).to.equal(signers[1].address);
+            expect(nomineeChainId.account).to.equal(convertAddressToBytes32(nominee));
             expect(nomineeChainId.chainId).to.equal(chainId);
 
             const nomineeChainIds = await vw.getNominees(1, 1);
-            expect(nomineeChainIds.nominees[0]).to.equal(signers[1].address);
-            expect(nomineeChainIds.chainIds[0]).to.equal(chainId);
+            expect(nomineeChainIds[0].account).to.equal(convertAddressToBytes32(nominee));
+            expect(nomineeChainIds[0].chainId).to.equal(chainId);
 
-            let nomineeId = await vw.getNomineeId(signers[1].address, chainId);
+            let nomineeId = await vw.getNomineeId(convertAddressToBytes32(nominee), chainId);
             expect(nomineeId).to.equal(1);
 
             // Check the nominee Id of a nonexistent nominee
-            nomineeId = await vw.getNomineeId(signers[1].address, chainId + 1);
+            nomineeId = await vw.getNomineeId(convertAddressToBytes32(nominee), chainId + 1);
             expect(nomineeId).to.equal(0);
+
+            // Adding a non-EVM nominee
+            nominee = convertAddressToBytes32(nominee);
+            const maxEVMChainId = await vw.MAX_EVM_CHAIN_ID();
+            await vw.addNomineeNonEVM(nominee, maxEVMChainId.add(1));
         });
 
         it("Get nominees", async function () {
+            const nominee = signers[1].address;
             // Add a nominee
-            await vw.addNominee(signers[1].address, chainId);
+            await vw.addNomineeEVM(nominee, chainId);
 
             // Try to get the zero-th nominees
             await expect(
@@ -141,7 +169,7 @@ describe("Voting Escrow OLAS", function () {
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
             // Add one more nominee
-            await vw.addNominee(signers[1].address, chainId + 1);
+            await vw.addNomineeEVM(nominee, chainId + 1);
             // Try to get the nonexistent nominee
             await expect(
                 vw.getNominee(3)
@@ -159,7 +187,8 @@ describe("Voting Escrow OLAS", function () {
         it("Should fail with wrong input arguments", async function () {
             // Add a nominee
             let nominee = signers[1].address;
-            await vw.addNominee(nominee, chainId);
+            await vw.addNomineeEVM(nominee, chainId);
+            nominee = convertAddressToBytes32(nominee);
 
             // Approve OLAS for veOLAS
             await olas.approve(ve.address, oneOLASBalance);
@@ -196,7 +225,9 @@ describe("Voting Escrow OLAS", function () {
 
             // Try to vote for another nominee with all the voting power used
             nominee = signers[2].address;
-            await vw.addNominee(nominee, chainId);
+            await vw.addNomineeEVM(nominee, chainId);
+            nominee = convertAddressToBytes32(nominee);
+
             await expect(
                 vw.voteForNomineeWeights(nominee, chainId, 1)
             ).to.be.revertedWithCustomError(vw, "Overflow");
@@ -230,8 +261,9 @@ describe("Voting Escrow OLAS", function () {
             await ve.createLock(oneOLASBalance, oneYear);
 
             // Add a nominee
-            const nominee = signers[1].address;
-            await vw.addNominee(nominee, chainId);
+            let nominee = signers[1].address;
+            await vw.addNomineeEVM(nominee, chainId);
+            nominee = convertAddressToBytes32(nominee);
 
             // Get the next point timestamp where votes are written after voting
             const block = await ethers.provider.getBlock("latest");
@@ -248,8 +280,9 @@ describe("Voting Escrow OLAS", function () {
 
 
             // Add one more nominee
-            const nominee2 = signers[2].address;
-            await vw.addNominee(nominee2, chainId);
+            let nominee2 = signers[2].address;
+            await vw.addNomineeEVM(nominee2, chainId);
+            nominee2 = convertAddressToBytes32(nominee2);
 
             // Make sure the initial weight is zero
             weight = await vw.nomineeRelativeWeight(nominee2, chainId, nextTime);
@@ -290,8 +323,9 @@ describe("Voting Escrow OLAS", function () {
             await ve.createLock(oneOLASBalance, oneYear);
 
             // Add a nominee
-            const nominee = signers[1].address;
-            await vw.addNominee(nominee, chainId);
+            let nominee = signers[1].address;
+            await vw.addNomineeEVM(nominee, chainId);
+            nominee = convertAddressToBytes32(nominee);
 
             // Wait for several weeks
             await helpers.time.increase(oneWeek * 3);
@@ -318,11 +352,13 @@ describe("Voting Escrow OLAS", function () {
 
             // Add nominees
             const numNominees = 2;
-            const nominees = [signers[1].address, signers[2].address];
+            let nominees = [signers[1].address, signers[2].address];
             const chainIds = new Array(numNominees).fill(chainId);
             for (let i = 0; i < numNominees; i++) {
-                await vw.addNominee(nominees[i], chainIds[i]);
+                await vw.addNomineeEVM(nominees[i], chainIds[i]);
             }
+
+            nominees = [convertAddressToBytes32(nominees[0]), convertAddressToBytes32(nominees[1])];
 
             // Get the next point timestamp where votes are written after voting
             const block = await ethers.provider.getBlock("latest");
@@ -348,8 +384,9 @@ describe("Voting Escrow OLAS", function () {
             await ve.createLock(oneOLASBalance, oneYear);
 
             // Add a nominee
-            const nominee = signers[1].address;
-            await vw.addNominee(nominee, chainId);
+            let nominee = signers[1].address;
+            await vw.addNomineeEVM(nominee, chainId);
+            nominee = convertAddressToBytes32(nominee);
 
             // Vote for the nominee
             await vw.voteForNomineeWeights(nominee, chainId, maxVoteWeight);
@@ -378,10 +415,11 @@ describe("Voting Escrow OLAS", function () {
 
             // Add nominees
             const numNominees = 2;
-            const nominees = [signers[2].address, signers[3].address];
+            let nominees = [signers[2].address, signers[3].address];
             for (let i = 0; i < numNominees; i++) {
-                await vw.addNominee(nominees[i], chainId);
+                await vw.addNomineeEVM(nominees[i], chainId);
             }
+            nominees = [convertAddressToBytes32(nominees[0]), convertAddressToBytes32(nominees[1])];
 
             // Lock one OLAS into veOLAS by deployer and another account
             await olas.approve(ve.address, oneOLASBalance);

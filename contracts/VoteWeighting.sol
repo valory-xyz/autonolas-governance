@@ -220,7 +220,7 @@ contract VoteWeighting is IErrors {
     /// @dev Add EVM nominee address along with the chain Id.
     /// @param account Address of the nominee.
     /// @param chainId Chain Id.
-    function addNominee(address account, uint256 chainId) external {
+    function addNomineeEVM(address account, uint256 chainId) external {
         // Check for the zero address
         if (account == address(0)) {
             revert ZeroAddress();
