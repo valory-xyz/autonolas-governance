@@ -119,6 +119,8 @@ describe("Voting Escrow OLAS", function () {
             // Check the nominee setup
             const numNominees = await vw.getNumNominees();
             expect(numNominees).to.equal(1);
+            const allNominees = await vw.getAllNominees();
+            expect(allNominees.length).to.equal(numNominees.add(1));
 
             const nomineeChainId = await vw.getNominee(1);
             expect(nomineeChainId.account).to.equal(convertAddressToBytes32(nominee));
@@ -253,6 +255,24 @@ describe("Voting Escrow OLAS", function () {
             await expect(
                 vw.voteForNomineeWeightsBatch([], [chainId], [maxVoteWeight])
             ).to.be.revertedWithCustomError(vw, "WrongArrayLength");
+
+            // Try to get next allowed voting times with wrong params
+            await expect(
+                vw.getNextAllowedVotingTimes([nominee], [], [])
+            ).to.be.revertedWithCustomError(vw, "WrongArrayLength");
+            await expect(
+                vw.getNextAllowedVotingTimes([nominee], [chainId], [])
+            ).to.be.revertedWithCustomError(vw, "WrongArrayLength");
+            await expect(
+                vw.getNextAllowedVotingTimes([], [chainId], [])
+            ).to.be.revertedWithCustomError(vw, "WrongArrayLength");
+            await expect(
+                vw.getNextAllowedVotingTimes([], [chainId], [signers[1].address])
+            ).to.be.revertedWithCustomError(vw, "WrongArrayLength");
+            // Nominee that does not exist
+            await expect(
+                vw.getNextAllowedVotingTimes([nominee], [chainId + 1], [signers[1].address])
+            ).to.be.revertedWithCustomError(vw, "NomineeDoesNotExist");
         });
 
         it("Vote for the nominees separately", async function () {
@@ -266,8 +286,8 @@ describe("Voting Escrow OLAS", function () {
             nominee = convertAddressToBytes32(nominee);
 
             // Get the next point timestamp where votes are written after voting
-            const block = await ethers.provider.getBlock("latest");
-            const nextTime = getNextTime(block.timestamp);
+            let block = await ethers.provider.getBlock("latest");
+            let nextTime = getNextTime(block.timestamp);
 
             // Make sure the initial weight is zero
             let weight = await vw.nomineeRelativeWeight(nominee, chainId, block.timestamp);
@@ -312,6 +332,15 @@ describe("Voting Escrow OLAS", function () {
             // Checkpoint and checkpoint nominee
             await vw.checkpoint();
             await vw.checkpointNominee(nominee, chainId);
+
+            // Get next allowed voting times
+            block = await ethers.provider.getBlock("latest");
+            nextTime = (await vw.WEIGHT_VOTE_DELAY()).add(block.timestamp);
+            const nextTimes = await vw.getNextAllowedVotingTimes([nominee, nominee2], [chainId, chainId],
+                [deployer.address, deployer.address]);
+            for (let i = 0; i < nextTimes.length; i++) {
+                expect(nextTimes[i]).to.lessThanOrEqual(nextTime);
+            }
         });
 
         it("Vote for the nominee after some time", async function () {

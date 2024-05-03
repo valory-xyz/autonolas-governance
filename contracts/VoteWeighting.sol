@@ -552,7 +552,7 @@ contract VoteWeighting is IErrors {
         // Allocate the times array
         nextAllowedVotingTimes = new uint256[](accounts.length);
 
-        // Traverse nominees and get next available times
+        // Traverse nominees and get next available voting times
         for (uint256 i = 0; i < accounts.length; ++i) {
             // Get the nominee struct and hash
             Nominee memory nominee = Nominee(accounts[i], chainIds[i]);
