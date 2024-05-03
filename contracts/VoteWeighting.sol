@@ -71,7 +71,7 @@ struct Nominee {
 contract VoteWeighting is IErrors {
     event NewNomineeWeight(bytes32 indexed nominee, uint256 chainId, uint256 weight, uint256 totalWeight);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
-    event NewNominee(bytes32 account, uint256 chainId);
+    event NewNominee(bytes32 account, uint256 chainId, uint256 id);
 
     // 7 * 86400 seconds - all future times are rounded by week
     uint256 public constant WEEK = 604_800;
@@ -207,14 +207,15 @@ contract VoteWeighting is IErrors {
         if (mapNomineeIds[nomineeHash] > 0) {
             revert NomineeAlreadyExists(nominee.account, nominee.chainId);
         }
-        mapNomineeIds[nomineeHash] = setNominees.length;
+        uint256 id = setNominees.length;
+        mapNomineeIds[nomineeHash] = id;
         // Push the nominee into the list
         setNominees.push(nominee);
 
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
         timeWeight[nomineeHash] = nextTime;
 
-        emit NewNominee(nominee.account, nominee.chainId);
+        emit NewNominee(nominee.account, nominee.chainId, id);
     }
 
     /// @dev Add EVM nominee address along with the chain Id.
@@ -461,6 +462,13 @@ contract VoteWeighting is IErrors {
         return setNominees.length - 1;
     }
 
+    /// @dev Gets a full set of nominees.
+    /// @notice The returned set includes the zero-th empty nominee instance.
+    /// @return nominees Set of all the nominees in the contract.
+    function getAllNominees() external view returns (Nominee[] memory nominees) {
+        nominees = setNominees;
+    }
+
     /// @dev Gets the nominee Id in the global nominees set.
     /// @param account Nominee address in bytes32 form.
     /// @param chainId Chain Id.
@@ -515,7 +523,7 @@ contract VoteWeighting is IErrors {
             revert Overflow(endId, totalNumNominees);
         }
 
-        // Allocate 
+        // Allocate the nominee array
         nominees = new Nominee[](numNominees);
 
         // Traverse selected nominees
@@ -523,6 +531,40 @@ contract VoteWeighting is IErrors {
             uint256 id = i + startId;
             // Get the nominee struct
             nominees[i] = setNominees[id];
+        }
+    }
+
+    /// @dev Gets next allowed voting time for selected nominees and voters.
+    /// @notice The function does not check for repeated nominees and voters.
+    /// @param accounts Set of nominee account addresses.
+    /// @param chainIds Corresponding set of chain Ids.
+    /// @param voters Corresponding set of voters for specified nominees.
+    function getNextAllowedVotingTimes(
+        bytes32[] memory accounts,
+        uint256[] memory chainIds,
+        address[] memory voters
+    ) external view returns (uint256[] memory nextAllowedVotingTimes) {
+        // Check array lengths
+        if (accounts.length != chainIds.length || accounts.length != voters.length) {
+            revert WrongArrayLength(accounts.length, chainIds.length);
+        }
+
+        // Allocate the times array
+        nextAllowedVotingTimes = new uint256[](accounts.length);
+
+        // Traverse nominees and get next available times
+        for (uint256 i = 0; i < accounts.length; ++i) {
+            // Get the nominee struct and hash
+            Nominee memory nominee = Nominee(accounts[i], chainIds[i]);
+            bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+            // Check for nominee existence
+            if (mapNomineeIds[nomineeHash] == 0) {
+                revert NomineeDoesNotExist(accounts[i], chainIds[i]);
+            }
+
+            // Calculate next allowed voting times
+            nextAllowedVotingTimes[i] = lastUserVote[voters[i]][nomineeHash] + WEIGHT_VOTE_DELAY;
         }
     }
 }
