@@ -524,9 +524,9 @@ describe("Voting Escrow OLAS", function () {
                 vw.voteForNomineeWeightsBatch(nominees, chainIds, weights)
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
-            // The first weight must be no bigger than the first one used before
+            // The first weight must be no bigger than the first one used before, so no more than 2000
             // The second weight must be no bigger than the addition of a difference between first weights:
-            // 2000 - 1000 = 1000, so the maximum second weight might be 7000 + 1000 = 8000
+            // 2000 - 1000 = 1000, so the maximum second weight must be 7000 + 1000 = 8000, or below
             weights = [1000, 8000, 1000];
             await vw.voteForNomineeWeightsBatch(nominees, chainIds, weights);
 
