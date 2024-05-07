@@ -19,7 +19,6 @@ describe("Voting Escrow OLAS", function () {
     const oneOLASBalance = ethers.utils.parseEther("1");
     const AddressZero = ethers.constants.AddressZero;
     const HashZero = ethers.constants.HashZero;
-    const maxU256 = ethers.constants.MaxUint256;
 
     function getNextTime(ts) {
         return Math.floor((ts + oneWeek) / oneWeek) * oneWeek;
