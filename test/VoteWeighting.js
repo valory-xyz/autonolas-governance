@@ -490,5 +490,48 @@ describe("Voting Escrow OLAS", function () {
             // Restore to the state of the snapshot
             await snapshot.restore();
         });
+
+        it("Changing votes after two weeks", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Add nominees
+            const numNominees = 3;
+            let nominees = [signers[2].address, signers[3].address, signers[4].address];
+            for (let i = 0; i < numNominees; i++) {
+                await vw.addNomineeEVM(nominees[i], chainId);
+            }
+            nominees = [convertAddressToBytes32(nominees[0]), convertAddressToBytes32(nominees[1]),
+                convertAddressToBytes32(nominees[2])];
+
+            let weights = [2000, 7000, 1000];
+            const chainIds = new Array(numNominees).fill(chainId);
+
+            // Lock one OLAS into veOLAS by deployer and another account
+            await olas.approve(ve.address, oneOLASBalance);
+            await ve.createLock(oneOLASBalance, oneYear);
+
+            // Vote for the nominees
+            await vw.voteForNomineeWeightsBatch(nominees, chainIds, weights);
+
+            // Wait for two weeks
+            await helpers.time.increase(oneWeek * 2);
+
+            // Vote for the nominees again with different weights
+            weights = [9000, 500, 500];
+            // Having weights too high after spending all the voting power results in the overflow
+            await expect(
+                vw.voteForNomineeWeightsBatch(nominees, chainIds, weights)
+            ).to.be.revertedWithCustomError(vw, "Overflow");
+
+            // The first weight must be no bigger than the first one used before
+            // The second weight must be no bigger than the addition of a difference between first weights:
+            // 2000 - 1000 = 1000, so the maximum second weight might be 7000 + 1000 = 8000
+            weights = [1000, 8000, 1000];
+            await vw.voteForNomineeWeightsBatch(nominees, chainIds, weights);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
     });
 });
