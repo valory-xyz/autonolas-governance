@@ -3,6 +3,18 @@ pragma solidity ^0.8.23;
 
 import {IErrors} from "./interfaces/IErrors.sol";
 
+// Dispenser interface
+interface IDispenser {
+    /// @dev Enables nominee in dispenser.
+    /// @param nomineeHash Nominee hash.
+    function enableNominee(bytes32 nomineeHash) external;
+
+    /// @dev Records nominee removal.
+    /// @param nomineeHash Nominee hash.
+    function removeNominee(bytes32 nomineeHash) external;
+}
+
+// veOLAS interface
 interface IVEOLAS {
     // Structure for voting escrow points
     // The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
@@ -96,6 +108,8 @@ contract VoteWeighting is IErrors {
     address public immutable ve;
     // Contract owner address
     address public owner;
+    // Dispenser contract
+    address public dispenser;
 
     // Set of Nominee structs
     Nominee[] public setNominees;
@@ -132,7 +146,7 @@ contract VoteWeighting is IErrors {
     uint256 public timeSum;
 
     /// @dev Contract constructor.
-    /// @param _ve `VotingEscrow` contract address.
+    /// @param _ve Voting Escrow contract address.
     constructor(address _ve) {
         // Check for the zero address
         if (_ve == address(0)) {
@@ -237,6 +251,12 @@ contract VoteWeighting is IErrors {
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
         timeWeight[nomineeHash] = nextTime;
 
+        // Enable nominee in dispenser, if applicable
+        address localDispenser = dispenser;
+        if (localDispenser != address(0)) {
+            IDispenser(localDispenser).enableNominee(nomineeHash);
+        }
+
         emit AddNominee(nominee.account, nominee.chainId, id);
     }
 
@@ -300,6 +320,18 @@ contract VoteWeighting is IErrors {
 
         owner = newOwner;
         emit OwnerUpdated(newOwner);
+    }
+
+    /// @dev Changes the dispenser contract address.
+    /// @notice Dispenser can a zero address if the contract needs to serve a general purpose.
+    /// @param newDispenser New dispenser contract address.
+    function changeDispenser(address newDispenser) external {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+
+        dispenser = newDispenser;
     }
 
     /// @dev Checkpoint to fill data common for all nominees.
@@ -514,6 +546,12 @@ contract VoteWeighting is IErrors {
 
         // Add to the removed nominee map
         mapRemovedNominees[nomineeHash] = true;
+
+        // Remove nominee in dispenser, if applicable
+        address localDispenser = dispenser;
+        if (localDispenser != address(0)) {
+            IDispenser(localDispenser).removeNominee(nomineeHash);
+        }
 
         // Remove nominee from the map
         mapNomineeIds[nomineeHash] = 0;

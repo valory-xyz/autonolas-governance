@@ -85,6 +85,19 @@ describe("Voting Escrow OLAS", function () {
                 vw.connect(deployer).changeOwner(deployer.address)
             ).to.be.revertedWithCustomError(vw, "OwnerOnly");
         });
+
+        it("Setting dispenser", async function () {
+            // Try to set not by the owner
+            await expect(
+                vw.connect(signers[1]).changeDispenser(deployer.address)
+            ).to.be.revertedWithCustomError(vw, "OwnerOnly");
+
+            // Set dispenser to any address
+            await vw.changeDispenser(deployer.address);
+
+            // Zero address
+            await vw.changeDispenser(AddressZero);
+        });
     });
 
     context("Adding nominees", async function () {
@@ -672,6 +685,36 @@ describe("Voting Escrow OLAS", function () {
 
             // Retrieve the second nominee voting power
             await vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
+
+        it("Should fail when the dispenser is not correctly called", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Lock one OLAS into veOLAS
+            await olas.approve(ve.address, oneOLASBalance);
+            await ve.createLock(oneOLASBalance, oneYear);
+
+            // Add nominee and get their bytes32 addresses
+            let nominee = signers[1].address;
+            await vw.addNomineeEVM(nominee, chainId);
+            nominee = convertAddressToBytes32(nominee);
+
+            // Set the dispenser
+            await vw.changeDispenser(deployer.address);
+
+            // Try to add nominee
+            await expect(
+                vw.addNomineeEVM(convertBytes32ToAddress(nominee), chainId + 1)
+            ).to.be.reverted;
+
+            // Try to remove nominee
+            await expect(
+                vw.removeNominee(nominee, chainId)
+            ).to.be.reverted;
 
             // Restore to the state of the snapshot
             await snapshot.restore();
