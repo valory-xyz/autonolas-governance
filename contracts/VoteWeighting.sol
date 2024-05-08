@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {IErrors} from "./interfaces/IErrors.sol";
-
 // Dispenser interface
 interface IDispenser {
     /// @dev Enables nominee in dispenser.
@@ -43,6 +41,27 @@ interface IVEOLAS {
     function getLastUserPoint(address account) external view returns (PointVoting memory pv);
 }
 
+/// @dev Only `owner` has a privilege, but the `sender` was provided.
+/// @param sender Sender address.
+/// @param owner Required sender address as an owner.
+error OwnerOnly(address sender, address owner);
+
+/// @dev Provided zero address.
+error ZeroAddress();
+
+/// @dev Zero value when it has to be different from zero.
+error ZeroValue();
+
+/// @dev Wrong length of two arrays.
+/// @param numValues1 Number of values in a first array.
+/// @param numValues2 Number of values in a second array.
+error WrongArrayLength(uint256 numValues1, uint256 numValues2);
+
+/// @dev Value overflow.
+/// @param provided Overflow value.
+/// @param max Maximum possible value.
+error Overflow(uint256 provided, uint256 max);
+
 /// @dev Underflow value.
 /// @param provided Provided value.
 /// @param expected Minimum expected value.
@@ -57,6 +76,12 @@ error NomineeDoesNotExist(bytes32 account, uint256 chainId);
 /// @param account Nominee account address.
 /// @param chainId Nominee chain Id.
 error NomineeAlreadyExists(bytes32 account, uint256 chainId);
+
+/// @dev Value lock is expired.
+/// @param account Address that is checked for the locked value.
+/// @param deadline The lock expiration deadline.
+/// @param curTime Current timestamp.
+error LockExpired(address account, uint256 deadline, uint256 curTime);
 
 /// @dev The vote has been performed already.
 /// @param voter Voter address.
@@ -74,23 +99,31 @@ error NomineeNotRemoved(bytes32 account, uint256 chainId);
 /// @param chainId Nominee chain Id.
 error NomineeRemoved(bytes32 account, uint256 chainId);
 
+// Point struct
 struct Point {
     uint256 bias;
     uint256 slope;
 }
 
+// Voted slope struct
 struct VotedSlope {
     uint256 slope;
     uint256 power;
     uint256 end;
 }
 
+// Nominee struct
 struct Nominee {
     bytes32 account;
     uint256 chainId;
 }
 
-contract VoteWeighting is IErrors {
+
+/// @title VoteWeighting - Smart contract for Vote Weighting with specific nominees composed of address and chain Id
+/// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
+/// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
+/// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
+contract VoteWeighting {
     event OwnerUpdated(address indexed owner);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
     event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
