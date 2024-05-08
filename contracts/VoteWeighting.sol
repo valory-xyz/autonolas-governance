@@ -69,9 +69,10 @@ struct Nominee {
 }
 
 contract VoteWeighting is IErrors {
-    event NewNomineeWeight(bytes32 indexed nominee, uint256 chainId, uint256 weight, uint256 totalWeight);
+    event OwnerUpdated(address indexed owner);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
-    event NewNominee(bytes32 account, uint256 chainId, uint256 id);
+    event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
+    event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);
 
     // 7 * 86400 seconds - all future times are rounded by week
     uint256 public constant WEEK = 604_800;
@@ -83,6 +84,8 @@ contract VoteWeighting is IErrors {
     uint256 public constant MAX_EVM_CHAIN_ID = type(uint64).max / 2 - 36;
     // veOLAS contract address
     address public immutable ve;
+    // Contract owner address
+    address public owner;
 
     // Set of Nominee structs
     Nominee[] public setNominees;
@@ -125,6 +128,7 @@ contract VoteWeighting is IErrors {
         }
 
         // Set initial parameters
+        owner = msg.sender;
         ve = _ve;
         timeSum = block.timestamp / WEEK * WEEK;
         setNominees.push(Nominee(bytes32(0), 0));
@@ -170,7 +174,7 @@ contract VoteWeighting is IErrors {
         // Check that the nominee exists
         bytes32 nomineeHash = keccak256(abi.encode(nominee));
         if (mapNomineeIds[nomineeHash] == 0) {
-            revert NomineeDoesNotExist(nominee.account, nominee.chainId);
+            revert NomineeDoesNotExist(account, chainId);
         }
 
         // t is always > 0 as it is set during the addNominee() call
@@ -215,7 +219,7 @@ contract VoteWeighting is IErrors {
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
         timeWeight[nomineeHash] = nextTime;
 
-        emit NewNominee(nominee.account, nominee.chainId, id);
+        emit AddNominee(nominee.account, nominee.chainId, id);
     }
 
     /// @dev Add EVM nominee address along with the chain Id.
@@ -261,6 +265,23 @@ contract VoteWeighting is IErrors {
 
         // Record nominee instance
         _addNominee(nominee);
+    }
+
+    /// @dev Changes the owner address.
+    /// @param newOwner Address of a new owner.
+    function changeOwner(address newOwner) external {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+
+        // Check for the zero address
+        if (newOwner == address(0)) {
+            revert ZeroAddress();
+        }
+
+        owner = newOwner;
+        emit OwnerUpdated(newOwner);
     }
 
     /// @dev Checkpoint to fill data common for all nominees.
@@ -437,6 +458,48 @@ contract VoteWeighting is IErrors {
         return a > b ? a - b : 0;
     }
 
+    /// @dev Removes nominee from the contract and zeros its weight.
+    /// @param account Address of the nominee in bytes32 form.
+    /// @param chainId Chain Id.
+    function removeNominee(bytes32 account, uint256 chainId) external {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(owner, msg.sender);
+        }
+
+        // Get the nominee struct and hash
+        Nominee memory nominee = Nominee(account, chainId);
+        bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+        // Get the nominee id in the nominee set
+        uint256 id = mapNomineeIds[nomineeHash];
+        if (id == 0) {
+            revert NomineeDoesNotExist(account, chainId);
+        }
+
+        // Remove nominee from the map
+        mapNomineeIds[nomineeHash] = 0;
+        // Shuffle the current last nominee id in the set to be placed to the removed one
+        nominee = setNominees[setNominees.length - 1];
+        nomineeHash = keccak256(abi.encode(nominee));
+        mapNomineeIds[nomineeHash] = id;
+        setNominees[id] = nominee;
+        // Pop the last element from the set
+        setNominees.pop();
+
+        // Set nominee weight to zero
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+        pointsWeight[nomineeHash][nextTime].bias = 0;
+        timeWeight[nomineeHash] = nextTime;
+
+        uint256 oldWeight = _getWeight(account, chainId);
+        uint256 oldSum = _getSum();
+        pointsSum[nextTime].bias = oldSum - oldWeight;
+        timeSum = nextTime;
+
+        emit RemoveNominee(account, chainId, newSum);
+    }
+    
     /// @dev Get current nominee weight.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
