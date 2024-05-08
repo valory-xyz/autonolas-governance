@@ -63,6 +63,28 @@ describe("Voting Escrow OLAS", function () {
             const veAddress = await vw.ve();
             expect(ve.address).to.equal(veAddress);
         });
+        
+        it("Changing owner", async function () {
+            const account = signers[1];
+
+            // Trying to change owner from a non-owner account address
+            await expect(
+                vw.connect(account).changeOwner(account.address)
+            ).to.be.revertedWithCustomError(vw, "OwnerOnly");
+
+            // Trying to change owner for the zero address
+            await expect(
+                vw.connect(deployer).changeOwner(AddressZero)
+            ).to.be.revertedWithCustomError(vw, "ZeroAddress");
+
+            // Changing the owner
+            await vw.connect(deployer).changeOwner(account.address);
+
+            // Trying to change owner from the previous owner address
+            await expect(
+                vw.connect(deployer).changeOwner(deployer.address)
+            ).to.be.revertedWithCustomError(vw, "OwnerOnly");
+        });
     });
 
     context("Adding nominees", async function () {
@@ -528,6 +550,128 @@ describe("Voting Escrow OLAS", function () {
             // 2000 - 1000 = 1000, so the maximum second weight must be 7000 + 1000 = 8000, or below
             weights = [1000, 8000, 1000];
             await vw.voteForNomineeWeightsBatch(nominees, chainIds, weights);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
+
+        it("Remove nominee and retrieve voting power", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Lock one OLAS into veOLAS
+            await olas.approve(ve.address, oneOLASBalance);
+            await ve.createLock(oneOLASBalance, oneYear);
+
+            const numNominees = 2;
+            // Add nominees and get their bytes32 addresses
+            let nominees = [signers[1].address, signers[2].address];
+            for (let i = 0; i < numNominees; i++) {
+                await vw.addNomineeEVM(nominees[i], chainId);
+                nominees[i] = convertAddressToBytes32(nominees[i]);
+            }
+
+            // Vote for the first nominee
+            await vw.voteForNomineeWeights(nominees[0], chainId, maxVoteWeight);
+
+            // Get the set of nominees
+            let setNominees = await vw.getAllNominees();
+            // Check that the length is 3 (including the zero one)
+            expect(setNominees.length).to.equal(3);
+
+            // Get the first nominee id
+            let id = await vw.getNomineeId(nominees[0], chainId);
+            // The id must be equal to 1
+            expect(id).to.equal(1);
+            // Get the second nominee id
+            id = await vw.getNomineeId(nominees[1], chainId);
+            // The id must be equal to 2
+            expect(id).to.equal(2);
+
+            // Try to remove the nominee not by the owner
+            await expect(
+                vw.connect(signers[1]).removeNominee(nominees[0], chainId)
+            ).to.be.revertedWithCustomError(vw, "OwnerOnly");
+
+            // Remove the nominee
+            await vw.removeNominee(nominees[0], chainId);
+
+            // Get the removed nominee Id
+            id = await vw.getNomineeId(nominees[0], chainId);
+            expect(id).to.equal(0);
+
+            // Try to remove the nominee again
+            await expect(
+                vw.removeNominee(nominees[0], chainId)
+            ).to.be.revertedWithCustomError(vw, "NomineeDoesNotExist");
+
+            // Get the id for the second nominee that was shifted from 2 to 1
+            id = await vw.getNomineeId(nominees[1], chainId);
+            expect(id).to.equal(1);
+
+            // Try to add a removed nominee
+            await expect(
+                vw.addNomineeEVM(convertBytes32ToAddress(nominees[0]), chainId)
+            ).to.be.revertedWithCustomError(vw, "NomineeRemoved");
+
+            // Try to vote for a removed nominee
+            await expect(
+                vw.voteForNomineeWeights(nominees[0], chainId, maxVoteWeight)
+            ).to.be.revertedWithCustomError(vw, "NomineeRemoved");
+
+            // Checkpoint the nominee weight, which is still possible
+            await vw.checkpointNominee(nominees[0], chainId);
+
+            // Wait for two weeks
+            await helpers.time.increase(oneWeek * 2);
+
+            // Try to vote for the second nominee - fails because the voting power is not retrieved
+            await expect(
+                vw.voteForNomineeWeights(nominees[1], chainId, maxVoteWeight)
+            ).to.be.revertedWithCustomError(vw, "Overflow");
+
+            // Retrieve the nominee voting power
+            await vw.retrieveRemovedNomineeVotingPower(nominees[0], chainId);
+
+            // Try to retrieve voting power from the same nominee that was already retrieved from
+            await expect(
+                vw.retrieveRemovedNomineeVotingPower(nominees[0], chainId)
+            ).to.be.revertedWithCustomError(vw, "ZeroValue");
+
+            // Try to retrieve voting power from the nominee that was not removed
+            await expect(
+                vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId)
+            ).to.be.revertedWithCustomError(vw, "NomineeNotRemoved");
+
+            // Now it's possible to case a vote for another nominee
+            await vw.voteForNomineeWeights(nominees[1], chainId, maxVoteWeight);
+
+            // Checkpoint the nominee
+            await vw.checkpointNominee(nominees[1], chainId);
+            // The removed nominee has still some weighting power
+            let weight = await vw.getNomineeWeight(nominees[1], chainId);
+            expect(weight).to.gt(0);
+
+            // Remove the second nominee
+            await vw.removeNominee(nominees[1], chainId);
+
+            // After removing, the weight must be zero
+            weight = await vw.getNomineeWeight(nominees[1], chainId);
+            expect(weight).to.equal(0);
+
+            // Wait for two weeks
+            await helpers.time.increase(oneWeek * 2);
+
+            // Checkpoint the removed nominee and check its weight again that must be zero
+            await vw.checkpointNominee(nominees[1], chainId);
+            weight = await vw.getNomineeWeight(nominees[1], chainId);
+            expect(weight).to.equal(0);
+
+            // Wait until the lock expires
+            await helpers.time.increase(oneYear);
+
+            // Retrieve the second nominee voting power
+            await vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId);
 
             // Restore to the state of the snapshot
             await snapshot.restore();

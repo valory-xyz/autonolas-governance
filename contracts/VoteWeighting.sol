@@ -52,6 +52,16 @@ error NomineeAlreadyExists(bytes32 account, uint256 chainId);
 /// @param nextAllowedVotingTime Next allowed voting time.
 error VoteTooOften(address voter, uint256 curTime, uint256 nextAllowedVotingTime);
 
+/// @dev Nominee is not in the removed nominee map.
+/// @param account Nominee account address.
+/// @param chainId Nominee chain Id.
+error NomineeNotRemoved(bytes32 account, uint256 chainId);
+
+/// @dev Nominee is in the removed nominee map.
+/// @param account Nominee account address.
+/// @param chainId Nominee chain Id.
+error NomineeRemoved(bytes32 account, uint256 chainId);
+
 struct Point {
     uint256 bias;
     uint256 slope;
@@ -91,6 +101,8 @@ contract VoteWeighting is IErrors {
     Nominee[] public setNominees;
     // Mapping of hash(Nominee struct) => nominee Id
     mapping(bytes32 => uint256) public mapNomineeIds;
+    // Mapping of hash(Nominee struct) => previously removed nominee flag
+    mapping(bytes32 => bool) public mapRemovedNominees;
 
     // user -> hash(Nominee struct) -> VotedSlope
     mapping(address => mapping(bytes32 => VotedSlope)) public voteUserSlopes;
@@ -171,9 +183,9 @@ contract VoteWeighting is IErrors {
         // Construct the nominee struct
         Nominee memory nominee = Nominee(account, chainId);
 
-        // Check that the nominee exists
+        // Check that the nominee exists or has been removed
         bytes32 nomineeHash = keccak256(abi.encode(nominee));
-        if (mapNomineeIds[nomineeHash] == 0) {
+        if (!mapRemovedNominees[nomineeHash] && mapNomineeIds[nomineeHash] == 0) {
             revert NomineeDoesNotExist(account, chainId);
         }
 
@@ -211,6 +223,12 @@ contract VoteWeighting is IErrors {
         if (mapNomineeIds[nomineeHash] > 0) {
             revert NomineeAlreadyExists(nominee.account, nominee.chainId);
         }
+
+        // Check for the previously removed nominee
+        if (mapRemovedNominees[nomineeHash]) {
+            revert NomineeRemoved(nominee.account, nominee.chainId);
+        }
+
         uint256 id = setNominees.length;
         mapNomineeIds[nomineeHash] = id;
         // Push the nominee into the list
@@ -363,6 +381,11 @@ contract VoteWeighting is IErrors {
         // Get the nominee hash
         bytes32 nomineeHash = keccak256(abi.encode(Nominee(account, chainId)));
 
+        // Check for the previously removed nominee
+        if (mapRemovedNominees[nomineeHash]) {
+            revert NomineeRemoved(account, chainId);
+        }
+
         uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
         uint256 lockEnd = IVEOLAS(ve).lockedEnd(msg.sender);
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
@@ -477,6 +500,21 @@ contract VoteWeighting is IErrors {
             revert NomineeDoesNotExist(account, chainId);
         }
 
+        // Set nominee weight to zero
+        uint256 oldWeight = _getWeight(account, chainId);
+        uint256 oldSum = _getSum();
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+        pointsWeight[nomineeHash][nextTime].bias = 0;
+        timeWeight[nomineeHash] = nextTime;
+
+        // Account for the the sum weight change
+        uint256 newSum = oldSum - oldWeight;
+        pointsSum[nextTime].bias = newSum;
+        timeSum = nextTime;
+
+        // Add to the removed nominee map
+        mapRemovedNominees[nomineeHash] = true;
+
         // Remove nominee from the map
         mapNomineeIds[nomineeHash] = 0;
         // Shuffle the current last nominee id in the set to be placed to the removed one
@@ -487,19 +525,41 @@ contract VoteWeighting is IErrors {
         // Pop the last element from the set
         setNominees.pop();
 
-        // Set nominee weight to zero
-        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
-        pointsWeight[nomineeHash][nextTime].bias = 0;
-        timeWeight[nomineeHash] = nextTime;
-
-        uint256 oldWeight = _getWeight(account, chainId);
-        uint256 oldSum = _getSum();
-        pointsSum[nextTime].bias = oldSum - oldWeight;
-        timeSum = nextTime;
-
         emit RemoveNominee(account, chainId, newSum);
     }
-    
+
+    /// @dev Retrieves user voting power from a removed nominee.
+    /// @param account Address of the nominee in bytes32 form.
+    /// @param chainId Chain Id.
+    function retrieveRemovedNomineeVotingPower(bytes32 account, uint256 chainId) external {
+        // Get the nominee struct and hash
+        Nominee memory nominee = Nominee(account, chainId);
+        bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+        // Check that the nominee is removed
+        if (!mapRemovedNominees[nomineeHash]) {
+            revert NomineeNotRemoved(account, chainId);
+        }
+
+        // Get the user old slope
+        VotedSlope memory oldSlope = voteUserSlopes[msg.sender][nomineeHash];
+        if (oldSlope.power == 0) {
+            revert ZeroValue();
+        }
+
+        // Cancel old slope changes if they still didn't happen
+        if (oldSlope.end > block.timestamp) {
+            changesWeight[nomineeHash][oldSlope.end] -= oldSlope.slope;
+            changesSum[oldSlope.end] -= oldSlope.slope;
+        }
+
+        // Update the voting power
+        uint256 powerUsed = voteUserPower[msg.sender];
+        powerUsed = powerUsed - oldSlope.power;
+        voteUserPower[msg.sender] = powerUsed;
+        delete voteUserSlopes[msg.sender][nomineeHash];
+    }
+
     /// @dev Get current nominee weight.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
