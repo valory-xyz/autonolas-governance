@@ -3,9 +3,9 @@ pragma solidity ^0.8.23;
 
 // Dispenser interface
 interface IDispenser {
-    /// @dev Enables nominee in dispenser.
+    /// @dev Records nominee addition in dispenser.
     /// @param nomineeHash Nominee hash.
-    function enableNominee(bytes32 nomineeHash) external;
+    function addNominee(bytes32 nomineeHash) external;
 
     /// @dev Records nominee removal.
     /// @param nomineeHash Nominee hash.
@@ -287,7 +287,7 @@ contract VoteWeighting {
         // Enable nominee in dispenser, if applicable
         address localDispenser = dispenser;
         if (localDispenser != address(0)) {
-            IDispenser(localDispenser).enableNominee(nomineeHash);
+            IDispenser(localDispenser).addNominee(nomineeHash);
         }
 
         emit AddNominee(nominee.account, nominee.chainId, id);
