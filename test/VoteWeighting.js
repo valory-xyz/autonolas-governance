@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("Vot Weighting OLAS", function () {
+describe("Vote Weighting veOLAS", function () {
     let olas;
     let ve;
     let vw;
