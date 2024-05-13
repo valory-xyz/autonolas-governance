@@ -23,10 +23,10 @@ describe("Deployment", function () {
     const fs = require("fs");
     let gnosisSafeL2;
     let gnosisSafeProxyFactory;
-    const _1kOLABalance = "1000" + "0".repeat(18);
-    const _2kOLABalance = "2000" + "0".repeat(18);
-    const _3kOLABalance = "3000" + "0".repeat(18);
-    const _4kOLABalance = "4000" + "0".repeat(18);
+    const _1kOLASBalance = "1000" + "0".repeat(18);
+    const _2kOLASBalance = "2000" + "0".repeat(18);
+    const _3kOLASBalance = "3000" + "0".repeat(18);
+    const _4kOLASBalance = "4000" + "0".repeat(18);
     const oneYear = 365 * 86400;
     let veOLASSigners;
     let buOLASSigners;
@@ -78,12 +78,12 @@ describe("Deployment", function () {
         let claimableBalancesJSON = {
             "veOLAS": {
                 "addresses": [veOLASSigners[0].address, veOLASSigners[1].address, veOLASSigners[2].address],
-                "amounts": [_1kOLABalance, _2kOLABalance, _3kOLABalance],
+                "amounts": [_1kOLASBalance, _2kOLASBalance, _3kOLASBalance],
                 "lockTimes": [oneYear, 2 * oneYear, 3 * oneYear]
             },
             "buOLAS": {
                 "addresses": [buOLASSigners[0].address, buOLASSigners[1].address, buOLASSigners[2].address, buOLASSigners[3].address],
-                "amounts": [_1kOLABalance, _2kOLABalance, _3kOLABalance, _4kOLABalance],
+                "amounts": [_1kOLASBalance, _2kOLASBalance, _3kOLASBalance, _4kOLASBalance],
                 "numSteps": [1, 2, 3, 4]
             }
         };

@@ -26,25 +26,25 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("1. EOA to deploy mock timelock contract");
-    const Timelock = await ethers.getContractFactory("MockTimelock");
-    console.log("You are signing the following transaction: Timelock.connect(EOA).deploy(L1CrossDomainMessengerProxy)");
-    const timelock = await Timelock.connect(EOA).deploy(parsedData.L1CrossDomainMessengerProxyAddress);
-    const result = await timelock.deployed();
+    console.log("1. EOA to deploy WormholeL1Receiver contract");
+    const WormholeL1Receiver = await ethers.getContractFactory("WormholeL1Receiver");
+    console.log("You are signing the following transaction: WormholeL1Receiver.connect(EOA).deploy()");
+    const wormholeL1Receiver = await WormholeL1Receiver.connect(EOA).deploy();
+    const result = await wormholeL1Receiver.deployed();
 
     // Transaction details
-    console.log("Contract deployment: MockTimelock");
-    console.log("Contract address:", timelock.address);
+    console.log("Contract deployment: WormholeL1Receiver");
+    console.log("Contract address:", wormholeL1Receiver.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // Writing updated parameters back to the JSON file
-    parsedData.timelockAddress = timelock.address;
+    parsedData.wormholeL1ReceiverAddress = wormholeL1Receiver.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/bridges/optimistic/test/verify_00_mock_timelock.js --network " + providerName + " " + timelock.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --network " + providerName + " " + wormholeL1Receiver.address, { encoding: "utf-8" });
     }
 }
 
