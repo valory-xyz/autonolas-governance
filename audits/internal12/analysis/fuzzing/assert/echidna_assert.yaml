@@ -1,0 +1,10 @@
+#testMode: overflow
+testMode: assertion
+coverage: true
+corpusDir: corpusEchidna
+coverageFormats: ["html"]
+# maxBlockDelay: 12
+# provide solc remappings to crytic-compile
+# https://www.justinsilver.com/technology/programming/slither-echidna-remappings/
+cryticArgs: ['--solc-remaps', '@=node_modules/@']
+

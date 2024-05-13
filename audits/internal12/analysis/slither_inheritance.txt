@@ -1,0 +1,21 @@
+'solc --version' running
+'solc ./VoteWeighting-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal12/analysis/contracts' running
+INFO:Printers:Inheritance
+Child_Contract -> Immediate_Base_Contracts [Not_Immediate_Base_Contracts]
++ IDispenser
+
++ IVEOLAS
+
++ VoteWeighting
+
+
+Base_Contract -> Immediate_Child_Contracts
+ [Not_Immediate_Child_Contracts]
+
++ IDispenser
+
++ IVEOLAS
+
++ VoteWeighting
+
+INFO:Slither:. analyzed (3 contracts)

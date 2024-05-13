@@ -1,4 +1,10 @@
+// Sources flattened with hardhat v2.22.3 https://hardhat.org
+
 // SPDX-License-Identifier: MIT
+
+// File contracts/VoteWeighting.sol
+
+// Original license: SPDX_License_Identifier: MIT
 pragma solidity ^0.8.23;
 
 // Dispenser interface
@@ -47,7 +53,7 @@ interface IVEOLAS {
 error OwnerOnly(address sender, address owner);
 
 /// @dev Provided zero address.
-error ZeroAddressVW();
+error ZeroAddress();
 
 /// @dev Zero value when it has to be different from zero.
 error ZeroValue();
@@ -123,7 +129,7 @@ struct Nominee {
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
-contract VoteWeightingFuzzing {
+contract VoteWeighting {
     event OwnerUpdated(address indexed owner);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
     event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
@@ -177,15 +183,13 @@ contract VoteWeightingFuzzing {
     mapping(uint256 => uint256) public changesSum;
     // last scheduled time (next week)
     uint256 public timeSum;
-    // for fuzzing
-    bool public callVoteForNomineeWeights = false;
 
     /// @dev Contract constructor.
     /// @param _ve Voting Escrow contract address.
     constructor(address _ve) {
         // Check for the zero address
         if (_ve == address(0)) {
-            revert ZeroAddressVW();
+            revert ZeroAddress();
         }
 
         // Set initial parameters
@@ -301,7 +305,7 @@ contract VoteWeightingFuzzing {
     function addNomineeEVM(address account, uint256 chainId) external {
         // Check for the zero address
         if (account == address(0)) {
-            revert ZeroAddressVW();
+            revert ZeroAddress();
         }
 
         // Check for zero chain Id
@@ -326,7 +330,7 @@ contract VoteWeightingFuzzing {
     function addNomineeNonEVM(bytes32 account, uint256 chainId) external {
         // Check for the zero address
         if (account == bytes32(0)) {
-            revert ZeroAddressVW();
+            revert ZeroAddress();
         }
 
         // Check for the chain Id underflow
@@ -350,7 +354,7 @@ contract VoteWeightingFuzzing {
 
         // Check for the zero address
         if (newOwner == address(0)) {
-            revert ZeroAddressVW();
+            revert ZeroAddress();
         }
 
         owner = newOwner;
@@ -762,19 +766,5 @@ contract VoteWeightingFuzzing {
             // Calculate next allowed voting times
             nextAllowedVotingTimes[i] = lastUserVote[voters[i]][nomineeHash] + WEIGHT_VOTE_DELAY;
         }
-    }
-
-    /// @dev For fuzzing only
-    function setCallVoteForNomineeWeights(bool flag) external {
-        callVoteForNomineeWeights = flag;
-    }
-
-    /// @dev For fuzzing only
-    function getlastUserVote(bytes32 _nominee, uint256 chainId) external view returns (uint256) {
-        // account occupies first 160 bits
-        Nominee memory nominee = Nominee(_nominee, chainId);
-        bytes32 nomineeHash = keccak256(abi.encode(nominee));
-
-        return lastUserVote[msg.sender][nomineeHash];
     }
 }
