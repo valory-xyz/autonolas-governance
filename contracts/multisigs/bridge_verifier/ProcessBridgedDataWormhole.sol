@@ -28,9 +28,11 @@ contract ProcessBridgedDataWormhole is VerifyBridgedData {
     // sendPayloadToEvm selector in bridge mediator L1
     bytes4 public constant SEND_MESSAGE = bytes4(keccak256(bytes("sendPayloadToEvm(uint16,address,bytes,uint256,uint256)")));
     // Minimum payload length for message sent via Wormhole accounting for all required encoding and at least one selector
-    uint256 public constant MIN_OPTIMISM_PAYLOAD_LENGTH = 324;
+    uint256 public constant MIN_WORMHOLE_PAYLOAD_LENGTH = 324;
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
+    /// @notice It is out of scope of the verification procedure to check if the Wormhole format chain Id corresponding
+    ///         to the original EVM chain Id is correctly setup during the bridge call.
     /// @param data Full data bytes with the header.
     /// @param bridgeMediatorL2 Address of a bridged mediator on L2.
     /// @param chainId L2 chain Id.
@@ -47,8 +49,8 @@ contract ProcessBridgedDataWormhole is VerifyBridgedData {
         }
 
         // Check if the data length is less than a size of a selector plus the message minimum payload size
-        if (data.length < MIN_OPTIMISM_PAYLOAD_LENGTH) {
-            revert IncorrectDataLength(data.length, MIN_OPTIMISM_PAYLOAD_LENGTH);
+        if (data.length < MIN_WORMHOLE_PAYLOAD_LENGTH) {
+            revert IncorrectDataLength(data.length, MIN_WORMHOLE_PAYLOAD_LENGTH);
         }
 
         // Copy the data without the selector

@@ -348,9 +348,11 @@ contract GuardCM is VerifyData {
     /// @dev Sets bridge mediator and L2 verifier contracts addresses on L1 and L2 chain Ids.
     /// @notice It is the contract owner responsibility to set correct L1 bridge mediator contracts,
     ///         corresponding L2 verifier contracts, and supported chain Ids.
+    ///         Note that it is out of scope of the verification procedure to check if any other chain Id formats,
+    ///         like Wormhole one, is correctly setup during the bridge call.
     /// @param bridgeMediatorL1s Bridge mediator contract addresses on L1.
     /// @param verifierL2s Corresponding L2 verifier contract addresses on L1.
-    /// @param chainIds Corresponding L2 chain Ids.
+    /// @param chainIds Corresponding L2 chain Ids (original EVM numbers).
     /// @param bridgeMediatorL2s Corresponding L2 bridge mediators.
     function setBridgeMediatorL1BridgeParams(
         address[] memory bridgeMediatorL1s,
@@ -373,7 +375,6 @@ contract GuardCM is VerifyData {
         for (uint256 i = 0; i < chainIds.length; ++i) {
             // Check for zero addresses
             // Note that bridgeMediatorL2-s can be zero addresses, for example, for Arbitrum case
-            // TODO: make possible bridgeMediatorL1s[i] to be address(0) in order to remove the L2 chain from the list?
             if (bridgeMediatorL1s[i] == address(0) || verifierL2s[i] == address(0)) {
                 revert ZeroAddress();
             }
