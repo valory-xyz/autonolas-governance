@@ -1,8 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {IErrors} from "./interfaces/IErrors.sol";
+// Dispenser interface
+interface IDispenser {
+    /// @dev Records nominee addition in dispenser.
+    /// @param nomineeHash Nominee hash.
+    function addNominee(bytes32 nomineeHash) external;
 
+    /// @dev Records nominee removal.
+    /// @param nomineeHash Nominee hash.
+    function removeNominee(bytes32 nomineeHash) external;
+}
+
+// veOLAS interface
 interface IVEOLAS {
     // Structure for voting escrow points
     // The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)
@@ -31,6 +41,27 @@ interface IVEOLAS {
     function getLastUserPoint(address account) external view returns (PointVoting memory pv);
 }
 
+/// @dev Only `owner` has a privilege, but the `sender` was provided.
+/// @param sender Sender address.
+/// @param owner Required sender address as an owner.
+error OwnerOnly(address sender, address owner);
+
+/// @dev Provided zero address.
+error ZeroAddress();
+
+/// @dev Zero value when it has to be different from zero.
+error ZeroValue();
+
+/// @dev Wrong length of two arrays.
+/// @param numValues1 Number of values in a first array.
+/// @param numValues2 Number of values in a second array.
+error WrongArrayLength(uint256 numValues1, uint256 numValues2);
+
+/// @dev Value overflow.
+/// @param provided Overflow value.
+/// @param max Maximum possible value.
+error Overflow(uint256 provided, uint256 max);
+
 /// @dev Underflow value.
 /// @param provided Provided value.
 /// @param expected Minimum expected value.
@@ -46,32 +77,57 @@ error NomineeDoesNotExist(bytes32 account, uint256 chainId);
 /// @param chainId Nominee chain Id.
 error NomineeAlreadyExists(bytes32 account, uint256 chainId);
 
+/// @dev Value lock is expired.
+/// @param account Address that is checked for the locked value.
+/// @param deadline The lock expiration deadline.
+/// @param curTime Current timestamp.
+error LockExpired(address account, uint256 deadline, uint256 curTime);
+
 /// @dev The vote has been performed already.
 /// @param voter Voter address.
 /// @param curTime Current time.
 /// @param nextAllowedVotingTime Next allowed voting time.
 error VoteTooOften(address voter, uint256 curTime, uint256 nextAllowedVotingTime);
 
+/// @dev Nominee is not in the removed nominee map.
+/// @param account Nominee account address.
+/// @param chainId Nominee chain Id.
+error NomineeNotRemoved(bytes32 account, uint256 chainId);
+
+/// @dev Nominee is in the removed nominee map.
+/// @param account Nominee account address.
+/// @param chainId Nominee chain Id.
+error NomineeRemoved(bytes32 account, uint256 chainId);
+
+// Point struct
 struct Point {
     uint256 bias;
     uint256 slope;
 }
 
+// Voted slope struct
 struct VotedSlope {
     uint256 slope;
     uint256 power;
     uint256 end;
 }
 
+// Nominee struct
 struct Nominee {
     bytes32 account;
     uint256 chainId;
 }
 
-contract VoteWeighting is IErrors {
-    event NewNomineeWeight(bytes32 indexed nominee, uint256 chainId, uint256 weight, uint256 totalWeight);
+
+/// @title VoteWeighting - Smart contract for Vote Weighting with specific nominees composed of address and chain Id
+/// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
+/// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
+/// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
+contract VoteWeighting {
+    event OwnerUpdated(address indexed owner);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
-    event NewNominee(bytes32 account, uint256 chainId);
+    event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
+    event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);
 
     // 7 * 86400 seconds - all future times are rounded by week
     uint256 public constant WEEK = 604_800;
@@ -83,11 +139,17 @@ contract VoteWeighting is IErrors {
     uint256 public constant MAX_EVM_CHAIN_ID = type(uint64).max / 2 - 36;
     // veOLAS contract address
     address public immutable ve;
+    // Contract owner address
+    address public owner;
+    // Dispenser contract
+    address public dispenser;
 
     // Set of Nominee structs
     Nominee[] public setNominees;
     // Mapping of hash(Nominee struct) => nominee Id
     mapping(bytes32 => uint256) public mapNomineeIds;
+    // Mapping of hash(Nominee struct) => previously removed nominee flag
+    mapping(bytes32 => bool) public mapRemovedNominees;
 
     // user -> hash(Nominee struct) -> VotedSlope
     mapping(address => mapping(bytes32 => VotedSlope)) public voteUserSlopes;
@@ -117,7 +179,7 @@ contract VoteWeighting is IErrors {
     uint256 public timeSum;
 
     /// @dev Contract constructor.
-    /// @param _ve `VotingEscrow` contract address.
+    /// @param _ve Voting Escrow contract address.
     constructor(address _ve) {
         // Check for the zero address
         if (_ve == address(0)) {
@@ -125,6 +187,7 @@ contract VoteWeighting is IErrors {
         }
 
         // Set initial parameters
+        owner = msg.sender;
         ve = _ve;
         timeSum = block.timestamp / WEEK * WEEK;
         setNominees.push(Nominee(bytes32(0), 0));
@@ -167,10 +230,10 @@ contract VoteWeighting is IErrors {
         // Construct the nominee struct
         Nominee memory nominee = Nominee(account, chainId);
 
-        // Check that the nominee exists
+        // Check that the nominee exists or has been removed
         bytes32 nomineeHash = keccak256(abi.encode(nominee));
-        if (mapNomineeIds[nomineeHash] == 0) {
-            revert NomineeDoesNotExist(nominee.account, nominee.chainId);
+        if (!mapRemovedNominees[nomineeHash] && mapNomineeIds[nomineeHash] == 0) {
+            revert NomineeDoesNotExist(account, chainId);
         }
 
         // t is always > 0 as it is set during the addNominee() call
@@ -207,14 +270,27 @@ contract VoteWeighting is IErrors {
         if (mapNomineeIds[nomineeHash] > 0) {
             revert NomineeAlreadyExists(nominee.account, nominee.chainId);
         }
-        mapNomineeIds[nomineeHash] = setNominees.length;
+
+        // Check for the previously removed nominee
+        if (mapRemovedNominees[nomineeHash]) {
+            revert NomineeRemoved(nominee.account, nominee.chainId);
+        }
+
+        uint256 id = setNominees.length;
+        mapNomineeIds[nomineeHash] = id;
         // Push the nominee into the list
         setNominees.push(nominee);
 
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
         timeWeight[nomineeHash] = nextTime;
 
-        emit NewNominee(nominee.account, nominee.chainId);
+        // Enable nominee in dispenser, if applicable
+        address localDispenser = dispenser;
+        if (localDispenser != address(0)) {
+            IDispenser(localDispenser).addNominee(nomineeHash);
+        }
+
+        emit AddNominee(nominee.account, nominee.chainId, id);
     }
 
     /// @dev Add EVM nominee address along with the chain Id.
@@ -260,6 +336,35 @@ contract VoteWeighting is IErrors {
 
         // Record nominee instance
         _addNominee(nominee);
+    }
+
+    /// @dev Changes the owner address.
+    /// @param newOwner Address of a new owner.
+    function changeOwner(address newOwner) external {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+
+        // Check for the zero address
+        if (newOwner == address(0)) {
+            revert ZeroAddress();
+        }
+
+        owner = newOwner;
+        emit OwnerUpdated(newOwner);
+    }
+
+    /// @dev Changes the dispenser contract address.
+    /// @notice Dispenser can a zero address if the contract needs to serve a general purpose.
+    /// @param newDispenser New dispenser contract address.
+    function changeDispenser(address newDispenser) external {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+
+        dispenser = newDispenser;
     }
 
     /// @dev Checkpoint to fill data common for all nominees.
@@ -340,6 +445,11 @@ contract VoteWeighting is IErrors {
     function voteForNomineeWeights(bytes32 account, uint256 chainId, uint256 weight) public {
         // Get the nominee hash
         bytes32 nomineeHash = keccak256(abi.encode(Nominee(account, chainId)));
+
+        // Check for the previously removed nominee
+        if (mapRemovedNominees[nomineeHash]) {
+            revert NomineeRemoved(account, chainId);
+        }
 
         uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
         uint256 lockEnd = IVEOLAS(ve).lockedEnd(msg.sender);
@@ -436,6 +546,91 @@ contract VoteWeighting is IErrors {
         return a > b ? a - b : 0;
     }
 
+    /// @dev Removes nominee from the contract and zeros its weight.
+    /// @param account Address of the nominee in bytes32 form.
+    /// @param chainId Chain Id.
+    function removeNominee(bytes32 account, uint256 chainId) external {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(owner, msg.sender);
+        }
+
+        // Get the nominee struct and hash
+        Nominee memory nominee = Nominee(account, chainId);
+        bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+        // Get the nominee id in the nominee set
+        uint256 id = mapNomineeIds[nomineeHash];
+        if (id == 0) {
+            revert NomineeDoesNotExist(account, chainId);
+        }
+
+        // Set nominee weight to zero
+        uint256 oldWeight = _getWeight(account, chainId);
+        uint256 oldSum = _getSum();
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+        pointsWeight[nomineeHash][nextTime].bias = 0;
+        timeWeight[nomineeHash] = nextTime;
+
+        // Account for the the sum weight change
+        uint256 newSum = oldSum - oldWeight;
+        pointsSum[nextTime].bias = newSum;
+        timeSum = nextTime;
+
+        // Add to the removed nominee map
+        mapRemovedNominees[nomineeHash] = true;
+
+        // Remove nominee in dispenser, if applicable
+        address localDispenser = dispenser;
+        if (localDispenser != address(0)) {
+            IDispenser(localDispenser).removeNominee(nomineeHash);
+        }
+
+        // Remove nominee from the map
+        mapNomineeIds[nomineeHash] = 0;
+        // Shuffle the current last nominee id in the set to be placed to the removed one
+        nominee = setNominees[setNominees.length - 1];
+        nomineeHash = keccak256(abi.encode(nominee));
+        mapNomineeIds[nomineeHash] = id;
+        setNominees[id] = nominee;
+        // Pop the last element from the set
+        setNominees.pop();
+
+        emit RemoveNominee(account, chainId, newSum);
+    }
+
+    /// @dev Retrieves user voting power from a removed nominee.
+    /// @param account Address of the nominee in bytes32 form.
+    /// @param chainId Chain Id.
+    function retrieveRemovedNomineeVotingPower(bytes32 account, uint256 chainId) external {
+        // Get the nominee struct and hash
+        Nominee memory nominee = Nominee(account, chainId);
+        bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+        // Check that the nominee is removed
+        if (!mapRemovedNominees[nomineeHash]) {
+            revert NomineeNotRemoved(account, chainId);
+        }
+
+        // Get the user old slope
+        VotedSlope memory oldSlope = voteUserSlopes[msg.sender][nomineeHash];
+        if (oldSlope.power == 0) {
+            revert ZeroValue();
+        }
+
+        // Cancel old slope changes if they still didn't happen
+        if (oldSlope.end > block.timestamp) {
+            changesWeight[nomineeHash][oldSlope.end] -= oldSlope.slope;
+            changesSum[oldSlope.end] -= oldSlope.slope;
+        }
+
+        // Update the voting power
+        uint256 powerUsed = voteUserPower[msg.sender];
+        powerUsed = powerUsed - oldSlope.power;
+        voteUserPower[msg.sender] = powerUsed;
+        delete voteUserSlopes[msg.sender][nomineeHash];
+    }
+
     /// @dev Get current nominee weight.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
@@ -459,6 +654,13 @@ contract VoteWeighting is IErrors {
     /// @return Total number of nominees.
     function getNumNominees() external view returns (uint256) {
         return setNominees.length - 1;
+    }
+
+    /// @dev Gets a full set of nominees.
+    /// @notice The returned set includes the zero-th empty nominee instance.
+    /// @return nominees Set of all the nominees in the contract.
+    function getAllNominees() external view returns (Nominee[] memory nominees) {
+        nominees = setNominees;
     }
 
     /// @dev Gets the nominee Id in the global nominees set.
@@ -515,7 +717,7 @@ contract VoteWeighting is IErrors {
             revert Overflow(endId, totalNumNominees);
         }
 
-        // Allocate 
+        // Allocate the nominee array
         nominees = new Nominee[](numNominees);
 
         // Traverse selected nominees
@@ -523,6 +725,40 @@ contract VoteWeighting is IErrors {
             uint256 id = i + startId;
             // Get the nominee struct
             nominees[i] = setNominees[id];
+        }
+    }
+
+    /// @dev Gets next allowed voting time for selected nominees and voters.
+    /// @notice The function does not check for repeated nominees and voters.
+    /// @param accounts Set of nominee account addresses.
+    /// @param chainIds Corresponding set of chain Ids.
+    /// @param voters Corresponding set of voters for specified nominees.
+    function getNextAllowedVotingTimes(
+        bytes32[] memory accounts,
+        uint256[] memory chainIds,
+        address[] memory voters
+    ) external view returns (uint256[] memory nextAllowedVotingTimes) {
+        // Check array lengths
+        if (accounts.length != chainIds.length || accounts.length != voters.length) {
+            revert WrongArrayLength(accounts.length, chainIds.length);
+        }
+
+        // Allocate the times array
+        nextAllowedVotingTimes = new uint256[](accounts.length);
+
+        // Traverse nominees and get next available voting times
+        for (uint256 i = 0; i < accounts.length; ++i) {
+            // Get the nominee struct and hash
+            Nominee memory nominee = Nominee(accounts[i], chainIds[i]);
+            bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+            // Check for nominee existence
+            if (mapNomineeIds[nomineeHash] == 0) {
+                revert NomineeDoesNotExist(accounts[i], chainIds[i]);
+            }
+
+            // Calculate next allowed voting times
+            nextAllowedVotingTimes[i] = lastUserVote[voters[i]][nomineeHash] + WEIGHT_VOTE_DELAY;
         }
     }
 }
