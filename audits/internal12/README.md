@@ -94,6 +94,12 @@ Pay attention: <br>
 https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf -> 18. Several loops are not executable due to gaslimitation <br>
 Discussion: I don't think this is a problem for our version. <br>
 
+Version solidity: <br>
+```
+For contracts that are planned to be deployed in mainnet, it is necessary to use the features of the latest hard fork.
+https://soliditylang.org/blog/2024/03/14/solidity-0.8.25-release-announcement/
+```
+
 Notes: <br>
 ```
 https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
