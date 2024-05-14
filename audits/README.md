@@ -25,6 +25,8 @@ An internal audit with a focus on `OptimismMesseger and WormholeMessenger` is lo
 
 An internal audit with a focus on `Guard for Community Multisig (CM) (modular version)` is located in this folder: [internal audit 10](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal10).
 
+An internal audit with a focus on `VoteWeighting` is located in this folder: [internal audit 10](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12).
+
 ### External audit
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
 the recommendations are addressed here: [feedback](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Addressing%20Initial%20ApeWorX%20Recommentations.pdf).
