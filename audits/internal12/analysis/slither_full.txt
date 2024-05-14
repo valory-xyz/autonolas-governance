@@ -1,12 +1,12 @@
-'solc --version' running
-'solc ./VoteWeighting-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal12/analysis/contracts' running
-INFO:Detectors:
+Not issue: removeNominee owner only
 Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getAllNominees() (VoteWeighting-flatten.sol#668-670):
 	State variables read that were written after the external call(s):
 	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at nominees = setNominees (VoteWeighting-flatten.sol#669)
 		 This variable was written at (after external call):
 			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
 			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+
+Not issue: removeNominee owner only
 Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNextAllowedVotingTimes(bytes32[],uint256[],address[]) (VoteWeighting-flatten.sol#742-769):
 	State variables read that were written after the external call(s):
 	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at mapNomineeIds[nomineeHash] == 0 (VoteWeighting-flatten.sol#762)
@@ -29,6 +29,8 @@ Potential vulnerable to readonly-reentrancy function (if read in other function)
 		 This variable was written at (after external call):
 			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
 			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+
+Not issue: removeNominee owner only
 Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNominee(uint256) (VoteWeighting-flatten.sol#688-699):
 	State variables read that were written after the external call(s):
 	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at totalNumNominees = setNominees.length - 1 (VoteWeighting-flatten.sol#690)
@@ -63,12 +65,16 @@ Potential vulnerable to readonly-reentrancy function (if read in other function)
 		 This variable was written at (after external call):
 			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
 			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+
+Not issue: removeNominee owner only
 Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNomineeId(bytes32,uint256) (VoteWeighting-flatten.sol#676-682):
 	State variables read that were written after the external call(s):
 	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at id = mapNomineeIds[nomineeHash] (VoteWeighting-flatten.sol#681)
 		 This variable was written at (after external call):
 			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
 			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+
+Not issue: removeNominee owner only
 Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNominees(uint256,uint256) (VoteWeighting-flatten.sol#706-735):
 	State variables read that were written after the external call(s):
 	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at totalNumNominees = setNominees.length (VoteWeighting-flatten.sol#719)
@@ -119,6 +125,8 @@ Potential vulnerable to readonly-reentrancy function (if read in other function)
 		 This variable was written at (after external call):
 			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
 			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+
+Not issue: removeNominee owner only
 Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNumNominees() (VoteWeighting-flatten.sol#661-663):
 	State variables read that were written after the external call(s):
 	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at setNominees.length - 1 (VoteWeighting-flatten.sol#662)
@@ -126,7 +134,8 @@ Potential vulnerable to readonly-reentrancy function (if read in other function)
 			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
 			- setNominees.pop() (VoteWeighting-flatten.sol#603)
 Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/readonly_reentrancy.md
-INFO:Detectors:
+
+Not issue: rounding by design
 VoteWeighting.constructor(address) (VoteWeighting-flatten.sol#189-200) performs a multiplication on the result of a division:
 	- timeSum = block.timestamp / WEEK * WEEK (VoteWeighting-flatten.sol#198)
 VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#273-300) performs a multiplication on the result of a division:
@@ -138,7 +147,8 @@ VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flat
 VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606) performs a multiplication on the result of a division:
 	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#577)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
-INFO:Detectors:
+
+Not issue, but better fix 
 Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606):
 	External calls:
 	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#592)
@@ -160,22 +170,34 @@ Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatte
 	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156)
 	- VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
-INFO:Detectors:
+
+No issue.
 VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256).oldBias (VoteWeighting-flatten.sol#482) is a local variable never initialized
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
-INFO:Detectors:
+
+Pay attention.
 Dubious typecast in VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530):
 	int128 => uint128 casting occurs in slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope)) (VoteWeighting-flatten.sol#460)
 Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
-INFO:Detectors:
+original: 
+interface VotingEscrow:
+    def get_last_user_slope(addr: address) -> int128: view
+slope: uint256 = convert(VotingEscrow(escrow).get_last_user_slope(msg.sender), uint256)
+own code: uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
+https://vyper.readthedocs.io/_/downloads/en/stable/pdf/ page 50
+• Converting between signed and unsigned integers reverts if the input is negative
+
+Pay attention.
 VoteWeighting.changeDispenser(address).newDispenser (VoteWeighting-flatten.sol#367) lacks a zero-check on :
 		- dispenser = newDispenser (VoteWeighting-flatten.sol#373)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
-INFO:Detectors:
+
+No issue by design.
 VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) has external calls inside a loop: slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope)) (VoteWeighting-flatten.sol#460)
 VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) has external calls inside a loop: lockEnd = IVEOLAS(ve).lockedEnd(msg.sender) (VoteWeighting-flatten.sol#461)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
-INFO:Detectors:
+
+Fix no CEI.
 Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606):
 	External calls:
 	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#592)
@@ -183,7 +205,8 @@ Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatte
 	- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
 	- setNominees.pop() (VoteWeighting-flatten.sol#603)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
-INFO:Detectors:
+
+Not issue. dispenser is trusted
 Reentrancy in VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#273-300):
 	External calls:
 	- IDispenser(localDispenser).addNominee(nomineeHash) (VoteWeighting-flatten.sol#296)
@@ -194,8 +217,8 @@ Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatte
 	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#592)
 	Event emitted after the call(s):
 	- RemoveNominee(account,chainId,newSum) (VoteWeighting-flatten.sol#605)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
-INFO:Detectors:
+
+Not issue. By design
 VoteWeighting._getSum() (VoteWeighting-flatten.sol#204-229) uses timestamp for comparisons
 	Dangerous comparisons:
 	- t > block.timestamp (VoteWeighting-flatten.sol#209)
@@ -217,21 +240,17 @@ VoteWeighting._maxAndSub(uint256,uint256) (VoteWeighting-flatten.sol#551-553) us
 VoteWeighting.retrieveRemovedNomineeVotingPower(bytes32,uint256) (VoteWeighting-flatten.sol#611-638) uses timestamp for comparisons
 	Dangerous comparisons:
 	- oldSlope.end > block.timestamp (VoteWeighting-flatten.sol#628)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
-INFO:Detectors:
+
+Not issue. By design
 VoteWeighting._getSum() (VoteWeighting-flatten.sol#204-229) has costly operations inside a loop:
 	- timeSum = t (VoteWeighting-flatten.sol#225)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
-INFO:Detectors:
-Pragma version^0.8.23 (VoteWeighting-flatten.sol#8) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-solc-0.8.23 is not recommended for deployment
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
-INFO:Detectors:
-Function VoteWeighting._getSum() (VoteWeighting-flatten.sol#204-229) contains magic number: 500
-Function VoteWeighting._getWeight(bytes32,uint256) (VoteWeighting-flatten.sol#235-269) contains magic number: 500
-Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/magic_number.md
-INFO:Detectors:
+
+
+Not issue. Constant.
 In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) variable VoteWeighting.MAX_WEIGHT (VoteWeighting-flatten.sol#143) is read multiple times
+
+Not issue. Optimization is not needed due to loss of code readability.
 In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) variable VoteWeighting.pointsSum (VoteWeighting-flatten.sol#181) is read multiple times
 In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) variable VoteWeighting.pointsWeight (VoteWeighting-flatten.sol#174) is read multiple times
 Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/multiple_storage_read.md
