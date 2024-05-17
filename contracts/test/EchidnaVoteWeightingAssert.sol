@@ -10,7 +10,6 @@ contract EchidnaVoteWeightingAssert {
     OLAS olas;
     veOLAS ve;
     VoteWeightingFuzzing vw;
-    uint160 constant FAKE_OLAS = 7;
 
     uint256 constant oneOLASBalance = 1 ether;
     uint256 constant fourYear = 4 * 365 * 86400;
@@ -34,7 +33,7 @@ contract EchidnaVoteWeightingAssert {
     }
 
     // voteForNomineeWeights_assert(0xdeadbeef,1,0,4495678220902361,1124857)
-    function voteForNomineeWeights_assert(address nominee, uint32 chainId, uint16 weight, uint256 amount, uint32 unlockTime) external {
+    function voteForNomineeWeights_assert(address account, uint32 chainId, uint16 weight, uint256 amount, uint32 unlockTime) external {
         require(block.timestamp > 0);
         require(block.timestamp > ts);
         require(unlockTime < fourYear);
@@ -52,7 +51,8 @@ contract EchidnaVoteWeightingAssert {
             (uint128 lockedAmount,) = ve.mapLockedBalances(address(this));
             assert(lockedAmount > 0);
         }
-        vw.addNominee(nominee, chainId);
+        vw.addNomineeEVM(account, chainId);
+        bytes32 nominee = bytes32(uint256(uint160(account)));
         uint256 id = vw.getNomineeId(nominee, chainId);
         uint256 num = vw.getNumNominees();
         assert(id > 0);

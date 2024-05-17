@@ -1,0 +1,257 @@
+Not issue: removeNominee owner only
+Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getAllNominees() (VoteWeighting-flatten.sol#668-670):
+	State variables read that were written after the external call(s):
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at nominees = setNominees (VoteWeighting-flatten.sol#669)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+
+Not issue: removeNominee owner only
+Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNextAllowedVotingTimes(bytes32[],uint256[],address[]) (VoteWeighting-flatten.sol#742-769):
+	State variables read that were written after the external call(s):
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at mapNomineeIds[nomineeHash] == 0 (VoteWeighting-flatten.sol#762)
+		 This variable was written at (after external call):
+			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at revert NomineeDoesNotExist(bytes32,uint256)(accounts[i],chainIds[i]) (VoteWeighting-flatten.sol#763)
+		 This variable was written at (after external call):
+			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at END_IF (VoteWeighting-flatten.sol#762-764)
+		 This variable was written at (after external call):
+			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at nextAllowedVotingTimes[i] = lastUserVote[voters[i]][nomineeHash] + WEIGHT_VOTE_DELAY (VoteWeighting-flatten.sol#767)
+		 This variable was written at (after external call):
+			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at ++ i (VoteWeighting-flatten.sol#756)
+		 This variable was written at (after external call):
+			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+
+Not issue: removeNominee owner only
+Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNominee(uint256) (VoteWeighting-flatten.sol#688-699):
+	State variables read that were written after the external call(s):
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at totalNumNominees = setNominees.length - 1 (VoteWeighting-flatten.sol#690)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at id == 0 (VoteWeighting-flatten.sol#692)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at revert ZeroValue()() (VoteWeighting-flatten.sol#693)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at id > totalNumNominees (VoteWeighting-flatten.sol#694)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at revert Overflow(uint256,uint256)(id,totalNumNominees) (VoteWeighting-flatten.sol#695)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at END_IF (VoteWeighting-flatten.sol#694-696)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at END_IF (VoteWeighting-flatten.sol#692-696)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at nominee = setNominees[id] (VoteWeighting-flatten.sol#698)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+
+Not issue: removeNominee owner only
+Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNomineeId(bytes32,uint256) (VoteWeighting-flatten.sol#676-682):
+	State variables read that were written after the external call(s):
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) was read at id = mapNomineeIds[nomineeHash] (VoteWeighting-flatten.sol#681)
+		 This variable was written at (after external call):
+			- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+			- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+
+Not issue: removeNominee owner only
+Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNominees(uint256,uint256) (VoteWeighting-flatten.sol#706-735):
+	State variables read that were written after the external call(s):
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at totalNumNominees = setNominees.length (VoteWeighting-flatten.sol#719)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at endId > totalNumNominees (VoteWeighting-flatten.sol#722)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at revert Overflow(uint256,uint256)(endId,totalNumNominees) (VoteWeighting-flatten.sol#723)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at END_IF (VoteWeighting-flatten.sol#722-724)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at nominees = new Nominee[](numNominees) (VoteWeighting-flatten.sol#727)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at BEGIN_LOOP (VoteWeighting-flatten.sol#730-734)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at END_LOOP (VoteWeighting-flatten.sol#730-734)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at i = 0 (VoteWeighting-flatten.sol#730)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at i < numNominees (VoteWeighting-flatten.sol#730)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at id = i + startId (VoteWeighting-flatten.sol#731)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at nominees[i] = setNominees[id] (VoteWeighting-flatten.sol#733)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at ++ i (VoteWeighting-flatten.sol#730)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+
+Not issue: removeNominee owner only
+Potential vulnerable to readonly-reentrancy function (if read in other function) VoteWeighting.getNumNominees() (VoteWeighting-flatten.sol#661-663):
+	State variables read that were written after the external call(s):
+	- VoteWeighting.setNominees (VoteWeighting-flatten.sol#154) was read at setNominees.length - 1 (VoteWeighting-flatten.sol#662)
+		 This variable was written at (after external call):
+			- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+			- setNominees.pop() (VoteWeighting-flatten.sol#603)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/readonly_reentrancy.md
+
+Not issue: rounding by design
+VoteWeighting.constructor(address) (VoteWeighting-flatten.sol#189-200) performs a multiplication on the result of a division:
+	- timeSum = block.timestamp / WEEK * WEEK (VoteWeighting-flatten.sol#198)
+VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#273-300) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#290)
+VoteWeighting._nomineeRelativeWeight(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#396-411) performs a multiplication on the result of a division:
+	- t = time / WEEK * WEEK (VoteWeighting-flatten.sol#401)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#462)
+VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#577)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+
+Not issue, but better fix 
+Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606):
+	External calls:
+	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#592)
+	State variables written after the call(s):
+	- mapNomineeIds[nomineeHash] = 0 (VoteWeighting-flatten.sol#596)
+	VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) can be used in cross function reentrancies:
+	- VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#273-300)
+	- VoteWeighting._getWeight(bytes32,uint256) (VoteWeighting-flatten.sol#235-269)
+	- VoteWeighting.getNextAllowedVotingTimes(bytes32[],uint256[],address[]) (VoteWeighting-flatten.sol#742-769)
+	- VoteWeighting.getNomineeId(bytes32,uint256) (VoteWeighting-flatten.sol#676-682)
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156)
+	- VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606)
+	- mapNomineeIds[nomineeHash] = id (VoteWeighting-flatten.sol#600)
+	VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156) can be used in cross function reentrancies:
+	- VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#273-300)
+	- VoteWeighting._getWeight(bytes32,uint256) (VoteWeighting-flatten.sol#235-269)
+	- VoteWeighting.getNextAllowedVotingTimes(bytes32[],uint256[],address[]) (VoteWeighting-flatten.sol#742-769)
+	- VoteWeighting.getNomineeId(bytes32,uint256) (VoteWeighting-flatten.sol#676-682)
+	- VoteWeighting.mapNomineeIds (VoteWeighting-flatten.sol#156)
+	- VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+
+No issue.
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256).oldBias (VoteWeighting-flatten.sol#482) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+
+Pay attention.
+Dubious typecast in VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530):
+	int128 => uint128 casting occurs in slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope)) (VoteWeighting-flatten.sol#460)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+original: 
+interface VotingEscrow:
+    def get_last_user_slope(addr: address) -> int128: view
+slope: uint256 = convert(VotingEscrow(escrow).get_last_user_slope(msg.sender), uint256)
+own code: uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
+https://vyper.readthedocs.io/_/downloads/en/stable/pdf/ page 50
+• Converting between signed and unsigned integers reverts if the input is negative
+
+Pay attention.
+VoteWeighting.changeDispenser(address).newDispenser (VoteWeighting-flatten.sol#367) lacks a zero-check on :
+		- dispenser = newDispenser (VoteWeighting-flatten.sol#373)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+No issue by design.
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) has external calls inside a loop: slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope)) (VoteWeighting-flatten.sol#460)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) has external calls inside a loop: lockEnd = IVEOLAS(ve).lockedEnd(msg.sender) (VoteWeighting-flatten.sol#461)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+Fix no CEI.
+Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606):
+	External calls:
+	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#592)
+	State variables written after the call(s):
+	- setNominees[id] = nominee (VoteWeighting-flatten.sol#601)
+	- setNominees.pop() (VoteWeighting-flatten.sol#603)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+
+Not issue. dispenser is trusted
+Reentrancy in VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#273-300):
+	External calls:
+	- IDispenser(localDispenser).addNominee(nomineeHash) (VoteWeighting-flatten.sol#296)
+	Event emitted after the call(s):
+	- AddNominee(nominee.account,nominee.chainId,id) (VoteWeighting-flatten.sol#299)
+Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#558-606):
+	External calls:
+	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#592)
+	Event emitted after the call(s):
+	- RemoveNominee(account,chainId,newSum) (VoteWeighting-flatten.sol#605)
+
+Not issue. By design
+VoteWeighting._getSum() (VoteWeighting-flatten.sol#204-229) uses timestamp for comparisons
+	Dangerous comparisons:
+	- t > block.timestamp (VoteWeighting-flatten.sol#209)
+	- t > block.timestamp (VoteWeighting-flatten.sol#224)
+VoteWeighting._getWeight(bytes32,uint256) (VoteWeighting-flatten.sol#235-269) uses timestamp for comparisons
+	Dangerous comparisons:
+	- t > block.timestamp (VoteWeighting-flatten.sol#249)
+	- t > block.timestamp (VoteWeighting-flatten.sol#264)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) uses timestamp for comparisons
+	Dangerous comparisons:
+	- nextTime >= lockEnd (VoteWeighting-flatten.sol#465)
+	- nextAllowedVotingTime > block.timestamp (VoteWeighting-flatten.sol#476)
+	- oldSlope.end > nextTime (VoteWeighting-flatten.sol#483)
+	- oldSlope.end > nextTime (VoteWeighting-flatten.sol#507)
+	- oldSlope.end > block.timestamp (VoteWeighting-flatten.sol#515)
+VoteWeighting._maxAndSub(uint256,uint256) (VoteWeighting-flatten.sol#551-553) uses timestamp for comparisons
+	Dangerous comparisons:
+	- a > b (VoteWeighting-flatten.sol#552)
+VoteWeighting.retrieveRemovedNomineeVotingPower(bytes32,uint256) (VoteWeighting-flatten.sol#611-638) uses timestamp for comparisons
+	Dangerous comparisons:
+	- oldSlope.end > block.timestamp (VoteWeighting-flatten.sol#628)
+
+Not issue. By design
+VoteWeighting._getSum() (VoteWeighting-flatten.sol#204-229) has costly operations inside a loop:
+	- timeSum = t (VoteWeighting-flatten.sol#225)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
+
+
+Not issue. Constant.
+In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) variable VoteWeighting.MAX_WEIGHT (VoteWeighting-flatten.sol#143) is read multiple times
+
+Not issue. Optimization is not needed due to loss of code readability.
+In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) variable VoteWeighting.pointsSum (VoteWeighting-flatten.sol#181) is read multiple times
+In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#451-530) variable VoteWeighting.pointsWeight (VoteWeighting-flatten.sol#174) is read multiple times
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/multiple_storage_read.md
+INFO:Slither:. analyzed (3 contracts with 108 detectors), 33 result(s) found

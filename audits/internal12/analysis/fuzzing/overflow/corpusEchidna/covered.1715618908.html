@@ -1,0 +1,2329 @@
+<style> code { white-space: pre-wrap; display: block; background-color: #eee; }.executed { background-color: #afa; }.reverted { background-color: #ffa; }.unexecuted { background-color: #faa; }.neutral { background-color: #eee; }</style><b>/home/andrey/valory/autonolas-governance/contracts/OLAS.sol</b>
+<code>
+   1 |     | <span class='unexecuted'>// SPDX-License-Identifier: MIT</span>
+   2 |     | <span class='neutral'>pragma solidity ^0.8.15;</span>
+   3 |     | <span class='neutral'></span>
+   4 |     | <span class='neutral'>import &quot;../lib/solmate/src/tokens/ERC20.sol&quot;;</span>
+   5 |     | <span class='neutral'></span>
+   6 |     | <span class='neutral'>/// @dev Only `manager` has a privilege, but the `sender` was provided.</span>
+   7 |     | <span class='neutral'>/// @param sender Sender address.</span>
+   8 |     | <span class='neutral'>/// @param manager Required sender address as a manager.</span>
+   9 |     | <span class='neutral'>error ManagerOnly(address sender, address manager);</span>
+  10 |     | <span class='neutral'></span>
+  11 |     | <span class='neutral'>/// @dev Provided zero address.</span>
+  12 |     | <span class='neutral'>error ZeroAddress();</span>
+  13 |     | <span class='neutral'></span>
+  14 |     | <span class='neutral'>/// @title OLAS - Smart contract for the OLAS token.</span>
+  15 |     | <span class='neutral'>/// @author AL</span>
+  16 |     | <span class='neutral'>/// @author Aleksandr Kuperman - &lt;aleksandr.kuperman@valory.xyz&gt;</span>
+  17 | *   | <span class='executed'>contract OLAS is ERC20 {</span>
+  18 |     | <span class='neutral'>    event MinterUpdated(address indexed minter);</span>
+  19 |     | <span class='neutral'>    event OwnerUpdated(address indexed owner);</span>
+  20 |     | <span class='neutral'></span>
+  21 |     | <span class='neutral'>    // One year interval</span>
+  22 |     | <span class='unexecuted'>    uint256 public constant oneYear = 1 days * 365;</span>
+  23 |     | <span class='neutral'>    // Total supply cap for the first ten years (one billion OLAS tokens)</span>
+  24 |     | <span class='unexecuted'>    uint256 public constant tenYearSupplyCap = 1_000_000_000e18;</span>
+  25 |     | <span class='neutral'>    // Maximum annual inflation after first ten years</span>
+  26 |     | <span class='unexecuted'>    uint256 public constant maxMintCapFraction = 2;</span>
+  27 |     | <span class='neutral'>    // Initial timestamp of the token deployment</span>
+  28 |     | <span class='unexecuted'>    uint256 public immutable timeLaunch;</span>
+  29 |     | <span class='neutral'></span>
+  30 |     | <span class='neutral'>    // Owner address</span>
+  31 |     | <span class='unexecuted'>    address public owner;</span>
+  32 |     | <span class='neutral'>    // Minter address</span>
+  33 |     | <span class='unexecuted'>    address public minter;</span>
+  34 |     | <span class='neutral'></span>
+  35 |     | <span class='unexecuted'>    constructor() ERC20(&quot;Autonolas&quot;, &quot;OLAS&quot;, 18) {</span>
+  36 |     | <span class='unexecuted'>        owner = msg.sender;</span>
+  37 |     | <span class='unexecuted'>        minter = msg.sender;</span>
+  38 |     | <span class='unexecuted'>        timeLaunch = block.timestamp;</span>
+  39 |     | <span class='neutral'>    }</span>
+  40 |     | <span class='neutral'></span>
+  41 |     | <span class='neutral'>    /// @dev Changes the owner address.</span>
+  42 |     | <span class='neutral'>    /// @param newOwner Address of a new owner.</span>
+  43 |     | <span class='unexecuted'>    function changeOwner(address newOwner) external {</span>
+  44 |     | <span class='unexecuted'>        if (msg.sender != owner) {</span>
+  45 |     | <span class='unexecuted'>            revert ManagerOnly(msg.sender, owner);</span>
+  46 |     | <span class='neutral'>        }</span>
+  47 |     | <span class='neutral'></span>
+  48 |     | <span class='unexecuted'>        if (newOwner == address(0)) {</span>
+  49 |     | <span class='unexecuted'>            revert ZeroAddress();</span>
+  50 |     | <span class='neutral'>        }</span>
+  51 |     | <span class='neutral'></span>
+  52 |     | <span class='unexecuted'>        owner = newOwner;</span>
+  53 |     | <span class='unexecuted'>        emit OwnerUpdated(newOwner);</span>
+  54 |     | <span class='neutral'>    }</span>
+  55 |     | <span class='neutral'></span>
+  56 |     | <span class='neutral'>    /// @dev Changes the minter address.</span>
+  57 |     | <span class='neutral'>    /// @param newMinter Address of a new minter.</span>
+  58 |     | <span class='unexecuted'>    function changeMinter(address newMinter) external {</span>
+  59 |     | <span class='unexecuted'>        if (msg.sender != owner) {</span>
+  60 |     | <span class='unexecuted'>            revert ManagerOnly(msg.sender, owner);</span>
+  61 |     | <span class='neutral'>        }</span>
+  62 |     | <span class='neutral'></span>
+  63 |     | <span class='unexecuted'>        if (newMinter == address(0)) {</span>
+  64 |     | <span class='unexecuted'>            revert ZeroAddress();</span>
+  65 |     | <span class='neutral'>        }</span>
+  66 |     | <span class='neutral'></span>
+  67 |     | <span class='unexecuted'>        minter = newMinter;</span>
+  68 |     | <span class='unexecuted'>        emit MinterUpdated(newMinter);</span>
+  69 |     | <span class='neutral'>    }</span>
+  70 |     | <span class='neutral'></span>
+  71 |     | <span class='neutral'>    /// @dev Mints OLAS tokens.</span>
+  72 |     | <span class='neutral'>    /// @notice If the inflation control does not pass, the revert does not take place, as well as no action is performed.</span>
+  73 |     | <span class='neutral'>    /// @param account Account address.</span>
+  74 |     | <span class='neutral'>    /// @param amount OLAS token amount.</span>
+  75 |     | <span class='unexecuted'>    function mint(address account, uint256 amount) external {</span>
+  76 |     | <span class='neutral'>        // Access control</span>
+  77 |     | <span class='unexecuted'>        if (msg.sender != minter) {</span>
+  78 |     | <span class='unexecuted'>            revert ManagerOnly(msg.sender, minter);</span>
+  79 |     | <span class='neutral'>        }</span>
+  80 |     | <span class='neutral'></span>
+  81 |     | <span class='neutral'>        // Check the inflation schedule and mint</span>
+  82 |     | <span class='unexecuted'>        if (inflationControl(amount)) {</span>
+  83 |     | <span class='unexecuted'>            _mint(account, amount);</span>
+  84 |     | <span class='neutral'>        }</span>
+  85 |     | <span class='neutral'>    }</span>
+  86 |     | <span class='neutral'></span>
+  87 |     | <span class='neutral'>    /// @dev Provides various checks for the inflation control.</span>
+  88 |     | <span class='neutral'>    /// @notice The `&lt;=` check is left as is for a better code readability.</span>
+  89 |     | <span class='neutral'>    /// @param amount Amount of OLAS to mint.</span>
+  90 |     | <span class='neutral'>    /// @return True if the amount request is within inflation boundaries.</span>
+  91 |     | <span class='unexecuted'>    function inflationControl(uint256 amount) public view returns (bool) {</span>
+  92 |     | <span class='unexecuted'>        uint256 remainder = inflationRemainder();</span>
+  93 |     | <span class='unexecuted'>        return (amount &lt;= remainder);</span>
+  94 |     | <span class='neutral'>    }</span>
+  95 |     | <span class='neutral'></span>
+  96 |     | <span class='neutral'>    /// @dev Gets the reminder of OLAS possible for the mint.</span>
+  97 |     | <span class='neutral'>    /// @return remainder OLAS token remainder.</span>
+  98 |     | <span class='unexecuted'>    function inflationRemainder() public view returns (uint256 remainder) {</span>
+  99 |     | <span class='unexecuted'>        uint256 _totalSupply = totalSupply;</span>
+ 100 |     | <span class='neutral'>        // Current year</span>
+ 101 |     | <span class='unexecuted'>        uint256 numYears = (block.timestamp - timeLaunch) / oneYear;</span>
+ 102 |     | <span class='neutral'>        // Calculate maximum mint amount to date</span>
+ 103 |     | <span class='unexecuted'>        uint256 supplyCap = tenYearSupplyCap;</span>
+ 104 |     | <span class='neutral'>        // After 10 years, adjust supplyCap according to the yearly inflation % set in maxMintCapFraction</span>
+ 105 |     | <span class='unexecuted'>        if (numYears &gt; 9) {</span>
+ 106 |     | <span class='neutral'>            // Number of years after ten years have passed (including ongoing ones)</span>
+ 107 |     | <span class='unexecuted'>            numYears -= 9;</span>
+ 108 |     | <span class='unexecuted'>            for (uint256 i = 0; i &lt; numYears; ++i) {</span>
+ 109 |     | <span class='unexecuted'>                supplyCap += (supplyCap * maxMintCapFraction) / 100;</span>
+ 110 |     | <span class='neutral'>            }</span>
+ 111 |     | <span class='neutral'>        }</span>
+ 112 |     | <span class='neutral'>        // Check for the requested mint overflow</span>
+ 113 |     | <span class='unexecuted'>        remainder = supplyCap - _totalSupply;</span>
+ 114 |     | <span class='neutral'>    }</span>
+ 115 |     | <span class='neutral'></span>
+ 116 |     | <span class='neutral'>    /// @dev Burns OLAS tokens.</span>
+ 117 |     | <span class='neutral'>    /// @param amount OLAS token amount to burn.</span>
+ 118 |     | <span class='unexecuted'>    function burn(uint256 amount) external {</span>
+ 119 |     | <span class='unexecuted'>        _burn(msg.sender, amount);</span>
+ 120 |     | <span class='neutral'>    }</span>
+ 121 |     | <span class='neutral'></span>
+ 122 |     | <span class='neutral'>    /// @dev Decreases the allowance of another account over their tokens.</span>
+ 123 |     | <span class='neutral'>    /// @notice This implementation does not decrease spender allowance if the maximum allowance was granted.</span>
+ 124 |     | <span class='neutral'>    /// @notice The underflow condition is treated by the default code generation check.</span>
+ 125 |     | <span class='neutral'>    /// @param spender Account that tokens are approved for.</span>
+ 126 |     | <span class='neutral'>    /// @param amount Amount to decrease approval by.</span>
+ 127 |     | <span class='neutral'>    /// @return True if the operation succeeded.</span>
+ 128 |     | <span class='unexecuted'>    function decreaseAllowance(address spender, uint256 amount) external returns (bool) {</span>
+ 129 |     | <span class='unexecuted'>        uint256 spenderAllowance = allowance[msg.sender][spender];</span>
+ 130 |     | <span class='neutral'></span>
+ 131 |     | <span class='unexecuted'>        if (spenderAllowance != type(uint256).max) {</span>
+ 132 |     | <span class='unexecuted'>            spenderAllowance -= amount;</span>
+ 133 |     | <span class='unexecuted'>            allowance[msg.sender][spender] = spenderAllowance;</span>
+ 134 |     | <span class='unexecuted'>            emit Approval(msg.sender, spender, spenderAllowance);</span>
+ 135 |     | <span class='neutral'>        }</span>
+ 136 |     | <span class='neutral'></span>
+ 137 |     | <span class='unexecuted'>        return true;</span>
+ 138 |     | <span class='neutral'>    }</span>
+ 139 |     | <span class='neutral'></span>
+ 140 |     | <span class='neutral'>    /// @dev Increases the allowance of another account over their tokens.</span>
+ 141 |     | <span class='neutral'>    /// @notice The overflow condition is treated by the default code generation check.</span>
+ 142 |     | <span class='neutral'>    /// @param spender Account that tokens are approved for.</span>
+ 143 |     | <span class='neutral'>    /// @param amount Amount to increase approval by.</span>
+ 144 |     | <span class='neutral'>    /// @return True if the operation succeeded.</span>
+ 145 |     | <span class='unexecuted'>    function increaseAllowance(address spender, uint256 amount) external returns (bool) {</span>
+ 146 |     | <span class='unexecuted'>        uint256 spenderAllowance = allowance[msg.sender][spender];</span>
+ 147 |     | <span class='neutral'></span>
+ 148 |     | <span class='unexecuted'>        spenderAllowance += amount;</span>
+ 149 |     | <span class='unexecuted'>        allowance[msg.sender][spender] = spenderAllowance;</span>
+ 150 |     | <span class='unexecuted'>        emit Approval(msg.sender, spender, spenderAllowance);</span>
+ 151 |     | <span class='neutral'></span>
+ 152 |     | <span class='unexecuted'>        return true;</span>
+ 153 |     | <span class='neutral'>    }</span>
+ 154 |     | <span class='neutral'>}</span>
+ 155 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/contracts/interfaces/IErrors.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>pragma solidity ^0.8.15;</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>/// @dev Errors.</span>
+  5 |     | <span class='neutral'>interface IErrors {</span>
+  6 |     | <span class='neutral'>    /// @dev Only `owner` has a privilege, but the `sender` was provided.</span>
+  7 |     | <span class='neutral'>    /// @param sender Sender address.</span>
+  8 |     | <span class='neutral'>    /// @param owner Required sender address as an owner.</span>
+  9 |     | <span class='neutral'>    error OwnerOnly(address sender, address owner);</span>
+ 10 |     | <span class='neutral'></span>
+ 11 |     | <span class='neutral'>    /// @dev Provided zero address.</span>
+ 12 |     | <span class='neutral'>    error ZeroAddress();</span>
+ 13 |     | <span class='neutral'></span>
+ 14 |     | <span class='neutral'>    /// @dev Zero value when it has to be different from zero.</span>
+ 15 |     | <span class='neutral'>    error ZeroValue();</span>
+ 16 |     | <span class='neutral'></span>
+ 17 |     | <span class='neutral'>    /// @dev Non-zero value when it has to be zero.</span>
+ 18 |     | <span class='neutral'>    error NonZeroValue();</span>
+ 19 |     | <span class='neutral'></span>
+ 20 |     | <span class='neutral'>    /// @dev Wrong length of two arrays.</span>
+ 21 |     | <span class='neutral'>    /// @param numValues1 Number of values in a first array.</span>
+ 22 |     | <span class='neutral'>    /// @param numValues2 Numberf of values in a second array.</span>
+ 23 |     | <span class='neutral'>    error WrongArrayLength(uint256 numValues1, uint256 numValues2);</span>
+ 24 |     | <span class='neutral'></span>
+ 25 |     | <span class='neutral'>    /// @dev Value overflow.</span>
+ 26 |     | <span class='neutral'>    /// @param provided Overflow value.</span>
+ 27 |     | <span class='neutral'>    /// @param max Maximum possible value.</span>
+ 28 |     | <span class='neutral'>    error Overflow(uint256 provided, uint256 max);</span>
+ 29 |     | <span class='neutral'></span>
+ 30 |     | <span class='neutral'>    /// @dev Token is non-transferable.</span>
+ 31 |     | <span class='neutral'>    /// @param account Token address.</span>
+ 32 |     | <span class='neutral'>    error NonTransferable(address account);</span>
+ 33 |     | <span class='neutral'></span>
+ 34 |     | <span class='neutral'>    /// @dev Token is non-delegatable.</span>
+ 35 |     | <span class='neutral'>    /// @param account Token address.</span>
+ 36 |     | <span class='neutral'>    error NonDelegatable(address account);</span>
+ 37 |     | <span class='neutral'></span>
+ 38 |     | <span class='neutral'>    /// @dev Insufficient token allowance.</span>
+ 39 |     | <span class='neutral'>    /// @param provided Provided amount.</span>
+ 40 |     | <span class='neutral'>    /// @param expected Minimum expected amount.</span>
+ 41 |     | <span class='neutral'>    error InsufficientAllowance(uint256 provided, uint256 expected);</span>
+ 42 |     | <span class='neutral'></span>
+ 43 |     | <span class='neutral'>    /// @dev No existing lock value is found.</span>
+ 44 |     | <span class='neutral'>    /// @param account Address that is checked for the locked value.</span>
+ 45 |     | <span class='neutral'>    error NoValueLocked(address account);</span>
+ 46 |     | <span class='neutral'></span>
+ 47 |     | <span class='neutral'>    /// @dev Locked value is not zero.</span>
+ 48 |     | <span class='neutral'>    /// @param account Address that is checked for the locked value.</span>
+ 49 |     | <span class='neutral'>    /// @param amount Locked amount.</span>
+ 50 |     | <span class='neutral'>    error LockedValueNotZero(address account, uint256 amount);</span>
+ 51 |     | <span class='neutral'></span>
+ 52 |     | <span class='neutral'>    /// @dev Value lock is expired.</span>
+ 53 |     | <span class='neutral'>    /// @param account Address that is checked for the locked value.</span>
+ 54 |     | <span class='neutral'>    /// @param deadline The lock expiration deadline.</span>
+ 55 |     | <span class='neutral'>    /// @param curTime Current timestamp.</span>
+ 56 |     | <span class='neutral'>    error LockExpired(address account, uint256 deadline, uint256 curTime);</span>
+ 57 |     | <span class='neutral'></span>
+ 58 |     | <span class='neutral'>    /// @dev Value lock is not expired.</span>
+ 59 |     | <span class='neutral'>    /// @param account Address that is checked for the locked value.</span>
+ 60 |     | <span class='neutral'>    /// @param deadline The lock expiration deadline.</span>
+ 61 |     | <span class='neutral'>    /// @param curTime Current timestamp.</span>
+ 62 |     | <span class='neutral'>    error LockNotExpired(address account, uint256 deadline, uint256 curTime);</span>
+ 63 |     | <span class='neutral'></span>
+ 64 |     | <span class='neutral'>    /// @dev Provided unlock time is incorrect.</span>
+ 65 |     | <span class='neutral'>    /// @param account Address that is checked for the locked value.</span>
+ 66 |     | <span class='neutral'>    /// @param minUnlockTime Minimal unlock time that can be set.</span>
+ 67 |     | <span class='neutral'>    /// @param providedUnlockTime Provided unlock time.</span>
+ 68 |     | <span class='neutral'>    error UnlockTimeIncorrect(address account, uint256 minUnlockTime, uint256 providedUnlockTime);</span>
+ 69 |     | <span class='neutral'></span>
+ 70 |     | <span class='neutral'>    /// @dev Provided unlock time is bigger than the maximum allowed.</span>
+ 71 |     | <span class='neutral'>    /// @param account Address that is checked for the locked value.</span>
+ 72 |     | <span class='neutral'>    /// @param maxUnlockTime Max unlock time that can be set.</span>
+ 73 |     | <span class='neutral'>    /// @param providedUnlockTime Provided unlock time.</span>
+ 74 |     | <span class='neutral'>    error MaxUnlockTimeReached(address account, uint256 maxUnlockTime, uint256 providedUnlockTime);</span>
+ 75 |     | <span class='neutral'></span>
+ 76 |     | <span class='neutral'>    /// @dev Provided block number is incorrect (has not been processed yet).</span>
+ 77 |     | <span class='neutral'>    /// @param providedBlockNumber Provided block number.</span>
+ 78 |     | <span class='neutral'>    /// @param actualBlockNumber Actual block number.</span>
+ 79 |     | <span class='neutral'>    error WrongBlockNumber(uint256 providedBlockNumber, uint256 actualBlockNumber);</span>
+ 80 |     | <span class='neutral'>}</span>
+ 81 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/contracts/test/EchidnaVoteWeightingAssert.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>pragma solidity ^0.8.23;</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>import &quot;../OLAS.sol&quot;;</span>
+  5 |     | <span class='neutral'>import &quot;../veOLAS.sol&quot;;</span>
+  6 |     | <span class='neutral'>import &quot;./VoteWeightingFuzzing.sol&quot;;</span>
+  7 |     | <span class='neutral'></span>
+  8 |     | <span class='neutral'></span>
+  9 | *r  | <span class='executed'>contract EchidnaVoteWeightingAssert {    </span>
+ 10 |     | <span class='neutral'>    OLAS olas;</span>
+ 11 |     | <span class='neutral'>    veOLAS ve;</span>
+ 12 |     | <span class='neutral'>    VoteWeightingFuzzing vw;</span>
+ 13 |     | <span class='neutral'></span>
+ 14 |     | <span class='neutral'>    uint256 constant oneOLASBalance = 1 ether;</span>
+ 15 | *   | <span class='executed'>    uint256 constant fourYear = 4 * 365 * 86400;</span>
+ 16 |     | <span class='neutral'>    uint256 constant oneYear = 1 * 365 * 86400;</span>
+ 17 | *   | <span class='executed'>    uint256 constant maxVoteWeight = 10000;</span>
+ 18 |     | <span class='neutral'>    uint64  constant WEEK = 1 weeks;</span>
+ 19 | *   | <span class='executed'>    uint256 constant oneOLAS = 1 ether;</span>
+ 20 |     | <span class='unexecuted'>    uint256 constant oneMLN = 1_000_000;</span>
+ 21 |     | <span class='neutral'>    uint256 ts;</span>
+ 22 |     | <span class='neutral'>    </span>
+ 23 |     | <span class='neutral'>    // msg.sender in Echidna </span>
+ 24 |     | <span class='unexecuted'>    address[3] private senders = [ address(0x10000), address(0x20000), address(0x30000) ];</span>
+ 25 |     | <span class='neutral'></span>
+ 26 |     | <span class='unexecuted'>    constructor() payable {</span>
+ 27 |     | <span class='unexecuted'>        olas = new OLAS();</span>
+ 28 |     | <span class='unexecuted'>        address aolas = address(olas);</span>
+ 29 |     | <span class='unexecuted'>        ve = new veOLAS(aolas, &quot;Voting Escrow OLAS&quot;, &quot;veOLAS&quot;);</span>
+ 30 |     | <span class='unexecuted'>        address ave = address(ve); </span>
+ 31 |     | <span class='unexecuted'>        vw = new VoteWeightingFuzzing(ave);</span>
+ 32 |     | <span class='unexecuted'>        olas.mint(address(this),oneOLAS*oneMLN);</span>
+ 33 |     | <span class='neutral'>    }</span>
+ 34 |     | <span class='neutral'></span>
+ 35 |     | <span class='neutral'>    // voteForNomineeWeights_assert(0xdeadbeef,1,0,4495678220902361,1124857)</span>
+ 36 | *   | <span class='executed'>    function voteForNomineeWeights_assert(address account, uint32 chainId, uint16 weight, uint256 amount, uint32 unlockTime) external {</span>
+ 37 | *   | <span class='executed'>        require(block.timestamp &gt; 0);</span>
+ 38 | *r  | <span class='executed'>        require(block.timestamp &gt; ts);</span>
+ 39 | *r  | <span class='executed'>        require(unlockTime &lt; fourYear);</span>
+ 40 | *r  | <span class='executed'>        require(weight &lt; maxVoteWeight);</span>
+ 41 | *r  | <span class='executed'>        require(amount &lt; 100 * oneOLAS);</span>
+ 42 | *   | <span class='executed'>        uint256 balanceOf = olas.balanceOf(address(this));</span>
+ 43 | *   | <span class='executed'>        assert(balanceOf &gt; amount);</span>
+ 44 | *   | <span class='executed'>        (uint128 initialAmount,) = ve.mapLockedBalances(address(this));</span>
+ 45 | *   | <span class='executed'>        if (initialAmount == 0) {</span>
+ 46 | *   | <span class='executed'>            olas.approve(address(ve), amount);</span>
+ 47 | *r  | <span class='executed'>            ve.createLock(amount, unlockTime);</span>
+ 48 | *   | <span class='executed'>            (uint128 lockedAmount,) = ve.mapLockedBalances(address(this));</span>
+ 49 | *   | <span class='executed'>            assert(lockedAmount &gt; 0);</span>
+ 50 | *   | <span class='executed'>        } else {</span>
+ 51 | *   | <span class='executed'>            (uint128 lockedAmount,) = ve.mapLockedBalances(address(this));</span>
+ 52 | *   | <span class='executed'>            assert(lockedAmount &gt; 0);</span>
+ 53 |     | <span class='neutral'>        }</span>
+ 54 | *r  | <span class='executed'>        vw.addNomineeEVM(account, chainId);</span>
+ 55 | *   | <span class='executed'>        bytes32 nominee = bytes32(uint256(uint160(account)));</span>
+ 56 | *   | <span class='executed'>        uint256 id = vw.getNomineeId(nominee, chainId);</span>
+ 57 | *   | <span class='executed'>        uint256 num = vw.getNumNominees();</span>
+ 58 | *   | <span class='executed'>        assert(id &gt; 0);</span>
+ 59 | *   | <span class='executed'>        assert(num &gt; 0);</span>
+ 60 | *   | <span class='executed'>        vw.setCallVoteForNomineeWeights(false);</span>
+ 61 | *   | <span class='executed'>        bool beforeAfterCall = vw.callVoteForNomineeWeights();</span>
+ 62 | *   | <span class='executed'>        assert(beforeAfterCall == false);</span>
+ 63 | *r  | <span class='executed'>        vw.voteForNomineeWeights(nominee, chainId, weight);</span>
+ 64 | *   | <span class='executed'>        bool stateAfterCall = vw.callVoteForNomineeWeights();</span>
+ 65 | *   | <span class='executed'>        if(stateAfterCall == true) {</span>
+ 66 |     | <span class='unexecuted'>            uint256 lts = vw.getlastUserVote(nominee,chainId);</span>
+ 67 |     | <span class='unexecuted'>            assert(lts &gt; 0);</span>
+ 68 |     | <span class='neutral'>        }</span>
+ 69 | *   | <span class='executed'>        ts = block.timestamp; // next timestamp &gt; timestamp</span>
+ 70 | *   | <span class='executed'>        vw.checkpointNominee(nominee, chainId);</span>
+ 71 |     | <span class='neutral'>    }</span>
+ 72 |     | <span class='neutral'></span>
+ 73 |     | <span class='neutral'>}</span>
+ 74 |     | <span class='neutral'></span>
+ 75 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/contracts/test/VoteWeightingFuzzing.sol</b>
+<code>
+   1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+   2 |     | <span class='neutral'>pragma solidity ^0.8.23;</span>
+   3 |     | <span class='neutral'></span>
+   4 |     | <span class='neutral'>// Dispenser interface</span>
+   5 |     | <span class='neutral'>interface IDispenser {</span>
+   6 |     | <span class='neutral'>    /// @dev Records nominee addition in dispenser.</span>
+   7 |     | <span class='neutral'>    /// @param nomineeHash Nominee hash.</span>
+   8 |     | <span class='neutral'>    function addNominee(bytes32 nomineeHash) external;</span>
+   9 |     | <span class='neutral'></span>
+  10 |     | <span class='neutral'>    /// @dev Records nominee removal.</span>
+  11 |     | <span class='neutral'>    /// @param nomineeHash Nominee hash.</span>
+  12 |     | <span class='neutral'>    function removeNominee(bytes32 nomineeHash) external;</span>
+  13 |     | <span class='neutral'>}</span>
+  14 |     | <span class='neutral'></span>
+  15 |     | <span class='neutral'>// veOLAS interface</span>
+  16 |     | <span class='neutral'>interface IVEOLAS {</span>
+  17 |     | <span class='neutral'>    // Structure for voting escrow points</span>
+  18 |     | <span class='neutral'>    // The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)</span>
+  19 |     | <span class='neutral'>    struct PointVoting {</span>
+  20 |     | <span class='neutral'>        // w(i) = at + b (bias)</span>
+  21 |     | <span class='neutral'>        int128 bias;</span>
+  22 |     | <span class='neutral'>        // dw / dt = a (slope)</span>
+  23 |     | <span class='neutral'>        int128 slope;</span>
+  24 |     | <span class='neutral'>        // Timestamp. It will never practically be bigger than 2^64 - 1</span>
+  25 |     | <span class='neutral'>        uint64 ts;</span>
+  26 |     | <span class='neutral'>        // Block number. It will not be bigger than the timestamp</span>
+  27 |     | <span class='neutral'>        uint64 blockNumber;</span>
+  28 |     | <span class='neutral'>        // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.</span>
+  29 |     | <span class='neutral'>        // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1</span>
+  30 |     | <span class='neutral'>        uint128 balance;</span>
+  31 |     | <span class='neutral'>    }</span>
+  32 |     | <span class='neutral'></span>
+  33 |     | <span class='neutral'>    /// @dev Gets the `account`&#39;s lock end time.</span>
+  34 |     | <span class='neutral'>    /// @param account Account address.</span>
+  35 |     | <span class='neutral'>    /// @return unlockTime Lock end time.</span>
+  36 |     | <span class='neutral'>    function lockedEnd(address account) external view returns (uint256 unlockTime);</span>
+  37 |     | <span class='neutral'></span>
+  38 |     | <span class='neutral'>    /// @dev Gets the most recently recorded user point for `account`.</span>
+  39 |     | <span class='neutral'>    /// @param account Account address.</span>
+  40 |     | <span class='neutral'>    /// @return pv Last checkpoint.</span>
+  41 |     | <span class='neutral'>    function getLastUserPoint(address account) external view returns (PointVoting memory pv);</span>
+  42 |     | <span class='neutral'>}</span>
+  43 |     | <span class='neutral'></span>
+  44 |     | <span class='neutral'>/// @dev Only `owner` has a privilege, but the `sender` was provided.</span>
+  45 |     | <span class='neutral'>/// @param sender Sender address.</span>
+  46 |     | <span class='neutral'>/// @param owner Required sender address as an owner.</span>
+  47 |     | <span class='neutral'>error OwnerOnly(address sender, address owner);</span>
+  48 |     | <span class='neutral'></span>
+  49 |     | <span class='neutral'>/// @dev Provided zero address.</span>
+  50 |     | <span class='neutral'>error ZeroAddressVW();</span>
+  51 |     | <span class='neutral'></span>
+  52 |     | <span class='neutral'>/// @dev Zero value when it has to be different from zero.</span>
+  53 |     | <span class='neutral'>error ZeroValue();</span>
+  54 |     | <span class='neutral'></span>
+  55 |     | <span class='neutral'>/// @dev Wrong length of two arrays.</span>
+  56 |     | <span class='neutral'>/// @param numValues1 Number of values in a first array.</span>
+  57 |     | <span class='neutral'>/// @param numValues2 Number of values in a second array.</span>
+  58 |     | <span class='neutral'>error WrongArrayLength(uint256 numValues1, uint256 numValues2);</span>
+  59 |     | <span class='neutral'></span>
+  60 |     | <span class='neutral'>/// @dev Value overflow.</span>
+  61 |     | <span class='neutral'>/// @param provided Overflow value.</span>
+  62 |     | <span class='neutral'>/// @param max Maximum possible value.</span>
+  63 |     | <span class='neutral'>error Overflow(uint256 provided, uint256 max);</span>
+  64 |     | <span class='neutral'></span>
+  65 |     | <span class='neutral'>/// @dev Underflow value.</span>
+  66 |     | <span class='neutral'>/// @param provided Provided value.</span>
+  67 |     | <span class='neutral'>/// @param expected Minimum expected value.</span>
+  68 |     | <span class='neutral'>error Underflow(uint256 provided, uint256 expected);</span>
+  69 |     | <span class='neutral'></span>
+  70 |     | <span class='neutral'>/// @dev Nominee does not exist.</span>
+  71 |     | <span class='neutral'>/// @param account Nominee account address.</span>
+  72 |     | <span class='neutral'>/// @param chainId Nominee chain Id.</span>
+  73 |     | <span class='neutral'>error NomineeDoesNotExist(bytes32 account, uint256 chainId);</span>
+  74 |     | <span class='neutral'></span>
+  75 |     | <span class='neutral'>/// @dev Nominee already exists.</span>
+  76 |     | <span class='neutral'>/// @param account Nominee account address.</span>
+  77 |     | <span class='neutral'>/// @param chainId Nominee chain Id.</span>
+  78 |     | <span class='neutral'>error NomineeAlreadyExists(bytes32 account, uint256 chainId);</span>
+  79 |     | <span class='neutral'></span>
+  80 |     | <span class='neutral'>/// @dev Value lock is expired.</span>
+  81 |     | <span class='neutral'>/// @param account Address that is checked for the locked value.</span>
+  82 |     | <span class='neutral'>/// @param deadline The lock expiration deadline.</span>
+  83 |     | <span class='neutral'>/// @param curTime Current timestamp.</span>
+  84 |     | <span class='neutral'>error LockExpired(address account, uint256 deadline, uint256 curTime);</span>
+  85 |     | <span class='neutral'></span>
+  86 |     | <span class='neutral'>/// @dev The vote has been performed already.</span>
+  87 |     | <span class='neutral'>/// @param voter Voter address.</span>
+  88 |     | <span class='neutral'>/// @param curTime Current time.</span>
+  89 |     | <span class='neutral'>/// @param nextAllowedVotingTime Next allowed voting time.</span>
+  90 |     | <span class='neutral'>error VoteTooOften(address voter, uint256 curTime, uint256 nextAllowedVotingTime);</span>
+  91 |     | <span class='neutral'></span>
+  92 |     | <span class='neutral'>/// @dev Nominee is not in the removed nominee map.</span>
+  93 |     | <span class='neutral'>/// @param account Nominee account address.</span>
+  94 |     | <span class='neutral'>/// @param chainId Nominee chain Id.</span>
+  95 |     | <span class='neutral'>error NomineeNotRemoved(bytes32 account, uint256 chainId);</span>
+  96 |     | <span class='neutral'></span>
+  97 |     | <span class='neutral'>/// @dev Nominee is in the removed nominee map.</span>
+  98 |     | <span class='neutral'>/// @param account Nominee account address.</span>
+  99 |     | <span class='neutral'>/// @param chainId Nominee chain Id.</span>
+ 100 |     | <span class='neutral'>error NomineeRemoved(bytes32 account, uint256 chainId);</span>
+ 101 |     | <span class='neutral'></span>
+ 102 |     | <span class='neutral'>// Point struct</span>
+ 103 |     | <span class='neutral'>struct Point {</span>
+ 104 |     | <span class='neutral'>    uint256 bias;</span>
+ 105 |     | <span class='neutral'>    uint256 slope;</span>
+ 106 |     | <span class='neutral'>}</span>
+ 107 |     | <span class='neutral'></span>
+ 108 |     | <span class='neutral'>// Voted slope struct</span>
+ 109 |     | <span class='neutral'>struct VotedSlope {</span>
+ 110 |     | <span class='neutral'>    uint256 slope;</span>
+ 111 |     | <span class='neutral'>    uint256 power;</span>
+ 112 |     | <span class='neutral'>    uint256 end;</span>
+ 113 |     | <span class='neutral'>}</span>
+ 114 |     | <span class='neutral'></span>
+ 115 |     | <span class='neutral'>// Nominee struct</span>
+ 116 |     | <span class='neutral'>struct Nominee {</span>
+ 117 |     | <span class='neutral'>    bytes32 account;</span>
+ 118 |     | <span class='neutral'>    uint256 chainId;</span>
+ 119 |     | <span class='neutral'>}</span>
+ 120 |     | <span class='neutral'></span>
+ 121 |     | <span class='neutral'></span>
+ 122 |     | <span class='neutral'>/// @title VoteWeighting - Smart contract for Vote Weighting with specific nominees composed of address and chain Id</span>
+ 123 |     | <span class='neutral'>/// @author Aleksandr Kuperman - &lt;aleksandr.kuperman@valory.xyz&gt;</span>
+ 124 |     | <span class='neutral'>/// @author Andrey Lebedev - &lt;andrey.lebedev@valory.xyz&gt;</span>
+ 125 |     | <span class='neutral'>/// @author Mariapia Moscatiello - &lt;mariapia.moscatiello@valory.xyz&gt;</span>
+ 126 | *   | <span class='executed'>contract VoteWeightingFuzzing {</span>
+ 127 |     | <span class='neutral'>    event OwnerUpdated(address indexed owner);</span>
+ 128 |     | <span class='neutral'>    event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);</span>
+ 129 |     | <span class='neutral'>    event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);</span>
+ 130 |     | <span class='neutral'>    event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);</span>
+ 131 |     | <span class='neutral'></span>
+ 132 |     | <span class='neutral'>    // 7 * 86400 seconds - all future times are rounded by week</span>
+ 133 | *   | <span class='executed'>    uint256 public constant WEEK = 604_800;</span>
+ 134 |     | <span class='neutral'>    // Cannot change weight votes more often than once in 10 days</span>
+ 135 | *   | <span class='executed'>    uint256 public constant WEIGHT_VOTE_DELAY = 864_000;</span>
+ 136 |     | <span class='neutral'>    // Max weight amount</span>
+ 137 | *   | <span class='executed'>    uint256 public constant MAX_WEIGHT = 10_000;</span>
+ 138 |     | <span class='neutral'>    // Maximum chain Id as per EVM specs</span>
+ 139 | *   | <span class='executed'>    uint256 public constant MAX_EVM_CHAIN_ID = type(uint64).max / 2 - 36;</span>
+ 140 |     | <span class='neutral'>    // veOLAS contract address</span>
+ 141 |     | <span class='unexecuted'>    address public immutable ve;</span>
+ 142 |     | <span class='neutral'>    // Contract owner address</span>
+ 143 |     | <span class='unexecuted'>    address public owner;</span>
+ 144 |     | <span class='neutral'>    // Dispenser contract</span>
+ 145 |     | <span class='unexecuted'>    address public dispenser;</span>
+ 146 |     | <span class='neutral'></span>
+ 147 |     | <span class='neutral'>    // Set of Nominee structs</span>
+ 148 |     | <span class='unexecuted'>    Nominee[] public setNominees;</span>
+ 149 |     | <span class='neutral'>    // Mapping of hash(Nominee struct) =&gt; nominee Id</span>
+ 150 |     | <span class='unexecuted'>    mapping(bytes32 =&gt; uint256) public mapNomineeIds;</span>
+ 151 |     | <span class='neutral'>    // Mapping of hash(Nominee struct) =&gt; previously removed nominee flag</span>
+ 152 |     | <span class='unexecuted'>    mapping(bytes32 =&gt; bool) public mapRemovedNominees;</span>
+ 153 |     | <span class='neutral'></span>
+ 154 |     | <span class='neutral'>    // user -&gt; hash(Nominee struct) -&gt; VotedSlope</span>
+ 155 |     | <span class='unexecuted'>    mapping(address =&gt; mapping(bytes32 =&gt; VotedSlope)) public voteUserSlopes;</span>
+ 156 |     | <span class='neutral'>    // Total vote power used by user</span>
+ 157 |     | <span class='unexecuted'>    mapping(address =&gt; uint256) public voteUserPower;</span>
+ 158 |     | <span class='neutral'>    // Last user vote&#39;s timestamp for each hash(Nominee struct)</span>
+ 159 |     | <span class='unexecuted'>    mapping(address =&gt; mapping(bytes32 =&gt; uint256)) public lastUserVote;</span>
+ 160 |     | <span class='neutral'></span>
+ 161 |     | <span class='neutral'>    // Past and scheduled points for nominee weight, sum of weights per type, total weight</span>
+ 162 |     | <span class='neutral'>    // Point is for bias+slope</span>
+ 163 |     | <span class='neutral'>    // changes_* are for changes in slope</span>
+ 164 |     | <span class='neutral'>    // time_* are for the last change timestamp</span>
+ 165 |     | <span class='neutral'>    // timestamps are rounded to whole weeks</span>
+ 166 |     | <span class='neutral'></span>
+ 167 |     | <span class='neutral'>    // hash(Nominee struct) -&gt; time -&gt; Point</span>
+ 168 |     | <span class='unexecuted'>    mapping(bytes32 =&gt; mapping(uint256 =&gt; Point)) public pointsWeight;</span>
+ 169 |     | <span class='neutral'>    // hash(Nominee struct) -&gt; time -&gt; slope</span>
+ 170 |     | <span class='unexecuted'>    mapping(bytes32 =&gt; mapping(uint256 =&gt; uint256)) public changesWeight;</span>
+ 171 |     | <span class='neutral'>    // hash(Nominee struct) -&gt; last scheduled time (next week)</span>
+ 172 |     | <span class='unexecuted'>    mapping(bytes32 =&gt; uint256) public timeWeight;</span>
+ 173 |     | <span class='neutral'></span>
+ 174 |     | <span class='neutral'>    // time -&gt; Point</span>
+ 175 |     | <span class='unexecuted'>    mapping(uint256 =&gt; Point) public pointsSum;</span>
+ 176 |     | <span class='neutral'>    // time -&gt; slope</span>
+ 177 |     | <span class='unexecuted'>    mapping(uint256 =&gt; uint256) public changesSum;</span>
+ 178 |     | <span class='neutral'>    // last scheduled time (next week)</span>
+ 179 |     | <span class='unexecuted'>    uint256 public timeSum;</span>
+ 180 |     | <span class='neutral'>    // for fuzzing</span>
+ 181 | *   | <span class='executed'>    bool public callVoteForNomineeWeights = false;</span>
+ 182 |     | <span class='neutral'></span>
+ 183 |     | <span class='neutral'>    /// @dev Contract constructor.</span>
+ 184 |     | <span class='neutral'>    /// @param _ve Voting Escrow contract address.</span>
+ 185 |     | <span class='unexecuted'>    constructor(address _ve) {</span>
+ 186 |     | <span class='neutral'>        // Check for the zero address</span>
+ 187 |     | <span class='unexecuted'>        if (_ve == address(0)) {</span>
+ 188 |     | <span class='unexecuted'>            revert ZeroAddressVW();</span>
+ 189 |     | <span class='neutral'>        }</span>
+ 190 |     | <span class='neutral'></span>
+ 191 |     | <span class='neutral'>        // Set initial parameters</span>
+ 192 |     | <span class='unexecuted'>        owner = msg.sender;</span>
+ 193 |     | <span class='unexecuted'>        ve = _ve;</span>
+ 194 |     | <span class='unexecuted'>        timeSum = block.timestamp / WEEK * WEEK;</span>
+ 195 |     | <span class='unexecuted'>        setNominees.push(Nominee(bytes32(0), 0));</span>
+ 196 |     | <span class='neutral'>    }</span>
+ 197 |     | <span class='neutral'></span>
+ 198 |     | <span class='neutral'>    /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.</span>
+ 199 |     | <span class='neutral'>    /// @return Sum of weights.</span>
+ 200 | *   | <span class='executed'>    function _getSum() internal returns (uint256) {</span>
+ 201 |     | <span class='neutral'>        // t is always &gt; 0 as it is set in the constructor</span>
+ 202 | *   | <span class='executed'>        uint256 t = timeSum;</span>
+ 203 | *   | <span class='executed'>        Point memory pt = pointsSum[t];</span>
+ 204 | *   | <span class='executed'>        for (uint256 i = 0; i &lt; 500; i++) {</span>
+ 205 | *   | <span class='executed'>            if (t &gt; block.timestamp) {</span>
+ 206 | *   | <span class='executed'>                break;</span>
+ 207 |     | <span class='neutral'>            }</span>
+ 208 | *   | <span class='executed'>            t += WEEK;</span>
+ 209 | *   | <span class='executed'>            uint256 dBias = pt.slope * WEEK;</span>
+ 210 | *   | <span class='executed'>            if (pt.bias &gt; dBias) {</span>
+ 211 | *   | <span class='executed'>                pt.bias -= dBias;</span>
+ 212 | *   | <span class='executed'>                uint256 dSlope = changesSum[t];</span>
+ 213 | *   | <span class='executed'>                pt.slope -= dSlope;</span>
+ 214 |     | <span class='neutral'>            } else {</span>
+ 215 | *   | <span class='executed'>                pt.bias = 0;</span>
+ 216 | *   | <span class='executed'>                pt.slope = 0;</span>
+ 217 |     | <span class='neutral'>            }</span>
+ 218 |     | <span class='neutral'></span>
+ 219 | *   | <span class='executed'>            pointsSum[t] = pt;</span>
+ 220 | *   | <span class='executed'>            if (t &gt; block.timestamp) {</span>
+ 221 | *   | <span class='executed'>                timeSum = t;</span>
+ 222 |     | <span class='neutral'>            }</span>
+ 223 |     | <span class='neutral'>        }</span>
+ 224 | *   | <span class='executed'>        return pt.bias;</span>
+ 225 |     | <span class='neutral'>    }</span>
+ 226 |     | <span class='neutral'></span>
+ 227 |     | <span class='neutral'>    /// @dev Fill historic nominee weights week-over-week for missed checkins and return the total for the future week.</span>
+ 228 |     | <span class='neutral'>    /// @param account Nominee account address in bytes32 form.</span>
+ 229 |     | <span class='neutral'>    /// @param chainId Nominee chain Id.</span>
+ 230 |     | <span class='neutral'>    /// @return Nominee weight.</span>
+ 231 | *   | <span class='executed'>    function _getWeight(bytes32 account, uint256 chainId) internal returns (uint256) {</span>
+ 232 |     | <span class='neutral'>        // Construct the nominee struct</span>
+ 233 | *   | <span class='executed'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 234 |     | <span class='neutral'></span>
+ 235 |     | <span class='neutral'>        // Check that the nominee exists or has been removed</span>
+ 236 | *   | <span class='executed'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 237 | *   | <span class='executed'>        if (!mapRemovedNominees[nomineeHash] &amp;&amp; mapNomineeIds[nomineeHash] == 0) {</span>
+ 238 |     | <span class='unexecuted'>            revert NomineeDoesNotExist(account, chainId);</span>
+ 239 |     | <span class='neutral'>        }</span>
+ 240 |     | <span class='neutral'></span>
+ 241 |     | <span class='neutral'>        // t is always &gt; 0 as it is set during the addNominee() call</span>
+ 242 | *   | <span class='executed'>        uint256 t = timeWeight[nomineeHash];</span>
+ 243 | *   | <span class='executed'>        Point memory pt = pointsWeight[nomineeHash][t];</span>
+ 244 | *   | <span class='executed'>        for (uint256 i = 0; i &lt; 500; i++) {</span>
+ 245 | *   | <span class='executed'>            if (t &gt; block.timestamp) {</span>
+ 246 | *   | <span class='executed'>                break;</span>
+ 247 |     | <span class='neutral'>            }</span>
+ 248 |     | <span class='unexecuted'>            t += WEEK;</span>
+ 249 |     | <span class='unexecuted'>            uint256 dBias = pt.slope * WEEK;</span>
+ 250 |     | <span class='unexecuted'>            if (pt.bias &gt; dBias) {</span>
+ 251 |     | <span class='unexecuted'>                pt.bias -= dBias;</span>
+ 252 |     | <span class='unexecuted'>                uint256 dSlope = changesWeight[nomineeHash][t];</span>
+ 253 |     | <span class='unexecuted'>                pt.slope -= dSlope;</span>
+ 254 |     | <span class='neutral'>            } else {</span>
+ 255 |     | <span class='unexecuted'>                pt.bias = 0;</span>
+ 256 |     | <span class='unexecuted'>                pt.slope = 0;</span>
+ 257 |     | <span class='neutral'>            }</span>
+ 258 |     | <span class='neutral'></span>
+ 259 |     | <span class='unexecuted'>            pointsWeight[nomineeHash][t] = pt;</span>
+ 260 |     | <span class='unexecuted'>            if (t &gt; block.timestamp) {</span>
+ 261 |     | <span class='unexecuted'>                timeWeight[nomineeHash] = t;</span>
+ 262 |     | <span class='neutral'>            }</span>
+ 263 |     | <span class='neutral'>        }</span>
+ 264 | *   | <span class='executed'>        return pt.bias;</span>
+ 265 |     | <span class='neutral'>    }</span>
+ 266 |     | <span class='neutral'></span>
+ 267 |     | <span class='neutral'>    /// @dev Add nominee address along with the chain Id.</span>
+ 268 |     | <span class='neutral'>    /// @param nominee Nominee account address and chainId.</span>
+ 269 | *   | <span class='executed'>    function _addNominee(Nominee memory nominee) internal {</span>
+ 270 |     | <span class='neutral'>        // Check for the nominee existence</span>
+ 271 | *   | <span class='executed'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 272 | *   | <span class='executed'>        if (mapNomineeIds[nomineeHash] &gt; 0) {</span>
+ 273 | *   | <span class='executed'>            revert NomineeAlreadyExists(nominee.account, nominee.chainId);</span>
+ 274 |     | <span class='neutral'>        }</span>
+ 275 |     | <span class='neutral'></span>
+ 276 |     | <span class='neutral'>        // Check for the previously removed nominee</span>
+ 277 | *   | <span class='executed'>        if (mapRemovedNominees[nomineeHash]) {</span>
+ 278 |     | <span class='unexecuted'>            revert NomineeRemoved(nominee.account, nominee.chainId);</span>
+ 279 |     | <span class='neutral'>        }</span>
+ 280 |     | <span class='neutral'></span>
+ 281 | *   | <span class='executed'>        uint256 id = setNominees.length;</span>
+ 282 | *   | <span class='executed'>        mapNomineeIds[nomineeHash] = id;</span>
+ 283 |     | <span class='neutral'>        // Push the nominee into the list</span>
+ 284 | *   | <span class='executed'>        setNominees.push(nominee);</span>
+ 285 |     | <span class='neutral'></span>
+ 286 | *   | <span class='executed'>        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;</span>
+ 287 | *   | <span class='executed'>        timeWeight[nomineeHash] = nextTime;</span>
+ 288 |     | <span class='neutral'></span>
+ 289 |     | <span class='neutral'>        // Enable nominee in dispenser, if applicable</span>
+ 290 | *   | <span class='executed'>        address localDispenser = dispenser;</span>
+ 291 | *   | <span class='executed'>        if (localDispenser != address(0)) {</span>
+ 292 |     | <span class='unexecuted'>            IDispenser(localDispenser).addNominee(nomineeHash);</span>
+ 293 |     | <span class='neutral'>        }</span>
+ 294 |     | <span class='neutral'></span>
+ 295 | *   | <span class='executed'>        emit AddNominee(nominee.account, nominee.chainId, id);</span>
+ 296 |     | <span class='neutral'>    }</span>
+ 297 |     | <span class='neutral'></span>
+ 298 |     | <span class='neutral'>    /// @dev Add EVM nominee address along with the chain Id.</span>
+ 299 |     | <span class='neutral'>    /// @param account Address of the nominee.</span>
+ 300 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 301 | *   | <span class='executed'>    function addNomineeEVM(address account, uint256 chainId) external {</span>
+ 302 |     | <span class='neutral'>        // Check for the zero address</span>
+ 303 | *   | <span class='executed'>        if (account == address(0)) {</span>
+ 304 | *   | <span class='executed'>            revert ZeroAddressVW();</span>
+ 305 |     | <span class='neutral'>        }</span>
+ 306 |     | <span class='neutral'></span>
+ 307 |     | <span class='neutral'>        // Check for zero chain Id</span>
+ 308 | *   | <span class='executed'>        if (chainId == 0) {</span>
+ 309 | *   | <span class='executed'>            revert ZeroValue();</span>
+ 310 |     | <span class='neutral'>        }</span>
+ 311 |     | <span class='neutral'></span>
+ 312 |     | <span class='neutral'>        // Check for the chain Id overflow</span>
+ 313 | *   | <span class='executed'>        if (chainId &gt; MAX_EVM_CHAIN_ID) {</span>
+ 314 |     | <span class='unexecuted'>            revert Overflow(chainId, MAX_EVM_CHAIN_ID);</span>
+ 315 |     | <span class='neutral'>        }</span>
+ 316 |     | <span class='neutral'></span>
+ 317 | *   | <span class='executed'>        Nominee memory nominee = Nominee(bytes32(uint256(uint160(account))), chainId);</span>
+ 318 |     | <span class='neutral'></span>
+ 319 |     | <span class='neutral'>        // Record nominee instance</span>
+ 320 | *   | <span class='executed'>        _addNominee(nominee);</span>
+ 321 |     | <span class='neutral'>    }</span>
+ 322 |     | <span class='neutral'></span>
+ 323 |     | <span class='neutral'>    /// @dev Add Non-EVM nominee address along with the chain Id.</span>
+ 324 |     | <span class='neutral'>    /// @param account Address of the nominee in byte32 standard.</span>
+ 325 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 326 |     | <span class='unexecuted'>    function addNomineeNonEVM(bytes32 account, uint256 chainId) external {</span>
+ 327 |     | <span class='neutral'>        // Check for the zero address</span>
+ 328 |     | <span class='unexecuted'>        if (account == bytes32(0)) {</span>
+ 329 |     | <span class='unexecuted'>            revert ZeroAddressVW();</span>
+ 330 |     | <span class='neutral'>        }</span>
+ 331 |     | <span class='neutral'></span>
+ 332 |     | <span class='neutral'>        // Check for the chain Id underflow</span>
+ 333 |     | <span class='unexecuted'>        if (MAX_EVM_CHAIN_ID &gt;= chainId) {</span>
+ 334 |     | <span class='unexecuted'>            revert Underflow(chainId, MAX_EVM_CHAIN_ID + 1);</span>
+ 335 |     | <span class='neutral'>        }</span>
+ 336 |     | <span class='neutral'></span>
+ 337 |     | <span class='unexecuted'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 338 |     | <span class='neutral'></span>
+ 339 |     | <span class='neutral'>        // Record nominee instance</span>
+ 340 |     | <span class='unexecuted'>        _addNominee(nominee);</span>
+ 341 |     | <span class='neutral'>    }</span>
+ 342 |     | <span class='neutral'></span>
+ 343 |     | <span class='neutral'>    /// @dev Changes the owner address.</span>
+ 344 |     | <span class='neutral'>    /// @param newOwner Address of a new owner.</span>
+ 345 |     | <span class='unexecuted'>    function changeOwner(address newOwner) external {</span>
+ 346 |     | <span class='neutral'>        // Check for the contract ownership</span>
+ 347 |     | <span class='unexecuted'>        if (msg.sender != owner) {</span>
+ 348 |     | <span class='unexecuted'>            revert OwnerOnly(msg.sender, owner);</span>
+ 349 |     | <span class='neutral'>        }</span>
+ 350 |     | <span class='neutral'></span>
+ 351 |     | <span class='neutral'>        // Check for the zero address</span>
+ 352 |     | <span class='unexecuted'>        if (newOwner == address(0)) {</span>
+ 353 |     | <span class='unexecuted'>            revert ZeroAddressVW();</span>
+ 354 |     | <span class='neutral'>        }</span>
+ 355 |     | <span class='neutral'></span>
+ 356 |     | <span class='unexecuted'>        owner = newOwner;</span>
+ 357 |     | <span class='unexecuted'>        emit OwnerUpdated(newOwner);</span>
+ 358 |     | <span class='neutral'>    }</span>
+ 359 |     | <span class='neutral'></span>
+ 360 |     | <span class='neutral'>    /// @dev Changes the dispenser contract address.</span>
+ 361 |     | <span class='neutral'>    /// @notice Dispenser can a zero address if the contract needs to serve a general purpose.</span>
+ 362 |     | <span class='neutral'>    /// @param newDispenser New dispenser contract address.</span>
+ 363 |     | <span class='unexecuted'>    function changeDispenser(address newDispenser) external {</span>
+ 364 |     | <span class='neutral'>        // Check for the contract ownership</span>
+ 365 |     | <span class='unexecuted'>        if (msg.sender != owner) {</span>
+ 366 |     | <span class='unexecuted'>            revert OwnerOnly(msg.sender, owner);</span>
+ 367 |     | <span class='neutral'>        }</span>
+ 368 |     | <span class='neutral'></span>
+ 369 |     | <span class='unexecuted'>        dispenser = newDispenser;</span>
+ 370 |     | <span class='neutral'>    }</span>
+ 371 |     | <span class='neutral'></span>
+ 372 |     | <span class='neutral'>    /// @dev Checkpoint to fill data common for all nominees.</span>
+ 373 |     | <span class='unexecuted'>    function checkpoint() external {</span>
+ 374 |     | <span class='unexecuted'>        _getSum();</span>
+ 375 |     | <span class='neutral'>    }</span>
+ 376 |     | <span class='neutral'></span>
+ 377 |     | <span class='neutral'>    /// @dev Checkpoint to fill data for both a specific nominee and common for all nominees.</span>
+ 378 |     | <span class='neutral'>    /// @param account Address of the nominee.</span>
+ 379 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 380 | *   | <span class='executed'>    function checkpointNominee(bytes32 account, uint256 chainId) external {</span>
+ 381 | *   | <span class='executed'>        _getWeight(account, chainId);</span>
+ 382 | *   | <span class='executed'>        _getSum();</span>
+ 383 |     | <span class='neutral'>    }</span>
+ 384 |     | <span class='neutral'></span>
+ 385 |     | <span class='neutral'>    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18) and a sum of weights.</span>
+ 386 |     | <span class='neutral'>    ///         Inflation which will be received by it is inflation_rate * relativeWeight / 1e18.</span>
+ 387 |     | <span class='neutral'>    /// @param account Address of the nominee in byte32 standard.</span>
+ 388 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 389 |     | <span class='neutral'>    /// @param time Relative weight at the specified timestamp in the past or present.</span>
+ 390 |     | <span class='neutral'>    /// @return weight Value of relative weight normalized to 1e18.</span>
+ 391 |     | <span class='neutral'>    /// @return totalSum Sum of nominee weights.</span>
+ 392 |     | <span class='unexecuted'>    function _nomineeRelativeWeight(</span>
+ 393 |     | <span class='neutral'>        bytes32 account,</span>
+ 394 |     | <span class='neutral'>        uint256 chainId,</span>
+ 395 |     | <span class='neutral'>        uint256 time</span>
+ 396 |     | <span class='unexecuted'>    ) internal view returns (uint256 weight, uint256 totalSum) {</span>
+ 397 |     | <span class='unexecuted'>        uint256 t = time / WEEK * WEEK;</span>
+ 398 |     | <span class='unexecuted'>        totalSum = pointsSum[t].bias;</span>
+ 399 |     | <span class='neutral'></span>
+ 400 |     | <span class='unexecuted'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 401 |     | <span class='unexecuted'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 402 |     | <span class='neutral'></span>
+ 403 |     | <span class='unexecuted'>        if (totalSum &gt; 0) {</span>
+ 404 |     | <span class='unexecuted'>            uint256 nomineeWeight = pointsWeight[nomineeHash][t].bias;</span>
+ 405 |     | <span class='unexecuted'>            weight = 1e18 * nomineeWeight / totalSum;</span>
+ 406 |     | <span class='neutral'>        }</span>
+ 407 |     | <span class='neutral'>    }</span>
+ 408 |     | <span class='neutral'></span>
+ 409 |     | <span class='neutral'>    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 and the sum of weights.</span>
+ 410 |     | <span class='neutral'>    ///         (e.g. 1.0 == 1e18). Inflation which will be received by it is</span>
+ 411 |     | <span class='neutral'>    ///         inflation_rate * relativeWeight / 1e18.</span>
+ 412 |     | <span class='neutral'>    /// @param account Address of the nominee in bytes32 form.</span>
+ 413 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 414 |     | <span class='neutral'>    /// @param time Relative weight at the specified timestamp in the past or present.</span>
+ 415 |     | <span class='neutral'>    /// @return weight Value of relative weight normalized to 1e18.</span>
+ 416 |     | <span class='neutral'>    /// @return totalSum Sum of nominee weights.</span>
+ 417 |     | <span class='unexecuted'>    function nomineeRelativeWeight(</span>
+ 418 |     | <span class='neutral'>        bytes32 account,</span>
+ 419 |     | <span class='neutral'>        uint256 chainId,</span>
+ 420 |     | <span class='neutral'>        uint256 time</span>
+ 421 |     | <span class='unexecuted'>    ) external view returns (uint256 weight, uint256 totalSum) {</span>
+ 422 |     | <span class='unexecuted'>        (weight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);</span>
+ 423 |     | <span class='neutral'>    }</span>
+ 424 |     | <span class='neutral'></span>
+ 425 |     | <span class='neutral'>    /// @dev Get nominee weight normalized to 1e18 and also fill all the unfilled values for type and nominee records.</span>
+ 426 |     | <span class='neutral'>    ///      Also, get the total sum of all the nominee weights.</span>
+ 427 |     | <span class='neutral'>    /// @notice Any address can call, however nothing is recorded if the values are filled already.</span>
+ 428 |     | <span class='neutral'>    /// @param account Address of the nominee in bytes32 form.</span>
+ 429 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 430 |     | <span class='neutral'>    /// @param time Relative weight at the specified timestamp in the past or present.</span>
+ 431 |     | <span class='neutral'>    /// @return weight Value of relative weight normalized to 1e18.</span>
+ 432 |     | <span class='neutral'>    /// @return totalSum Sum of nominee weights.</span>
+ 433 |     | <span class='unexecuted'>    function nomineeRelativeWeightWrite(</span>
+ 434 |     | <span class='neutral'>        bytes32 account,</span>
+ 435 |     | <span class='neutral'>        uint256 chainId,</span>
+ 436 |     | <span class='neutral'>        uint256 time</span>
+ 437 |     | <span class='unexecuted'>    ) external returns (uint256 weight, uint256 totalSum) {</span>
+ 438 |     | <span class='unexecuted'>        _getWeight(account, chainId);</span>
+ 439 |     | <span class='unexecuted'>        _getSum();</span>
+ 440 |     | <span class='unexecuted'>        (weight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);</span>
+ 441 |     | <span class='neutral'>    }</span>
+ 442 |     | <span class='neutral'></span>
+ 443 |     | <span class='neutral'>    /// @dev Allocate voting power for changing pool weights.</span>
+ 444 |     | <span class='neutral'>    /// @param account Address of the nominee the `msg.sender` votes for in bytes32 form.</span>
+ 445 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 446 |     | <span class='neutral'>    /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.</span>
+ 447 | *   | <span class='executed'>    function voteForNomineeWeights(bytes32 account, uint256 chainId, uint256 weight) public {</span>
+ 448 |     | <span class='neutral'>        // Get the nominee hash</span>
+ 449 | *   | <span class='executed'>        bytes32 nomineeHash = keccak256(abi.encode(Nominee(account, chainId)));</span>
+ 450 |     | <span class='neutral'></span>
+ 451 |     | <span class='neutral'>        // Check for the previously removed nominee</span>
+ 452 | *   | <span class='executed'>        if (mapRemovedNominees[nomineeHash]) {</span>
+ 453 |     | <span class='unexecuted'>            revert NomineeRemoved(account, chainId);</span>
+ 454 |     | <span class='neutral'>        }</span>
+ 455 |     | <span class='neutral'></span>
+ 456 | *   | <span class='executed'>        uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));</span>
+ 457 | *   | <span class='executed'>        uint256 lockEnd = IVEOLAS(ve).lockedEnd(msg.sender);</span>
+ 458 | *   | <span class='executed'>        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;</span>
+ 459 |     | <span class='neutral'></span>
+ 460 |     | <span class='neutral'>        // Check for the lock end expiration</span>
+ 461 | *   | <span class='executed'>        if (nextTime &gt;= lockEnd) {</span>
+ 462 | *   | <span class='executed'>            revert LockExpired(msg.sender, lockEnd, nextTime);</span>
+ 463 |     | <span class='neutral'>        }</span>
+ 464 |     | <span class='neutral'></span>
+ 465 |     | <span class='neutral'>        // Check for the weight number</span>
+ 466 | *   | <span class='executed'>        if (weight &gt; MAX_WEIGHT) {</span>
+ 467 |     | <span class='unexecuted'>            revert Overflow(weight, MAX_WEIGHT);</span>
+ 468 |     | <span class='neutral'>        }</span>
+ 469 |     | <span class='neutral'></span>
+ 470 |     | <span class='neutral'>        // Check for the last voting time</span>
+ 471 | *   | <span class='executed'>        uint256 nextAllowedVotingTime = lastUserVote[msg.sender][nomineeHash] + WEIGHT_VOTE_DELAY;</span>
+ 472 | *   | <span class='executed'>        if (nextAllowedVotingTime &gt; block.timestamp) {</span>
+ 473 |     | <span class='unexecuted'>            revert VoteTooOften(msg.sender, block.timestamp, nextAllowedVotingTime);</span>
+ 474 |     | <span class='neutral'>        }</span>
+ 475 |     | <span class='neutral'></span>
+ 476 |     | <span class='neutral'>        // Prepare old and new slopes and biases</span>
+ 477 | *   | <span class='executed'>        VotedSlope memory oldSlope = voteUserSlopes[msg.sender][nomineeHash];</span>
+ 478 | *   | <span class='executed'>        uint256 oldBias;</span>
+ 479 | *   | <span class='executed'>        if (oldSlope.end &gt; nextTime) {</span>
+ 480 |     | <span class='unexecuted'>            oldBias = oldSlope.slope * (oldSlope.end - nextTime);</span>
+ 481 |     | <span class='neutral'>        }</span>
+ 482 |     | <span class='neutral'></span>
+ 483 | *   | <span class='executed'>        VotedSlope memory newSlope = VotedSlope({</span>
+ 484 | *   | <span class='executed'>            slope: slope * weight / MAX_WEIGHT,</span>
+ 485 | *   | <span class='executed'>            end: lockEnd,</span>
+ 486 | *   | <span class='executed'>            power: weight</span>
+ 487 |     | <span class='neutral'>        });</span>
+ 488 |     | <span class='neutral'></span>
+ 489 | *   | <span class='executed'>        uint256 newBias = newSlope.slope * (lockEnd - nextTime);</span>
+ 490 |     | <span class='neutral'></span>
+ 491 | *   | <span class='executed'>        uint256 powerUsed = voteUserPower[msg.sender];</span>
+ 492 | *   | <span class='executed'>        powerUsed = powerUsed + newSlope.power - oldSlope.power;</span>
+ 493 | *   | <span class='executed'>        voteUserPower[msg.sender] = powerUsed;</span>
+ 494 | *   | <span class='executed'>        if (powerUsed &gt; MAX_WEIGHT) {</span>
+ 495 | *   | <span class='executed'>            revert Overflow(powerUsed, MAX_WEIGHT);</span>
+ 496 |     | <span class='neutral'>        }</span>
+ 497 |     | <span class='neutral'></span>
+ 498 |     | <span class='neutral'>        // Remove old and schedule new slope changes</span>
+ 499 |     | <span class='neutral'>        // Remove slope changes for old slopes</span>
+ 500 |     | <span class='neutral'>        // Schedule recording of initial slope for nextTime</span>
+ 501 | *   | <span class='executed'>        pointsWeight[nomineeHash][nextTime].bias = _maxAndSub(_getWeight(account, chainId) + newBias, oldBias);</span>
+ 502 | *   | <span class='executed'>        pointsSum[nextTime].bias = _maxAndSub(_getSum() + newBias, oldBias);</span>
+ 503 | *   | <span class='executed'>        if (oldSlope.end &gt; nextTime) {</span>
+ 504 |     | <span class='unexecuted'>            pointsWeight[nomineeHash][nextTime].slope =</span>
+ 505 |     | <span class='unexecuted'>                _maxAndSub(pointsWeight[nomineeHash][nextTime].slope + newSlope.slope, oldSlope.slope);</span>
+ 506 |     | <span class='unexecuted'>            pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope + newSlope.slope, oldSlope.slope);</span>
+ 507 |     | <span class='neutral'>        } else {</span>
+ 508 | *   | <span class='executed'>            pointsWeight[nomineeHash][nextTime].slope += newSlope.slope;</span>
+ 509 | *   | <span class='executed'>            pointsSum[nextTime].slope += newSlope.slope;</span>
+ 510 |     | <span class='neutral'>        }</span>
+ 511 | *   | <span class='executed'>        if (oldSlope.end &gt; block.timestamp) {</span>
+ 512 |     | <span class='neutral'>            // Cancel old slope changes if they still didn&#39;t happen</span>
+ 513 |     | <span class='unexecuted'>            changesWeight[nomineeHash][oldSlope.end] -= oldSlope.slope;</span>
+ 514 |     | <span class='unexecuted'>            changesSum[oldSlope.end] -= oldSlope.slope;</span>
+ 515 |     | <span class='neutral'>        }</span>
+ 516 |     | <span class='neutral'>        // Add slope changes for new slopes</span>
+ 517 | *   | <span class='executed'>        changesWeight[nomineeHash][newSlope.end] += newSlope.slope;</span>
+ 518 | *   | <span class='executed'>        changesSum[newSlope.end] += newSlope.slope;</span>
+ 519 |     | <span class='neutral'></span>
+ 520 | *   | <span class='executed'>        voteUserSlopes[msg.sender][nomineeHash] = newSlope;</span>
+ 521 |     | <span class='neutral'></span>
+ 522 |     | <span class='neutral'>        // Record last action time</span>
+ 523 | *   | <span class='executed'>        lastUserVote[msg.sender][nomineeHash] = block.timestamp;</span>
+ 524 |     | <span class='neutral'></span>
+ 525 | *   | <span class='executed'>        emit VoteForNominee(msg.sender, account, chainId, weight);</span>
+ 526 |     | <span class='neutral'>    }</span>
+ 527 |     | <span class='neutral'></span>
+ 528 |     | <span class='neutral'>    /// @dev Allocate voting power for changing pool weights in batch.</span>
+ 529 |     | <span class='neutral'>    /// @param accounts Set of nominee addresses in bytes32 form the `msg.sender` votes for.</span>
+ 530 |     | <span class='neutral'>    /// @param chainIds Set of corresponding chain Ids.</span>
+ 531 |     | <span class='neutral'>    /// @param weights Weights for a nominees in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.</span>
+ 532 |     | <span class='unexecuted'>    function voteForNomineeWeightsBatch(</span>
+ 533 |     | <span class='neutral'>        bytes32[] memory accounts,</span>
+ 534 |     | <span class='neutral'>        uint256[] memory chainIds,</span>
+ 535 |     | <span class='neutral'>        uint256[] memory weights</span>
+ 536 |     | <span class='neutral'>    ) external {</span>
+ 537 |     | <span class='unexecuted'>        if (accounts.length != chainIds.length || accounts.length != weights.length) {</span>
+ 538 |     | <span class='unexecuted'>            revert WrongArrayLength(accounts.length, weights.length);</span>
+ 539 |     | <span class='neutral'>        }</span>
+ 540 |     | <span class='neutral'></span>
+ 541 |     | <span class='neutral'>        // Traverse all accounts and weights</span>
+ 542 |     | <span class='unexecuted'>        for (uint256 i = 0; i &lt; accounts.length; ++i) {</span>
+ 543 |     | <span class='unexecuted'>            voteForNomineeWeights(accounts[i], chainIds[i], weights[i]);</span>
+ 544 |     | <span class='neutral'>        }</span>
+ 545 |     | <span class='neutral'>    }</span>
+ 546 |     | <span class='neutral'></span>
+ 547 | *   | <span class='executed'>    function _maxAndSub(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+ 548 | *   | <span class='executed'>        return a &gt; b ? a - b : 0;</span>
+ 549 |     | <span class='neutral'>    }</span>
+ 550 |     | <span class='neutral'></span>
+ 551 |     | <span class='neutral'>    /// @dev Removes nominee from the contract and zeros its weight.</span>
+ 552 |     | <span class='neutral'>    /// @param account Address of the nominee in bytes32 form.</span>
+ 553 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 554 |     | <span class='unexecuted'>    function removeNominee(bytes32 account, uint256 chainId) external {</span>
+ 555 |     | <span class='neutral'>        // Check for the contract ownership</span>
+ 556 |     | <span class='unexecuted'>        if (msg.sender != owner) {</span>
+ 557 |     | <span class='unexecuted'>            revert OwnerOnly(owner, msg.sender);</span>
+ 558 |     | <span class='neutral'>        }</span>
+ 559 |     | <span class='neutral'></span>
+ 560 |     | <span class='neutral'>        // Get the nominee struct and hash</span>
+ 561 |     | <span class='unexecuted'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 562 |     | <span class='unexecuted'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 563 |     | <span class='neutral'></span>
+ 564 |     | <span class='neutral'>        // Get the nominee id in the nominee set</span>
+ 565 |     | <span class='unexecuted'>        uint256 id = mapNomineeIds[nomineeHash];</span>
+ 566 |     | <span class='unexecuted'>        if (id == 0) {</span>
+ 567 |     | <span class='unexecuted'>            revert NomineeDoesNotExist(account, chainId);</span>
+ 568 |     | <span class='neutral'>        }</span>
+ 569 |     | <span class='neutral'></span>
+ 570 |     | <span class='neutral'>        // Set nominee weight to zero</span>
+ 571 |     | <span class='unexecuted'>        uint256 oldWeight = _getWeight(account, chainId);</span>
+ 572 |     | <span class='unexecuted'>        uint256 oldSum = _getSum();</span>
+ 573 |     | <span class='unexecuted'>        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;</span>
+ 574 |     | <span class='unexecuted'>        pointsWeight[nomineeHash][nextTime].bias = 0;</span>
+ 575 |     | <span class='unexecuted'>        timeWeight[nomineeHash] = nextTime;</span>
+ 576 |     | <span class='neutral'></span>
+ 577 |     | <span class='neutral'>        // Account for the the sum weight change</span>
+ 578 |     | <span class='unexecuted'>        uint256 newSum = oldSum - oldWeight;</span>
+ 579 |     | <span class='unexecuted'>        pointsSum[nextTime].bias = newSum;</span>
+ 580 |     | <span class='unexecuted'>        timeSum = nextTime;</span>
+ 581 |     | <span class='neutral'></span>
+ 582 |     | <span class='neutral'>        // Add to the removed nominee map</span>
+ 583 |     | <span class='unexecuted'>        mapRemovedNominees[nomineeHash] = true;</span>
+ 584 |     | <span class='neutral'></span>
+ 585 |     | <span class='neutral'>        // Remove nominee in dispenser, if applicable</span>
+ 586 |     | <span class='unexecuted'>        address localDispenser = dispenser;</span>
+ 587 |     | <span class='unexecuted'>        if (localDispenser != address(0)) {</span>
+ 588 |     | <span class='unexecuted'>            IDispenser(localDispenser).removeNominee(nomineeHash);</span>
+ 589 |     | <span class='neutral'>        }</span>
+ 590 |     | <span class='neutral'></span>
+ 591 |     | <span class='neutral'>        // Remove nominee from the map</span>
+ 592 |     | <span class='unexecuted'>        mapNomineeIds[nomineeHash] = 0;</span>
+ 593 |     | <span class='neutral'>        // Shuffle the current last nominee id in the set to be placed to the removed one</span>
+ 594 |     | <span class='unexecuted'>        nominee = setNominees[setNominees.length - 1];</span>
+ 595 |     | <span class='unexecuted'>        nomineeHash = keccak256(abi.encode(nominee));</span>
+ 596 |     | <span class='unexecuted'>        mapNomineeIds[nomineeHash] = id;</span>
+ 597 |     | <span class='unexecuted'>        setNominees[id] = nominee;</span>
+ 598 |     | <span class='neutral'>        // Pop the last element from the set</span>
+ 599 |     | <span class='unexecuted'>        setNominees.pop();</span>
+ 600 |     | <span class='neutral'></span>
+ 601 |     | <span class='unexecuted'>        emit RemoveNominee(account, chainId, newSum);</span>
+ 602 |     | <span class='neutral'>    }</span>
+ 603 |     | <span class='neutral'></span>
+ 604 |     | <span class='neutral'>    /// @dev Retrieves user voting power from a removed nominee.</span>
+ 605 |     | <span class='neutral'>    /// @param account Address of the nominee in bytes32 form.</span>
+ 606 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 607 |     | <span class='unexecuted'>    function retrieveRemovedNomineeVotingPower(bytes32 account, uint256 chainId) external {</span>
+ 608 |     | <span class='neutral'>        // Get the nominee struct and hash</span>
+ 609 |     | <span class='unexecuted'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 610 |     | <span class='unexecuted'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 611 |     | <span class='neutral'></span>
+ 612 |     | <span class='neutral'>        // Check that the nominee is removed</span>
+ 613 |     | <span class='unexecuted'>        if (!mapRemovedNominees[nomineeHash]) {</span>
+ 614 |     | <span class='unexecuted'>            revert NomineeNotRemoved(account, chainId);</span>
+ 615 |     | <span class='neutral'>        }</span>
+ 616 |     | <span class='neutral'></span>
+ 617 |     | <span class='neutral'>        // Get the user old slope</span>
+ 618 |     | <span class='unexecuted'>        VotedSlope memory oldSlope = voteUserSlopes[msg.sender][nomineeHash];</span>
+ 619 |     | <span class='unexecuted'>        if (oldSlope.power == 0) {</span>
+ 620 |     | <span class='unexecuted'>            revert ZeroValue();</span>
+ 621 |     | <span class='neutral'>        }</span>
+ 622 |     | <span class='neutral'></span>
+ 623 |     | <span class='neutral'>        // Cancel old slope changes if they still didn&#39;t happen</span>
+ 624 |     | <span class='unexecuted'>        if (oldSlope.end &gt; block.timestamp) {</span>
+ 625 |     | <span class='unexecuted'>            changesWeight[nomineeHash][oldSlope.end] -= oldSlope.slope;</span>
+ 626 |     | <span class='unexecuted'>            changesSum[oldSlope.end] -= oldSlope.slope;</span>
+ 627 |     | <span class='neutral'>        }</span>
+ 628 |     | <span class='neutral'></span>
+ 629 |     | <span class='neutral'>        // Update the voting power</span>
+ 630 |     | <span class='unexecuted'>        uint256 powerUsed = voteUserPower[msg.sender];</span>
+ 631 |     | <span class='unexecuted'>        powerUsed = powerUsed - oldSlope.power;</span>
+ 632 |     | <span class='unexecuted'>        voteUserPower[msg.sender] = powerUsed;</span>
+ 633 |     | <span class='unexecuted'>        delete voteUserSlopes[msg.sender][nomineeHash];</span>
+ 634 |     | <span class='neutral'>    }</span>
+ 635 |     | <span class='neutral'></span>
+ 636 |     | <span class='neutral'>    /// @dev Get current nominee weight.</span>
+ 637 |     | <span class='neutral'>    /// @param account Address of the nominee in bytes32 form.</span>
+ 638 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 639 |     | <span class='neutral'>    /// @return Nominee weight.</span>
+ 640 |     | <span class='unexecuted'>    function getNomineeWeight(bytes32 account, uint256 chainId) external view returns (uint256) {</span>
+ 641 |     | <span class='neutral'>        // Get the nominee struct and hash</span>
+ 642 |     | <span class='unexecuted'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 643 |     | <span class='unexecuted'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 644 |     | <span class='neutral'></span>
+ 645 |     | <span class='unexecuted'>        return pointsWeight[nomineeHash][timeWeight[nomineeHash]].bias;</span>
+ 646 |     | <span class='neutral'>    }</span>
+ 647 |     | <span class='neutral'>    </span>
+ 648 |     | <span class='neutral'>    /// @dev Get sum of nominee weights.</span>
+ 649 |     | <span class='neutral'>    /// @return Sum of nominee weights.</span>
+ 650 |     | <span class='unexecuted'>    function getWeightsSum() external view returns (uint256) {</span>
+ 651 |     | <span class='unexecuted'>        return pointsSum[timeSum].bias;</span>
+ 652 |     | <span class='neutral'>    }</span>
+ 653 |     | <span class='neutral'></span>
+ 654 |     | <span class='neutral'>    /// @dev Get the total number of nominees.</span>
+ 655 |     | <span class='neutral'>    /// @notice The zero-th default nominee Id with id == 0 does not count.</span>
+ 656 |     | <span class='neutral'>    /// @return Total number of nominees.</span>
+ 657 | *   | <span class='executed'>    function getNumNominees() external view returns (uint256) {</span>
+ 658 | *   | <span class='executed'>        return setNominees.length - 1;</span>
+ 659 |     | <span class='neutral'>    }</span>
+ 660 |     | <span class='neutral'></span>
+ 661 |     | <span class='neutral'>    /// @dev Gets a full set of nominees.</span>
+ 662 |     | <span class='neutral'>    /// @notice The returned set includes the zero-th empty nominee instance.</span>
+ 663 |     | <span class='neutral'>    /// @return nominees Set of all the nominees in the contract.</span>
+ 664 |     | <span class='unexecuted'>    function getAllNominees() external view returns (Nominee[] memory nominees) {</span>
+ 665 |     | <span class='unexecuted'>        nominees = setNominees;</span>
+ 666 |     | <span class='neutral'>    }</span>
+ 667 |     | <span class='neutral'></span>
+ 668 |     | <span class='neutral'>    /// @dev Gets the nominee Id in the global nominees set.</span>
+ 669 |     | <span class='neutral'>    /// @param account Nominee address in bytes32 form.</span>
+ 670 |     | <span class='neutral'>    /// @param chainId Chain Id.</span>
+ 671 |     | <span class='neutral'>    /// @return id Nominee Id in the global set of Nominee struct values.</span>
+ 672 | *   | <span class='executed'>    function getNomineeId(bytes32 account, uint256 chainId) external view returns (uint256 id) {</span>
+ 673 |     | <span class='neutral'>        // Get the nominee struct and hash</span>
+ 674 | *   | <span class='executed'>        Nominee memory nominee = Nominee(account, chainId);</span>
+ 675 | *   | <span class='executed'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 676 |     | <span class='neutral'></span>
+ 677 | *   | <span class='executed'>        id = mapNomineeIds[nomineeHash];</span>
+ 678 |     | <span class='neutral'>    }</span>
+ 679 |     | <span class='neutral'></span>
+ 680 |     | <span class='neutral'>    /// @dev Get the nominee address and its corresponding chain Id.</span>
+ 681 |     | <span class='neutral'>    /// @notice The zero-th default nominee Id with id == 0 does not count.</span>
+ 682 |     | <span class='neutral'>    /// @param id Nominee Id in the global set of Nominee struct values.</span>
+ 683 |     | <span class='neutral'>    /// @return nominee Nominee address in bytes32 form and chain Id.</span>
+ 684 |     | <span class='unexecuted'>    function getNominee(uint256 id) external view returns (Nominee memory nominee) {</span>
+ 685 |     | <span class='neutral'>        // Get the total number of nominees in the contract</span>
+ 686 |     | <span class='unexecuted'>        uint256 totalNumNominees = setNominees.length - 1;</span>
+ 687 |     | <span class='neutral'>        // Check for the zero id or the overflow</span>
+ 688 |     | <span class='unexecuted'>        if (id == 0) {</span>
+ 689 |     | <span class='unexecuted'>            revert ZeroValue();</span>
+ 690 |     | <span class='unexecuted'>        } else if (id &gt; totalNumNominees) {</span>
+ 691 |     | <span class='unexecuted'>            revert Overflow(id, totalNumNominees);</span>
+ 692 |     | <span class='neutral'>        }</span>
+ 693 |     | <span class='neutral'></span>
+ 694 |     | <span class='unexecuted'>        nominee = setNominees[id];</span>
+ 695 |     | <span class='neutral'>    }</span>
+ 696 |     | <span class='neutral'></span>
+ 697 |     | <span class='neutral'>    /// @dev Get the set of nominee addresses and corresponding chain Ids.</span>
+ 698 |     | <span class='neutral'>    /// @notice The zero-th default nominee Id with id == 0 does not count.</span>
+ 699 |     | <span class='neutral'>    /// @param startId Start Id of the nominee in the global set of Nominee struct values.</span>
+ 700 |     | <span class='neutral'>    /// @param numNominees Number of nominees to get.</span>
+ 701 |     | <span class='neutral'>    /// @return nominees Set of nominee accounts in bytes32 form and chain Ids.</span>
+ 702 |     | <span class='unexecuted'>    function getNominees(</span>
+ 703 |     | <span class='neutral'>        uint256 startId,</span>
+ 704 |     | <span class='neutral'>        uint256 numNominees</span>
+ 705 |     | <span class='unexecuted'>    ) external view returns (Nominee[] memory nominees)</span>
+ 706 |     | <span class='unexecuted'>    {</span>
+ 707 |     | <span class='neutral'>        // Check for the zero id or the overflow</span>
+ 708 |     | <span class='unexecuted'>        if (startId == 0 || numNominees == 0) {</span>
+ 709 |     | <span class='unexecuted'>            revert ZeroValue();</span>
+ 710 |     | <span class='neutral'>        }</span>
+ 711 |     | <span class='neutral'></span>
+ 712 |     | <span class='neutral'>        // Get the last nominee Id requested</span>
+ 713 |     | <span class='unexecuted'>        uint256 endId = startId + numNominees;</span>
+ 714 |     | <span class='neutral'>        // Get the total number of nominees in the contract with the zero-th nominee</span>
+ 715 |     | <span class='unexecuted'>        uint256 totalNumNominees = setNominees.length;</span>
+ 716 |     | <span class='neutral'></span>
+ 717 |     | <span class='neutral'>        // Check for the overflow</span>
+ 718 |     | <span class='unexecuted'>        if (endId &gt; totalNumNominees) {</span>
+ 719 |     | <span class='unexecuted'>            revert Overflow(endId, totalNumNominees);</span>
+ 720 |     | <span class='neutral'>        }</span>
+ 721 |     | <span class='neutral'></span>
+ 722 |     | <span class='neutral'>        // Allocate the nominee array</span>
+ 723 |     | <span class='unexecuted'>        nominees = new Nominee[](numNominees);</span>
+ 724 |     | <span class='neutral'></span>
+ 725 |     | <span class='neutral'>        // Traverse selected nominees</span>
+ 726 |     | <span class='unexecuted'>        for (uint256 i = 0; i &lt; numNominees; ++i) {</span>
+ 727 |     | <span class='unexecuted'>            uint256 id = i + startId;</span>
+ 728 |     | <span class='neutral'>            // Get the nominee struct</span>
+ 729 |     | <span class='unexecuted'>            nominees[i] = setNominees[id];</span>
+ 730 |     | <span class='neutral'>        }</span>
+ 731 |     | <span class='neutral'>    }</span>
+ 732 |     | <span class='neutral'></span>
+ 733 |     | <span class='neutral'>    /// @dev Gets next allowed voting time for selected nominees and voters.</span>
+ 734 |     | <span class='neutral'>    /// @notice The function does not check for repeated nominees and voters.</span>
+ 735 |     | <span class='neutral'>    /// @param accounts Set of nominee account addresses.</span>
+ 736 |     | <span class='neutral'>    /// @param chainIds Corresponding set of chain Ids.</span>
+ 737 |     | <span class='neutral'>    /// @param voters Corresponding set of voters for specified nominees.</span>
+ 738 |     | <span class='unexecuted'>    function getNextAllowedVotingTimes(</span>
+ 739 |     | <span class='neutral'>        bytes32[] memory accounts,</span>
+ 740 |     | <span class='neutral'>        uint256[] memory chainIds,</span>
+ 741 |     | <span class='neutral'>        address[] memory voters</span>
+ 742 |     | <span class='unexecuted'>    ) external view returns (uint256[] memory nextAllowedVotingTimes) {</span>
+ 743 |     | <span class='neutral'>        // Check array lengths</span>
+ 744 |     | <span class='unexecuted'>        if (accounts.length != chainIds.length || accounts.length != voters.length) {</span>
+ 745 |     | <span class='unexecuted'>            revert WrongArrayLength(accounts.length, chainIds.length);</span>
+ 746 |     | <span class='neutral'>        }</span>
+ 747 |     | <span class='neutral'></span>
+ 748 |     | <span class='neutral'>        // Allocate the times array</span>
+ 749 |     | <span class='unexecuted'>        nextAllowedVotingTimes = new uint256[](accounts.length);</span>
+ 750 |     | <span class='neutral'></span>
+ 751 |     | <span class='neutral'>        // Traverse nominees and get next available voting times</span>
+ 752 |     | <span class='unexecuted'>        for (uint256 i = 0; i &lt; accounts.length; ++i) {</span>
+ 753 |     | <span class='neutral'>            // Get the nominee struct and hash</span>
+ 754 |     | <span class='unexecuted'>            Nominee memory nominee = Nominee(accounts[i], chainIds[i]);</span>
+ 755 |     | <span class='unexecuted'>            bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 756 |     | <span class='neutral'></span>
+ 757 |     | <span class='neutral'>            // Check for nominee existence</span>
+ 758 |     | <span class='unexecuted'>            if (mapNomineeIds[nomineeHash] == 0) {</span>
+ 759 |     | <span class='unexecuted'>                revert NomineeDoesNotExist(accounts[i], chainIds[i]);</span>
+ 760 |     | <span class='neutral'>            }</span>
+ 761 |     | <span class='neutral'></span>
+ 762 |     | <span class='neutral'>            // Calculate next allowed voting times</span>
+ 763 |     | <span class='unexecuted'>            nextAllowedVotingTimes[i] = lastUserVote[voters[i]][nomineeHash] + WEIGHT_VOTE_DELAY;</span>
+ 764 |     | <span class='neutral'>        }</span>
+ 765 |     | <span class='neutral'>    }</span>
+ 766 |     | <span class='neutral'></span>
+ 767 |     | <span class='neutral'>    /// @dev For fuzzing only</span>
+ 768 | *   | <span class='executed'>    function setCallVoteForNomineeWeights(bool flag) external {</span>
+ 769 | *   | <span class='executed'>        callVoteForNomineeWeights = flag;</span>
+ 770 |     | <span class='neutral'>    }</span>
+ 771 |     | <span class='neutral'></span>
+ 772 |     | <span class='neutral'>    /// @dev For fuzzing only</span>
+ 773 |     | <span class='unexecuted'>    function getlastUserVote(bytes32 _nominee, uint256 chainId) external view returns (uint256) {</span>
+ 774 |     | <span class='neutral'>        // account occupies first 160 bits</span>
+ 775 |     | <span class='unexecuted'>        Nominee memory nominee = Nominee(_nominee, chainId);</span>
+ 776 |     | <span class='unexecuted'>        bytes32 nomineeHash = keccak256(abi.encode(nominee));</span>
+ 777 |     | <span class='neutral'></span>
+ 778 |     | <span class='unexecuted'>        return lastUserVote[msg.sender][nomineeHash];</span>
+ 779 |     | <span class='neutral'>    }</span>
+ 780 |     | <span class='neutral'>}</span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/contracts/veOLAS.sol</b>
+<code>
+   1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+   2 |     | <span class='neutral'>pragma solidity ^0.8.15;</span>
+   3 |     | <span class='neutral'></span>
+   4 |     | <span class='neutral'>import &quot;@openzeppelin/contracts/governance/utils/IVotes.sol&quot;;</span>
+   5 |     | <span class='neutral'>import &quot;@openzeppelin/contracts/token/ERC20/IERC20.sol&quot;;</span>
+   6 |     | <span class='neutral'>import &quot;@openzeppelin/contracts/utils/introspection/IERC165.sol&quot;;</span>
+   7 |     | <span class='neutral'>import &quot;./interfaces/IErrors.sol&quot;;</span>
+   8 |     | <span class='neutral'></span>
+   9 |     | <span class='neutral'>/**</span>
+  10 |     | <span class='neutral'>Votes have a weight depending on time, so that users are committed to the future of (whatever they are voting for).</span>
+  11 |     | <span class='neutral'>Vote weight decays linearly over time. Lock time cannot be more than `MAXTIME` (4 years).</span>
+  12 |     | <span class='neutral'>Voting escrow has time-weighted votes derived from the amount of tokens locked. The maximum voting power can be</span>
+  13 |     | <span class='neutral'>achieved with the longest lock possible. This way the users are incentivized to lock tokens for more time.</span>
+  14 |     | <span class='neutral'># w ^ = amount * time_locked / MAXTIME</span>
+  15 |     | <span class='neutral'># 1 +        /</span>
+  16 |     | <span class='neutral'>#   |      /</span>
+  17 |     | <span class='neutral'>#   |    /</span>
+  18 |     | <span class='neutral'>#   |  /</span>
+  19 |     | <span class='neutral'>#   |/</span>
+  20 |     | <span class='neutral'># 0 +--------+------&gt; time</span>
+  21 |     | <span class='neutral'>#       maxtime (4 years?)</span>
+  22 |     | <span class='neutral'></span>
+  23 |     | <span class='neutral'>We cannot really do block numbers per se because slope is per time, not per block, and per block could be fairly bad</span>
+  24 |     | <span class='neutral'>because Ethereum changes its block times. What we can do is to extrapolate ***At functions.</span>
+  25 |     | <span class='neutral'>*/</span>
+  26 |     | <span class='neutral'></span>
+  27 |     | <span class='neutral'>/// @title Voting Escrow OLAS - the workflow is ported from Curve Finance Vyper implementation</span>
+  28 |     | <span class='neutral'>/// @author Aleksandr Kuperman - &lt;aleksandr.kuperman@valory.xyz&gt;</span>
+  29 |     | <span class='neutral'>/// Code ported from: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/VotingEscrow.vy</span>
+  30 |     | <span class='neutral'>/// and: https://github.com/solidlyexchange/solidly/blob/master/contracts/ve.sol</span>
+  31 |     | <span class='neutral'></span>
+  32 |     | <span class='neutral'>/* This VotingEscrow is based on the OLAS token that has the following specifications:</span>
+  33 |     | <span class='neutral'>*  - For the first 10 years there will be the cap of 1 billion (1e27) tokens;</span>
+  34 |     | <span class='neutral'>*  - After 10 years, the inflation rate is 2% per year.</span>
+  35 |     | <span class='neutral'>* The maximum number of tokens for each year then can be calculated from the formula: 2^n = 1e27 * (1.02)^x,</span>
+  36 |     | <span class='neutral'>* where n is the specified number of bits that is sufficient to store and not overflow the total supply,</span>
+  37 |     | <span class='neutral'>* and x is the number of years. We limit n by 128, thus it would take 1340+ years to reach that total supply.</span>
+  38 |     | <span class='neutral'>* The amount for each locker is eventually cannot overcome this number as well, and thus uint128 is sufficient.</span>
+  39 |     | <span class='neutral'>*</span>
+  40 |     | <span class='neutral'>* We then limit the time in seconds to last until the value of 2^64 - 1, or for the next 583+ billion years.</span>
+  41 |     | <span class='neutral'>* The number of blocks is essentially cannot be bigger than the number of seconds, and thus it is safe to assume</span>
+  42 |     | <span class='neutral'>* that uint64 for the number of blocks is also sufficient.</span>
+  43 |     | <span class='neutral'>*</span>
+  44 |     | <span class='neutral'>* We also limit the individual deposit amount to be no bigger than 2^96 - 1, or the value of total supply in 220+ years.</span>
+  45 |     | <span class='neutral'>* This limitation is dictated by the fact that there will be at least several accounts with locked tokens, and the</span>
+  46 |     | <span class='neutral'>* sum of all of them cannot be bigger than the total supply. Checking the limit of deposited / increased amount</span>
+  47 |     | <span class='neutral'>* allows us to perform the unchecked operation on adding the amounts.</span>
+  48 |     | <span class='neutral'>*</span>
+  49 |     | <span class='neutral'>* The rest of calculations throughout the contract do not go beyond specified limitations. The contract was checked</span>
+  50 |     | <span class='neutral'>* by echidna and the results can be found in the audit section of the repository.</span>
+  51 |     | <span class='neutral'>*</span>
+  52 |     | <span class='neutral'>* These specified limits allowed us to have storage-added structs to be bound by 2*256 and 1*256 bit sizes</span>
+  53 |     | <span class='neutral'>* respectively, thus limiting the gas amount compared to using bigger variable sizes.</span>
+  54 |     | <span class='neutral'>*</span>
+  55 |     | <span class='neutral'>* Note that after 220 years it is no longer possible to deposit / increase the locked amount to be bigger than 2^96 - 1.</span>
+  56 |     | <span class='neutral'>* It is going to be not safe to use this contract for governance after 1340 years.</span>
+  57 |     | <span class='neutral'>*/</span>
+  58 |     | <span class='neutral'></span>
+  59 |     | <span class='neutral'>// Struct for storing balance and unlock time</span>
+  60 |     | <span class='neutral'>// The struct size is one storage slot of uint256 (128 + 64 + padding)</span>
+  61 |     | <span class='neutral'>struct LockedBalance {</span>
+  62 |     | <span class='neutral'>    // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.</span>
+  63 |     | <span class='neutral'>    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1</span>
+  64 |     | <span class='neutral'>    uint128 amount;</span>
+  65 |     | <span class='neutral'>    // Unlock time. It will never practically be bigger</span>
+  66 |     | <span class='neutral'>    uint64 endTime;</span>
+  67 |     | <span class='neutral'>}</span>
+  68 |     | <span class='neutral'></span>
+  69 |     | <span class='neutral'>// Structure for voting escrow points</span>
+  70 |     | <span class='neutral'>// The struct size is two storage slots of 2 * uint256 (128 + 128 + 64 + 64 + 128)</span>
+  71 |     | <span class='neutral'>struct PointVoting {</span>
+  72 |     | <span class='neutral'>    // w(i) = at + b (bias)</span>
+  73 |     | <span class='neutral'>    int128 bias;</span>
+  74 |     | <span class='neutral'>    // dw / dt = a (slope)</span>
+  75 |     | <span class='neutral'>    int128 slope;</span>
+  76 |     | <span class='neutral'>    // Timestamp. It will never practically be bigger than 2^64 - 1</span>
+  77 |     | <span class='neutral'>    uint64 ts;</span>
+  78 |     | <span class='neutral'>    // Block number. It will not be bigger than the timestamp</span>
+  79 |     | <span class='neutral'>    uint64 blockNumber;</span>
+  80 |     | <span class='neutral'>    // Token amount. It will never practically be bigger. Initial OLAS cap is 1 bn tokens, or 1e27.</span>
+  81 |     | <span class='neutral'>    // After 10 years, the inflation rate is 2% per year. It would take 1340+ years to reach 2^128 - 1</span>
+  82 |     | <span class='neutral'>    uint128 balance;</span>
+  83 |     | <span class='neutral'>}</span>
+  84 |     | <span class='neutral'></span>
+  85 |     | <span class='neutral'>/// @notice This token supports the ERC20 interface specifications except for transfers and approvals.</span>
+  86 | *   | <span class='executed'>contract veOLAS is IErrors, IVotes, IERC20, IERC165 {</span>
+  87 |     | <span class='neutral'>    enum DepositType {</span>
+  88 |     | <span class='neutral'>        DEPOSIT_FOR_TYPE,</span>
+  89 |     | <span class='neutral'>        CREATE_LOCK_TYPE,</span>
+  90 |     | <span class='neutral'>        INCREASE_LOCK_AMOUNT,</span>
+  91 |     | <span class='neutral'>        INCREASE_UNLOCK_TIME</span>
+  92 |     | <span class='neutral'>    }</span>
+  93 |     | <span class='neutral'></span>
+  94 |     | <span class='neutral'>    event Deposit(address indexed account, uint256 amount, uint256 locktime, DepositType depositType, uint256 ts);</span>
+  95 |     | <span class='neutral'>    event Withdraw(address indexed account, uint256 amount, uint256 ts);</span>
+  96 |     | <span class='neutral'>    event Supply(uint256 previousSupply, uint256 currentSupply);</span>
+  97 |     | <span class='neutral'></span>
+  98 |     | <span class='neutral'>    // 1 week time</span>
+  99 | *   | <span class='executed'>    uint64 internal constant WEEK = 1 weeks;</span>
+ 100 |     | <span class='neutral'>    // Maximum lock time (4 years)</span>
+ 101 | *   | <span class='executed'>    uint256 internal constant MAXTIME = 4 * 365 * 86400;</span>
+ 102 |     | <span class='neutral'>    // Maximum lock time (4 years) in int128</span>
+ 103 | *   | <span class='executed'>    int128 internal constant IMAXTIME = 4 * 365 * 86400;</span>
+ 104 |     | <span class='neutral'>    // Number of decimals</span>
+ 105 |     | <span class='unexecuted'>    uint8 public constant decimals = 18;</span>
+ 106 |     | <span class='neutral'></span>
+ 107 |     | <span class='neutral'>    // Token address</span>
+ 108 |     | <span class='unexecuted'>    address public immutable token;</span>
+ 109 |     | <span class='neutral'>    // Total token supply</span>
+ 110 |     | <span class='unexecuted'>    uint256 public supply;</span>
+ 111 |     | <span class='neutral'>    // Mapping of account address =&gt; LockedBalance</span>
+ 112 | *   | <span class='executed'>    mapping(address =&gt; LockedBalance) public mapLockedBalances;</span>
+ 113 |     | <span class='neutral'></span>
+ 114 |     | <span class='neutral'>    // Total number of economical checkpoints (starting from zero)</span>
+ 115 |     | <span class='unexecuted'>    uint256 public totalNumPoints;</span>
+ 116 |     | <span class='neutral'>    // Mapping of point Id =&gt; point</span>
+ 117 |     | <span class='unexecuted'>    mapping(uint256 =&gt; PointVoting) public mapSupplyPoints;</span>
+ 118 |     | <span class='neutral'>    // Mapping of account address =&gt; PointVoting[point Id]</span>
+ 119 |     | <span class='unexecuted'>    mapping(address =&gt; PointVoting[]) public mapUserPoints;</span>
+ 120 |     | <span class='neutral'>    // Mapping of time =&gt; signed slope change</span>
+ 121 |     | <span class='unexecuted'>    mapping(uint64 =&gt; int128) public mapSlopeChanges;</span>
+ 122 |     | <span class='neutral'></span>
+ 123 |     | <span class='neutral'>    // Voting token name</span>
+ 124 |     | <span class='unexecuted'>    string public name;</span>
+ 125 |     | <span class='neutral'>    // Voting token symbol</span>
+ 126 |     | <span class='unexecuted'>    string public symbol;</span>
+ 127 |     | <span class='neutral'></span>
+ 128 |     | <span class='neutral'>    /// @dev Contract constructor</span>
+ 129 |     | <span class='neutral'>    /// @param _token Token address.</span>
+ 130 |     | <span class='neutral'>    /// @param _name Token name.</span>
+ 131 |     | <span class='neutral'>    /// @param _symbol Token symbol.</span>
+ 132 |     | <span class='unexecuted'>    constructor(address _token, string memory _name, string memory _symbol)</span>
+ 133 |     | <span class='neutral'>    {</span>
+ 134 |     | <span class='unexecuted'>        token = _token;</span>
+ 135 |     | <span class='unexecuted'>        name = _name;</span>
+ 136 |     | <span class='unexecuted'>        symbol = _symbol;</span>
+ 137 |     | <span class='neutral'>        // Create initial point such that default timestamp and block number are not zero</span>
+ 138 |     | <span class='neutral'>        // See cast specification in the PointVoting structure</span>
+ 139 |     | <span class='unexecuted'>        mapSupplyPoints[0] = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);</span>
+ 140 |     | <span class='neutral'>    }</span>
+ 141 |     | <span class='neutral'></span>
+ 142 |     | <span class='neutral'>    /// @dev Gets the most recently recorded user point for `account`.</span>
+ 143 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 144 |     | <span class='neutral'>    /// @return pv Last checkpoint.</span>
+ 145 | *   | <span class='executed'>    function getLastUserPoint(address account) external view returns (PointVoting memory pv) {</span>
+ 146 | *   | <span class='executed'>        uint256 lastPointNumber = mapUserPoints[account].length;</span>
+ 147 | *   | <span class='executed'>        if (lastPointNumber &gt; 0) {</span>
+ 148 | *   | <span class='executed'>            pv = mapUserPoints[account][lastPointNumber - 1];</span>
+ 149 |     | <span class='neutral'>        }</span>
+ 150 |     | <span class='neutral'>    }</span>
+ 151 |     | <span class='neutral'></span>
+ 152 |     | <span class='neutral'>    /// @dev Gets the number of user points.</span>
+ 153 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 154 |     | <span class='neutral'>    /// @return accountNumPoints Number of user points.</span>
+ 155 |     | <span class='unexecuted'>    function getNumUserPoints(address account) external view returns (uint256 accountNumPoints) {</span>
+ 156 |     | <span class='unexecuted'>        accountNumPoints = mapUserPoints[account].length;</span>
+ 157 |     | <span class='neutral'>    }</span>
+ 158 |     | <span class='neutral'></span>
+ 159 |     | <span class='neutral'>    /// @dev Gets the checkpoint structure at number `idx` for `account`.</span>
+ 160 |     | <span class='neutral'>    /// @notice The out of bound condition is treated by the default code generation check.</span>
+ 161 |     | <span class='neutral'>    /// @param account User wallet address.</span>
+ 162 |     | <span class='neutral'>    /// @param idx User point number.</span>
+ 163 |     | <span class='neutral'>    /// @return The requested checkpoint.</span>
+ 164 |     | <span class='unexecuted'>    function getUserPoint(address account, uint256 idx) external view returns (PointVoting memory) {</span>
+ 165 |     | <span class='unexecuted'>        return mapUserPoints[account][idx];</span>
+ 166 |     | <span class='neutral'>    }</span>
+ 167 |     | <span class='neutral'></span>
+ 168 |     | <span class='neutral'>    /// @dev Record global and per-user data to checkpoint.</span>
+ 169 |     | <span class='neutral'>    /// @param account Account address. User checkpoint is skipped if the address is zero.</span>
+ 170 |     | <span class='neutral'>    /// @param oldLocked Previous locked amount / end lock time for the user.</span>
+ 171 |     | <span class='neutral'>    /// @param newLocked New locked amount / end lock time for the user.</span>
+ 172 |     | <span class='neutral'>    /// @param curSupply Current total supply (to avoid using a storage total supply variable)</span>
+ 173 | *   | <span class='executed'>    function _checkpoint(</span>
+ 174 |     | <span class='neutral'>        address account,</span>
+ 175 |     | <span class='neutral'>        LockedBalance memory oldLocked,</span>
+ 176 |     | <span class='neutral'>        LockedBalance memory newLocked,</span>
+ 177 |     | <span class='neutral'>        uint128 curSupply</span>
+ 178 | *   | <span class='executed'>    ) internal {</span>
+ 179 | *   | <span class='executed'>        PointVoting memory uOld;</span>
+ 180 | *   | <span class='executed'>        PointVoting memory uNew;</span>
+ 181 | *   | <span class='executed'>        int128 oldDSlope;</span>
+ 182 | *   | <span class='executed'>        int128 newDSlope;</span>
+ 183 | *   | <span class='executed'>        uint256 curNumPoint = totalNumPoints;</span>
+ 184 |     | <span class='neutral'></span>
+ 185 | *   | <span class='executed'>        if (account != address(0)) {</span>
+ 186 |     | <span class='neutral'>            // Calculate slopes and biases</span>
+ 187 |     | <span class='neutral'>            // Kept at zero when they have to</span>
+ 188 | *   | <span class='executed'>            if (oldLocked.endTime &gt; block.timestamp &amp;&amp; oldLocked.amount &gt; 0) {</span>
+ 189 |     | <span class='unexecuted'>                uOld.slope = int128(oldLocked.amount) / IMAXTIME;</span>
+ 190 |     | <span class='unexecuted'>                uOld.bias = uOld.slope * int128(uint128(oldLocked.endTime - uint64(block.timestamp)));</span>
+ 191 |     | <span class='neutral'>            }</span>
+ 192 | *   | <span class='executed'>            if (newLocked.endTime &gt; block.timestamp &amp;&amp; newLocked.amount &gt; 0) {</span>
+ 193 | *   | <span class='executed'>                uNew.slope = int128(newLocked.amount) / IMAXTIME;</span>
+ 194 | *   | <span class='executed'>                uNew.bias = uNew.slope * int128(uint128(newLocked.endTime - uint64(block.timestamp)));</span>
+ 195 |     | <span class='neutral'>            }</span>
+ 196 |     | <span class='neutral'></span>
+ 197 |     | <span class='neutral'>            // Reads values of scheduled changes in the slope</span>
+ 198 |     | <span class='neutral'>            // oldLocked.endTime can be in the past and in the future</span>
+ 199 |     | <span class='neutral'>            // newLocked.endTime can ONLY be in the FUTURE unless everything is expired: then zeros</span>
+ 200 | *   | <span class='executed'>            oldDSlope = mapSlopeChanges[oldLocked.endTime];</span>
+ 201 | *   | <span class='executed'>            if (newLocked.endTime &gt; 0) {</span>
+ 202 | *   | <span class='executed'>                if (newLocked.endTime == oldLocked.endTime) {</span>
+ 203 |     | <span class='unexecuted'>                    newDSlope = oldDSlope;</span>
+ 204 |     | <span class='neutral'>                } else {</span>
+ 205 | *   | <span class='executed'>                    newDSlope = mapSlopeChanges[newLocked.endTime];</span>
+ 206 |     | <span class='neutral'>                }</span>
+ 207 |     | <span class='neutral'>            }</span>
+ 208 |     | <span class='neutral'>        }</span>
+ 209 |     | <span class='neutral'></span>
+ 210 | *   | <span class='executed'>        PointVoting memory lastPoint;</span>
+ 211 | *   | <span class='executed'>        if (curNumPoint &gt; 0) {</span>
+ 212 |     | <span class='unexecuted'>            lastPoint = mapSupplyPoints[curNumPoint];</span>
+ 213 |     | <span class='neutral'>        } else {</span>
+ 214 |     | <span class='neutral'>            // If no point is created yet, we take the actual time and block parameters</span>
+ 215 | *   | <span class='executed'>            lastPoint = PointVoting(0, 0, uint64(block.timestamp), uint64(block.number), 0);</span>
+ 216 |     | <span class='neutral'>        }</span>
+ 217 | *   | <span class='executed'>        uint64 lastCheckpoint = lastPoint.ts;</span>
+ 218 |     | <span class='neutral'>        // initialPoint is used for extrapolation to calculate the block number and save them</span>
+ 219 |     | <span class='neutral'>        // as we cannot figure that out in exact values from inside of the contract</span>
+ 220 | *   | <span class='executed'>        PointVoting memory initialPoint = lastPoint;</span>
+ 221 | *   | <span class='executed'>        uint256 block_slope; // dblock/dt</span>
+ 222 | *   | <span class='executed'>        if (block.timestamp &gt; lastPoint.ts) {</span>
+ 223 |     | <span class='neutral'>            // This 1e18 multiplier is needed for the numerator to be bigger than the denominator</span>
+ 224 |     | <span class='neutral'>            // We need to calculate this in &gt; uint64 size (1e18 is &gt; 2^59 multiplied by 2^64).</span>
+ 225 |     | <span class='unexecuted'>            block_slope = (1e18 * uint256(block.number - lastPoint.blockNumber)) / uint256(block.timestamp - lastPoint.ts);</span>
+ 226 |     | <span class='neutral'>        }</span>
+ 227 |     | <span class='neutral'>        // If last point is already recorded in this block, slope == 0, but we know the block already in this case</span>
+ 228 |     | <span class='neutral'>        // Go over weeks to fill in the history and (or) calculate what the current point is</span>
+ 229 | *   | <span class='executed'>        {</span>
+ 230 |     | <span class='neutral'>            // The timestamp is rounded by a week and &lt; 2^64-1</span>
+ 231 | *   | <span class='executed'>            uint64 tStep = (lastCheckpoint / WEEK) * WEEK;</span>
+ 232 | *   | <span class='executed'>            for (uint256 i = 0; i &lt; 255; ++i) {</span>
+ 233 |     | <span class='neutral'>                // Hopefully it won&#39;t happen that this won&#39;t get used in 5 years!</span>
+ 234 |     | <span class='neutral'>                // If it does, users will be able to withdraw but vote weight will be broken</span>
+ 235 |     | <span class='neutral'>                // This is always practically &lt; 2^64-1</span>
+ 236 |     | <span class='neutral'>                unchecked {</span>
+ 237 | *   | <span class='executed'>                    tStep += WEEK;</span>
+ 238 |     | <span class='neutral'>                }</span>
+ 239 | *   | <span class='executed'>                int128 dSlope;</span>
+ 240 | *   | <span class='executed'>                if (tStep &gt; block.timestamp) {</span>
+ 241 | *   | <span class='executed'>                    tStep = uint64(block.timestamp);</span>
+ 242 |     | <span class='neutral'>                } else {</span>
+ 243 |     | <span class='unexecuted'>                    dSlope = mapSlopeChanges[tStep];</span>
+ 244 |     | <span class='neutral'>                }</span>
+ 245 | *   | <span class='executed'>                lastPoint.bias -= lastPoint.slope * int128(int64(tStep - lastCheckpoint));</span>
+ 246 | *   | <span class='executed'>                lastPoint.slope += dSlope;</span>
+ 247 | *   | <span class='executed'>                if (lastPoint.bias &lt; 0) {</span>
+ 248 |     | <span class='neutral'>                    // This could potentially happen, but fuzzer didn&#39;t find available &quot;real&quot; combinations</span>
+ 249 |     | <span class='unexecuted'>                    lastPoint.bias = 0;</span>
+ 250 |     | <span class='neutral'>                }</span>
+ 251 | *   | <span class='executed'>                if (lastPoint.slope &lt; 0) {</span>
+ 252 |     | <span class='neutral'>                    // This cannot happen - just in case. Again, fuzzer didn&#39;t reach this</span>
+ 253 |     | <span class='unexecuted'>                    lastPoint.slope = 0;</span>
+ 254 |     | <span class='neutral'>                }</span>
+ 255 | *   | <span class='executed'>                lastCheckpoint = tStep;</span>
+ 256 | *   | <span class='executed'>                lastPoint.ts = tStep;</span>
+ 257 |     | <span class='neutral'>                // After division by 1e18 the uint64 size can be reclaimed</span>
+ 258 | *   | <span class='executed'>                lastPoint.blockNumber = initialPoint.blockNumber + uint64((block_slope * uint256(tStep - initialPoint.ts)) / 1e18);</span>
+ 259 | *   | <span class='executed'>                lastPoint.balance = initialPoint.balance;</span>
+ 260 |     | <span class='neutral'>                // In order for the overflow of total number of economical checkpoints (starting from zero)</span>
+ 261 |     | <span class='neutral'>                // The _checkpoint() call must happen n &gt;(2^256 -1)/255 or n &gt; ~1e77/255 &gt; ~1e74 times</span>
+ 262 |     | <span class='neutral'>                unchecked {</span>
+ 263 | *   | <span class='executed'>                    curNumPoint += 1;    </span>
+ 264 |     | <span class='neutral'>                }</span>
+ 265 | *   | <span class='executed'>                if (tStep == block.timestamp) {</span>
+ 266 | *   | <span class='executed'>                    lastPoint.blockNumber = uint64(block.number);</span>
+ 267 | *   | <span class='executed'>                    lastPoint.balance = curSupply;</span>
+ 268 | *   | <span class='executed'>                    break;</span>
+ 269 |     | <span class='neutral'>                } else {</span>
+ 270 |     | <span class='unexecuted'>                    mapSupplyPoints[curNumPoint] = lastPoint;</span>
+ 271 |     | <span class='neutral'>                }</span>
+ 272 |     | <span class='neutral'>            }</span>
+ 273 |     | <span class='neutral'>        }</span>
+ 274 |     | <span class='neutral'></span>
+ 275 | *   | <span class='executed'>        totalNumPoints = curNumPoint;</span>
+ 276 |     | <span class='neutral'></span>
+ 277 |     | <span class='neutral'>        // Now mapSupplyPoints is filled until current time</span>
+ 278 | *   | <span class='executed'>        if (account != address(0)) {</span>
+ 279 |     | <span class='neutral'>            // If last point was in this block, the slope change has been already applied. In such case we have 0 slope(s)</span>
+ 280 | *   | <span class='executed'>            lastPoint.slope += (uNew.slope - uOld.slope);</span>
+ 281 | *   | <span class='executed'>            lastPoint.bias += (uNew.bias - uOld.bias);</span>
+ 282 | *   | <span class='executed'>            if (lastPoint.slope &lt; 0) {</span>
+ 283 |     | <span class='unexecuted'>                lastPoint.slope = 0;</span>
+ 284 |     | <span class='neutral'>            }</span>
+ 285 | *   | <span class='executed'>            if (lastPoint.bias &lt; 0) {</span>
+ 286 |     | <span class='unexecuted'>                lastPoint.bias = 0;</span>
+ 287 |     | <span class='neutral'>            }</span>
+ 288 |     | <span class='neutral'>        }</span>
+ 289 |     | <span class='neutral'></span>
+ 290 |     | <span class='neutral'>        // Record the last updated point</span>
+ 291 | *   | <span class='executed'>        mapSupplyPoints[curNumPoint] = lastPoint;</span>
+ 292 |     | <span class='neutral'></span>
+ 293 | *   | <span class='executed'>        if (account != address(0)) {</span>
+ 294 |     | <span class='neutral'>            // Schedule the slope changes (slope is going down)</span>
+ 295 |     | <span class='neutral'>            // We subtract new_user_slope from [newLocked.endTime]</span>
+ 296 |     | <span class='neutral'>            // and add old_user_slope to [oldLocked.endTime]</span>
+ 297 | *   | <span class='executed'>            if (oldLocked.endTime &gt; block.timestamp) {</span>
+ 298 |     | <span class='neutral'>                // oldDSlope was &lt;something&gt; - uOld.slope, so we cancel that</span>
+ 299 |     | <span class='unexecuted'>                oldDSlope += uOld.slope;</span>
+ 300 |     | <span class='unexecuted'>                if (newLocked.endTime == oldLocked.endTime) {</span>
+ 301 |     | <span class='unexecuted'>                    oldDSlope -= uNew.slope; // It was a new deposit, not extension</span>
+ 302 |     | <span class='neutral'>                }</span>
+ 303 |     | <span class='unexecuted'>                mapSlopeChanges[oldLocked.endTime] = oldDSlope;</span>
+ 304 |     | <span class='neutral'>            }</span>
+ 305 |     | <span class='neutral'></span>
+ 306 | *   | <span class='executed'>            if (newLocked.endTime &gt; block.timestamp &amp;&amp; newLocked.endTime &gt; oldLocked.endTime) {</span>
+ 307 | *   | <span class='executed'>                newDSlope -= uNew.slope; // old slope disappeared at this point</span>
+ 308 | *   | <span class='executed'>                mapSlopeChanges[newLocked.endTime] = newDSlope;</span>
+ 309 |     | <span class='neutral'>                // else: we recorded it already in oldDSlope</span>
+ 310 |     | <span class='neutral'>            }</span>
+ 311 |     | <span class='neutral'>            // Now handle user history</span>
+ 312 | *   | <span class='executed'>            uNew.ts = uint64(block.timestamp);</span>
+ 313 | *   | <span class='executed'>            uNew.blockNumber = uint64(block.number);</span>
+ 314 | *   | <span class='executed'>            uNew.balance = newLocked.amount;</span>
+ 315 | *   | <span class='executed'>            mapUserPoints[account].push(uNew);</span>
+ 316 |     | <span class='neutral'>        }</span>
+ 317 |     | <span class='neutral'>    }</span>
+ 318 |     | <span class='neutral'></span>
+ 319 |     | <span class='neutral'>    /// @dev Record global data to checkpoint.</span>
+ 320 |     | <span class='unexecuted'>    function checkpoint() external {</span>
+ 321 |     | <span class='unexecuted'>        _checkpoint(address(0), LockedBalance(0, 0), LockedBalance(0, 0), uint128(supply));</span>
+ 322 |     | <span class='neutral'>    }</span>
+ 323 |     | <span class='neutral'></span>
+ 324 |     | <span class='neutral'>    /// @dev Deposits and locks tokens for a specified account.</span>
+ 325 |     | <span class='neutral'>    /// @param account Target address for the locked amount.</span>
+ 326 |     | <span class='neutral'>    /// @param amount Amount to deposit.</span>
+ 327 |     | <span class='neutral'>    /// @param unlockTime New time when to unlock the tokens, or 0 if unchanged.</span>
+ 328 |     | <span class='neutral'>    /// @param lockedBalance Previous locked amount / end time.</span>
+ 329 |     | <span class='neutral'>    /// @param depositType Deposit type.</span>
+ 330 | *   | <span class='executed'>    function _depositFor(</span>
+ 331 |     | <span class='neutral'>        address account,</span>
+ 332 |     | <span class='neutral'>        uint256 amount,</span>
+ 333 |     | <span class='neutral'>        uint256 unlockTime,</span>
+ 334 |     | <span class='neutral'>        LockedBalance memory lockedBalance,</span>
+ 335 |     | <span class='neutral'>        DepositType depositType</span>
+ 336 | *   | <span class='executed'>    ) internal {</span>
+ 337 | *   | <span class='executed'>        uint256 supplyBefore = supply;</span>
+ 338 | *   | <span class='executed'>        uint256 supplyAfter;</span>
+ 339 |     | <span class='neutral'>        // Cannot overflow because the total supply &lt;&lt; 2^128-1</span>
+ 340 |     | <span class='neutral'>        unchecked {</span>
+ 341 | *   | <span class='executed'>            supplyAfter = supplyBefore + amount;</span>
+ 342 | *   | <span class='executed'>            supply = supplyAfter;</span>
+ 343 |     | <span class='neutral'>        }</span>
+ 344 |     | <span class='neutral'>        // Get the old locked data</span>
+ 345 | *   | <span class='executed'>        LockedBalance memory oldLocked;</span>
+ 346 | *   | <span class='executed'>        (oldLocked.amount, oldLocked.endTime) = (lockedBalance.amount, lockedBalance.endTime);</span>
+ 347 |     | <span class='neutral'>        // Adding to the existing lock, or if a lock is expired - creating a new one</span>
+ 348 |     | <span class='neutral'>        // This cannot be larger than the total supply</span>
+ 349 |     | <span class='neutral'>        unchecked {</span>
+ 350 | *   | <span class='executed'>            lockedBalance.amount += uint128(amount);</span>
+ 351 |     | <span class='neutral'>        }</span>
+ 352 | *   | <span class='executed'>        if (unlockTime &gt; 0) {</span>
+ 353 | *   | <span class='executed'>            lockedBalance.endTime = uint64(unlockTime);</span>
+ 354 |     | <span class='neutral'>        }</span>
+ 355 | *   | <span class='executed'>        mapLockedBalances[account] = lockedBalance;</span>
+ 356 |     | <span class='neutral'></span>
+ 357 |     | <span class='neutral'>        // Possibilities:</span>
+ 358 |     | <span class='neutral'>        // Both oldLocked.endTime could be current or expired (&gt;/&lt; block.timestamp)</span>
+ 359 |     | <span class='neutral'>        // amount == 0 (extend lock) or amount &gt; 0 (add to lock or extend lock)</span>
+ 360 |     | <span class='neutral'>        // lockedBalance.endTime &gt; block.timestamp (always)</span>
+ 361 | *   | <span class='executed'>        _checkpoint(account, oldLocked, lockedBalance, uint128(supplyAfter));</span>
+ 362 | *   | <span class='executed'>        if (amount &gt; 0) {</span>
+ 363 |     | <span class='neutral'>            // OLAS is a solmate-based ERC20 token with optimized transferFrom() that either returns true or reverts</span>
+ 364 | *   | <span class='executed'>            IERC20(token).transferFrom(msg.sender, address(this), amount);</span>
+ 365 |     | <span class='neutral'>        }</span>
+ 366 |     | <span class='neutral'></span>
+ 367 | *   | <span class='executed'>        emit Deposit(account, amount, lockedBalance.endTime, depositType, block.timestamp);</span>
+ 368 | *   | <span class='executed'>        emit Supply(supplyBefore, supplyAfter);</span>
+ 369 |     | <span class='neutral'>    }</span>
+ 370 |     | <span class='neutral'></span>
+ 371 |     | <span class='neutral'>    /// @dev Deposits `amount` tokens for `account` and adds to the lock.</span>
+ 372 |     | <span class='neutral'>    /// @dev Anyone (even a smart contract) can deposit for someone else, but</span>
+ 373 |     | <span class='neutral'>    ///      cannot extend their locktime and deposit for a brand new user.</span>
+ 374 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 375 |     | <span class='neutral'>    /// @param amount Amount to add.</span>
+ 376 |     | <span class='unexecuted'>    function depositFor(address account, uint256 amount) external {</span>
+ 377 |     | <span class='unexecuted'>        LockedBalance memory lockedBalance = mapLockedBalances[account];</span>
+ 378 |     | <span class='neutral'>        // Check if the amount is zero</span>
+ 379 |     | <span class='unexecuted'>        if (amount == 0) {</span>
+ 380 |     | <span class='unexecuted'>            revert ZeroValue();</span>
+ 381 |     | <span class='neutral'>        }</span>
+ 382 |     | <span class='neutral'>        // The locked balance must already exist</span>
+ 383 |     | <span class='unexecuted'>        if (lockedBalance.amount == 0) {</span>
+ 384 |     | <span class='unexecuted'>            revert NoValueLocked(account);</span>
+ 385 |     | <span class='neutral'>        }</span>
+ 386 |     | <span class='neutral'>        // Check the lock expiry</span>
+ 387 |     | <span class='unexecuted'>        if (lockedBalance.endTime &lt; (block.timestamp + 1)) {</span>
+ 388 |     | <span class='unexecuted'>            revert LockExpired(msg.sender, lockedBalance.endTime, block.timestamp);</span>
+ 389 |     | <span class='neutral'>        }</span>
+ 390 |     | <span class='neutral'>        // Since in the _depositFor() we have the unchecked sum of amounts, this is needed to prevent unsafe behavior.</span>
+ 391 |     | <span class='neutral'>        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply</span>
+ 392 |     | <span class='unexecuted'>        if (amount &gt; type(uint96).max) {</span>
+ 393 |     | <span class='unexecuted'>            revert Overflow(amount, type(uint96).max);</span>
+ 394 |     | <span class='neutral'>        }</span>
+ 395 |     | <span class='neutral'></span>
+ 396 |     | <span class='unexecuted'>        _depositFor(account, amount, 0, lockedBalance, DepositType.DEPOSIT_FOR_TYPE);</span>
+ 397 |     | <span class='neutral'>    }</span>
+ 398 |     | <span class='neutral'></span>
+ 399 |     | <span class='neutral'>    /// @dev Deposits `amount` tokens for `msg.sender` and locks for `unlockTime`.</span>
+ 400 |     | <span class='neutral'>    /// @param amount Amount to deposit.</span>
+ 401 |     | <span class='neutral'>    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.</span>
+ 402 | *   | <span class='executed'>    function createLock(uint256 amount, uint256 unlockTime) external {</span>
+ 403 | *   | <span class='executed'>        _createLockFor(msg.sender, amount, unlockTime);</span>
+ 404 |     | <span class='neutral'>    }</span>
+ 405 |     | <span class='neutral'></span>
+ 406 |     | <span class='neutral'>    /// @dev Deposits `amount` tokens for `account` and locks for `unlockTime`.</span>
+ 407 |     | <span class='neutral'>    /// @notice Tokens are taken from `msg.sender`&#39;s balance.</span>
+ 408 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 409 |     | <span class='neutral'>    /// @param amount Amount to deposit.</span>
+ 410 |     | <span class='neutral'>    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.</span>
+ 411 |     | <span class='unexecuted'>    function createLockFor(address account, uint256 amount, uint256 unlockTime) external {</span>
+ 412 |     | <span class='neutral'>        // Check if the account address is zero</span>
+ 413 |     | <span class='unexecuted'>        if (account == address(0)) {</span>
+ 414 |     | <span class='unexecuted'>            revert ZeroAddress();</span>
+ 415 |     | <span class='neutral'>        }</span>
+ 416 |     | <span class='neutral'></span>
+ 417 |     | <span class='unexecuted'>        _createLockFor(account, amount, unlockTime);</span>
+ 418 |     | <span class='neutral'>    }</span>
+ 419 |     | <span class='neutral'></span>
+ 420 |     | <span class='neutral'>    /// @dev Deposits `amount` tokens for `account` and locks for `unlockTime`.</span>
+ 421 |     | <span class='neutral'>    /// @notice Tokens are taken from `msg.sender`&#39;s balance.</span>
+ 422 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 423 |     | <span class='neutral'>    /// @param amount Amount to deposit.</span>
+ 424 |     | <span class='neutral'>    /// @param unlockTime Time when tokens unlock, rounded down to a whole week.</span>
+ 425 | *   | <span class='executed'>    function _createLockFor(address account, uint256 amount, uint256 unlockTime) private {</span>
+ 426 |     | <span class='neutral'>        // Check if the amount is zero</span>
+ 427 | *   | <span class='executed'>        if (amount == 0) {</span>
+ 428 | *   | <span class='executed'>            revert ZeroValue();</span>
+ 429 |     | <span class='neutral'>        }</span>
+ 430 |     | <span class='neutral'>        // Lock time is rounded down to weeks</span>
+ 431 |     | <span class='neutral'>        // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) &lt;&lt; 2^64-1</span>
+ 432 |     | <span class='neutral'>        unchecked {</span>
+ 433 | *   | <span class='executed'>            unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;</span>
+ 434 |     | <span class='neutral'>        }</span>
+ 435 | *   | <span class='executed'>        LockedBalance memory lockedBalance = mapLockedBalances[account];</span>
+ 436 |     | <span class='neutral'>        // The locked balance must be zero in order to start the lock</span>
+ 437 | *   | <span class='executed'>        if (lockedBalance.amount &gt; 0) {</span>
+ 438 |     | <span class='unexecuted'>            revert LockedValueNotZero(account, uint256(lockedBalance.amount));</span>
+ 439 |     | <span class='neutral'>        }</span>
+ 440 |     | <span class='neutral'>        // Check for the lock time correctness</span>
+ 441 | *   | <span class='executed'>        if (unlockTime &lt; (block.timestamp + 1)) {</span>
+ 442 | *   | <span class='executed'>            revert UnlockTimeIncorrect(account, block.timestamp, unlockTime);</span>
+ 443 |     | <span class='neutral'>        }</span>
+ 444 |     | <span class='neutral'>        // Check for the lock time not to exceed the MAXTIME</span>
+ 445 | *   | <span class='executed'>        if (unlockTime &gt; block.timestamp + MAXTIME) {</span>
+ 446 |     | <span class='unexecuted'>            revert MaxUnlockTimeReached(account, block.timestamp + MAXTIME, unlockTime);</span>
+ 447 |     | <span class='neutral'>        }</span>
+ 448 |     | <span class='neutral'>        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply</span>
+ 449 | *   | <span class='executed'>        if (amount &gt; type(uint96).max) {</span>
+ 450 |     | <span class='unexecuted'>            revert Overflow(amount, type(uint96).max);</span>
+ 451 |     | <span class='neutral'>        }</span>
+ 452 |     | <span class='neutral'></span>
+ 453 | *   | <span class='executed'>        _depositFor(account, amount, unlockTime, lockedBalance, DepositType.CREATE_LOCK_TYPE);</span>
+ 454 |     | <span class='neutral'>    }</span>
+ 455 |     | <span class='neutral'></span>
+ 456 |     | <span class='neutral'>    /// @dev Deposits `amount` additional tokens for `msg.sender` without modifying the unlock time.</span>
+ 457 |     | <span class='neutral'>    /// @param amount Amount of tokens to deposit and add to the lock.</span>
+ 458 |     | <span class='unexecuted'>    function increaseAmount(uint256 amount) external {</span>
+ 459 |     | <span class='unexecuted'>        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];</span>
+ 460 |     | <span class='neutral'>        // Check if the amount is zero</span>
+ 461 |     | <span class='unexecuted'>        if (amount == 0) {</span>
+ 462 |     | <span class='unexecuted'>            revert ZeroValue();</span>
+ 463 |     | <span class='neutral'>        }</span>
+ 464 |     | <span class='neutral'>        // The locked balance must already exist</span>
+ 465 |     | <span class='unexecuted'>        if (lockedBalance.amount == 0) {</span>
+ 466 |     | <span class='unexecuted'>            revert NoValueLocked(msg.sender);</span>
+ 467 |     | <span class='neutral'>        }</span>
+ 468 |     | <span class='neutral'>        // Check the lock expiry</span>
+ 469 |     | <span class='unexecuted'>        if (lockedBalance.endTime &lt; (block.timestamp + 1)) {</span>
+ 470 |     | <span class='unexecuted'>            revert LockExpired(msg.sender, lockedBalance.endTime, block.timestamp);</span>
+ 471 |     | <span class='neutral'>        }</span>
+ 472 |     | <span class='neutral'>        // Check the max possible amount to add, that must be less than the total supply</span>
+ 473 |     | <span class='neutral'>        // After 10 years, the inflation rate is 2% per year. It would take 220+ years to reach 2^96 - 1 total supply</span>
+ 474 |     | <span class='unexecuted'>        if (amount &gt; type(uint96).max) {</span>
+ 475 |     | <span class='unexecuted'>            revert Overflow(amount, type(uint96).max);</span>
+ 476 |     | <span class='neutral'>        }</span>
+ 477 |     | <span class='neutral'></span>
+ 478 |     | <span class='unexecuted'>        _depositFor(msg.sender, amount, 0, lockedBalance, DepositType.INCREASE_LOCK_AMOUNT);</span>
+ 479 |     | <span class='neutral'>    }</span>
+ 480 |     | <span class='neutral'></span>
+ 481 |     | <span class='neutral'>    /// @dev Extends the unlock time.</span>
+ 482 |     | <span class='neutral'>    /// @param unlockTime New tokens unlock time.</span>
+ 483 |     | <span class='unexecuted'>    function increaseUnlockTime(uint256 unlockTime) external {</span>
+ 484 |     | <span class='unexecuted'>        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];</span>
+ 485 |     | <span class='neutral'>        // Cannot practically overflow because block.timestamp + unlockTime (max 4 years) &lt;&lt; 2^64-1</span>
+ 486 |     | <span class='neutral'>        unchecked {</span>
+ 487 |     | <span class='unexecuted'>            unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK;</span>
+ 488 |     | <span class='neutral'>        }</span>
+ 489 |     | <span class='neutral'>        // The locked balance must already exist</span>
+ 490 |     | <span class='unexecuted'>        if (lockedBalance.amount == 0) {</span>
+ 491 |     | <span class='unexecuted'>            revert NoValueLocked(msg.sender);</span>
+ 492 |     | <span class='neutral'>        }</span>
+ 493 |     | <span class='neutral'>        // Check the lock expiry</span>
+ 494 |     | <span class='unexecuted'>        if (lockedBalance.endTime &lt; (block.timestamp + 1)) {</span>
+ 495 |     | <span class='unexecuted'>            revert LockExpired(msg.sender, lockedBalance.endTime, block.timestamp);</span>
+ 496 |     | <span class='neutral'>        }</span>
+ 497 |     | <span class='neutral'>        // Check for the lock time correctness</span>
+ 498 |     | <span class='unexecuted'>        if (unlockTime &lt; (lockedBalance.endTime + 1)) {</span>
+ 499 |     | <span class='unexecuted'>            revert UnlockTimeIncorrect(msg.sender, lockedBalance.endTime, unlockTime);</span>
+ 500 |     | <span class='neutral'>        }</span>
+ 501 |     | <span class='neutral'>        // Check for the lock time not to exceed the MAXTIME</span>
+ 502 |     | <span class='unexecuted'>        if (unlockTime &gt; block.timestamp + MAXTIME) {</span>
+ 503 |     | <span class='unexecuted'>            revert MaxUnlockTimeReached(msg.sender, block.timestamp + MAXTIME, unlockTime);</span>
+ 504 |     | <span class='neutral'>        }</span>
+ 505 |     | <span class='neutral'></span>
+ 506 |     | <span class='unexecuted'>        _depositFor(msg.sender, 0, unlockTime, lockedBalance, DepositType.INCREASE_UNLOCK_TIME);</span>
+ 507 |     | <span class='neutral'>    }</span>
+ 508 |     | <span class='neutral'></span>
+ 509 |     | <span class='neutral'>    /// @dev Withdraws all tokens for `msg.sender`. Only possible if the lock has expired.</span>
+ 510 |     | <span class='unexecuted'>    function withdraw() external {</span>
+ 511 |     | <span class='unexecuted'>        LockedBalance memory lockedBalance = mapLockedBalances[msg.sender];</span>
+ 512 |     | <span class='unexecuted'>        if (lockedBalance.endTime &gt; block.timestamp) {</span>
+ 513 |     | <span class='unexecuted'>            revert LockNotExpired(msg.sender, lockedBalance.endTime, block.timestamp);</span>
+ 514 |     | <span class='neutral'>        }</span>
+ 515 |     | <span class='unexecuted'>        uint256 amount = uint256(lockedBalance.amount);</span>
+ 516 |     | <span class='neutral'></span>
+ 517 |     | <span class='unexecuted'>        mapLockedBalances[msg.sender] = LockedBalance(0, 0);</span>
+ 518 |     | <span class='unexecuted'>        uint256 supplyBefore = supply;</span>
+ 519 |     | <span class='unexecuted'>        uint256 supplyAfter;</span>
+ 520 |     | <span class='neutral'>        // The amount cannot be less than the total supply</span>
+ 521 |     | <span class='neutral'>        unchecked {</span>
+ 522 |     | <span class='unexecuted'>            supplyAfter = supplyBefore - amount;</span>
+ 523 |     | <span class='unexecuted'>            supply = supplyAfter;</span>
+ 524 |     | <span class='neutral'>        }</span>
+ 525 |     | <span class='neutral'>        // oldLocked can have either expired &lt;= timestamp or zero end</span>
+ 526 |     | <span class='neutral'>        // lockedBalance has only 0 end</span>
+ 527 |     | <span class='neutral'>        // Both can have &gt;= 0 amount</span>
+ 528 |     | <span class='unexecuted'>        _checkpoint(msg.sender, lockedBalance, LockedBalance(0, 0), uint128(supplyAfter));</span>
+ 529 |     | <span class='neutral'></span>
+ 530 |     | <span class='unexecuted'>        emit Withdraw(msg.sender, amount, block.timestamp);</span>
+ 531 |     | <span class='unexecuted'>        emit Supply(supplyBefore, supplyAfter);</span>
+ 532 |     | <span class='neutral'></span>
+ 533 |     | <span class='neutral'>        // OLAS is a solmate-based ERC20 token with optimized transfer() that either returns true or reverts</span>
+ 534 |     | <span class='unexecuted'>        IERC20(token).transfer(msg.sender, amount);</span>
+ 535 |     | <span class='neutral'>    }</span>
+ 536 |     | <span class='neutral'></span>
+ 537 |     | <span class='neutral'>    /// @dev Finds a closest point that has a specified block number.</span>
+ 538 |     | <span class='neutral'>    /// @param blockNumber Block to find.</span>
+ 539 |     | <span class='neutral'>    /// @param account Account address for user points.</span>
+ 540 |     | <span class='neutral'>    /// @return point Point with the approximate index number for the specified block.</span>
+ 541 |     | <span class='neutral'>    /// @return minPointNumber Point number.</span>
+ 542 |     | <span class='unexecuted'>    function _findPointByBlock(uint256 blockNumber, address account) internal view</span>
+ 543 |     | <span class='unexecuted'>        returns (PointVoting memory point, uint256 minPointNumber)</span>
+ 544 |     | <span class='unexecuted'>    {</span>
+ 545 |     | <span class='neutral'>        // Get the last available point number</span>
+ 546 |     | <span class='unexecuted'>        uint256 maxPointNumber;</span>
+ 547 |     | <span class='unexecuted'>        if (account == address(0)) {</span>
+ 548 |     | <span class='unexecuted'>            maxPointNumber = totalNumPoints;</span>
+ 549 |     | <span class='neutral'>        } else {</span>
+ 550 |     | <span class='unexecuted'>            maxPointNumber = mapUserPoints[account].length;</span>
+ 551 |     | <span class='unexecuted'>            if (maxPointNumber == 0) {</span>
+ 552 |     | <span class='unexecuted'>                return (point, minPointNumber);</span>
+ 553 |     | <span class='neutral'>            }</span>
+ 554 |     | <span class='neutral'>            // Already checked for &gt; 0 in this case</span>
+ 555 |     | <span class='neutral'>            unchecked {</span>
+ 556 |     | <span class='unexecuted'>                maxPointNumber -= 1;</span>
+ 557 |     | <span class='neutral'>            }</span>
+ 558 |     | <span class='neutral'>        }</span>
+ 559 |     | <span class='neutral'></span>
+ 560 |     | <span class='neutral'>        // Binary search that will be always enough for 128-bit numbers</span>
+ 561 |     | <span class='unexecuted'>        for (uint256 i = 0; i &lt; 128; ++i) {</span>
+ 562 |     | <span class='unexecuted'>            if ((minPointNumber + 1) &gt; maxPointNumber) {</span>
+ 563 |     | <span class='unexecuted'>                break;</span>
+ 564 |     | <span class='neutral'>            }</span>
+ 565 |     | <span class='unexecuted'>            uint256 mid = (minPointNumber + maxPointNumber + 1) / 2;</span>
+ 566 |     | <span class='neutral'></span>
+ 567 |     | <span class='neutral'>            // Choose the source of points</span>
+ 568 |     | <span class='unexecuted'>            if (account == address(0)) {</span>
+ 569 |     | <span class='unexecuted'>                point = mapSupplyPoints[mid];</span>
+ 570 |     | <span class='neutral'>            } else {</span>
+ 571 |     | <span class='unexecuted'>                point = mapUserPoints[account][mid];</span>
+ 572 |     | <span class='neutral'>            }</span>
+ 573 |     | <span class='neutral'></span>
+ 574 |     | <span class='unexecuted'>            if (point.blockNumber &lt; (blockNumber + 1)) {</span>
+ 575 |     | <span class='unexecuted'>                minPointNumber = mid;</span>
+ 576 |     | <span class='neutral'>            } else {</span>
+ 577 |     | <span class='unexecuted'>                maxPointNumber = mid - 1;</span>
+ 578 |     | <span class='neutral'>            }</span>
+ 579 |     | <span class='neutral'>        }</span>
+ 580 |     | <span class='neutral'></span>
+ 581 |     | <span class='neutral'>        // Get the found point</span>
+ 582 |     | <span class='unexecuted'>        if (account == address(0)) {</span>
+ 583 |     | <span class='unexecuted'>            point = mapSupplyPoints[minPointNumber];</span>
+ 584 |     | <span class='neutral'>        } else {</span>
+ 585 |     | <span class='unexecuted'>            point = mapUserPoints[account][minPointNumber];</span>
+ 586 |     | <span class='neutral'>        }</span>
+ 587 |     | <span class='neutral'>    }</span>
+ 588 |     | <span class='neutral'></span>
+ 589 |     | <span class='neutral'>    /// @dev Gets the voting power for an `account` at time `ts`.</span>
+ 590 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 591 |     | <span class='neutral'>    /// @param ts Time to get voting power at.</span>
+ 592 |     | <span class='neutral'>    /// @return vBalance Account voting power.</span>
+ 593 |     | <span class='unexecuted'>    function _balanceOfLocked(address account, uint64 ts) internal view returns (uint256 vBalance) {</span>
+ 594 |     | <span class='unexecuted'>        uint256 pointNumber = mapUserPoints[account].length;</span>
+ 595 |     | <span class='unexecuted'>        if (pointNumber &gt; 0) {</span>
+ 596 |     | <span class='unexecuted'>            PointVoting memory uPoint = mapUserPoints[account][pointNumber - 1];</span>
+ 597 |     | <span class='unexecuted'>            uPoint.bias -= uPoint.slope * int128(int64(ts) - int64(uPoint.ts));</span>
+ 598 |     | <span class='unexecuted'>            if (uPoint.bias &gt; 0) {</span>
+ 599 |     | <span class='unexecuted'>                vBalance = uint256(int256(uPoint.bias));</span>
+ 600 |     | <span class='neutral'>            }</span>
+ 601 |     | <span class='neutral'>        }</span>
+ 602 |     | <span class='neutral'>    }</span>
+ 603 |     | <span class='neutral'></span>
+ 604 |     | <span class='neutral'>    /// @dev Gets the account balance in native token.</span>
+ 605 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 606 |     | <span class='neutral'>    /// @return balance Account balance.</span>
+ 607 |     | <span class='unexecuted'>    function balanceOf(address account) public view override returns (uint256 balance) {</span>
+ 608 |     | <span class='unexecuted'>        balance = uint256(mapLockedBalances[account].amount);</span>
+ 609 |     | <span class='neutral'>    }</span>
+ 610 |     | <span class='neutral'></span>
+ 611 |     | <span class='neutral'>    /// @dev Gets the `account`&#39;s lock end time.</span>
+ 612 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 613 |     | <span class='neutral'>    /// @return unlockTime Lock end time.</span>
+ 614 | *   | <span class='executed'>    function lockedEnd(address account) external view returns (uint256 unlockTime) {</span>
+ 615 | *   | <span class='executed'>        unlockTime = uint256(mapLockedBalances[account].endTime);</span>
+ 616 |     | <span class='neutral'>    }</span>
+ 617 |     | <span class='neutral'></span>
+ 618 |     | <span class='neutral'>    /// @dev Gets the account balance at a specific block number.</span>
+ 619 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 620 |     | <span class='neutral'>    /// @param blockNumber Block number.</span>
+ 621 |     | <span class='neutral'>    /// @return balance Account balance.</span>
+ 622 |     | <span class='unexecuted'>    function balanceOfAt(address account, uint256 blockNumber) external view returns (uint256 balance) {</span>
+ 623 |     | <span class='neutral'>        // Find point with the closest block number to the provided one</span>
+ 624 |     | <span class='unexecuted'>        (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);</span>
+ 625 |     | <span class='neutral'>        // If the block number at the point index is bigger than the specified block number, the balance was zero</span>
+ 626 |     | <span class='unexecuted'>        if (uPoint.blockNumber &lt; (blockNumber + 1)) {</span>
+ 627 |     | <span class='unexecuted'>            balance = uint256(uPoint.balance);</span>
+ 628 |     | <span class='neutral'>        }</span>
+ 629 |     | <span class='neutral'>    }</span>
+ 630 |     | <span class='neutral'></span>
+ 631 |     | <span class='neutral'>    /// @dev Gets the voting power.</span>
+ 632 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 633 |     | <span class='unexecuted'>    function getVotes(address account) public view override returns (uint256) {</span>
+ 634 |     | <span class='unexecuted'>        return _balanceOfLocked(account, uint64(block.timestamp));</span>
+ 635 |     | <span class='neutral'>    }</span>
+ 636 |     | <span class='neutral'></span>
+ 637 |     | <span class='neutral'>    /// @dev Gets the block time adjustment for two neighboring points.</span>
+ 638 |     | <span class='neutral'>    /// @notice `blockNumber` must not be lower than the contract deployment block number,</span>
+ 639 |     | <span class='neutral'>    ///         as the behavior and the return value is undefined.</span>
+ 640 |     | <span class='neutral'>    /// @param blockNumber Block number.</span>
+ 641 |     | <span class='neutral'>    /// @return point Point with the specified block number (or closest to it).</span>
+ 642 |     | <span class='neutral'>    /// @return blockTime Adjusted block time of the neighboring point.</span>
+ 643 |     | <span class='unexecuted'>    function _getBlockTime(uint256 blockNumber) internal view returns (PointVoting memory point, uint256 blockTime) {</span>
+ 644 |     | <span class='neutral'>        // Check the block number to be in the past or equal to the current block</span>
+ 645 |     | <span class='unexecuted'>        if (blockNumber &gt; block.number) {</span>
+ 646 |     | <span class='unexecuted'>            revert WrongBlockNumber(blockNumber, block.number);</span>
+ 647 |     | <span class='neutral'>        }</span>
+ 648 |     | <span class='neutral'>        // Get the minimum historical point with the provided block number</span>
+ 649 |     | <span class='unexecuted'>        uint256 minPointNumber;</span>
+ 650 |     | <span class='unexecuted'>        (point, minPointNumber) = _findPointByBlock(blockNumber, address(0));</span>
+ 651 |     | <span class='neutral'></span>
+ 652 |     | <span class='unexecuted'>        uint256 dBlock;</span>
+ 653 |     | <span class='unexecuted'>        uint256 dt;</span>
+ 654 |     | <span class='unexecuted'>        if (minPointNumber &lt; totalNumPoints) {</span>
+ 655 |     | <span class='unexecuted'>            PointVoting memory pointNext = mapSupplyPoints[minPointNumber + 1];</span>
+ 656 |     | <span class='unexecuted'>            dBlock = pointNext.blockNumber - point.blockNumber;</span>
+ 657 |     | <span class='unexecuted'>            dt = pointNext.ts - point.ts;</span>
+ 658 |     | <span class='neutral'>        } else {</span>
+ 659 |     | <span class='unexecuted'>            dBlock = block.number - point.blockNumber;</span>
+ 660 |     | <span class='unexecuted'>            dt = block.timestamp - point.ts;</span>
+ 661 |     | <span class='neutral'>        }</span>
+ 662 |     | <span class='unexecuted'>        blockTime = point.ts;</span>
+ 663 |     | <span class='unexecuted'>        if (dBlock &gt; 0) {</span>
+ 664 |     | <span class='unexecuted'>            blockTime += (dt * (blockNumber - point.blockNumber)) / dBlock;</span>
+ 665 |     | <span class='neutral'>        }</span>
+ 666 |     | <span class='neutral'>    }</span>
+ 667 |     | <span class='neutral'></span>
+ 668 |     | <span class='neutral'>    /// @dev Gets voting power at a specific block number.</span>
+ 669 |     | <span class='neutral'>    /// @param account Account address.</span>
+ 670 |     | <span class='neutral'>    /// @param blockNumber Block number.</span>
+ 671 |     | <span class='neutral'>    /// @return balance Voting balance / power.</span>
+ 672 |     | <span class='unexecuted'>    function getPastVotes(address account, uint256 blockNumber) public view override returns (uint256 balance) {</span>
+ 673 |     | <span class='neutral'>        // Find the user point for the provided block number</span>
+ 674 |     | <span class='unexecuted'>        (PointVoting memory uPoint, ) = _findPointByBlock(blockNumber, account);</span>
+ 675 |     | <span class='neutral'></span>
+ 676 |     | <span class='neutral'>        // Get block time adjustment.</span>
+ 677 |     | <span class='unexecuted'>        (, uint256 blockTime) = _getBlockTime(blockNumber);</span>
+ 678 |     | <span class='neutral'></span>
+ 679 |     | <span class='neutral'>        // Calculate bias based on a block time</span>
+ 680 |     | <span class='unexecuted'>        uPoint.bias -= uPoint.slope * int128(int64(uint64(blockTime)) - int64(uPoint.ts));</span>
+ 681 |     | <span class='unexecuted'>        if (uPoint.bias &gt; 0) {</span>
+ 682 |     | <span class='unexecuted'>            balance = uint256(uint128(uPoint.bias));</span>
+ 683 |     | <span class='neutral'>        }</span>
+ 684 |     | <span class='neutral'>    }</span>
+ 685 |     | <span class='neutral'></span>
+ 686 |     | <span class='neutral'>    /// @dev Calculate total voting power at some point in the past.</span>
+ 687 |     | <span class='neutral'>    /// @param lastPoint The point (bias/slope) to start the search from.</span>
+ 688 |     | <span class='neutral'>    /// @param ts Time to calculate the total voting power at.</span>
+ 689 |     | <span class='neutral'>    /// @return vSupply Total voting power at that time.</span>
+ 690 |     | <span class='unexecuted'>    function _supplyLockedAt(PointVoting memory lastPoint, uint64 ts) internal view returns (uint256 vSupply) {</span>
+ 691 |     | <span class='neutral'>        // The timestamp is rounded and &lt; 2^64-1</span>
+ 692 |     | <span class='unexecuted'>        uint64 tStep = (lastPoint.ts / WEEK) * WEEK;</span>
+ 693 |     | <span class='unexecuted'>        for (uint256 i = 0; i &lt; 255; ++i) {</span>
+ 694 |     | <span class='neutral'>            // This is always practically &lt; 2^64-1</span>
+ 695 |     | <span class='neutral'>            unchecked {</span>
+ 696 |     | <span class='unexecuted'>                tStep += WEEK;</span>
+ 697 |     | <span class='neutral'>            }</span>
+ 698 |     | <span class='unexecuted'>            int128 dSlope;</span>
+ 699 |     | <span class='unexecuted'>            if (tStep &gt; ts) {</span>
+ 700 |     | <span class='unexecuted'>                tStep = ts;</span>
+ 701 |     | <span class='neutral'>            } else {</span>
+ 702 |     | <span class='unexecuted'>                dSlope = mapSlopeChanges[tStep];</span>
+ 703 |     | <span class='neutral'>            }</span>
+ 704 |     | <span class='unexecuted'>            lastPoint.bias -= lastPoint.slope * int128(int64(tStep) - int64(lastPoint.ts));</span>
+ 705 |     | <span class='unexecuted'>            if (tStep == ts) {</span>
+ 706 |     | <span class='unexecuted'>                break;</span>
+ 707 |     | <span class='neutral'>            }</span>
+ 708 |     | <span class='unexecuted'>            lastPoint.slope += dSlope;</span>
+ 709 |     | <span class='unexecuted'>            lastPoint.ts = tStep;</span>
+ 710 |     | <span class='neutral'>        }</span>
+ 711 |     | <span class='neutral'></span>
+ 712 |     | <span class='unexecuted'>        if (lastPoint.bias &gt; 0) {</span>
+ 713 |     | <span class='unexecuted'>            vSupply = uint256(uint128(lastPoint.bias));</span>
+ 714 |     | <span class='neutral'>        }</span>
+ 715 |     | <span class='neutral'>    }</span>
+ 716 |     | <span class='neutral'></span>
+ 717 |     | <span class='neutral'>    /// @dev Gets total token supply.</span>
+ 718 |     | <span class='neutral'>    /// @return Total token supply.</span>
+ 719 |     | <span class='unexecuted'>    function totalSupply() public view override returns (uint256) {</span>
+ 720 |     | <span class='unexecuted'>        return supply;</span>
+ 721 |     | <span class='neutral'>    }</span>
+ 722 |     | <span class='neutral'></span>
+ 723 |     | <span class='neutral'>    /// @dev Gets total token supply at a specific block number.</span>
+ 724 |     | <span class='neutral'>    /// @param blockNumber Block number.</span>
+ 725 |     | <span class='neutral'>    /// @return supplyAt Supply at the specified block number.</span>
+ 726 |     | <span class='unexecuted'>    function totalSupplyAt(uint256 blockNumber) external view returns (uint256 supplyAt) {</span>
+ 727 |     | <span class='neutral'>        // Find point with the closest block number to the provided one</span>
+ 728 |     | <span class='unexecuted'>        (PointVoting memory sPoint, ) = _findPointByBlock(blockNumber, address(0));</span>
+ 729 |     | <span class='neutral'>        // If the block number at the point index is bigger than the specified block number, the balance was zero</span>
+ 730 |     | <span class='unexecuted'>        if (sPoint.blockNumber &lt; (blockNumber + 1)) {</span>
+ 731 |     | <span class='unexecuted'>            supplyAt = uint256(sPoint.balance);</span>
+ 732 |     | <span class='neutral'>        }</span>
+ 733 |     | <span class='neutral'>    }</span>
+ 734 |     | <span class='neutral'></span>
+ 735 |     | <span class='neutral'>    /// @dev Calculates total voting power at time `ts`.</span>
+ 736 |     | <span class='neutral'>    /// @param ts Time to get total voting power at.</span>
+ 737 |     | <span class='neutral'>    /// @return Total voting power.</span>
+ 738 |     | <span class='unexecuted'>    function totalSupplyLockedAtT(uint256 ts) public view returns (uint256) {</span>
+ 739 |     | <span class='unexecuted'>        PointVoting memory lastPoint = mapSupplyPoints[totalNumPoints];</span>
+ 740 |     | <span class='unexecuted'>        return _supplyLockedAt(lastPoint, uint64(ts));</span>
+ 741 |     | <span class='neutral'>    }</span>
+ 742 |     | <span class='neutral'></span>
+ 743 |     | <span class='neutral'>    /// @dev Calculates current total voting power.</span>
+ 744 |     | <span class='neutral'>    /// @return Total voting power.</span>
+ 745 |     | <span class='unexecuted'>    function totalSupplyLocked() public view returns (uint256) {</span>
+ 746 |     | <span class='unexecuted'>        return totalSupplyLockedAtT(block.timestamp);</span>
+ 747 |     | <span class='neutral'>    }</span>
+ 748 |     | <span class='neutral'></span>
+ 749 |     | <span class='neutral'>    /// @dev Calculate total voting power at some point in the past.</span>
+ 750 |     | <span class='neutral'>    /// @param blockNumber Block number to calculate the total voting power at.</span>
+ 751 |     | <span class='neutral'>    /// @return Total voting power.</span>
+ 752 |     | <span class='unexecuted'>    function getPastTotalSupply(uint256 blockNumber) public view override returns (uint256) {</span>
+ 753 |     | <span class='unexecuted'>        (PointVoting memory sPoint, uint256 blockTime) = _getBlockTime(blockNumber);</span>
+ 754 |     | <span class='neutral'>        // Now dt contains info on how far are we beyond the point</span>
+ 755 |     | <span class='unexecuted'>        return _supplyLockedAt(sPoint, uint64(blockTime));</span>
+ 756 |     | <span class='neutral'>    }</span>
+ 757 |     | <span class='neutral'></span>
+ 758 |     | <span class='neutral'>    /// @dev Gets information about the interface support.</span>
+ 759 |     | <span class='neutral'>    /// @param interfaceId A specified interface Id.</span>
+ 760 |     | <span class='neutral'>    /// @return True if this contract implements the interface defined by interfaceId.</span>
+ 761 |     | <span class='unexecuted'>    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {</span>
+ 762 |     | <span class='unexecuted'>        return interfaceId == type(IERC20).interfaceId || interfaceId == type(IVotes).interfaceId ||</span>
+ 763 |     | <span class='unexecuted'>            interfaceId == type(IERC165).interfaceId;</span>
+ 764 |     | <span class='neutral'>    }</span>
+ 765 |     | <span class='neutral'></span>
+ 766 |     | <span class='neutral'>    /// @dev Reverts the transfer of this token.</span>
+ 767 |     | <span class='unexecuted'>    function transfer(address to, uint256 amount) external virtual override returns (bool) {</span>
+ 768 |     | <span class='unexecuted'>        revert NonTransferable(address(this));</span>
+ 769 |     | <span class='neutral'>    }</span>
+ 770 |     | <span class='neutral'></span>
+ 771 |     | <span class='neutral'>    /// @dev Reverts the approval of this token.</span>
+ 772 |     | <span class='unexecuted'>    function approve(address spender, uint256 amount) external virtual override returns (bool) {</span>
+ 773 |     | <span class='unexecuted'>        revert NonTransferable(address(this));</span>
+ 774 |     | <span class='neutral'>    }</span>
+ 775 |     | <span class='neutral'></span>
+ 776 |     | <span class='neutral'>    /// @dev Reverts the transferFrom of this token.</span>
+ 777 |     | <span class='unexecuted'>    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {</span>
+ 778 |     | <span class='unexecuted'>        revert NonTransferable(address(this));</span>
+ 779 |     | <span class='neutral'>    }</span>
+ 780 |     | <span class='neutral'></span>
+ 781 |     | <span class='neutral'>    /// @dev Reverts the allowance of this token.</span>
+ 782 |     | <span class='unexecuted'>    function allowance(address owner, address spender) external view virtual override returns (uint256)</span>
+ 783 |     | <span class='neutral'>    {</span>
+ 784 |     | <span class='unexecuted'>        revert NonTransferable(address(this));</span>
+ 785 |     | <span class='neutral'>    }</span>
+ 786 |     | <span class='neutral'></span>
+ 787 |     | <span class='neutral'>    /// @dev Reverts delegates of this token.</span>
+ 788 |     | <span class='unexecuted'>    function delegates(address account) external view virtual override returns (address)</span>
+ 789 |     | <span class='neutral'>    {</span>
+ 790 |     | <span class='unexecuted'>        revert NonDelegatable(address(this));</span>
+ 791 |     | <span class='neutral'>    }</span>
+ 792 |     | <span class='neutral'></span>
+ 793 |     | <span class='neutral'>    /// @dev Reverts delegate for this token.</span>
+ 794 |     | <span class='unexecuted'>    function delegate(address delegatee) external virtual override</span>
+ 795 |     | <span class='neutral'>    {</span>
+ 796 |     | <span class='unexecuted'>        revert NonDelegatable(address(this));</span>
+ 797 |     | <span class='neutral'>    }</span>
+ 798 |     | <span class='neutral'></span>
+ 799 |     | <span class='neutral'>    /// @dev Reverts delegateBySig for this token.</span>
+ 800 |     | <span class='unexecuted'>    function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)</span>
+ 801 |     | <span class='neutral'>    external virtual override</span>
+ 802 |     | <span class='neutral'>    {</span>
+ 803 |     | <span class='unexecuted'>        revert NonDelegatable(address(this));</span>
+ 804 |     | <span class='neutral'>    }</span>
+ 805 |     | <span class='neutral'>}</span>
+ 806 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/lib/solmate/src/tokens/ERC20.sol</b>
+<code>
+   1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+   2 |     | <span class='neutral'>pragma solidity &gt;=0.8.0;</span>
+   3 |     | <span class='neutral'></span>
+   4 |     | <span class='neutral'>/// @notice Modern and gas efficient ERC20 + EIP-2612 implementation.</span>
+   5 |     | <span class='neutral'>/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC20.sol)</span>
+   6 |     | <span class='neutral'>/// @author Modified from Uniswap (https://github.com/Uniswap/uniswap-v2-core/blob/master/contracts/UniswapV2ERC20.sol)</span>
+   7 |     | <span class='neutral'>/// @dev Do not manually set balances without updating totalSupply, as the sum of all user balances must not exceed it.</span>
+   8 |     | <span class='neutral'>abstract contract ERC20 {</span>
+   9 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+  10 |     | <span class='neutral'>                                 EVENTS</span>
+  11 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+  12 |     | <span class='neutral'></span>
+  13 |     | <span class='neutral'>    event Transfer(address indexed from, address indexed to, uint256 amount);</span>
+  14 |     | <span class='neutral'></span>
+  15 |     | <span class='neutral'>    event Approval(address indexed owner, address indexed spender, uint256 amount);</span>
+  16 |     | <span class='neutral'></span>
+  17 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+  18 |     | <span class='neutral'>                            METADATA STORAGE</span>
+  19 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+  20 |     | <span class='neutral'></span>
+  21 |     | <span class='unexecuted'>    string public name;</span>
+  22 |     | <span class='neutral'></span>
+  23 |     | <span class='unexecuted'>    string public symbol;</span>
+  24 |     | <span class='neutral'></span>
+  25 |     | <span class='unexecuted'>    uint8 public immutable decimals;</span>
+  26 |     | <span class='neutral'></span>
+  27 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+  28 |     | <span class='neutral'>                              ERC20 STORAGE</span>
+  29 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+  30 |     | <span class='neutral'></span>
+  31 |     | <span class='unexecuted'>    uint256 public totalSupply;</span>
+  32 |     | <span class='neutral'></span>
+  33 | *   | <span class='executed'>    mapping(address =&gt; uint256) public balanceOf;</span>
+  34 |     | <span class='neutral'></span>
+  35 |     | <span class='unexecuted'>    mapping(address =&gt; mapping(address =&gt; uint256)) public allowance;</span>
+  36 |     | <span class='neutral'></span>
+  37 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+  38 |     | <span class='neutral'>                            EIP-2612 STORAGE</span>
+  39 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+  40 |     | <span class='neutral'></span>
+  41 |     | <span class='neutral'>    uint256 internal immutable INITIAL_CHAIN_ID;</span>
+  42 |     | <span class='neutral'></span>
+  43 |     | <span class='neutral'>    bytes32 internal immutable INITIAL_DOMAIN_SEPARATOR;</span>
+  44 |     | <span class='neutral'></span>
+  45 |     | <span class='unexecuted'>    mapping(address =&gt; uint256) public nonces;</span>
+  46 |     | <span class='neutral'></span>
+  47 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+  48 |     | <span class='neutral'>                               CONSTRUCTOR</span>
+  49 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+  50 |     | <span class='neutral'></span>
+  51 |     | <span class='unexecuted'>    constructor(</span>
+  52 |     | <span class='neutral'>        string memory _name,</span>
+  53 |     | <span class='neutral'>        string memory _symbol,</span>
+  54 |     | <span class='neutral'>        uint8 _decimals</span>
+  55 |     | <span class='neutral'>    ) {</span>
+  56 |     | <span class='unexecuted'>        name = _name;</span>
+  57 |     | <span class='unexecuted'>        symbol = _symbol;</span>
+  58 |     | <span class='unexecuted'>        decimals = _decimals;</span>
+  59 |     | <span class='neutral'></span>
+  60 |     | <span class='unexecuted'>        INITIAL_CHAIN_ID = block.chainid;</span>
+  61 |     | <span class='unexecuted'>        INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();</span>
+  62 |     | <span class='neutral'>    }</span>
+  63 |     | <span class='neutral'></span>
+  64 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+  65 |     | <span class='neutral'>                               ERC20 LOGIC</span>
+  66 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+  67 |     | <span class='neutral'></span>
+  68 | *   | <span class='executed'>    function approve(address spender, uint256 amount) public virtual returns (bool) {</span>
+  69 | *   | <span class='executed'>        allowance[msg.sender][spender] = amount;</span>
+  70 |     | <span class='neutral'></span>
+  71 | *   | <span class='executed'>        emit Approval(msg.sender, spender, amount);</span>
+  72 |     | <span class='neutral'></span>
+  73 | *   | <span class='executed'>        return true;</span>
+  74 |     | <span class='neutral'>    }</span>
+  75 |     | <span class='neutral'></span>
+  76 |     | <span class='unexecuted'>    function transfer(address to, uint256 amount) public virtual returns (bool) {</span>
+  77 |     | <span class='unexecuted'>        balanceOf[msg.sender] -= amount;</span>
+  78 |     | <span class='neutral'></span>
+  79 |     | <span class='neutral'>        // Cannot overflow because the sum of all user</span>
+  80 |     | <span class='neutral'>        // balances can&#39;t exceed the max uint256 value.</span>
+  81 |     | <span class='neutral'>        unchecked {</span>
+  82 |     | <span class='unexecuted'>            balanceOf[to] += amount;</span>
+  83 |     | <span class='neutral'>        }</span>
+  84 |     | <span class='neutral'></span>
+  85 |     | <span class='unexecuted'>        emit Transfer(msg.sender, to, amount);</span>
+  86 |     | <span class='neutral'></span>
+  87 |     | <span class='unexecuted'>        return true;</span>
+  88 |     | <span class='neutral'>    }</span>
+  89 |     | <span class='neutral'></span>
+  90 | *   | <span class='executed'>    function transferFrom(</span>
+  91 |     | <span class='neutral'>        address from,</span>
+  92 |     | <span class='neutral'>        address to,</span>
+  93 |     | <span class='neutral'>        uint256 amount</span>
+  94 | *   | <span class='executed'>    ) public virtual returns (bool) {</span>
+  95 | *   | <span class='executed'>        uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.</span>
+  96 |     | <span class='neutral'></span>
+  97 | *   | <span class='executed'>        if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;</span>
+  98 |     | <span class='neutral'></span>
+  99 | *   | <span class='executed'>        balanceOf[from] -= amount;</span>
+ 100 |     | <span class='neutral'></span>
+ 101 |     | <span class='neutral'>        // Cannot overflow because the sum of all user</span>
+ 102 |     | <span class='neutral'>        // balances can&#39;t exceed the max uint256 value.</span>
+ 103 |     | <span class='neutral'>        unchecked {</span>
+ 104 | *   | <span class='executed'>            balanceOf[to] += amount;</span>
+ 105 |     | <span class='neutral'>        }</span>
+ 106 |     | <span class='neutral'></span>
+ 107 | *   | <span class='executed'>        emit Transfer(from, to, amount);</span>
+ 108 |     | <span class='neutral'></span>
+ 109 | *   | <span class='executed'>        return true;</span>
+ 110 |     | <span class='neutral'>    }</span>
+ 111 |     | <span class='neutral'></span>
+ 112 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+ 113 |     | <span class='neutral'>                             EIP-2612 LOGIC</span>
+ 114 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+ 115 |     | <span class='neutral'></span>
+ 116 |     | <span class='unexecuted'>    function permit(</span>
+ 117 |     | <span class='neutral'>        address owner,</span>
+ 118 |     | <span class='neutral'>        address spender,</span>
+ 119 |     | <span class='neutral'>        uint256 value,</span>
+ 120 |     | <span class='neutral'>        uint256 deadline,</span>
+ 121 |     | <span class='neutral'>        uint8 v,</span>
+ 122 |     | <span class='neutral'>        bytes32 r,</span>
+ 123 |     | <span class='neutral'>        bytes32 s</span>
+ 124 |     | <span class='neutral'>    ) public virtual {</span>
+ 125 |     | <span class='unexecuted'>        require(deadline &gt;= block.timestamp, &quot;PERMIT_DEADLINE_EXPIRED&quot;);</span>
+ 126 |     | <span class='neutral'></span>
+ 127 |     | <span class='neutral'>        // Unchecked because the only math done is incrementing</span>
+ 128 |     | <span class='neutral'>        // the owner&#39;s nonce which cannot realistically overflow.</span>
+ 129 |     | <span class='unexecuted'>        unchecked {</span>
+ 130 |     | <span class='unexecuted'>            address recoveredAddress = ecrecover(</span>
+ 131 |     | <span class='unexecuted'>                keccak256(</span>
+ 132 |     | <span class='unexecuted'>                    abi.encodePacked(</span>
+ 133 |     | <span class='neutral'>                        &quot;\x19\x01&quot;,</span>
+ 134 |     | <span class='unexecuted'>                        DOMAIN_SEPARATOR(),</span>
+ 135 |     | <span class='unexecuted'>                        keccak256(</span>
+ 136 |     | <span class='unexecuted'>                            abi.encode(</span>
+ 137 |     | <span class='unexecuted'>                                keccak256(</span>
+ 138 |     | <span class='neutral'>                                    &quot;Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)&quot;</span>
+ 139 |     | <span class='neutral'>                                ),</span>
+ 140 |     | <span class='unexecuted'>                                owner,</span>
+ 141 |     | <span class='unexecuted'>                                spender,</span>
+ 142 |     | <span class='unexecuted'>                                value,</span>
+ 143 |     | <span class='unexecuted'>                                nonces[owner]++,</span>
+ 144 |     | <span class='unexecuted'>                                deadline</span>
+ 145 |     | <span class='neutral'>                            )</span>
+ 146 |     | <span class='neutral'>                        )</span>
+ 147 |     | <span class='neutral'>                    )</span>
+ 148 |     | <span class='neutral'>                ),</span>
+ 149 |     | <span class='unexecuted'>                v,</span>
+ 150 |     | <span class='unexecuted'>                r,</span>
+ 151 |     | <span class='unexecuted'>                s</span>
+ 152 |     | <span class='neutral'>            );</span>
+ 153 |     | <span class='neutral'></span>
+ 154 |     | <span class='unexecuted'>            require(recoveredAddress != address(0) &amp;&amp; recoveredAddress == owner, &quot;INVALID_SIGNER&quot;);</span>
+ 155 |     | <span class='neutral'></span>
+ 156 |     | <span class='unexecuted'>            allowance[recoveredAddress][spender] = value;</span>
+ 157 |     | <span class='neutral'>        }</span>
+ 158 |     | <span class='neutral'></span>
+ 159 |     | <span class='unexecuted'>        emit Approval(owner, spender, value);</span>
+ 160 |     | <span class='neutral'>    }</span>
+ 161 |     | <span class='neutral'></span>
+ 162 |     | <span class='unexecuted'>    function DOMAIN_SEPARATOR() public view virtual returns (bytes32) {</span>
+ 163 |     | <span class='unexecuted'>        return block.chainid == INITIAL_CHAIN_ID ? INITIAL_DOMAIN_SEPARATOR : computeDomainSeparator();</span>
+ 164 |     | <span class='neutral'>    }</span>
+ 165 |     | <span class='neutral'></span>
+ 166 |     | <span class='unexecuted'>    function computeDomainSeparator() internal view virtual returns (bytes32) {</span>
+ 167 |     | <span class='unexecuted'>        return</span>
+ 168 |     | <span class='unexecuted'>            keccak256(</span>
+ 169 |     | <span class='unexecuted'>                abi.encode(</span>
+ 170 |     | <span class='unexecuted'>                    keccak256(&quot;EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)&quot;),</span>
+ 171 |     | <span class='unexecuted'>                    keccak256(bytes(name)),</span>
+ 172 |     | <span class='unexecuted'>                    keccak256(&quot;1&quot;),</span>
+ 173 |     | <span class='unexecuted'>                    block.chainid,</span>
+ 174 |     | <span class='unexecuted'>                    address(this)</span>
+ 175 |     | <span class='neutral'>                )</span>
+ 176 |     | <span class='neutral'>            );</span>
+ 177 |     | <span class='neutral'>    }</span>
+ 178 |     | <span class='neutral'></span>
+ 179 |     | <span class='neutral'>    /*//////////////////////////////////////////////////////////////</span>
+ 180 |     | <span class='neutral'>                        INTERNAL MINT/BURN LOGIC</span>
+ 181 |     | <span class='neutral'>    //////////////////////////////////////////////////////////////*/</span>
+ 182 |     | <span class='neutral'></span>
+ 183 |     | <span class='unexecuted'>    function _mint(address to, uint256 amount) internal virtual {</span>
+ 184 |     | <span class='unexecuted'>        totalSupply += amount;</span>
+ 185 |     | <span class='neutral'></span>
+ 186 |     | <span class='neutral'>        // Cannot overflow because the sum of all user</span>
+ 187 |     | <span class='neutral'>        // balances can&#39;t exceed the max uint256 value.</span>
+ 188 |     | <span class='neutral'>        unchecked {</span>
+ 189 |     | <span class='unexecuted'>            balanceOf[to] += amount;</span>
+ 190 |     | <span class='neutral'>        }</span>
+ 191 |     | <span class='neutral'></span>
+ 192 |     | <span class='unexecuted'>        emit Transfer(address(0), to, amount);</span>
+ 193 |     | <span class='neutral'>    }</span>
+ 194 |     | <span class='neutral'></span>
+ 195 |     | <span class='unexecuted'>    function _burn(address from, uint256 amount) internal virtual {</span>
+ 196 |     | <span class='unexecuted'>        balanceOf[from] -= amount;</span>
+ 197 |     | <span class='neutral'></span>
+ 198 |     | <span class='neutral'>        // Cannot underflow because a user&#39;s balance</span>
+ 199 |     | <span class='neutral'>        // will never be larger than the total supply.</span>
+ 200 |     | <span class='neutral'>        unchecked {</span>
+ 201 |     | <span class='unexecuted'>            totalSupply -= amount;</span>
+ 202 |     | <span class='neutral'>        }</span>
+ 203 |     | <span class='neutral'></span>
+ 204 |     | <span class='unexecuted'>        emit Transfer(from, address(0), amount);</span>
+ 205 |     | <span class='neutral'>    }</span>
+ 206 |     | <span class='neutral'>}</span>
+ 207 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts (last updated v4.5.0) (governance/utils/IVotes.sol)</span>
+  3 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  4 |     | <span class='neutral'></span>
+  5 |     | <span class='neutral'>/**</span>
+  6 |     | <span class='neutral'> * @dev Common interface for {ERC20Votes}, {ERC721Votes}, and other {Votes}-enabled contracts.</span>
+  7 |     | <span class='neutral'> *</span>
+  8 |     | <span class='neutral'> * _Available since v4.5._</span>
+  9 |     | <span class='neutral'> */</span>
+ 10 |     | <span class='neutral'>interface IVotes {</span>
+ 11 |     | <span class='neutral'>    /**</span>
+ 12 |     | <span class='neutral'>     * @dev Emitted when an account changes their delegate.</span>
+ 13 |     | <span class='neutral'>     */</span>
+ 14 |     | <span class='neutral'>    event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);</span>
+ 15 |     | <span class='neutral'></span>
+ 16 |     | <span class='neutral'>    /**</span>
+ 17 |     | <span class='neutral'>     * @dev Emitted when a token transfer or delegate change results in changes to a delegate&#39;s number of votes.</span>
+ 18 |     | <span class='neutral'>     */</span>
+ 19 |     | <span class='neutral'>    event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);</span>
+ 20 |     | <span class='neutral'></span>
+ 21 |     | <span class='neutral'>    /**</span>
+ 22 |     | <span class='neutral'>     * @dev Returns the current amount of votes that `account` has.</span>
+ 23 |     | <span class='neutral'>     */</span>
+ 24 |     | <span class='neutral'>    function getVotes(address account) external view returns (uint256);</span>
+ 25 |     | <span class='neutral'></span>
+ 26 |     | <span class='neutral'>    /**</span>
+ 27 |     | <span class='neutral'>     * @dev Returns the amount of votes that `account` had at the end of a past block (`blockNumber`).</span>
+ 28 |     | <span class='neutral'>     */</span>
+ 29 |     | <span class='neutral'>    function getPastVotes(address account, uint256 blockNumber) external view returns (uint256);</span>
+ 30 |     | <span class='neutral'></span>
+ 31 |     | <span class='neutral'>    /**</span>
+ 32 |     | <span class='neutral'>     * @dev Returns the total supply of votes available at the end of a past block (`blockNumber`).</span>
+ 33 |     | <span class='neutral'>     *</span>
+ 34 |     | <span class='neutral'>     * NOTE: This value is the sum of all available votes, which is not necessarily the sum of all delegated votes.</span>
+ 35 |     | <span class='neutral'>     * Votes that have not been delegated are still part of total supply, even though they would not participate in a</span>
+ 36 |     | <span class='neutral'>     * vote.</span>
+ 37 |     | <span class='neutral'>     */</span>
+ 38 |     | <span class='neutral'>    function getPastTotalSupply(uint256 blockNumber) external view returns (uint256);</span>
+ 39 |     | <span class='neutral'></span>
+ 40 |     | <span class='neutral'>    /**</span>
+ 41 |     | <span class='neutral'>     * @dev Returns the delegate that `account` has chosen.</span>
+ 42 |     | <span class='neutral'>     */</span>
+ 43 |     | <span class='neutral'>    function delegates(address account) external view returns (address);</span>
+ 44 |     | <span class='neutral'></span>
+ 45 |     | <span class='neutral'>    /**</span>
+ 46 |     | <span class='neutral'>     * @dev Delegates votes from the sender to `delegatee`.</span>
+ 47 |     | <span class='neutral'>     */</span>
+ 48 |     | <span class='neutral'>    function delegate(address delegatee) external;</span>
+ 49 |     | <span class='neutral'></span>
+ 50 |     | <span class='neutral'>    /**</span>
+ 51 |     | <span class='neutral'>     * @dev Delegates votes from signer to `delegatee`.</span>
+ 52 |     | <span class='neutral'>     */</span>
+ 53 |     | <span class='neutral'>    function delegateBySig(</span>
+ 54 |     | <span class='neutral'>        address delegatee,</span>
+ 55 |     | <span class='neutral'>        uint256 nonce,</span>
+ 56 |     | <span class='neutral'>        uint256 expiry,</span>
+ 57 |     | <span class='neutral'>        uint8 v,</span>
+ 58 |     | <span class='neutral'>        bytes32 r,</span>
+ 59 |     | <span class='neutral'>        bytes32 s</span>
+ 60 |     | <span class='neutral'>    ) external;</span>
+ 61 |     | <span class='neutral'>}</span>
+ 62 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  5 |     | <span class='neutral'></span>
+  6 |     | <span class='neutral'>/**</span>
+  7 |     | <span class='neutral'> * @dev Interface of the ERC20 standard as defined in the EIP.</span>
+  8 |     | <span class='neutral'> */</span>
+  9 |     | <span class='neutral'>interface IERC20 {</span>
+ 10 |     | <span class='neutral'>    /**</span>
+ 11 |     | <span class='neutral'>     * @dev Emitted when `value` tokens are moved from one account (`from`) to</span>
+ 12 |     | <span class='neutral'>     * another (`to`).</span>
+ 13 |     | <span class='neutral'>     *</span>
+ 14 |     | <span class='neutral'>     * Note that `value` may be zero.</span>
+ 15 |     | <span class='neutral'>     */</span>
+ 16 |     | <span class='neutral'>    event Transfer(address indexed from, address indexed to, uint256 value);</span>
+ 17 |     | <span class='neutral'></span>
+ 18 |     | <span class='neutral'>    /**</span>
+ 19 |     | <span class='neutral'>     * @dev Emitted when the allowance of a `spender` for an `owner` is set by</span>
+ 20 |     | <span class='neutral'>     * a call to {approve}. `value` is the new allowance.</span>
+ 21 |     | <span class='neutral'>     */</span>
+ 22 |     | <span class='neutral'>    event Approval(address indexed owner, address indexed spender, uint256 value);</span>
+ 23 |     | <span class='neutral'></span>
+ 24 |     | <span class='neutral'>    /**</span>
+ 25 |     | <span class='neutral'>     * @dev Returns the amount of tokens in existence.</span>
+ 26 |     | <span class='neutral'>     */</span>
+ 27 |     | <span class='neutral'>    function totalSupply() external view returns (uint256);</span>
+ 28 |     | <span class='neutral'></span>
+ 29 |     | <span class='neutral'>    /**</span>
+ 30 |     | <span class='neutral'>     * @dev Returns the amount of tokens owned by `account`.</span>
+ 31 |     | <span class='neutral'>     */</span>
+ 32 |     | <span class='neutral'>    function balanceOf(address account) external view returns (uint256);</span>
+ 33 |     | <span class='neutral'></span>
+ 34 |     | <span class='neutral'>    /**</span>
+ 35 |     | <span class='neutral'>     * @dev Moves `amount` tokens from the caller&#39;s account to `to`.</span>
+ 36 |     | <span class='neutral'>     *</span>
+ 37 |     | <span class='neutral'>     * Returns a boolean value indicating whether the operation succeeded.</span>
+ 38 |     | <span class='neutral'>     *</span>
+ 39 |     | <span class='neutral'>     * Emits a {Transfer} event.</span>
+ 40 |     | <span class='neutral'>     */</span>
+ 41 |     | <span class='neutral'>    function transfer(address to, uint256 amount) external returns (bool);</span>
+ 42 |     | <span class='neutral'></span>
+ 43 |     | <span class='neutral'>    /**</span>
+ 44 |     | <span class='neutral'>     * @dev Returns the remaining number of tokens that `spender` will be</span>
+ 45 |     | <span class='neutral'>     * allowed to spend on behalf of `owner` through {transferFrom}. This is</span>
+ 46 |     | <span class='neutral'>     * zero by default.</span>
+ 47 |     | <span class='neutral'>     *</span>
+ 48 |     | <span class='neutral'>     * This value changes when {approve} or {transferFrom} are called.</span>
+ 49 |     | <span class='neutral'>     */</span>
+ 50 |     | <span class='neutral'>    function allowance(address owner, address spender) external view returns (uint256);</span>
+ 51 |     | <span class='neutral'></span>
+ 52 |     | <span class='neutral'>    /**</span>
+ 53 |     | <span class='neutral'>     * @dev Sets `amount` as the allowance of `spender` over the caller&#39;s tokens.</span>
+ 54 |     | <span class='neutral'>     *</span>
+ 55 |     | <span class='neutral'>     * Returns a boolean value indicating whether the operation succeeded.</span>
+ 56 |     | <span class='neutral'>     *</span>
+ 57 |     | <span class='neutral'>     * IMPORTANT: Beware that changing an allowance with this method brings the risk</span>
+ 58 |     | <span class='neutral'>     * that someone may use both the old and the new allowance by unfortunate</span>
+ 59 |     | <span class='neutral'>     * transaction ordering. One possible solution to mitigate this race</span>
+ 60 |     | <span class='neutral'>     * condition is to first reduce the spender&#39;s allowance to 0 and set the</span>
+ 61 |     | <span class='neutral'>     * desired value afterwards:</span>
+ 62 |     | <span class='neutral'>     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729</span>
+ 63 |     | <span class='neutral'>     *</span>
+ 64 |     | <span class='neutral'>     * Emits an {Approval} event.</span>
+ 65 |     | <span class='neutral'>     */</span>
+ 66 |     | <span class='neutral'>    function approve(address spender, uint256 amount) external returns (bool);</span>
+ 67 |     | <span class='neutral'></span>
+ 68 |     | <span class='neutral'>    /**</span>
+ 69 |     | <span class='neutral'>     * @dev Moves `amount` tokens from `from` to `to` using the</span>
+ 70 |     | <span class='neutral'>     * allowance mechanism. `amount` is then deducted from the caller&#39;s</span>
+ 71 |     | <span class='neutral'>     * allowance.</span>
+ 72 |     | <span class='neutral'>     *</span>
+ 73 |     | <span class='neutral'>     * Returns a boolean value indicating whether the operation succeeded.</span>
+ 74 |     | <span class='neutral'>     *</span>
+ 75 |     | <span class='neutral'>     * Emits a {Transfer} event.</span>
+ 76 |     | <span class='neutral'>     */</span>
+ 77 |     | <span class='neutral'>    function transferFrom(</span>
+ 78 |     | <span class='neutral'>        address from,</span>
+ 79 |     | <span class='neutral'>        address to,</span>
+ 80 |     | <span class='neutral'>        uint256 amount</span>
+ 81 |     | <span class='neutral'>    ) external returns (bool);</span>
+ 82 |     | <span class='neutral'>}</span>
+ 83 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/home/andrey/valory/autonolas-governance/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  5 |     | <span class='neutral'></span>
+  6 |     | <span class='neutral'>/**</span>
+  7 |     | <span class='neutral'> * @dev Interface of the ERC165 standard, as defined in the</span>
+  8 |     | <span class='neutral'> * https://eips.ethereum.org/EIPS/eip-165[EIP].</span>
+  9 |     | <span class='neutral'> *</span>
+ 10 |     | <span class='neutral'> * Implementers can declare support of contract interfaces, which can then be</span>
+ 11 |     | <span class='neutral'> * queried by others ({ERC165Checker}).</span>
+ 12 |     | <span class='neutral'> *</span>
+ 13 |     | <span class='neutral'> * For an implementation, see {ERC165}.</span>
+ 14 |     | <span class='neutral'> */</span>
+ 15 |     | <span class='neutral'>interface IERC165 {</span>
+ 16 |     | <span class='neutral'>    /**</span>
+ 17 |     | <span class='neutral'>     * @dev Returns true if this contract implements the interface defined by</span>
+ 18 |     | <span class='neutral'>     * `interfaceId`. See the corresponding</span>
+ 19 |     | <span class='neutral'>     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]</span>
+ 20 |     | <span class='neutral'>     * to learn more about how these ids are created.</span>
+ 21 |     | <span class='neutral'>     *</span>
+ 22 |     | <span class='neutral'>     * This function call must use less than 30 000 gas.</span>
+ 23 |     | <span class='neutral'>     */</span>
+ 24 |     | <span class='neutral'>    function supportsInterface(bytes4 interfaceId) external view returns (bool);</span>
+ 25 |     | <span class='neutral'>}</span>
+ 26 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
