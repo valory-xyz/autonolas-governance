@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("Voting Escrow OLAS", function () {
+describe("Vote Weighting veOLAS", function () {
     let olas;
     let ve;
     let vw;
@@ -608,6 +608,14 @@ describe("Voting Escrow OLAS", function () {
 
             // Remove the nominee
             await vw.removeNominee(nominees[0], chainId);
+
+            // Get the set of removed nominees
+            const numRemovedNominees = await vw.getNumRemovedNominees();
+            expect(numRemovedNominees).to.equal(1);
+            const setRemovedNominees = await vw.getAllRemovedNominees();
+            // The set itself has one more zero-th empty element
+            expect(setRemovedNominees.length).to.equal(2);
+            expect(numRemovedNominees).to.equal(setRemovedNominees.length - 1);
 
             // Get the removed nominee Id
             id = await vw.getNomineeId(nominees[0], chainId);
