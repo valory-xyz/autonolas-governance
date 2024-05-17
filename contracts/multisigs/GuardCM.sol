@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.25;
 
 import {Enum} from "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
 import {VerifyData} from "./VerifyData.sol";
@@ -216,8 +216,9 @@ contract GuardCM is VerifyData {
             // Check if the data goes across the bridge
             if (bridgeParams.verifierL2 != address(0)) {
                 // Process the bridge logic
-                (bool success, bytes memory returnData) = bridgeParams.verifierL2.delegatecall(abi.encodeWithSelector(
-                    IBridgeVerifier.processBridgeData.selector, callDatas[i], bridgeParams.bridgeMediatorL2, bridgeParams.chainId));
+                bytes memory processData = abi.encodeCall(IBridgeVerifier.processBridgeData, (callDatas[i],
+                    bridgeParams.bridgeMediatorL2, bridgeParams.chainId));
+                (bool success, bytes memory returnData) = bridgeParams.verifierL2.delegatecall(processData);
                 // Process unsuccessful delegatecall
                 if (!success) {
                     // Get the revert message bytes

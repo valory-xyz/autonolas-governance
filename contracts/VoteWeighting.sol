@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.25;
 
 // Dispenser interface
 interface IDispenser {
@@ -83,6 +83,11 @@ error NomineeAlreadyExists(bytes32 account, uint256 chainId);
 /// @param curTime Current timestamp.
 error LockExpired(address account, uint256 deadline, uint256 curTime);
 
+/// @dev Violated a negative slope value.
+/// @param account Account address.
+/// @param slope Negative slope.
+error NegativeSlope(address account, int128 slope);
+
 /// @dev The vote has been performed already.
 /// @param voter Voter address.
 /// @param curTime Current time.
@@ -120,11 +125,18 @@ struct Nominee {
 
 
 /// @title VoteWeighting - Smart contract for Vote Weighting with specific nominees composed of address and chain Id
+/// @notice Inspired by https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/GaugeController.vy
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract VoteWeighting {
     event OwnerUpdated(address indexed owner);
+    event DispenserUpdated(address indexed dispenser);
+    event Checkpoint(address indexed sender, uint256 sumBias);
+    event CheckpointNominee(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
+        uint256 nomineeWeight, uint256 totalSum);
+    event NomineeRelativeWeightWrite(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
+        uint256 nomineeWeight, uint256 totalSum, uint256 nomineeRelativeWeight);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
     event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
     event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);
@@ -132,6 +144,7 @@ contract VoteWeighting {
     // 7 * 86400 seconds - all future times are rounded by week
     uint256 public constant WEEK = 604_800;
     // Cannot change weight votes more often than once in 10 days
+    // For explanation about the delay consult the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
     uint256 public constant WEIGHT_VOTE_DELAY = 864_000;
     // Max weight amount
     uint256 public constant MAX_WEIGHT = 10_000;
@@ -194,7 +207,7 @@ contract VoteWeighting {
     }
 
     /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
-    /// @return Sum of weights.
+    /// @return Sum of nominee weights.
     function _getSum() internal returns (uint256) {
         // t is always > 0 as it is set in the constructor
         uint256 t = timeSum;
@@ -356,7 +369,7 @@ contract VoteWeighting {
     }
 
     /// @dev Changes the dispenser contract address.
-    /// @notice Dispenser can a zero address if the contract needs to serve a general purpose.
+    /// @notice Dispenser can be set to a zero address if the contract needs to serve a general purpose.
     /// @param newDispenser New dispenser contract address.
     function changeDispenser(address newDispenser) external {
         // Check for the contract ownership
@@ -365,19 +378,24 @@ contract VoteWeighting {
         }
 
         dispenser = newDispenser;
+        emit DispenserUpdated(newDispenser);
     }
 
     /// @dev Checkpoint to fill data common for all nominees.
     function checkpoint() external {
-        _getSum();
+        uint256 totalSum = _getSum();
+
+        emit Checkpoint(msg.sender, totalSum);
     }
 
     /// @dev Checkpoint to fill data for both a specific nominee and common for all nominees.
     /// @param account Address of the nominee.
     /// @param chainId Chain Id.
     function checkpointNominee(bytes32 account, uint256 chainId) external {
-        _getWeight(account, chainId);
-        _getSum();
+        uint256 nomineeWeight = _getWeight(account, chainId);
+        uint256 totalSum = _getSum();
+
+        emit CheckpointNominee(msg.sender, account, chainId, nomineeWeight, totalSum);
     }
 
     /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18) and a sum of weights.
@@ -410,14 +428,14 @@ contract VoteWeighting {
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
-    /// @return weight Value of relative weight normalized to 1e18.
+    /// @return relativeWeight Value of nominee relative weight normalized to 1e18.
     /// @return totalSum Sum of nominee weights.
     function nomineeRelativeWeight(
         bytes32 account,
         uint256 chainId,
         uint256 time
-    ) external view returns (uint256 weight, uint256 totalSum) {
-        (weight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);
+    ) external view returns (uint256 relativeWeight, uint256 totalSum) {
+        (relativeWeight, totalSum) = _nomineeRelativeWeight(account, chainId, time);
     }
 
     /// @dev Get nominee weight normalized to 1e18 and also fill all the unfilled values for type and nominee records.
@@ -426,16 +444,18 @@ contract VoteWeighting {
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
     /// @param time Relative weight at the specified timestamp in the past or present.
-    /// @return weight Value of relative weight normalized to 1e18.
+    /// @return relativeWeight Value of nominee relative weight normalized to 1e18.
     /// @return totalSum Sum of nominee weights.
     function nomineeRelativeWeightWrite(
         bytes32 account,
         uint256 chainId,
         uint256 time
-    ) external returns (uint256 weight, uint256 totalSum) {
-        _getWeight(account, chainId);
+    ) external returns (uint256 relativeWeight, uint256 totalSum) {
+        uint256 nomineeWeight = _getWeight(account, chainId);
         _getSum();
-        (weight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);
+        (relativeWeight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);
+
+        emit NomineeRelativeWeightWrite(msg.sender, account, chainId, nomineeWeight, totalSum, relativeWeight);
     }
 
     /// @dev Allocate voting power for changing pool weights.
@@ -451,7 +471,12 @@ contract VoteWeighting {
             revert NomineeRemoved(account, chainId);
         }
 
-        uint256 slope = uint256(uint128(IVEOLAS(ve).getLastUserPoint(msg.sender).slope));
+        // Get user veOLAS slope and check its value
+        int128 userSlope = IVEOLAS(ve).getLastUserPoint(msg.sender).slope;
+        if (userSlope < 0) {
+            revert NegativeSlope(msg.sender, userSlope);
+        }
+
         uint256 lockEnd = IVEOLAS(ve).lockedEnd(msg.sender);
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
 
@@ -479,7 +504,7 @@ contract VoteWeighting {
         }
 
         VotedSlope memory newSlope = VotedSlope({
-            slope: slope * weight / MAX_WEIGHT,
+            slope: uint256(uint128(userSlope)) * weight / MAX_WEIGHT,
             end: lockEnd,
             power: weight
         });
@@ -547,6 +572,7 @@ contract VoteWeighting {
     }
 
     /// @dev Removes nominee from the contract and zeros its weight.
+    /// @notice The last nominee in the set of nominees is going to change its Id at the end of this function call.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
     function removeNominee(bytes32 account, uint256 chainId) external {
@@ -580,21 +606,22 @@ contract VoteWeighting {
         // Add to the removed nominee map
         mapRemovedNominees[nomineeHash] = true;
 
+        // Remove nominee from the map
+        mapNomineeIds[nomineeHash] = 0;
+
+        // Shuffle the current last nominee id in the set to be placed to the removed one
+        nominee = setNominees[setNominees.length - 1];
+        bytes32 replacedNomineeHash = keccak256(abi.encode(nominee));
+        mapNomineeIds[replacedNomineeHash] = id;
+        setNominees[id] = nominee;
+        // Pop the last element from the set
+        setNominees.pop();
+
         // Remove nominee in dispenser, if applicable
         address localDispenser = dispenser;
         if (localDispenser != address(0)) {
             IDispenser(localDispenser).removeNominee(nomineeHash);
         }
-
-        // Remove nominee from the map
-        mapNomineeIds[nomineeHash] = 0;
-        // Shuffle the current last nominee id in the set to be placed to the removed one
-        nominee = setNominees[setNominees.length - 1];
-        nomineeHash = keccak256(abi.encode(nominee));
-        mapNomineeIds[nomineeHash] = id;
-        setNominees[id] = nominee;
-        // Pop the last element from the set
-        setNominees.pop();
 
         emit RemoveNominee(account, chainId, newSum);
     }
