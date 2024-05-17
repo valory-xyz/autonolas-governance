@@ -190,7 +190,8 @@ contract VoteWeighting {
         owner = msg.sender;
         ve = _ve;
         timeSum = block.timestamp / WEEK * WEEK;
-        setNominees.push(Nominee(bytes32(0), 0));
+        // Push empty element to the zero-th index
+        setNominees.push(Nominee(0, 0));
     }
 
     /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
@@ -367,12 +368,12 @@ contract VoteWeighting {
         dispenser = newDispenser;
     }
 
-    /// @dev Checkpoint to fill data common for all nominees.
+    /// @dev Checkpoints to fill data common for all nominees.
     function checkpoint() external {
         _getSum();
     }
 
-    /// @dev Checkpoint to fill data for both a specific nominee and common for all nominees.
+    /// @dev Checkpoints to fill data for both a specific nominee and common for all nominees.
     /// @param account Address of the nominee.
     /// @param chainId Chain Id.
     function checkpointNominee(bytes32 account, uint256 chainId) external {
@@ -380,11 +381,10 @@ contract VoteWeighting {
         _getSum();
     }
 
-    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18) and a sum of weights.
-    ///         Inflation which will be received by it is inflation_rate * relativeWeight / 1e18.
+    /// @dev Gets Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18) and a sum of weights.
     /// @param account Address of the nominee in byte32 standard.
     /// @param chainId Chain Id.
-    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @param time Timestamp in the past or present.
     /// @return weight Value of relative weight normalized to 1e18.
     /// @return totalSum Sum of nominee weights.
     function _nomineeRelativeWeight(
@@ -404,12 +404,10 @@ contract VoteWeighting {
         }
     }
 
-    /// @dev Get Nominee relative weight (not more than 1.0) normalized to 1e18 and the sum of weights.
-    ///         (e.g. 1.0 == 1e18). Inflation which will be received by it is
-    ///         inflation_rate * relativeWeight / 1e18.
+    /// @dev Gets Nominee relative weight (not more than 1.0) normalized to 1e18 (e.g. 1.0 == 1e18) and a sum of weights.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
-    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @param time Timestamp in the past or present.
     /// @return weight Value of relative weight normalized to 1e18.
     /// @return totalSum Sum of nominee weights.
     function nomineeRelativeWeight(
@@ -420,12 +418,11 @@ contract VoteWeighting {
         (weight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);
     }
 
-    /// @dev Get nominee weight normalized to 1e18 and also fill all the unfilled values for type and nominee records.
-    ///      Also, get the total sum of all the nominee weights.
-    /// @notice Any address can call, however nothing is recorded if the values are filled already.
+    /// @dev Gets nominee weight normalized to 1e18 and also gets the total sum of all the nominee weights.
+    /// @notice Nothing is recorded if the values are already filled.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
-    /// @param time Relative weight at the specified timestamp in the past or present.
+    /// @param time Timestamp in the past or present.
     /// @return weight Value of relative weight normalized to 1e18.
     /// @return totalSum Sum of nominee weights.
     function nomineeRelativeWeightWrite(
@@ -438,7 +435,7 @@ contract VoteWeighting {
         (weight, totalSum) =  _nomineeRelativeWeight(account, chainId, time);
     }
 
-    /// @dev Allocate voting power for changing pool weights.
+    /// @dev Allocates voting power for changing pool weights.
     /// @param account Address of the nominee the `msg.sender` votes for in bytes32 form.
     /// @param chainId Chain Id.
     /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
@@ -523,7 +520,7 @@ contract VoteWeighting {
         emit VoteForNominee(msg.sender, account, chainId, weight);
     }
 
-    /// @dev Allocate voting power for changing pool weights in batch.
+    /// @dev Allocates voting power for changing pool weights in a batch set.
     /// @param accounts Set of nominee addresses in bytes32 form the `msg.sender` votes for.
     /// @param chainIds Set of corresponding chain Ids.
     /// @param weights Weights for a nominees in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
@@ -658,28 +655,28 @@ contract VoteWeighting {
 
     /// @dev Gets a full set of nominees.
     /// @notice The returned set includes the zero-th empty nominee instance.
-    /// @return nominees Set of all the nominees in the contract.
-    function getAllNominees() external view returns (Nominee[] memory nominees) {
-        nominees = setNominees;
+    /// @return Set of all the nominees in the contract.
+    function getAllNominees() external view returns (Nominee[] memory) {
+        return setNominees;
     }
 
     /// @dev Gets the nominee Id in the global nominees set.
     /// @param account Nominee address in bytes32 form.
     /// @param chainId Chain Id.
-    /// @return id Nominee Id in the global set of Nominee struct values.
-    function getNomineeId(bytes32 account, uint256 chainId) external view returns (uint256 id) {
+    /// @return Nominee Id in the global set of Nominee struct values.
+    function getNomineeId(bytes32 account, uint256 chainId) external view returns (uint256) {
         // Get the nominee struct and hash
         Nominee memory nominee = Nominee(account, chainId);
         bytes32 nomineeHash = keccak256(abi.encode(nominee));
 
-        id = mapNomineeIds[nomineeHash];
+        return mapNomineeIds[nomineeHash];
     }
 
     /// @dev Get the nominee address and its corresponding chain Id.
     /// @notice The zero-th default nominee Id with id == 0 does not count.
     /// @param id Nominee Id in the global set of Nominee struct values.
-    /// @return nominee Nominee address in bytes32 form and chain Id.
-    function getNominee(uint256 id) external view returns (Nominee memory nominee) {
+    /// @return Nominee address in bytes32 form and chain Id.
+    function getNominee(uint256 id) external view returns (Nominee memory) {
         // Get the total number of nominees in the contract
         uint256 totalNumNominees = setNominees.length - 1;
         // Check for the zero id or the overflow
@@ -689,7 +686,7 @@ contract VoteWeighting {
             revert Overflow(id, totalNumNominees);
         }
 
-        nominee = setNominees[id];
+        return setNominees[id];
     }
 
     /// @dev Get the set of nominee addresses and corresponding chain Ids.
@@ -697,11 +694,7 @@ contract VoteWeighting {
     /// @param startId Start Id of the nominee in the global set of Nominee struct values.
     /// @param numNominees Number of nominees to get.
     /// @return nominees Set of nominee accounts in bytes32 form and chain Ids.
-    function getNominees(
-        uint256 startId,
-        uint256 numNominees
-    ) external view returns (Nominee[] memory nominees)
-    {
+    function getNominees(uint256 startId, uint256 numNominees) external view returns (Nominee[] memory nominees) {
         // Check for the zero id or the overflow
         if (startId == 0 || numNominees == 0) {
             revert ZeroValue();
