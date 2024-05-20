@@ -440,7 +440,7 @@ contract VoteWeighting {
         (relativeWeight, totalSum) = _nomineeRelativeWeight(account, chainId, time);
     }
 
-    /// @dev Gets nominee weight normalized to 1e18 and also gets the total sum of all the nominee weights.
+    /// @dev Checkpoints and gets nominee weight normalized to 1e18, and the total sum of all the nominee weights.
     /// @notice Nothing is recorded if the values are already filled.
     /// @param account Address of the nominee in bytes32 form.
     /// @param chainId Chain Id.
