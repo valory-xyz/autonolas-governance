@@ -66,6 +66,8 @@ console.log("bug: negative getLastUserPoint() is possible");
 340282366920938463463374607431768211446
 bug: negative getLastUserPoint() is ok
 ```
+[x] fixed
+
 #### Minor issue
 CEI pattern: <br>
 ```sh
@@ -77,10 +79,14 @@ Not CEI pattern. Move to end.
         }
 
 ```
+[x] fixed
+
 Lacks a zero-check on: <br>
 ```sh
 function changeDispenser(address newDispenser) external {}
 ```
+[x] as designed
+
 No events: <br>
 ```sh
 function changeDispenser(address newDispenser) external {}
@@ -88,25 +94,34 @@ function checkpoint() ?
 function checkpointNominee() ?
 function nomineeRelativeWeightWrite() ?
 ```
+[x] fixed
+
 Naming test issue: <br>
 ```sh
 Rename test\VoteWeighting.js
 describe("Voting Escrow OLAS", function () {
 ```
+[x] fixed
+
 README issue: <br>
 ```sh
 No link to https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/GaugeController.vy
 ```
+[x] fixed
+
 Pay attention: <br>
 ```
 https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf -> 18. Several loops are not executable due to gaslimitation
 Discussion: I don't think this is a problem for our version.
 ```
+[x] noted, will check in tests
+
 Version solidity: <br>
 ```sh
 For contracts that are planned to be deployed in mainnet, it is necessary to use the features of the latest hard fork.
 https://soliditylang.org/blog/2024/03/14/solidity-0.8.25-release-announcement/
 ```
+[x] fixed
 
 #### Notes
 Notes for UX/UI:
@@ -141,11 +156,14 @@ Notes for UX/UI:
 Due to operation removeNominee(), you must keep in mind that for the same `id` there can be DIFFERENT(!) `nominee` in different time. ref: tests
 Does the developer need to add clarification in comments to the source code? 
 ```
+[x] added a comment
+
 General notes (from Curve Finance audit): <br>
 ```sh
 https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
 4. GaugeController allowsfor quick vote andwithdrawvoting strategy: ref: source variable WEIGHT_VOTE_DELAY
 18. Several loops are not executable due to gaslimitation
 ```
+[x] noted and added as a comment
 
 

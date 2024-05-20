@@ -224,7 +224,7 @@ The Autonolas `OLAS` contract was inspired and based on in parts by the followin
 - [Rari-Capital](https://github.com/Rari-Capital/solmate). Last known audited version: `a9e3ea26a2dc73bfa87f0cb189687d029028e0c5`;
 - [Maple Finance](https://github.com/maple-labs/erc20). Last known audited version: `756c110ddc3c96c596a52bce43553477a19ee3aa`;
 
-The `veOLAS` contract was inspired and based on the following sources:
+The `veOLAS` and `VoteWeighting` contracts were inspired and based on the following sources:
 - [Curve DAO](https://github.com/curvefi/curve-dao-contracts).
 
 The governance contracts and the rest was inspired and based on the following sources:

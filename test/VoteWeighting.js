@@ -325,9 +325,9 @@ describe("Voting Escrow OLAS", function () {
 
             // Make sure the initial weight is zero
             let weight = await vw.nomineeRelativeWeight(nominee, chainId, block.timestamp);
-            expect(weight.weight).to.equal(0);
+            expect(weight.relativeWeight).to.equal(0);
             weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
-            expect(weight.weight).to.equal(0);
+            expect(weight.relativeWeight).to.equal(0);
 
             // Vote for the nominee
             await vw.voteForNomineeWeights(nominee, chainId, maxVoteWeight / 2);
@@ -340,7 +340,7 @@ describe("Voting Escrow OLAS", function () {
 
             // Make sure the initial weight is zero
             weight = await vw.nomineeRelativeWeight(nominee2, chainId, nextTime);
-            expect(weight.weight).to.equal(0);
+            expect(weight.relativeWeight).to.equal(0);
 
             // Vote for another nominee
             await vw.voteForNomineeWeights(nominee2, chainId, maxVoteWeight / 2);
@@ -355,13 +355,13 @@ describe("Voting Escrow OLAS", function () {
 
             // Check relative weights that must represent a half for each
             weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
-            expect(Number(weight.weight) / E18).to.equal(0.5);
+            expect(Number(weight.relativeWeight) / E18).to.equal(0.5);
             weight = await vw.nomineeRelativeWeight(nominee2, chainId, nextTime);
-            expect(Number(weight.weight) / E18).to.equal(0.5);
+            expect(Number(weight.relativeWeight) / E18).to.equal(0.5);
 
             // Write nominee weight and try to get one from the distant future
             weight = await vw.callStatic.nomineeRelativeWeightWrite(nominee, chainId, nextTime * 2);
-            expect(weight.weight).to.equal(0);
+            expect(weight.relativeWeight).to.equal(0);
 
             // Checkpoint and checkpoint nominee
             await vw.checkpoint();
@@ -402,7 +402,7 @@ describe("Voting Escrow OLAS", function () {
 
             // Check relative weights that must represent a half for each
             const weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
-            expect(Number(weight.weight) / E18).to.equal(1);
+            expect(Number(weight.relativeWeight) / E18).to.equal(1);
 
             // Restore to the state of the snapshot
             await snapshot.restore();
@@ -434,7 +434,7 @@ describe("Voting Escrow OLAS", function () {
             // Check weights that must represent a half for each
             for (let i = 0; i < numNominees; i++) {
                 const weight = await vw.nomineeRelativeWeight(nominees[i], chainIds[i], nextTime);
-                expect(Number(weight.weight) / E18).to.equal(0.5);
+                expect(Number(weight.relativeWeight) / E18).to.equal(0.5);
             }
         });
 
@@ -466,7 +466,7 @@ describe("Voting Escrow OLAS", function () {
 
             // Check relative weights that must represent a half for each
             const weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
-            expect(Number(weight.weight) / E18).to.equal(1);
+            expect(Number(weight.relativeWeight) / E18).to.equal(1);
 
             // Restore to the state of the snapshot
             await snapshot.restore();
@@ -519,7 +519,7 @@ describe("Voting Escrow OLAS", function () {
                 await vw.nomineeRelativeWeight(nominees[1], chainId, nextTime)
             ];
             // nominees[0] weight: 666666666680682666, nominees[1] weight: 333333333319317333; the ratio is 2:1
-            expect(Number(weights[0].weight) / E18).to.be.greaterThan(Number(weights[1].weight) / E18);
+            expect(Number(weights[0].relativeWeight) / E18).to.be.greaterThan(Number(weights[1].relativeWeight) / E18);
 
             // Restore to the state of the snapshot
             await snapshot.restore();
