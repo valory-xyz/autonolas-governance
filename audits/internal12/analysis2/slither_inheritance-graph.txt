@@ -1,0 +1,5 @@
+'solc --version' running
+'solc ./VoteWeighting-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal12/analysis2/contracts' running
+INFO:Printers:Inheritance Graph: ./VoteWeighting-flatten.sol.inheritance-graph.dot
+
+INFO:Slither:. analyzed (3 contracts)

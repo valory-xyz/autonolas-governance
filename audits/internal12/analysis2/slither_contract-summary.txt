@@ -1,0 +1,46 @@
+'solc --version' running
+'solc ./VoteWeighting-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal12/analysis2/contracts' running
+INFO:Printers:
++ Contract IDispenser (Most derived contract)
+  - From IDispenser
+    - addNominee(bytes32) (external)
+    - removeNominee(bytes32) (external)
+
++ Contract IVEOLAS (Most derived contract)
+  - From IVEOLAS
+    - getLastUserPoint(address) (external)
+    - lockedEnd(address) (external)
+
++ Contract VoteWeighting (Most derived contract)
+  - From VoteWeighting
+    - _addNominee(Nominee) (internal)
+    - _getSum() (internal)
+    - _getWeight(bytes32,uint256) (internal)
+    - _maxAndSub(uint256,uint256) (internal)
+    - _nomineeRelativeWeight(bytes32,uint256,uint256) (internal)
+    - addNomineeEVM(address,uint256) (external)
+    - addNomineeNonEVM(bytes32,uint256) (external)
+    - changeDispenser(address) (external)
+    - changeOwner(address) (external)
+    - checkpoint() (external)
+    - checkpointNominee(bytes32,uint256) (external)
+    - constructor(address) (public)
+    - getAllNominees() (external)
+    - getAllRemovedNominees() (external)
+    - getNextAllowedVotingTimes(bytes32[],uint256[],address[]) (external)
+    - getNominee(uint256) (external)
+    - getNomineeId(bytes32,uint256) (external)
+    - getNomineeWeight(bytes32,uint256) (external)
+    - getNumNominees() (external)
+    - getNumRemovedNominees() (external)
+    - getRemovedNominee(uint256) (external)
+    - getRemovedNomineeId(bytes32,uint256) (external)
+    - getWeightsSum() (external)
+    - nomineeRelativeWeight(bytes32,uint256,uint256) (external)
+    - nomineeRelativeWeightWrite(bytes32,uint256,uint256) (external)
+    - removeNominee(bytes32,uint256) (external)
+    - retrieveRemovedNomineeVotingPower(bytes32,uint256) (external)
+    - voteForNomineeWeights(bytes32,uint256,uint256) (public)
+    - voteForNomineeWeightsBatch(bytes32[],uint256[],uint256[]) (external)
+
+INFO:Slither:. analyzed (3 contracts)

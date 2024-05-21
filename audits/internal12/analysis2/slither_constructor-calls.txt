@@ -1,0 +1,31 @@
+'solc --version' running
+'solc ./VoteWeighting-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal12/analysis2/contracts' running
+INFO:Printers:
+#############################
+####### VoteWeighting #######
+#############################
+
+## Constructor Call Sequence
+	- VoteWeighting
+
+## Constructor Definitions
+
+### VoteWeighting
+
+     constructor(address _ve) {
+        // Check for the zero address
+        if (_ve == address(0)) {
+            revert ZeroAddress();
+        }
+
+        // Set initial parameters
+        owner = msg.sender;
+        ve = _ve;
+        timeSum = block.timestamp / WEEK * WEEK;
+        // Push empty element to the zero-th index
+        setNominees.push(Nominee(0, 0));
+        // For symmetry, push empty element to the zero-th index in the removed Nominee set as well
+        setRemovedNominees.push(Nominee(0, 0));
+    }
+
+INFO:Slither:. analyzed (3 contracts)
