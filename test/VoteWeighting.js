@@ -160,10 +160,6 @@ describe("Vote Weighting veOLAS", function () {
             expect(nomineeChainId.account).to.equal(convertAddressToBytes32(nominee));
             expect(nomineeChainId.chainId).to.equal(chainId);
 
-            const nomineeChainIds = await vw.getNominees(1, 1);
-            expect(nomineeChainIds[0].account).to.equal(convertAddressToBytes32(nominee));
-            expect(nomineeChainIds[0].chainId).to.equal(chainId);
-
             let nomineeId = await vw.getNomineeId(convertAddressToBytes32(nominee), chainId);
             expect(nomineeId).to.equal(1);
 
@@ -186,22 +182,10 @@ describe("Vote Weighting veOLAS", function () {
             await expect(
                 vw.getNominee(0)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
-            await expect(
-                vw.getNominees(1, 0)
-            ).to.be.revertedWithCustomError(vw, "ZeroValue");
-            await expect(
-                vw.getNominees(0, 1)
-            ).to.be.revertedWithCustomError(vw, "ZeroValue");
 
             // Try to get the nonexistent nominee
             await expect(
                 vw.getNominee(2)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(2, 1)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(1, 2)
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
             // Add one more nominee
@@ -209,12 +193,6 @@ describe("Vote Weighting veOLAS", function () {
             // Try to get the nonexistent nominee
             await expect(
                 vw.getNominee(3)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(2, 2)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(1, 3)
             ).to.be.revertedWithCustomError(vw, "Overflow");
         });
     });
@@ -444,7 +422,7 @@ describe("Vote Weighting veOLAS", function () {
 
             // Lock one OLAS into veOLAS
             await olas.approve(ve.address, oneOLASBalance);
-            await ve.createLock(oneOLASBalance, oneYear);
+            await ve.createLock(oneOLASBalance, oneYear * 4);
 
             // Add a nominee
             let nominee = signers[1].address;
@@ -461,11 +439,11 @@ describe("Vote Weighting veOLAS", function () {
             await vw.voteForNomineeWeights(nominee, chainId, maxVoteWeight);
 
             // Get the next point timestamp where votes are written after voting
-            const block = await ethers.provider.getBlock("latest");
+            block = await ethers.provider.getBlock("latest");
             const nextTime = getNextTime(block.timestamp);
 
             // Check relative weights that must represent a half for each
-            const weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
+            weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
             expect(Number(weight.relativeWeight) / E18).to.equal(1);
 
             // Restore to the state of the snapshot
@@ -616,6 +594,13 @@ describe("Vote Weighting veOLAS", function () {
             // The set itself has one more zero-th empty element
             expect(setRemovedNominees.length).to.equal(2);
             expect(numRemovedNominees).to.equal(setRemovedNominees.length - 1);
+            // Get removed nominee Id
+            id = await vw.getRemovedNomineeId(nominees[0], chainId);
+            expect(id).to.equal(1);
+            // Check the removed nominee id
+            const remNominee = await vw.getRemovedNominee(id);
+            expect(remNominee.account).to.equal(nominees[0]);
+            expect(remNominee.chainId).to.equal(chainId);
 
             // Get the removed nominee Id
             id = await vw.getNomineeId(nominees[0], chainId);
@@ -675,6 +660,12 @@ describe("Vote Weighting veOLAS", function () {
 
             // Remove the second nominee
             await vw.removeNominee(nominees[1], chainId);
+
+            // Check the second removed nominee Id
+            id = await vw.getRemovedNomineeId(nominees[1], chainId);
+            expect(id).to.equal(2);
+            // Check the actual number of removed nominees
+            expect(await vw.getNumRemovedNominees()).to.equal(2);
 
             // After removing, the weight must be zero
             weight = await vw.getNomineeWeight(nominees[1], chainId);

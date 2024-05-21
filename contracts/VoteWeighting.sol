@@ -136,7 +136,7 @@ contract VoteWeighting {
     event CheckpointNominee(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
         uint256 nomineeWeight, uint256 totalSum);
     event NomineeRelativeWeightWrite(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
-        uint256 nomineeWeight, uint256 totalSum, uint256 nomineeRelativeWeight);
+        uint256 nomineeWeight, uint256 totalSum, uint256 relativeWeight);
     event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
     event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
     event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);
@@ -146,6 +146,13 @@ contract VoteWeighting {
     // Cannot change weight votes more often than once in 10 days
     // For explanation about the delay consult the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
     uint256 public constant WEIGHT_VOTE_DELAY = 864_000;
+    // Max number of weeks for checkpoints
+    // The number corresponds to slightly more than a year time, that is more than enough to have at least one vote
+    // Also, in line with our tokenomics that cannot have epochs longer than a year
+    // The suggested maximum amount of weeks results in checkpoint calculation that always fit in the block,
+    // although in practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
+    // For gas concerns regarding checkpoint calculations, see the internal audit and the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
+    uint256 public constant MAX_NUM_WEEKS = 53;
     // Max weight amount
     uint256 public constant MAX_WEIGHT = 10_000;
     // Maximum chain Id as per EVM specs
@@ -163,8 +170,8 @@ contract VoteWeighting {
     Nominee[] public setRemovedNominees;
     // Mapping of hash(Nominee struct) => nominee Id
     mapping(bytes32 => uint256) public mapNomineeIds;
-    // Mapping of hash(Nominee struct) => previously removed nominee flag
-    mapping(bytes32 => bool) public mapRemovedNominees;
+    // Mapping of hash(Nominee struct) => removed nominee Id
+    mapping(bytes32 => uint256) public mapRemovedNominees;
 
     // user -> hash(Nominee struct) -> VotedSlope
     mapping(address => mapping(bytes32 => VotedSlope)) public voteUserSlopes;
@@ -217,7 +224,7 @@ contract VoteWeighting {
         // t is always > 0 as it is set in the constructor
         uint256 t = timeSum;
         Point memory pt = pointsSum[t];
-        for (uint256 i = 0; i < 500; i++) {
+        for (uint256 i = 0; i < MAX_NUM_WEEKS; i++) {
             if (t > block.timestamp) {
                 break;
             }
@@ -250,14 +257,14 @@ contract VoteWeighting {
 
         // Check that the nominee exists or has been removed
         bytes32 nomineeHash = keccak256(abi.encode(nominee));
-        if (!mapRemovedNominees[nomineeHash] && mapNomineeIds[nomineeHash] == 0) {
+        if (mapRemovedNominees[nomineeHash] == 0 && mapNomineeIds[nomineeHash] == 0) {
             revert NomineeDoesNotExist(account, chainId);
         }
 
         // t is always > 0 as it is set during the addNominee() call
         uint256 t = timeWeight[nomineeHash];
         Point memory pt = pointsWeight[nomineeHash][t];
-        for (uint256 i = 0; i < 500; i++) {
+        for (uint256 i = 0; i < MAX_NUM_WEEKS; i++) {
             if (t > block.timestamp) {
                 break;
             }
@@ -290,7 +297,7 @@ contract VoteWeighting {
         }
 
         // Check for the previously removed nominee
-        if (mapRemovedNominees[nomineeHash]) {
+        if (mapRemovedNominees[nomineeHash] > 0) {
             revert NomineeRemoved(nominee.account, nominee.chainId);
         }
 
@@ -468,7 +475,7 @@ contract VoteWeighting {
         bytes32 nomineeHash = keccak256(abi.encode(Nominee(account, chainId)));
 
         // Check for the previously removed nominee
-        if (mapRemovedNominees[nomineeHash]) {
+        if (mapRemovedNominees[nomineeHash] > 0) {
             revert NomineeRemoved(account, chainId);
         }
 
@@ -605,7 +612,7 @@ contract VoteWeighting {
         timeSum = nextTime;
 
         // Add to the removed nominee map and set
-        mapRemovedNominees[nomineeHash] = true;
+        mapRemovedNominees[nomineeHash] = setRemovedNominees.length;
         setRemovedNominees.push(nominee);
 
         // Remove nominee from the map
@@ -637,7 +644,7 @@ contract VoteWeighting {
         bytes32 nomineeHash = keccak256(abi.encode(nominee));
 
         // Check that the nominee is removed
-        if (!mapRemovedNominees[nomineeHash]) {
+        if (mapRemovedNominees[nomineeHash] == 0) {
             revert NomineeNotRemoved(account, chainId);
         }
 
@@ -718,7 +725,19 @@ contract VoteWeighting {
         return mapNomineeIds[nomineeHash];
     }
 
-    /// @dev Get the nominee address and its corresponding chain Id.
+    /// @dev Gets the removed nominee Id in the global removed nominees set.
+    /// @param account Nominee address in bytes32 form.
+    /// @param chainId Chain Id.
+    /// @return Removed nominee Id in the global set of Nominee struct values.
+    function getRemovedNomineeId(bytes32 account, uint256 chainId) external view returns (uint256) {
+        // Get the nominee struct and hash
+        Nominee memory nominee = Nominee(account, chainId);
+        bytes32 nomineeHash = keccak256(abi.encode(nominee));
+
+        return mapRemovedNominees[nomineeHash];
+    }
+
+    /// @dev Gets the nominee address and its corresponding chain Id.
     /// @notice The zero-th default nominee Id with id == 0 does not count.
     /// @param id Nominee Id in the global set of Nominee struct values.
     /// @return Nominee address in bytes32 form and chain Id.
@@ -735,36 +754,21 @@ contract VoteWeighting {
         return setNominees[id];
     }
 
-    /// @dev Get the set of nominee addresses and corresponding chain Ids.
-    /// @notice The zero-th default nominee Id with id == 0 does not count.
-    /// @param startId Start Id of the nominee in the global set of Nominee struct values.
-    /// @param numNominees Number of nominees to get.
-    /// @return nominees Set of nominee accounts in bytes32 form and chain Ids.
-    function getNominees(uint256 startId, uint256 numNominees) external view returns (Nominee[] memory nominees) {
+    /// @dev Gets the removed nominee address and its corresponding chain Id.
+    /// @notice The zero-th default removed nominee Id with id == 0 does not count.
+    /// @param id Removed nominee Id in the global set of Nominee struct values.
+    /// @return Removed nominee address in bytes32 form and chain Id.
+    function getRemovedNominee(uint256 id) external view returns (Nominee memory) {
+        // Get the total number of nominees in the contract
+        uint256 totalNumRemovedNominees = setRemovedNominees.length - 1;
         // Check for the zero id or the overflow
-        if (startId == 0 || numNominees == 0) {
+        if (id == 0) {
             revert ZeroValue();
+        } else if (id > totalNumRemovedNominees) {
+            revert Overflow(id, totalNumRemovedNominees);
         }
 
-        // Get the last nominee Id requested
-        uint256 endId = startId + numNominees;
-        // Get the total number of nominees in the contract with the zero-th nominee
-        uint256 totalNumNominees = setNominees.length;
-
-        // Check for the overflow
-        if (endId > totalNumNominees) {
-            revert Overflow(endId, totalNumNominees);
-        }
-
-        // Allocate the nominee array
-        nominees = new Nominee[](numNominees);
-
-        // Traverse selected nominees
-        for (uint256 i = 0; i < numNominees; ++i) {
-            uint256 id = i + startId;
-            // Get the nominee struct
-            nominees[i] = setNominees[id];
-        }
+        return setRemovedNominees[id];
     }
 
     /// @dev Gets next allowed voting time for selected nominees and voters.
