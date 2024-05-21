@@ -1,0 +1,13 @@
+      | Contract                                                                                                                 |   CodeLine |
+----------------------------------------------------------------------------------------------------------------------------------------------
+    1 | ProcessBridgedDataArbitrum.sol                                                                                           |         30 |
+    2 | ProcessBridgedDataGnosis.sol                                                                                             |         42 |
+    3 | ProcessBridgedDataOptimism.sol                                                                                           |         42 |
+    4 | ProcessBridgedDataPolygon.sol                                                                                            |         32 |
+    5 | ProcessBridgedDataWormhole.sol                                                                                           |         41 |
+    6 | VerifyBridgedData.sol                                                                                                    |         36 |
+    7 | contracts/multisigs/GuardCM.sol                                                                                          |        253 |
+    8 | contracts/multisigs/VerifyData.sol                                                                                       |         14 |
+    9 | contracts/VoteWeighting.sol                                                                                              |        422 |
+----------------------------------------------------------------------------------------------------------------------------------------------
+    9 | All Governance contracts                                                                                                 |        912 |
