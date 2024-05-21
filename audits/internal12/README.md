@@ -179,8 +179,13 @@ Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonola
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
 ```sh
---------------------------------------|----------|----------|----------|----------|----------------|
-File                                  |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
---------------------------------------|----------|----------|----------|----------|----------------|
-  VoteWeighting.sol                   |      100 |      100 |      100 |      100 |                |
+VoteWeighting.sol                   |      100 |    96.67 |      100 |    98.64 |    485,766,768 |
 ```
+
+### Security issues
+Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis/slither_full.txt) <br>
+all false positive cases.
+
+### Issue
+No new issue.
+
