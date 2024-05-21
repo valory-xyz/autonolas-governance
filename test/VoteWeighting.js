@@ -439,11 +439,11 @@ describe("Vote Weighting veOLAS", function () {
             await vw.voteForNomineeWeights(nominee, chainId, maxVoteWeight);
 
             // Get the next point timestamp where votes are written after voting
-            block = await ethers.provider.getBlock("latest");
+            const block = await ethers.provider.getBlock("latest");
             const nextTime = getNextTime(block.timestamp);
 
             // Check relative weights that must represent a half for each
-            weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
+            const weight = await vw.nomineeRelativeWeight(nominee, chainId, nextTime);
             expect(Number(weight.relativeWeight) / E18).to.equal(1);
 
             // Restore to the state of the snapshot
