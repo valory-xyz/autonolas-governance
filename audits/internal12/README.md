@@ -166,4 +166,21 @@ https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
 ```
 [x] noted and added as a comment
 
+# re-audit. 21.05.24
 
+# autonolas-governance-audit
+The review has been performed based on the contract code in the following repository:<br>
+`https://github.com/valory-xyz/autonolas-governance` <br>
+commit: `9df1f95ec7e51eacb985aece56654b8d2506e29f` or `tag: v1.2.1-pre-internal-audit` <br> 
+
+### Flatten version
+Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis2/contracts)
+
+### Coverage
+Hardhat coverage has been performed before the audit and can be found here:
+```sh
+--------------------------------------|----------|----------|----------|----------|----------------|
+File                                  |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+--------------------------------------|----------|----------|----------|----------|----------------|
+  VoteWeighting.sol                   |      100 |      100 |      100 |      100 |                |
+```
