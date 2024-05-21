@@ -635,10 +635,10 @@ contract VoteWeighting {
         emit RemoveNominee(account, chainId, newSum);
     }
 
-    /// @dev Retrieves user voting power from a removed nominee.
-    /// @param account Address of the nominee in bytes32 form.
+    /// @dev Revokes user voting power from a removed nominee.
+    /// @param account Address of the removed nominee in bytes32 form.
     /// @param chainId Chain Id.
-    function retrieveRemovedNomineeVotingPower(bytes32 account, uint256 chainId) external {
+    function revokeRemovedNomineeVotingPower(bytes32 account, uint256 chainId) external {
         // Get the nominee struct and hash
         Nominee memory nominee = Nominee(account, chainId);
         bytes32 nomineeHash = keccak256(abi.encode(nominee));

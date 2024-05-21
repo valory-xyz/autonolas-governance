@@ -637,16 +637,16 @@ describe("Vote Weighting veOLAS", function () {
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
             // Retrieve the nominee voting power
-            await vw.retrieveRemovedNomineeVotingPower(nominees[0], chainId);
+            await vw.revokeRemovedNomineeVotingPower(nominees[0], chainId);
 
             // Try to retrieve voting power from the same nominee that was already retrieved from
             await expect(
-                vw.retrieveRemovedNomineeVotingPower(nominees[0], chainId)
+                vw.revokeRemovedNomineeVotingPower(nominees[0], chainId)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
 
             // Try to retrieve voting power from the nominee that was not removed
             await expect(
-                vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId)
+                vw.revokeRemovedNomineeVotingPower(nominees[1], chainId)
             ).to.be.revertedWithCustomError(vw, "NomineeNotRemoved");
 
             // Now it's possible to case a vote for another nominee
@@ -683,7 +683,7 @@ describe("Vote Weighting veOLAS", function () {
             await helpers.time.increase(oneYear);
 
             // Retrieve the second nominee voting power
-            await vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId);
+            await vw.revokeRemovedNomineeVotingPower(nominees[1], chainId);
 
             // Restore to the state of the snapshot
             await snapshot.restore();
