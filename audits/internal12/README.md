@@ -183,7 +183,7 @@ VoteWeighting.sol                   |      100 |    96.67 |      100 |    98.64 
 ```
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis/slither_full.txt) <br>
+Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis2/slither_full.txt) <br>
 all false positive cases.
 
 ### Issue
