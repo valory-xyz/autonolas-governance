@@ -182,10 +182,16 @@ describe("Vote Weighting veOLAS", function () {
             await expect(
                 vw.getNominee(0)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
+            await expect(
+                vw.getRemovedNominee(0)
+            ).to.be.revertedWithCustomError(vw, "ZeroValue");
 
             // Try to get the nonexistent nominee
             await expect(
                 vw.getNominee(2)
+            ).to.be.revertedWithCustomError(vw, "Overflow");
+            await expect(
+                vw.getRemovedNominee(1)
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
             // Add one more nominee
