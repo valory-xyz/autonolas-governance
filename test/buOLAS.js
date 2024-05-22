@@ -89,6 +89,9 @@ describe("buOLAS", function () {
         });
 
         it("Create lock for", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -124,15 +127,15 @@ describe("buOLAS", function () {
             expect(await bu.balanceOf(account.address)).to.equal(oneOLASBalance);
 
             // Move one year in time
-            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneYear + 100);
+
             // Now the releasable amount must be equal to 1/4 of the total amount
             amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(quarterOLASBalance);
 
             // Move five years in time
-            ethers.provider.send("evm_increaseTime", [5 * oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(5 * oneYear + 100);
+
             // The releasable amount must be the full amount
             amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(oneOLASBalance);
@@ -140,11 +143,17 @@ describe("buOLAS", function () {
             // Check the balance that is still the same as the locked one
             supply = await bu.totalSupply();
             expect(supply).to.equal(oneOLASBalance);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 
     context("Withdraw", async function () {
         it("Withdraw", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -162,8 +171,8 @@ describe("buOLAS", function () {
             // Try to withdraw early
             await expect(bu.connect(account).withdraw()).to.be.revertedWithCustomError(bu, "LockNotExpired");
             // Move one year in time
-            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneYear + 100);
+            
             // Withdraw must be equal to 1/4 of the total amount
             expect(await olas.balanceOf(account.address)).to.equal(0);
             await bu.connect(account).withdraw();
@@ -175,15 +184,21 @@ describe("buOLAS", function () {
             ).to.be.revertedWithCustomError(bu, "LockNotExpired");
 
             // Move time after the lock duration
-            ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(3 * oneYear + 100);
+            
 
             // Now withdraw must get us the rest
             await bu.connect(account).withdraw();
             expect(await olas.balanceOf(account.address)).to.equal(oneOLASBalance);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Withdraw with not divisible remainder", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -195,8 +210,8 @@ describe("buOLAS", function () {
             await bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps);
 
             // Move one year in time
-            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneYear + 100);
+            
             // Withdraw must be equal to rounded 1/3 of the total amount
             const thirdOLASBalance = new ethers.BigNumber.from(oneOLASBalance).div(numSteps);
             await bu.connect(account).withdraw();
@@ -206,15 +221,21 @@ describe("buOLAS", function () {
             expect(recoveredFullBalance.add(1)).to.equal(oneOLASBalance);
 
             // Move time after the lock duration
-            ethers.provider.send("evm_increaseTime", [2 * oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(2 * oneYear + 100);
+            
 
             // At the end we withdraw the remainder that gets the rest with 1e(-18) tokens that were not partitioned
             await bu.connect(account).withdraw();
             expect(await olas.balanceOf(account.address)).to.equal(oneOLASBalance);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Withdraw with revoke", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -234,8 +255,8 @@ describe("buOLAS", function () {
             ).to.be.revertedWithCustomError(bu, "OwnerOnly");
 
             // Move one year in time
-            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneYear + 100);
+            
             // Revoke at this point of time
             await bu.connect(owner).revoke([account.address]);
             // The buOLAS balanceOf must be equal to the releasable amount after the revoke
@@ -243,8 +264,8 @@ describe("buOLAS", function () {
             expect(balance).to.equal(quarterOLASBalance);
 
             // Move time after the full lock duration
-            ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(3 * oneYear + 100);
+            
 
             // The releasable amount must still be the 1/4 amount, since the rest was revoked
             let amount = await bu.releasableAmount(account.address);
@@ -265,9 +286,15 @@ describe("buOLAS", function () {
             // Now there is no releasable amount left
             amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(0);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Withdraw with revoke after the first withdraw", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -279,14 +306,14 @@ describe("buOLAS", function () {
             await bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps);
 
             // Move one year in time
-            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneYear + 100);
+            
             // Withdraw after the first year
             await bu.connect(account).withdraw();
 
             // Move one more year in time
-            ethers.provider.send("evm_increaseTime", [oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneYear + 100);
+            
             // Revoke at this point of time
             await bu.connect(owner).revoke([account.address]);
             // The buOLAS balanceOf must be equal to the releasable amount after the revoke, which is 1/3
@@ -312,9 +339,15 @@ describe("buOLAS", function () {
             // Now there is no releasable amount left
             amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(0);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Withdraw with revoke after the full lock period", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -326,8 +359,8 @@ describe("buOLAS", function () {
             await bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps);
 
             // Move three years in time
-            ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(3 * oneYear + 100);
+            
             // Revoke at this point of time
             await bu.connect(owner).revoke([account.address]);
 
@@ -349,9 +382,15 @@ describe("buOLAS", function () {
             // There is also no releasable amount left
             amount = await bu.releasableAmount(account.address);
             expect(amount).to.equal(0);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Revoke after the full lock period, createLockFor for the same account and try to withdraw", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const owner = signers[0];
             const account = signers[1];
 
@@ -364,8 +403,8 @@ describe("buOLAS", function () {
 
             // Move three years in time
             // oneOLASBalance is fully unlocked at this point
-            ethers.provider.send("evm_increaseTime", [3 * oneYear + 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(3 * oneYear + 100);
+            
             // Revoke after the lock duration is expired
             // This revoke must never be performed in real situations since the account holder has a right
             // to all the funds initially locked
@@ -387,6 +426,9 @@ describe("buOLAS", function () {
             await expect(
                 bu.connect(account).withdraw()
             ).to.be.reverted;
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 

@@ -2,6 +2,7 @@
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("Voting Escrow OLAS", function () {
     let olas;
@@ -151,6 +152,9 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Deposit for", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const deployer = signers[0];
             // Transfer 10 OLAS to signers[1]
             const owner = signers[1];
@@ -195,11 +199,14 @@ describe("Voting Escrow OLAS", function () {
             expect(balanceDeployer).to.equal(twoOLASBalance);
 
             // Try to deposit 1 OLAS for deployer after its lock time hase expired
-            ethers.provider.send("evm_increaseTime", [oneWeek + 1000]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneWeek + 1000);
+
             await expect(
                 ve.depositFor(deployer.address, oneOLASBalance)
             ).to.be.revertedWithCustomError(ve, "LockExpired");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Should fail when creating a lock for more than 4 years", async function () {
@@ -224,6 +231,9 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Increase amount of lock", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             await olas.approve(ve.address, tenOLASBalance);
             const lockDuration = oneWeek;
 
@@ -249,16 +259,21 @@ describe("Voting Escrow OLAS", function () {
             await ve.increaseAmount(oneOLASBalance);
 
             // Time forward to the lock expiration
-            ethers.provider.send("evm_increaseTime", [oneWeek]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneWeek);
 
             // Not possible to add to the expired lock
             await expect(
                 ve.increaseAmount(oneOLASBalance)
             ).to.be.revertedWithCustomError(ve, "LockExpired");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Increase amount of unlock time", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             await olas.approve(ve.address, tenOLASBalance);
             const lockDuration = oneWeek;
 
@@ -283,18 +298,23 @@ describe("Voting Escrow OLAS", function () {
             ).to.be.revertedWithCustomError(ve, "MaxUnlockTimeReached");
 
             // Time forward to the lock expiration
-            ethers.provider.send("evm_increaseTime", [oneWeek + oneWeek]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneWeek + oneWeek);
 
             // Not possible to add to the expired lock
             await expect(
                 ve.increaseUnlockTime(1)
             ).to.be.revertedWithCustomError(ve, "LockExpired");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 
     context("Withdraw", async function () {
         it("Withdraw", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             // Transfer 2 OLAS to signers[1] and approve the voting escrow for 1 OLAS
             const owner = signers[1];
             await olas.transfer(owner.address, tenOLASBalance);
@@ -311,19 +331,20 @@ describe("Voting Escrow OLAS", function () {
             const block = await ethers.provider.getBlock(blockNumber);
             const roundedLockTime = Math.floor((block.timestamp + lockDuration) / oneWeek) * oneWeek;
             const adjustedLockDuration = roundedLockTime - block.timestamp;
-            ethers.provider.send("evm_increaseTime", [adjustedLockDuration - 100]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(adjustedLockDuration - 100);
 
             // Try withdraw about the unlock time, but not quite there yet
             await expect(ve.connect(owner).withdraw()).to.be.revertedWithCustomError(ve, "LockNotExpired");
 
             // Move time after the lock duration
-            ethers.provider.send("evm_increaseTime", [200]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(200);
 
             // Now withdraw must work
             await ve.connect(owner).withdraw();
             expect(await olas.balanceOf(owner.address)).to.equal(tenOLASBalance);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 
@@ -389,6 +410,9 @@ describe("Voting Escrow OLAS", function () {
         });
 
         it("Checkpoint with points of inactivity", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             // Approve deployer and account for 1 OLAS by voting escrow
             await olas.approve(ve.address, oneOLASBalance);
 
@@ -400,8 +424,7 @@ describe("Voting Escrow OLAS", function () {
 
             // Move 10 weeks in time
             for (let i = 0; i < 10; ++i) {
-                ethers.provider.send("evm_increaseTime", [oneWeek + 10]);
-                ethers.provider.send("evm_mine");
+                await helpers.time.increase(oneWeek + 10);
             }
 
             // Checkpoint writes point and increases their global counter
@@ -416,6 +439,9 @@ describe("Voting Escrow OLAS", function () {
             const timeStamp2 = point2.ts;
             expect(blockNumber1).to.equal(blockNumber2);
             expect(timeStamp1).not.equal(timeStamp2);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Getting past votes and supply", async function () {

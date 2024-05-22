@@ -9,10 +9,13 @@ module.exports = {
         "bridges/test/WormholeL1Receiver.sol",
         "bridges/test/WormholeL1Sender.sol",
         "bridges/test/WormholeL2ReceiverL1Sender.sol",
-        "test/BridgeSetup.sol",
-        "test/BrokenERC20.sol",
-        "test/SafeSetup.sol",
+        "multisigs/test/DelegatecallExploit.sol",
         "multisigs/test/MockTimelockCM.sol",
         "multisigs/test/MockTreasury.sol",
+        "test/BridgeSetup.sol",
+        "test/BrokenERC20.sol",
+        "test/EchidnaVoteWeightingAssert.sol",
+        "test/SafeSetup.sol",
+        "test/VoteWeightingFuzzing.sol"
     ]
 };

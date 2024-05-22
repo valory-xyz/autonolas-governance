@@ -2,6 +2,7 @@
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("Wrapped Voting Escrow OLAS", function () {
     let olas;
@@ -197,8 +198,8 @@ describe("Wrapped Voting Escrow OLAS", function () {
             expect(balanceDeployer).to.equal(twoOLASBalance);
 
             // Try to deposit 1 OLAS for deployer after its lock time hase expired
-            ethers.provider.send("evm_increaseTime", [oneWeek + 1000]);
-            ethers.provider.send("evm_mine");
+            await helpers.time.increase(oneWeek + 1000);
+
             await expect(
                 ve.depositFor(deployer.address, oneOLASBalance)
             ).to.be.revertedWithCustomError(ve, "LockExpired");

@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("Voting Escrow OLAS", function () {
+describe("Vote Weighting veOLAS", function () {
     let olas;
     let ve;
     let vw;
@@ -160,10 +160,6 @@ describe("Voting Escrow OLAS", function () {
             expect(nomineeChainId.account).to.equal(convertAddressToBytes32(nominee));
             expect(nomineeChainId.chainId).to.equal(chainId);
 
-            const nomineeChainIds = await vw.getNominees(1, 1);
-            expect(nomineeChainIds[0].account).to.equal(convertAddressToBytes32(nominee));
-            expect(nomineeChainIds[0].chainId).to.equal(chainId);
-
             let nomineeId = await vw.getNomineeId(convertAddressToBytes32(nominee), chainId);
             expect(nomineeId).to.equal(1);
 
@@ -187,10 +183,7 @@ describe("Voting Escrow OLAS", function () {
                 vw.getNominee(0)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
             await expect(
-                vw.getNominees(1, 0)
-            ).to.be.revertedWithCustomError(vw, "ZeroValue");
-            await expect(
-                vw.getNominees(0, 1)
+                vw.getRemovedNominee(0)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
 
             // Try to get the nonexistent nominee
@@ -198,10 +191,7 @@ describe("Voting Escrow OLAS", function () {
                 vw.getNominee(2)
             ).to.be.revertedWithCustomError(vw, "Overflow");
             await expect(
-                vw.getNominees(2, 1)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(1, 2)
+                vw.getRemovedNominee(1)
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
             // Add one more nominee
@@ -209,12 +199,6 @@ describe("Voting Escrow OLAS", function () {
             // Try to get the nonexistent nominee
             await expect(
                 vw.getNominee(3)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(2, 2)
-            ).to.be.revertedWithCustomError(vw, "Overflow");
-            await expect(
-                vw.getNominees(1, 3)
             ).to.be.revertedWithCustomError(vw, "Overflow");
         });
     });
@@ -444,7 +428,7 @@ describe("Voting Escrow OLAS", function () {
 
             // Lock one OLAS into veOLAS
             await olas.approve(ve.address, oneOLASBalance);
-            await ve.createLock(oneOLASBalance, oneYear);
+            await ve.createLock(oneOLASBalance, oneYear * 4);
 
             // Add a nominee
             let nominee = signers[1].address;
@@ -609,6 +593,21 @@ describe("Voting Escrow OLAS", function () {
             // Remove the nominee
             await vw.removeNominee(nominees[0], chainId);
 
+            // Get the set of removed nominees
+            const numRemovedNominees = await vw.getNumRemovedNominees();
+            expect(numRemovedNominees).to.equal(1);
+            const setRemovedNominees = await vw.getAllRemovedNominees();
+            // The set itself has one more zero-th empty element
+            expect(setRemovedNominees.length).to.equal(2);
+            expect(numRemovedNominees).to.equal(setRemovedNominees.length - 1);
+            // Get removed nominee Id
+            id = await vw.getRemovedNomineeId(nominees[0], chainId);
+            expect(id).to.equal(1);
+            // Check the removed nominee id
+            const remNominee = await vw.getRemovedNominee(id);
+            expect(remNominee.account).to.equal(nominees[0]);
+            expect(remNominee.chainId).to.equal(chainId);
+
             // Get the removed nominee Id
             id = await vw.getNomineeId(nominees[0], chainId);
             expect(id).to.equal(0);
@@ -644,16 +643,16 @@ describe("Voting Escrow OLAS", function () {
             ).to.be.revertedWithCustomError(vw, "Overflow");
 
             // Retrieve the nominee voting power
-            await vw.retrieveRemovedNomineeVotingPower(nominees[0], chainId);
+            await vw.revokeRemovedNomineeVotingPower(nominees[0], chainId);
 
             // Try to retrieve voting power from the same nominee that was already retrieved from
             await expect(
-                vw.retrieveRemovedNomineeVotingPower(nominees[0], chainId)
+                vw.revokeRemovedNomineeVotingPower(nominees[0], chainId)
             ).to.be.revertedWithCustomError(vw, "ZeroValue");
 
             // Try to retrieve voting power from the nominee that was not removed
             await expect(
-                vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId)
+                vw.revokeRemovedNomineeVotingPower(nominees[1], chainId)
             ).to.be.revertedWithCustomError(vw, "NomineeNotRemoved");
 
             // Now it's possible to case a vote for another nominee
@@ -667,6 +666,12 @@ describe("Voting Escrow OLAS", function () {
 
             // Remove the second nominee
             await vw.removeNominee(nominees[1], chainId);
+
+            // Check the second removed nominee Id
+            id = await vw.getRemovedNomineeId(nominees[1], chainId);
+            expect(id).to.equal(2);
+            // Check the actual number of removed nominees
+            expect(await vw.getNumRemovedNominees()).to.equal(2);
 
             // After removing, the weight must be zero
             weight = await vw.getNomineeWeight(nominees[1], chainId);
@@ -684,7 +689,7 @@ describe("Voting Escrow OLAS", function () {
             await helpers.time.increase(oneYear);
 
             // Retrieve the second nominee voting power
-            await vw.retrieveRemovedNomineeVotingPower(nominees[1], chainId);
+            await vw.revokeRemovedNomineeVotingPower(nominees[1], chainId);
 
             // Restore to the state of the snapshot
             await snapshot.restore();

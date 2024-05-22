@@ -2,6 +2,7 @@
 const { ethers } = require("hardhat");
 const { expect } = require("chai");
 const { signERC2612Permit } = require("eth-permit");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("OLAS", function () {
     let deployer;
@@ -165,6 +166,9 @@ describe("OLAS", function () {
 
     context("Mint schedule", async function () {
         it("Should fail when mint more than a supplyCap within the first ten years", async () => {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const supplyCap = await olas.tenYearSupplyCap();
             let amount = supplyCap;
             // Mint more than the supply cap is not possible
@@ -175,7 +179,7 @@ describe("OLAS", function () {
             // Move 9 years in time
             const blockNumber = await ethers.provider.getBlockNumber();
             const block = await ethers.provider.getBlock(blockNumber);
-            await ethers.provider.send("evm_mine", [block.timestamp + nineYears + 1000]);
+            await helpers.time.increase(block.timestamp + nineYears + 1000);
 
             // Mint up to the supply cap
             amount = "5" + "0".repeat(26);
@@ -184,9 +188,15 @@ describe("OLAS", function () {
             // Check the total supply that must be equal to the supply cap
             totalSupply = await olas.totalSupply();
             expect(totalSupply).to.equal(supplyCap);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
 
         it("Mint and burn after ten years", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
             const supplyCap = await olas.tenYearSupplyCap();
             let amount = supplyCap;
             // Mint more than the supply cap is not possible
@@ -194,22 +204,20 @@ describe("OLAS", function () {
             await olas.connect(treasury).mint(deployer.address, amount);
             expect(await olas.totalSupply()).to.equal(totalSupply);
 
-            // Move 10 years in time
-            let blockNumber = await ethers.provider.getBlockNumber();
-            let block = await ethers.provider.getBlock(blockNumber);
-            await ethers.provider.send("evm_mine", [block.timestamp + tenYears + 1000]);
+            // Move 10 years in time and mine a new block with that timestamp
+            let block = await ethers.provider.getBlock("latest");
+            await helpers.time.increaseTo(block.timestamp + tenYears + 10);
 
             // Calculate expected supply cap starting from the max for 10 years, i.e. 1 billion
             const supplyCapFraction = await olas.maxMintCapFraction();
-            let expectedSupplyCap = supplyCap + (supplyCap * supplyCapFraction) / 100;
-            //console.log(expectedSupplyCap);
+            let expectedSupplyCap = supplyCap.add((supplyCap.mul(supplyCapFraction)).div(100));
 
             // Mint up to the supply cap that is up to the renewed supply cap after ten years
             // New total supply is 1 * 1.02 = 1.02 billion. We can safely mint 9 million
             amount = "519" + "0".repeat(24);
             await olas.connect(treasury).mint(deployer.address, amount);
             totalSupply = await olas.totalSupply();
-            expect(Number(totalSupply)).to.be.lessThan(Number(expectedSupplyCap));
+            expect(Number(totalSupply)).to.lessThan(Number(expectedSupplyCap));
             //console.log("updated total supply", totalSupply);
 
             // Mint more than a new total supply must not go through (will not change the supply)
@@ -219,9 +227,8 @@ describe("OLAS", function () {
 
             // Move 3 more years in time, in addition to what we have already surpassed 10 years
             // So it will be the beginning of a year 4 after first 10 years
-            blockNumber = await ethers.provider.getBlockNumber();
-            block = await ethers.provider.getBlock(blockNumber);
-            await ethers.provider.send("evm_mine", [block.timestamp + threeYears + 1000]);
+            block = await ethers.provider.getBlock("latest");
+            await helpers.time.increaseTo(block.timestamp + threeYears + 1000);
             // Calculate max supply cap after 4 years in total
             expectedSupplyCap = supplyCap;
             for (let i = 0; i < 4; ++i) {
@@ -246,6 +253,9 @@ describe("OLAS", function () {
             await olas.connect(deployer).burn(amount);
             // Check the final total amount
             expect(await olas.totalSupply()).to.equal(expectedTotalSupply);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
         });
     });
 });

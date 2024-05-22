@@ -1,0 +1,90 @@
+False positive.
+INFO:Detectors:
+VoteWeighting.constructor(address) (VoteWeighting-flatten.sol#207-221) performs a multiplication on the result of a division:
+	- timeSum = block.timestamp / WEEK * WEEK (VoteWeighting-flatten.sol#216)
+VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#294-321) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#311)
+VoteWeighting._nomineeRelativeWeight(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#421-436) performs a multiplication on the result of a division:
+	- t = time / WEEK * WEEK (VoteWeighting-flatten.sol#426)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#491)
+VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#588-638) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (VoteWeighting-flatten.sol#607)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+
+False positive.
+INFO:Detectors:
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256).oldBias (VoteWeighting-flatten.sol#511) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+
+False positive.
+INFO:Detectors:
+Dubious typecast in VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559):
+	int128 => uint128 casting occurs in newSlope = VotedSlope(uint256(uint128(userSlope)) * weight / MAX_WEIGHT,lockEnd,weight) (VoteWeighting-flatten.sol#516-520)
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/dubious_typecast.md
+
+False positive.
+INFO:Detectors:
+VoteWeighting.changeDispenser(address).newDispenser (VoteWeighting-flatten.sol#388) lacks a zero-check on :
+		- dispenser = newDispenser (VoteWeighting-flatten.sol#394)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+By design.
+INFO:Detectors:
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) has external calls inside a loop: userSlope = IVEOLAS(ve).getLastUserPoint(msg.sender).slope (VoteWeighting-flatten.sol#485)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) has external calls inside a loop: lockEnd = IVEOLAS(ve).lockedEnd(msg.sender) (VoteWeighting-flatten.sol#490)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+False positive.
+INFO:Detectors:
+Reentrancy in VoteWeighting._addNominee(Nominee) (VoteWeighting-flatten.sol#294-321):
+	External calls:
+	- IDispenser(localDispenser).addNominee(nomineeHash) (VoteWeighting-flatten.sol#317)
+	Event emitted after the call(s):
+	- AddNominee(nominee.account,nominee.chainId,id) (VoteWeighting-flatten.sol#320)
+False positive.
+Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (VoteWeighting-flatten.sol#588-638):
+	External calls:
+	- IDispenser(localDispenser).removeNominee(nomineeHash) (VoteWeighting-flatten.sol#634)
+	Event emitted after the call(s):
+	- RemoveNominee(account,chainId,newSum) (VoteWeighting-flatten.sol#637)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+False positive.
+INFO:Detectors:
+VoteWeighting._getSum() (VoteWeighting-flatten.sol#225-250) uses timestamp for comparisons
+	Dangerous comparisons:
+	- t > block.timestamp (VoteWeighting-flatten.sol#230)
+	- t > block.timestamp (VoteWeighting-flatten.sol#245)
+VoteWeighting._getWeight(bytes32,uint256) (VoteWeighting-flatten.sol#256-290) uses timestamp for comparisons
+	Dangerous comparisons:
+	- t > block.timestamp (VoteWeighting-flatten.sol#270)
+	- t > block.timestamp (VoteWeighting-flatten.sol#285)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) uses timestamp for comparisons
+	Dangerous comparisons:
+	- nextTime >= lockEnd (VoteWeighting-flatten.sol#494)
+	- nextAllowedVotingTime > block.timestamp (VoteWeighting-flatten.sol#505)
+	- oldSlope.end > nextTime (VoteWeighting-flatten.sol#512)
+	- oldSlope.end > nextTime (VoteWeighting-flatten.sol#536)
+	- oldSlope.end > block.timestamp (VoteWeighting-flatten.sol#544)
+VoteWeighting._maxAndSub(uint256,uint256) (VoteWeighting-flatten.sol#580-582) uses timestamp for comparisons
+	Dangerous comparisons:
+	- a > b (VoteWeighting-flatten.sol#581)
+VoteWeighting.retrieveRemovedNomineeVotingPower(bytes32,uint256) (VoteWeighting-flatten.sol#643-670) uses timestamp for comparisons
+	Dangerous comparisons:
+	- oldSlope.end > block.timestamp (VoteWeighting-flatten.sol#660)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+
+By design.
+INFO:Detectors:
+VoteWeighting._getSum() (VoteWeighting-flatten.sol#225-250) has costly operations inside a loop:
+	- timeSum = t (VoteWeighting-flatten.sol#246)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
+
+False positive.
+INFO:Detectors:
+In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) variable VoteWeighting.MAX_WEIGHT (VoteWeighting-flatten.sol#159) is read multiple times
+In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) variable VoteWeighting.pointsSum (VoteWeighting-flatten.sol#199) is read multiple times
+In a function VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (VoteWeighting-flatten.sol#475-559) variable VoteWeighting.pointsWeight (VoteWeighting-flatten.sol#192) is read multiple times
+Reference: https://github.com/pessimistic-io/slitherin/blob/master/docs/multiple_storage_read.md
+
