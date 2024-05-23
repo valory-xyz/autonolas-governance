@@ -8,6 +8,6 @@
     6 | VerifyBridgedData.sol                                                                                                    |         36 |
     7 | contracts/multisigs/GuardCM.sol                                                                                          |        253 |
     8 | contracts/multisigs/VerifyData.sol                                                                                       |         14 |
-    9 | contracts/VoteWeighting.sol                                                                                              |        422 |
+    9 | contracts/VoteWeighting.sol                                                                                              |        427 |
 ----------------------------------------------------------------------------------------------------------------------------------------------
-    9 | All Governance contracts                                                                                                 |        912 |
+    9 | All Governance contracts                                                                                                 |        917 |
