@@ -51,7 +51,7 @@ Exceptionally, some changes to the Autonolas Protocol can be executed by a commu
 - [ProcessBridgedDataWormhole](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol)
 - [VerifyBridgedData](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/VerifyBridgedData.sol)
 
-The functionality enabled by this modular guard mechanism is introduced [here](https://github.com/code-423n4/2024-05-olas/blob/main/governance/docs/guardCM_modular_approach.pdf).
+The functionality enabled by this modular guard mechanism is introduced [here](https://github.com/valory-xyz/autonolas-governance/blob/main/governance/docs/guardCM_modular_approach.pdf).
 
 The following contract was implemented to allow DAO members (via veOLAS) to vote on staking programs and trigger Olas Staking emissions, assigning weights according to their preferences"
 - [VoteWeighting.sol](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/VoteWeighting.sol).
