@@ -22,7 +22,7 @@ async function main() {
     const mockTimelockAddress = "0x4cEB52802ef86edF8796632546d89e55c87a0901";
     const mockTimelockJSON = "artifacts/contracts/bridges/test/MockTimelock.sol/MockTimelock.json";
     contractFromJSON = fs.readFileSync(mockTimelockJSON, "utf8");
-    parsedFile = JSON.parse(contractFromJSON);
+    const parsedFile = JSON.parse(contractFromJSON);
     const mockTimelockABI = parsedFile["abi"];
     const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, polygonProvider);
 
