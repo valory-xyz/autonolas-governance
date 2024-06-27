@@ -560,7 +560,7 @@ describe("Vote Weighting veOLAS", function () {
             await olas.approve(ve.address, oneOLASBalance);
             await ve.createLock(oneOLASBalance, oneYear);
 
-            const numNominees = 2;
+            let numNominees = 2;
             // Add nominees and get their bytes32 addresses
             let nominees = [signers[1].address, signers[2].address];
             for (let i = 0; i < numNominees; i++) {
@@ -608,7 +608,7 @@ describe("Vote Weighting veOLAS", function () {
             expect(remNominee.account).to.equal(nominees[0]);
             expect(remNominee.chainId).to.equal(chainId);
 
-            // Get the removed nominee Id
+            // The removed nominee Id must be 0
             id = await vw.getNomineeId(nominees[0], chainId);
             expect(id).to.equal(0);
 
@@ -672,6 +672,14 @@ describe("Vote Weighting veOLAS", function () {
             expect(id).to.equal(2);
             // Check the actual number of removed nominees
             expect(await vw.getNumRemovedNominees()).to.equal(2);
+
+            // The number of nominees must become zero
+            numNominees = await vw.getNumNominees();
+            expect(numNominees).to.equal(0);
+
+            // The removed nominee Id must be 0
+            id = await vw.getNomineeId(nominees[1], chainId);
+            expect(id).to.equal(0);
 
             // After removing, the weight must be zero
             weight = await vw.getNomineeWeight(nominees[1], chainId);
