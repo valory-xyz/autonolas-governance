@@ -618,11 +618,16 @@ contract VoteWeighting {
         // Remove nominee from the map
         mapNomineeIds[nomineeHash] = 0;
 
-        // Shuffle the current last nominee id in the set to be placed to the removed one
-        nominee = setNominees[setNominees.length - 1];
-        bytes32 replacedNomineeHash = keccak256(abi.encode(nominee));
-        mapNomineeIds[replacedNomineeHash] = id;
-        setNominees[id] = nominee;
+        uint256 numNominees = setNominees.length - 1;
+        // Shuffle the current last nominee id in the set to be placed to the removed one, if it's not the last nominee
+        // Note that the zero-th element of setNominees is always zero and the final length is never below 1
+        if (numNominees > 1) {
+            // Shuffle the current last nominee id in the set to be placed to the removed one
+            nominee = setNominees[numNominees];
+            bytes32 replacedNomineeHash = keccak256(abi.encode(nominee));
+            mapNomineeIds[replacedNomineeHash] = id;
+            setNominees[id] = nominee;
+        }
         // Pop the last element from the set
         setNominees.pop();
 
