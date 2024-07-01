@@ -1,7 +1,6 @@
 /*global process*/
 
 const { ethers } = require("hardhat");
-const { LedgerSigner } = require("@anders-t/ethers-ledger");
 
 async function main() {
     const fs = require("fs");

@@ -147,12 +147,11 @@ contract VoteWeighting {
     // For explanation about the delay consult the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
     uint256 public constant WEIGHT_VOTE_DELAY = 864_000;
     // Max number of weeks for checkpoints
-    // The number corresponds to slightly more than a year time, that is more than enough to have at least one vote
-    // Also, in line with our tokenomics that cannot have epochs longer than a year
-    // The suggested maximum amount of weeks results in checkpoint calculation that always fit in the block,
-    // although in practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
+    // The number corresponds to more than four years timeframe
+    // It is enough to have at least one vote while veOLAS value is greater than zero
+    // In practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
     // For gas concerns regarding checkpoint calculations, see the internal audit and the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
-    uint256 public constant MAX_NUM_WEEKS = 53;
+    uint256 public constant MAX_NUM_WEEKS = 250;
     // Max weight amount
     uint256 public constant MAX_WEIGHT = 10_000;
     // Maximum chain Id as per EVM specs
