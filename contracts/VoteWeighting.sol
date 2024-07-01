@@ -179,7 +179,7 @@ contract VoteWeighting {
     // Last user vote's timestamp for each hash(Nominee struct)
     mapping(address => mapping(bytes32 => uint256)) public lastUserVote;
 
-    // Past and scheduled points for nominee weight, sum of weights per type, total weight
+    // Past and scheduled points for nominee weight, sum of weights
     // Point is for bias+slope
     // changes_* are for changes in slope
     // time_* are for the last change timestamp
@@ -217,7 +217,7 @@ contract VoteWeighting {
         setRemovedNominees.push(Nominee(0, 0));
     }
 
-    /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
+    /// @dev Fill sum of nominee weights week-over-week for missed checkins and return the sum for the future week.
     /// @return Sum of nominee weights.
     function _getSum() internal returns (uint256) {
         // t is always > 0 as it is set in the constructor
@@ -656,6 +656,14 @@ contract VoteWeighting {
         VotedSlope memory oldSlope = voteUserSlopes[msg.sender][nomineeHash];
         if (oldSlope.power == 0) {
             revert ZeroValue();
+        }
+
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+        // Adjust weight and sum slope changes
+        if (oldSlope.end > nextTime) {
+            pointsWeight[nomineeHash][nextTime].slope =
+                _maxAndSub(pointsWeight[nomineeHash][nextTime].slope, oldSlope.slope);
+            pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope, oldSlope.slope);
         }
 
         // Cancel old slope changes if they still didn't happen
