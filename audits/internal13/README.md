@@ -41,4 +41,5 @@ https://github.com/code-423n4/2024-05-olas-findings/issues/109
 ```
 Lack of event emission for important state changes in revokeRemovedNomineeVotingPower()
 ```
+[x] fixed
 
