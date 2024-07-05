@@ -137,9 +137,11 @@ contract VoteWeighting {
         uint256 nomineeWeight, uint256 totalSum);
     event NomineeRelativeWeightWrite(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
         uint256 nomineeWeight, uint256 totalSum, uint256 relativeWeight);
-    event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
+    event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight,
+        uint256 powerUsed);
     event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
     event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);
+    event VotingPowerRevoked(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 powerUsed);
 
     // 7 * 86400 seconds - all future times are rounded by week
     uint256 public constant WEEK = 604_800;
@@ -552,7 +554,7 @@ contract VoteWeighting {
         // Record last action time
         lastUserVote[msg.sender][nomineeHash] = block.timestamp;
 
-        emit VoteForNominee(msg.sender, account, chainId, weight);
+        emit VoteForNominee(msg.sender, account, chainId, weight, powerUsed);
     }
 
     /// @dev Allocates voting power for changing pool weights in a batch set.
@@ -677,6 +679,8 @@ contract VoteWeighting {
         powerUsed = powerUsed - oldSlope.power;
         voteUserPower[msg.sender] = powerUsed;
         delete voteUserSlopes[msg.sender][nomineeHash];
+
+        emit VotingPowerRevoked(msg.sender, account, chainId, powerUsed);
     }
 
     /// @dev Get current nominee weight.
