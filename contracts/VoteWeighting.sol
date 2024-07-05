@@ -468,7 +468,7 @@ contract VoteWeighting {
     /// @dev Allocates voting power for changing pool weights.
     /// @param account Address of the nominee the `msg.sender` votes for in bytes32 form.
     /// @param chainId Chain Id.
-    /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
+    /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal step is is 0.01% (1 out of 10_000).
     function voteForNomineeWeights(bytes32 account, uint256 chainId, uint256 weight) public {
         // Get the nominee hash
         bytes32 nomineeHash = keccak256(abi.encode(Nominee(account, chainId)));
@@ -492,7 +492,7 @@ contract VoteWeighting {
             revert LockExpired(msg.sender, lockEnd, nextTime);
         }
 
-        // Check for the weight number
+        // Check for the weight value
         if (weight > MAX_WEIGHT) {
             revert Overflow(weight, MAX_WEIGHT);
         }
