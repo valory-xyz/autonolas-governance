@@ -172,31 +172,31 @@ contract VoteWeighting {
     // Mapping of hash(Nominee struct) => removed nominee Id
     mapping(bytes32 => uint256) public mapRemovedNominees;
 
-    // user -> hash(Nominee struct) -> VotedSlope
+    // Mapping for user => hash(Nominee struct) => VotedSlope
     mapping(address => mapping(bytes32 => VotedSlope)) public voteUserSlopes;
-    // Total vote power used by user
+    // Mapping for user address => total vote power used
     mapping(address => uint256) public voteUserPower;
-    // Last user vote's timestamp for each hash(Nominee struct)
+    // Mapping for user address => hash(Nominee struct) => last vote timestamp
     mapping(address => mapping(bytes32 => uint256)) public lastUserVote;
 
     // Past and scheduled points for nominee weight, sum of weights
-    // Point is for bias+slope
-    // changes_* are for changes in slope
-    // time_* are for the last change timestamp
+    // Point is for bias + slope
+    // changes* are for changes in slope
+    // time* are for the last change timestamp
     // timestamps are rounded to whole weeks
 
-    // hash(Nominee struct) -> time -> Point
+    // Mapping for hash(Nominee struct) => time => Point
     mapping(bytes32 => mapping(uint256 => Point)) public pointsWeight;
-    // hash(Nominee struct) -> time -> slope
+    // Mapping for hash(Nominee struct) => time => slope
     mapping(bytes32 => mapping(uint256 => uint256)) public changesWeight;
-    // hash(Nominee struct) -> last scheduled time (next week)
+    // Mapping for hash(Nominee struct) => last scheduled time (next week)
     mapping(bytes32 => uint256) public timeWeight;
 
-    // time -> Point
+    // Mapping for time => Point
     mapping(uint256 => Point) public pointsSum;
-    // time -> slope
+    // Mapping for time => slope
     mapping(uint256 => uint256) public changesSum;
-    // last scheduled time (next week)
+    // Last scheduled time (next week)
     uint256 public timeSum;
 
     /// @dev Contract constructor.
