@@ -224,7 +224,7 @@ describe("Voting Escrow OLAS", function () {
             await olas.approve(ve.address, oneOLASBalance);
             const lockDuration = oneWeek;
 
-            ve.createLock(oneOLASBalance, lockDuration);
+            await ve.createLock(oneOLASBalance, lockDuration);
             await expect(
                 ve.createLock(oneOLASBalance, lockDuration)
             ).to.be.revertedWithCustomError(ve, "LockedValueNotZero");
