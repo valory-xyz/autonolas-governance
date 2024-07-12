@@ -137,9 +137,11 @@ contract VoteWeighting {
         uint256 nomineeWeight, uint256 totalSum);
     event NomineeRelativeWeightWrite(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
         uint256 nomineeWeight, uint256 totalSum, uint256 relativeWeight);
-    event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight);
+    event VoteForNominee(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 weight,
+        uint256 powerUsed);
     event AddNominee(bytes32 indexed account, uint256 chainId, uint256 id);
     event RemoveNominee(bytes32 indexed account, uint256 chainId, uint256 newSum);
+    event VotingPowerRevoked(address indexed user, bytes32 indexed nominee, uint256 chainId, uint256 powerUsed);
 
     // 7 * 86400 seconds - all future times are rounded by week
     uint256 public constant WEEK = 604_800;
@@ -147,12 +149,11 @@ contract VoteWeighting {
     // For explanation about the delay consult the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
     uint256 public constant WEIGHT_VOTE_DELAY = 864_000;
     // Max number of weeks for checkpoints
-    // The number corresponds to slightly more than a year time, that is more than enough to have at least one vote
-    // Also, in line with our tokenomics that cannot have epochs longer than a year
-    // The suggested maximum amount of weeks results in checkpoint calculation that always fit in the block,
-    // although in practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
+    // The number corresponds to more than four years timeframe
+    // It is enough to have at least one vote while veOLAS value is greater than zero
+    // In practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
     // For gas concerns regarding checkpoint calculations, see the internal audit and the official audit report: https://github.com/trailofbits/publications/blob/master/reviews/CurveDAO.pdf
-    uint256 public constant MAX_NUM_WEEKS = 53;
+    uint256 public constant MAX_NUM_WEEKS = 250;
     // Max weight amount
     uint256 public constant MAX_WEIGHT = 10_000;
     // Maximum chain Id as per EVM specs
@@ -173,31 +174,31 @@ contract VoteWeighting {
     // Mapping of hash(Nominee struct) => removed nominee Id
     mapping(bytes32 => uint256) public mapRemovedNominees;
 
-    // user -> hash(Nominee struct) -> VotedSlope
+    // Mapping for user => hash(Nominee struct) => VotedSlope
     mapping(address => mapping(bytes32 => VotedSlope)) public voteUserSlopes;
-    // Total vote power used by user
+    // Mapping for user address => total vote power used
     mapping(address => uint256) public voteUserPower;
-    // Last user vote's timestamp for each hash(Nominee struct)
+    // Mapping for user address => hash(Nominee struct) => last vote timestamp
     mapping(address => mapping(bytes32 => uint256)) public lastUserVote;
 
-    // Past and scheduled points for nominee weight, sum of weights per type, total weight
-    // Point is for bias+slope
-    // changes_* are for changes in slope
-    // time_* are for the last change timestamp
+    // Past and scheduled points for nominee weight, sum of weights
+    // Point is for bias + slope
+    // changes* are for changes in slope
+    // time* are for the last change timestamp
     // timestamps are rounded to whole weeks
 
-    // hash(Nominee struct) -> time -> Point
+    // Mapping for hash(Nominee struct) => time => Point
     mapping(bytes32 => mapping(uint256 => Point)) public pointsWeight;
-    // hash(Nominee struct) -> time -> slope
+    // Mapping for hash(Nominee struct) => time => slope
     mapping(bytes32 => mapping(uint256 => uint256)) public changesWeight;
-    // hash(Nominee struct) -> last scheduled time (next week)
+    // Mapping for hash(Nominee struct) => last scheduled time (next week)
     mapping(bytes32 => uint256) public timeWeight;
 
-    // time -> Point
+    // Mapping for time => Point
     mapping(uint256 => Point) public pointsSum;
-    // time -> slope
+    // Mapping for time => slope
     mapping(uint256 => uint256) public changesSum;
-    // last scheduled time (next week)
+    // Last scheduled time (next week)
     uint256 public timeSum;
 
     /// @dev Contract constructor.
@@ -218,7 +219,7 @@ contract VoteWeighting {
         setRemovedNominees.push(Nominee(0, 0));
     }
 
-    /// @dev Fill sum of nominee weights for the same type week-over-week for missed checkins and return the sum for the future week.
+    /// @dev Fill sum of nominee weights week-over-week for missed checkins and return the sum for the future week.
     /// @return Sum of nominee weights.
     function _getSum() internal returns (uint256) {
         // t is always > 0 as it is set in the constructor
@@ -469,7 +470,7 @@ contract VoteWeighting {
     /// @dev Allocates voting power for changing pool weights.
     /// @param account Address of the nominee the `msg.sender` votes for in bytes32 form.
     /// @param chainId Chain Id.
-    /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0.
+    /// @param weight Weight for a nominee in bps (units of 0.01%). Minimal step is is 0.01% (1 out of 10_000).
     function voteForNomineeWeights(bytes32 account, uint256 chainId, uint256 weight) public {
         // Get the nominee hash
         bytes32 nomineeHash = keccak256(abi.encode(Nominee(account, chainId)));
@@ -493,7 +494,7 @@ contract VoteWeighting {
             revert LockExpired(msg.sender, lockEnd, nextTime);
         }
 
-        // Check for the weight number
+        // Check for the weight value
         if (weight > MAX_WEIGHT) {
             revert Overflow(weight, MAX_WEIGHT);
         }
@@ -553,7 +554,7 @@ contract VoteWeighting {
         // Record last action time
         lastUserVote[msg.sender][nomineeHash] = block.timestamp;
 
-        emit VoteForNominee(msg.sender, account, chainId, weight);
+        emit VoteForNominee(msg.sender, account, chainId, weight, powerUsed);
     }
 
     /// @dev Allocates voting power for changing pool weights in a batch set.
@@ -618,11 +619,16 @@ contract VoteWeighting {
         // Remove nominee from the map
         mapNomineeIds[nomineeHash] = 0;
 
-        // Shuffle the current last nominee id in the set to be placed to the removed one
-        nominee = setNominees[setNominees.length - 1];
-        bytes32 replacedNomineeHash = keccak256(abi.encode(nominee));
-        mapNomineeIds[replacedNomineeHash] = id;
-        setNominees[id] = nominee;
+        uint256 numNominees = setNominees.length - 1;
+        // Shuffle the current last nominee id in the set to be placed to the removed one, if it's not the last nominee
+        // Note that the zero-th element of setNominees is always zero and the final length is never below 1
+        if (numNominees > 1) {
+            // Shuffle the current last nominee id in the set to be placed to the removed one
+            nominee = setNominees[numNominees];
+            bytes32 replacedNomineeHash = keccak256(abi.encode(nominee));
+            mapNomineeIds[replacedNomineeHash] = id;
+            setNominees[id] = nominee;
+        }
         // Pop the last element from the set
         setNominees.pop();
 
@@ -654,6 +660,14 @@ contract VoteWeighting {
             revert ZeroValue();
         }
 
+        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+        // Adjust weight and sum slope changes
+        if (oldSlope.end > nextTime) {
+            pointsWeight[nomineeHash][nextTime].slope =
+                _maxAndSub(pointsWeight[nomineeHash][nextTime].slope, oldSlope.slope);
+            pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope, oldSlope.slope);
+        }
+
         // Cancel old slope changes if they still didn't happen
         if (oldSlope.end > block.timestamp) {
             changesWeight[nomineeHash][oldSlope.end] -= oldSlope.slope;
@@ -665,6 +679,8 @@ contract VoteWeighting {
         powerUsed = powerUsed - oldSlope.power;
         voteUserPower[msg.sender] = powerUsed;
         delete voteUserSlopes[msg.sender][nomineeHash];
+
+        emit VotingPowerRevoked(msg.sender, account, chainId, powerUsed);
     }
 
     /// @dev Get current nominee weight.
