@@ -22,6 +22,8 @@ File                                  |  % Stmts | % Branch |  % Funcs |  % Line
         }
 The fact that this case is not covered is not a problem, since it is very difficult to create such conditions in a real test.
 ```
+[x] Noted. Missing 100% is not an obvious problem.
+
 #### Checking the corrections made after C4A
 64. Less active nominees can be left without rewards after an year of inactivity #64
 https://github.com/code-423n4/2024-05-olas-findings/issues/64 <br>
@@ -43,3 +45,6 @@ Lack of event emission for important state changes in revokeRemovedNomineeVoting
 ```
 [x] fixed
 
+### Catch up on changes. 15.07.24
+https://github.com/valory-xyz/autonolas-governance/compare/v1.2.2-pre-internal-audit...v1.2.2-pre-audit <br>
+The changes to the codebase appear to be correct.
