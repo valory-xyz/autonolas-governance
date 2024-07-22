@@ -55,3 +55,5 @@ c91f775ec4afeb1737af25b8325201c090d48c23:scripts/deployment/globals_mainnet.json
 fa17ac186753911eb9d2ae0a4ab59db5f7e8e563:scripts/deployment/bridges/solana/test/sepolia/timelock_set_upgrade_authority.js:generic-api-key:40
 3745c02b978469a88fd31ccaf0ab09fa91c41b19:scripts/deployment/globals_mainnet.json:generic-api-key:1
 3745c02b978469a88fd31ccaf0ab09fa91c41b19:scripts/deployment/globals_mainnet.json:generic-api-key:2
+4c142e987f5f2528a567c57f6de0258e5007548c:scripts/deployment/globals_mainnet.json:generic-api-key:1
+4c142e987f5f2528a567c57f6de0258e5007548c:scripts/deployment/globals_mainnet.json:generic-api-key:2
