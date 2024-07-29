@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
+[1.2.2]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.10...v1.2.2
 [1.1.10]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.7-post-internal-audit...v1.1.8
@@ -16,6 +17,10 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.1.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.1...v1.1.1
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
+
+## [v1.2.2] - 2024-07-29
+- Created and deployed `VoteWeighting` contract as part of the [PoAA](https://staking.olas.network/poaa-whitepaper.pdf) requirement ([#150](https://github.com/valory-xyz/autonolas-governance/pull/150))
+- Participated in a complete [C4R audit competition](https://github.com/code-423n4/2024-05-olas-findings) and addressed findings
 
 ## [v1.1.10] - 2024-03-08
 - Created `OptimismMessenger` contract to serve as a bridge mediator on Optimism and Base networks ([#114](https://github.com/valory-xyz/autonolas-governance/pull/114/files))
