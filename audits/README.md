@@ -42,3 +42,7 @@ The final audit reports:
 - [v3](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v1.1.0.pdf),
 
 - [v4](https://sourcehat.com/audits/ValoryOLAS/).
+
+- [v5](https://code4rena.com/reports/2023-12-autonolas).
+
+- [v6](https://code4rena.com/reports/2024-05-olas).
