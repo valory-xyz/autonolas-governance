@@ -33,12 +33,10 @@ An internal audit with a focus on `VoteWeighting` (after C4A external audit) is 
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
 the recommendations are addressed here: [feedback](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Addressing%20Initial%20ApeWorX%20Recommentations.pdf).
 
-The final audit reports:
-
-- [v1](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v0.1.0.pre-audit.pdf),
-
-- [v2](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v1.0.0.pdf),
-
-- [v3](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v1.1.0.pdf),
-
-- [v4](https://sourcehat.com/audits/ValoryOLAS/).
+Final audit reports are listed in their historical order:
+- [v1](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v0.1.0.pre-audit.pdf);
+- [v2](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v1.0.0.pdf);
+- [v3](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Smart%20Contract%20Audit%20by%20Solidity%20Finance-v1.1.0.pdf);
+- [v4](https://sourcehat.com/audits/ValoryOLAS/);
+- [v5](https://code4rena.com/reports/2023-12-autonolas);
+- [v6](https://code4rena.com/reports/2024-05-olas).
