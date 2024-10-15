@@ -225,5 +225,16 @@
         "address": "0xadBBC3FE82836366Bb178Fd210d4dd915e9B3415"
       }
     ]
+  },
+  {
+    "name": "mode",
+    "chainId": "34443",
+    "contracts": [
+      {
+        "name": "OptimismMessenger",
+        "artifact": "abis/0.8.28/OptimismMessenger.json",
+        "address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD"
+      }
+    ]
   }
 ]
