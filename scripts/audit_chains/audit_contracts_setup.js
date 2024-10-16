@@ -4,7 +4,7 @@ const { ethers } = require("ethers");
 const { expect } = require("chai");
 const fs = require("fs");
 
-const verifyRepo = false;
+const verifyRepo = true;
 const verifySetup = true;
 
 // Custom expect that is wrapped into try / catch block
