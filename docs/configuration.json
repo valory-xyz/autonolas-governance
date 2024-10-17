@@ -56,57 +56,6 @@
     ]
   },
   {
-    "name": "goerli",
-    "chainId": "5",
-    "contracts": [
-      {
-        "name": "OLAS",
-        "artifact": "abis/0.8.15/OLAS.json",
-        "address": "0xEdfc28215B1Eb6eb0be426f1f529cf691A5C2400"
-      },
-      {
-        "name": "Timelock",
-        "artifact": "abis/0.8.15/Timelock.json",
-        "address": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"
-      },
-      {
-        "name": "veOLAS",
-        "artifact": "abis/0.8.15/veOLAS.json",
-        "address": "0xf8B20e160557c747E8640CdcE77E1dd44bCaAfbB"
-      },
-      {
-        "name": "buOLAS",
-        "artifact": "abis/0.8.15/buOLAS.json",
-        "address": "0x397125902ED2cA2d42104F621f448A2cE1bC8Fb7"
-      },
-      {
-        "name": "wveOLAS",
-        "artifact": "abis/0.8.19/wveOLAS.json",
-        "address": "0xa2AA89938805836077aB0724f335142da7A27085"
-      },
-      {
-        "name": "GovernorOLAS",
-        "artifact": "abis/0.8.20/GovernorOLAS.json",
-        "address": "0x63b0f322837a7160B7E3d95C60aAaeB4EF1aECcb"
-      },
-      {
-        "name": "GuardCM",
-        "artifact": "abis/0.8.23/GuardCM.json",
-        "address": "0xe07949B74bED0dac21BA74B4371155520FE6a560"
-      },
-      {
-        "name": "BridgedERC20",
-        "artifact": "abis/0.8.23/BridgedERC20.json",
-        "address": "0x0CF8ad7AD779157a253964036af0e95f625EA27c"
-      },
-      {
-        "name": "FxERC20RootTunnel",
-        "artifact": "abis/0.8.23/FxERC20RootTunnel.json",
-        "address": "0x7E335396a9804097Fd7c04F8b3adc314Ca9398A0"
-      }
-    ]
-  },
-  {
     "name": "polygon",
     "chainId": "137",
     "contracts": [
@@ -123,22 +72,6 @@
     ]
   },
   {
-    "name": "polygonMumbai",
-    "chainId": "80001",
-    "contracts": [
-      {
-        "name": "FxGovernorTunnel",
-        "artifact": "abis/0.8.19/FxGovernorTunnel.json",
-        "address": "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77"
-      },
-      {
-        "name": "FxERC20ChildTunnel",
-        "artifact": "abis/0.8.23/FxERC20ChildTunnel.json",
-        "address": "0x5b5C7BA8424e6B48f92Ac02980FFc2531c3196DF"
-      }
-    ]
-  },
-  {
     "name": "gnosis",
     "chainId": "100",
     "contracts": [
@@ -146,17 +79,6 @@
         "name": "HomeMediator",
         "artifact": "abis/0.8.19/HomeMediator.json",
         "address": "0x15bd56669F57192a97dF41A2aa8f4403e9491776"
-      }
-    ]
-  },
-  {
-    "name": "chiado",
-    "chainId": "10200",
-    "contracts": [
-      {
-        "name": "HomeMediator",
-        "artifact": "abis/0.8.19/HomeMediator.json",
-        "address": "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592"
       }
     ]
   },
@@ -172,17 +94,6 @@
     ]
   },
   {
-    "name": "optimisticSepolia",
-    "chainId": "11155420",
-    "contracts": [
-      {
-        "name": "OptimismMessenger",
-        "artifact": "abis/0.8.23/OptimismMessenger.json",
-        "address": "0xaC26774616bbeD41b0CB69EA2ae7de366F430b23"
-      }
-    ]
-  },
-  {
     "name": "base",
     "chainId": "8453",
     "contracts": [
@@ -194,17 +105,6 @@
     ]
   },
   {
-    "name": "baseSepolia",
-    "chainId": "84532",
-    "contracts": [
-      {
-        "name": "OptimismMessenger",
-        "artifact": "abis/0.8.23/OptimismMessenger.json",
-        "address": "0x6f7661F52fE1919996d0A4F68D09B344093a349d"
-      }
-    ]
-  },
-  {
     "name": "celo",
     "chainId": "42220",
     "contracts": [
@@ -212,17 +112,6 @@
         "name": "WormholeMessenger",
         "artifact": "abis/0.8.23/WormholeMessenger.json",
         "address": "0x397125902ED2cA2d42104F621f448A2cE1bC8Fb7"
-      }
-    ]
-  },
-  {
-    "name": "celoAlfajores",
-    "chainId": "44787",
-    "contracts": [
-      {
-        "name": "WormholeMessenger",
-        "artifact": "abis/0.8.23/WormholeMessenger.json",
-        "address": "0xadBBC3FE82836366Bb178Fd210d4dd915e9B3415"
       }
     ]
   },

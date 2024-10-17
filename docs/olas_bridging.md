@@ -9,6 +9,7 @@ In a table below one can find OLAS token addresses on corresponding chains and b
 | Polygon PoS | [0xFEF5d947472e72Efbb2E388c730B7428406F2F95](https://polygonscan.com/token/0xFEF5d947472e72Efbb2E388c730B7428406F2F95) | [Polygon Portal](https://portal.polygon.technology/bridge)            |
 | Solana      | [Ez3nzG9ofodYCvEmw73XhQ87LWNYVRM2s7diB5tBZPyM](https://solscan.io/token/Ez3nzG9ofodYCvEmw73XhQ87LWNYVRM2s7diB5tBZPyM) | [Wormhole Portal](https://portalbridge.com/advanced-tools/#/transfer) |
 | Arbitrum    | [0x064f8b858c2a603e1b106a2039f5446d32dc81c1](https://arbiscan.io/token/0x064f8b858c2a603e1b106a2039f5446d32dc81c1) | [Arbitrum Bridge](https://bridge.arbitrum.io)                         |
-| Optimism    | [0xFC2E6e6BCbd49ccf3A5f029c79984372DcBFE527](https://optimistic.etherscan.io/token/0xFC2E6e6BCbd49ccf3A5f029c79984372DcBFE527) | [Optimism Bridge](https://app.optimism.io/bridge/deposit)     |
-| Base        | [0x54330d28ca3357F294334BDC454a032e7f353416](https://basescan.org/token/0x54330d28ca3357F294334BDC454a032e7f353416) | [Base Bridge](https://bridge.base.org/deposit)                 |
-| Celo        | [0xaCFfAe8e57Ec6E394Eb1b41939A8CF7892DbDc51](https://celoscan.io/token/0xacffae8e57ec6e394eb1b41939a8cf7892dbdc51) | [Wormhole Portal](https://portalbridge.com/advanced-tools/#/transfer)                 |
+| Optimism    | [0xFC2E6e6BCbd49ccf3A5f029c79984372DcBFE527](https://optimistic.etherscan.io/token/0xFC2E6e6BCbd49ccf3A5f029c79984372DcBFE527) | [Optimism Bridge](https://superbridge.app/optimism)             |
+| Base        | [0x54330d28ca3357F294334BDC454a032e7f353416](https://basescan.org/token/0x54330d28ca3357F294334BDC454a032e7f353416) | [Base Bridge](https://superbridge.app/base)                        |
+| Celo        | [0xaCFfAe8e57Ec6E394Eb1b41939A8CF7892DbDc51](https://celoscan.io/token/0xacffae8e57ec6e394eb1b41939a8cf7892dbdc51) | [Wormhole Portal](https://portalbridge.com/advanced-tools/#/transfer) |
+| Mode        | [0xcfD1D50ce23C46D3Cf6407487B2F8934e96DC8f9](https://explorer.mode.network/address/0xcfD1D50ce23C46D3Cf6407487B2F8934e96DC8f9) | [Mode Bridge](https://superbridge.app/mode)                        |
