@@ -39,6 +39,11 @@
         "address": "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1"
       },
       {
+        "name": "Burner",
+        "artifact": "abis/0.8.28/Burner.json",
+        "address": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"
+      },
+      {
         "name": "GuardCM",
         "artifact": "abis/0.8.23/GuardCM.json",
         "address": "0x7bB7998b210cFfE10ca1e41f16341Abe53f76f3a"
