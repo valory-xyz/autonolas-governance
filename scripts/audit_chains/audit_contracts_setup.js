@@ -513,19 +513,19 @@ async function main() {
 
             const initLog = "ChainId: " + configs[i]["chainId"] + ", network: " + configs[i]["name"];
 
-            if (configs[i]["chainId"] == "137" || configs[i]["chainId"] == "80001") {
+            if (configs[i]["chainId"] == "137") {
                 let log = initLog + ", contract: " + "FxGovernorTunnel";
                 await checkFxGovernorTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxGovernorTunnel", log);
 
                 log = initLog + ", contract: " + "FxERC20ChildTunnel";
                 await checkFxERC20ChildTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20ChildTunnel", log);
-            } else if (configs[i]["chainId"] == "100" || configs[i]["chainId"] == "10200") {
+            } else if (configs[i]["chainId"] == "100") {
                 let log = initLog + ", contract: " + "HomeMediator";
                 await checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log);
-            } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "11155420" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "84532" || configs[i]["chainId"] == "34443") {
+            } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "34443") {
                 let log = initLog + ", contract: " + "OptimismMessenger";
                 await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
-            } else if (configs[i]["chainId"] == "42220" || configs[i]["chainId"] == "44787") {
+            } else if (configs[i]["chainId"] == "42220") {
                 let log = initLog + ", contract: " + "WormholeMessenger";
                 await checkWormholeMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "WormholeMessenger", log);
             }
