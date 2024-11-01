@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
+[1.2.3]: https://github.com/valory-xyz/autonolas-governance/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.10...v1.2.2
 [1.1.10]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.8...v1.1.9
@@ -17,6 +18,11 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.1.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.1...v1.1.1
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
+
+## [v1.2.3] - 2024-11-01
+- Deployed `Burner` contract on ETH mainnet ([#160](https://github.com/valory-xyz/autonolas-governance/pull/160))
+- Deployed `OptimismMessenger` to Mode ([#158](https://github.com/valory-xyz/autonolas-governance/pull/158))
+- Adjusting static audit
 
 ## [v1.2.2] - 2024-07-29
 - Created and deployed `VoteWeighting` contract as part of the [PoAA](https://staking.olas.network/poaa-whitepaper.pdf) requirement ([#150](https://github.com/valory-xyz/autonolas-governance/pull/150))
