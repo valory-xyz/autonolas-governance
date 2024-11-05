@@ -32,8 +32,8 @@ async function main() {
     console.log("You are signing the following transaction: wveOLAS.connect(EOA).deploy(parsedData.veOLASAddress, parsedData.olasAddress)");
     const wveOLAS = await WVE.connect(EOA).deploy(parsedData.veOLASAddress, parsedData.olasAddress);
     const result = await wveOLAS.deployed();
-    // If on goerli, wait a minute for the transaction completion
-    if (providerName === "goerli") {
+    // If on sepolia, wait a minute for the transaction completion
+    if (providerName === "sepolia") {
         await new Promise(r => setTimeout(r, 60000));
     }
 
