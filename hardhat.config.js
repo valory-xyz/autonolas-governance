@@ -12,7 +12,6 @@ require("@nomicfoundation/hardhat-toolbox");
 
 const ALCHEMY_API_KEY_MAINNET = process.env.ALCHEMY_API_KEY_MAINNET;
 const ALCHEMY_API_KEY_MATIC = process.env.ALCHEMY_API_KEY_MATIC;
-const ALCHEMY_API_KEY_GOERLI = process.env.ALCHEMY_API_KEY_GOERLI;
 const ALCHEMY_API_KEY_SEPOLIA = process.env.ALCHEMY_API_KEY_SEPOLIA;
 const ALCHEMY_API_KEY_AMOY = process.env.ALCHEMY_API_KEY_AMOY;
 let TESTNET_MNEMONIC = process.env.TESTNET_MNEMONIC;
@@ -82,11 +81,6 @@ module.exports = {
             url: "https://mainnet.mode.network",
             accounts: accounts,
             chainId: 34443,
-        },
-        goerli: {
-            url: "https://eth-goerli.g.alchemy.com/v2/" + ALCHEMY_API_KEY_GOERLI,
-            chainId: 5,
-            accounts: accounts,
         },
         sepolia: {
             url: "https://eth-sepolia.g.alchemy.com/v2/" + ALCHEMY_API_KEY_SEPOLIA,
@@ -237,7 +231,6 @@ module.exports = {
             optimistic: OPSCAN_API_KEY,
             base: BASESCAN_API_KEY,
             celo: CELOSCAN_API_KEY,
-            goerli: ETHERSCAN_API_KEY,
             sepolia: ETHERSCAN_API_KEY,
             polygonAmoy: POLYGONSCAN_API_KEY,
             chiado: GNOSISSCAN_API_KEY,

@@ -37,8 +37,8 @@ async function main() {
     console.log("Contract address:", guardCM.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
-    // If on goerli, wait a minute for the transaction completion
-    if (providerName === "goerli") {
+    // If on sepolia, wait a minute for the transaction completion
+    if (providerName === "sepolia") {
         await new Promise(r => setTimeout(r, 60000));
     }
 
