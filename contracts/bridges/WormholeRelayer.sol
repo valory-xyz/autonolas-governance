@@ -107,7 +107,7 @@ contract WormholeRelayer {
         }
 
         // Get the message cost in order to adjust leftovers
-        (uint256 cost, ) = IWormhole(wormholeRelayer).quoteEVMDeliveryPrice(targetChain, 0, gasLimit);
+        (uint256 cost, ) = IWormhole(wormholeRelayer).quoteEVMDeliveryPrice(targetChain, receiverValue, gasLimit);
 
         // Check fot msg.value to cover the cost
         if (cost > msg.value) {
