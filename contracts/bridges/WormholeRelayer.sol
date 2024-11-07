@@ -13,7 +13,6 @@ interface IWormhole {
     ///         Note: This value can be overridden by the delivery provider on the target chain. The returned value here should be considered to be a
     ///         promise by the delivery provider of the amount of refund per gas unused that will be returned to the refundAddress at the target chain.
     ///         If a delivery provider decides to override, this will be visible as part of the emitted Delivery event on the target chain.
-    ///
     function quoteEVMDeliveryPrice(
         uint16 targetChain,
         uint256 receiverValue,
@@ -89,15 +88,16 @@ contract WormholeRelayer {
     /// @dev Relays a payload via Wormhole relayer to the address `targetAddress` on chain `targetChain`
     ///      with gas limit `gasLimit` and `msg.value` equal to `receiverValue`.
     /// @notice This function takes arbitrary `msg.value` and adjusts the cost for relayer exact amount.
-    /// @param targetChain in Wormhole Chain ID format
-    /// @param targetAddress address to call on targetChain (that implements IWormholeReceiver)
-    /// @param payload arbitrary bytes to pass in as parameter in call to `targetAddress`
-    /// @param receiverValue msg.value that delivery provider should pass in for call to `targetAddress` (in targetChain currency units)
+    /// @param targetChain in Wormhole Chain ID format.
+    /// @param targetAddress address to call on targetChain (that implements IWormholeReceiver).
+    /// @param payload arbitrary bytes to pass in as parameter in call to `targetAddress`.
+    /// @param receiverValue msg.value that delivery provider should pass in for call to `targetAddress`
+    ///        in `targetChain` currency units.
     /// @param gasLimit gas limit with which to call `targetAddress`. Any units of gas unused will be refunded according to the
-    ///        `targetChainRefundPerGasUnused` rate quoted by the delivery provider
-    /// @param refundChain The chain to deliver any refund to, in Wormhole Chain ID format
-    /// @param refundAddress The address on `refundChain` to deliver any refund to
-    /// @return sequence sequence number of published VAA containing delivery instructions
+    ///        `targetChainRefundPerGasUnused` rate quoted by the delivery provider.
+    /// @param refundChain The chain to deliver any refund to, in Wormhole Chain ID format.
+    /// @param refundAddress The address on `refundChain` to deliver any refund to.
+    /// @return sequence Sequence number of published VAA containing delivery instructions.
     function sendPayloadToEvm(
         uint16 targetChain,
         address targetAddress,
