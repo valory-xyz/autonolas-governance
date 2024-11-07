@@ -26,15 +26,15 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("24. EOA to deploy Burner contract pointed to OLAS");
-    const Burner = await ethers.getContractFactory("Burner");
-    console.log("You are signing the following transaction: Burner.connect(EOA).deploy(OLAS)");
-    const burner = await Burner.connect(EOA).deploy(parsedData.olasAddress);
-    const result = await burner.deployed();
+    console.log("25. EOA to deploy WormholeRelayer contract");
+    const WormholeRelayer = await ethers.getContractFactory("WormholeRelayer");
+    console.log("You are signing the following transaction: WormholeRelayer.connect(EOA).deploy(OLAS)");
+    const wormholeRelayer = await WormholeRelayer.connect(EOA).deploy(parsedData.wormholeL1MessageRelayerAddress);
+    const result = await wormholeRelayer.deployed();
 
     // Transaction details
-    console.log("Contract deployment: burner");
-    console.log("Contract address:", burner.address);
+    console.log("Contract deployment: wormholeRelayer");
+    console.log("Contract address:", wormholeRelayer.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // If on sepolia, wait half a minute for the transaction completion
@@ -45,11 +45,11 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_24_burner.js --network " + providerName + " " + burner.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_25_wormhole_relayer.js --network " + providerName + " " + wormholeRelayer.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
-    parsedData.burnerAddress = burner.address;
+    parsedData.wormholeRelayerAddress = wormholeRelayer.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 
