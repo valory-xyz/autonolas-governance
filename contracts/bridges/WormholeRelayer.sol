@@ -60,6 +60,11 @@ error ZeroValue();
 /// @param expected Expected value.
 error LowerThan(uint256 provided, uint256 expected);
 
+/// @dev Failure of a native token transfer.
+/// @param to Address `to`.
+/// @param amount Token amount.
+error TransferFailed(address to, uint256 amount);
+
 /// @title WormholeRelayer - Smart contract for the contract interaction with wormhole relayer with any msg.value
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
@@ -119,9 +124,11 @@ contract WormholeRelayer {
 
         // Send leftover amount back to the sender, if any
         if (leftovers > 0) {
-            // If the call fails, ignore to avoid the attack that would prevent this function from executing
             // solhint-disable-next-line avoid-low-level-calls
-            tx.origin.call{value: leftovers}("");
+            (bool success, ) = tx.origin.call{value: leftovers}("");
+            if (!success) {
+                revert TransferFailed(tx.origin, leftovers);
+            }
 
             emit LeftoversRefunded(tx.origin, leftovers);
         }
