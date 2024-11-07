@@ -65,6 +65,9 @@ error LowerThan(uint256 provided, uint256 expected);
 /// @param amount Token amount.
 error TransferFailed(address to, uint256 amount);
 
+// @dev Reentrancy guard.
+error ReentrancyGuard();
+
 /// @title WormholeRelayer - Smart contract for the contract interaction with wormhole relayer with any msg.value
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
@@ -73,6 +76,9 @@ contract WormholeRelayer {
 
     // L1 Wormhole Relayer address that sends the message across the bridge
     address public immutable wormholeRelayer;
+
+    // Reentrancy lock
+    uint256 internal _locked = 1;
 
     /// @dev WormholeRelayer constructor.
     /// @param _wormholeRelayer Wormhole relayer address.
@@ -100,7 +106,12 @@ contract WormholeRelayer {
         uint256 gasLimit,
         uint16 refundChain,
         address refundAddress
-    ) external payable returns (uint64) {
+    ) external payable returns (uint64 sequence) {
+        if (_locked > 1) {
+            revert ReentrancyGuard();
+        }
+        _locked = 2;
+
         // Check for zero addresses
         if (targetAddress == address(0) || refundAddress == address(0)) {
             revert ZeroAddress();
@@ -134,7 +145,9 @@ contract WormholeRelayer {
         }
 
         // Send payload via the Wormhole relayer with exact required cost
-        return IWormhole(wormholeRelayer).sendPayloadToEvm{value: cost}(targetChain, targetAddress, payload,
+        sequence = IWormhole(wormholeRelayer).sendPayloadToEvm{value: cost}(targetChain, targetAddress, payload,
             receiverValue, gasLimit, refundChain, refundAddress);
+
+        _locked = 1;
     }
 }
