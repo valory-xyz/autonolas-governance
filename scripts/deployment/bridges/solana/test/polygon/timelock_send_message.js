@@ -18,7 +18,7 @@ async function main() {
     const wormholeABI = JSON.parse(contractFromJSON);
     const wormhole = new ethers.Contract(wormholeAddress, wormholeABI, polygonProvider);
 
-    // Mock Timelock contract address on goerli (has Wormhole Core address in it already)
+    // Mock Timelock contract address on sepolia (has Wormhole Core address in it already)
     const mockTimelockAddress = "0x4cEB52802ef86edF8796632546d89e55c87a0901";
     const mockTimelockJSON = "artifacts/contracts/bridges/test/MockTimelock.sol/MockTimelock.json";
     contractFromJSON = fs.readFileSync(mockTimelockJSON, "utf8");
