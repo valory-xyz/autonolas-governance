@@ -41,7 +41,7 @@
       {
         "name": "Burner",
         "artifact": "abis/0.8.28/Burner.json",
-        "address": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5"
+        "address": "0x51eb65012ca5cEB07320c497F4151aC207FEa4E0"
       },
       {
         "name": "GuardCM",
