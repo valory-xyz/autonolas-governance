@@ -188,6 +188,24 @@ async function checkWrappedVEOLAS(chainId, provider, globalsInstance, configCont
     customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
 }
 
+// Check VoteWeighting: chain Id, provider, parsed globals, configuration contracts, contract name
+async function checkVoteWeighting(chainId, provider, globalsInstance, configContracts, contractName, log) {
+    // Check the bytecode
+    await checkBytecode(provider, configContracts, contractName, log);
+
+    // Get the contract instance
+    const vw = await findContractInstance(provider, configContracts, contractName);
+
+    log += ", address: " + vw.address;
+    // Check current token
+    const ve = await vw.ve();
+    customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
+
+    // Check owner
+    const owner = await vw.owner();
+    customExpect(owner, globalsInstance["timelockAddress"], log + ", function: owner()");
+}
+
 // Check GolvernorOLAS: chain Id, provider, parsed globals, mainnet globals, configuration contracts, contract name
 async function checkGovernorOLAS(chainId, provider, globalsInstance, globalsMainnet, configContracts, contractName, log) {
     // Check the bytecode
@@ -494,6 +512,9 @@ async function main() {
 
         log = initLog + ", contract: " + "wveOLAS";
         await checkWrappedVEOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "wveOLAS", log);
+
+        log = initLog + ", contract: " + "VoteWeighting";
+        await checkVoteWeighting(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "VoteWeighting", log);
 
         log = initLog + ", contract: " + "GovernorOLAS";
         await checkGovernorOLAS(configs[0]["chainId"], providers[0], globals[0], globals[0], configs[0]["contracts"], "GovernorOLAS", log);
