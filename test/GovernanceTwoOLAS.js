@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("Governance OLAS on wveOLAS", function () {
-    let gnosisSafeL2;
+    let gnosisSafe;
     let gnosisSafeProxyFactory;
     let token;
     let ve;
@@ -18,17 +18,18 @@ describe("Governance OLAS on wveOLAS", function () {
     const AddressZero = "0x" + "0".repeat(40);
     const bytes32Zero = "0x" + "0".repeat(64);
     const safeThreshold = 7;
-    const nonce =  0;
-    const minDelay = 1; // blocks
+    let nonce =  0;
+    const minDelay = 1; // seconds
     const initialVotingDelay = 0; // blocks
     const initialVotingPeriod = 1; // blocks
     const initialProposalThreshold = fiveOLASBalance; // required voting power
     const quorum = 1; // quorum factor
     const proposalDescription = "Proposal 0";
+
     beforeEach(async function () {
-        const GnosisSafeL2 = await ethers.getContractFactory("GnosisSafeL2");
-        gnosisSafeL2 = await GnosisSafeL2.deploy();
-        await gnosisSafeL2.deployed();
+        const GnosisSafe = await ethers.getContractFactory("GnosisSafe");
+        gnosisSafe = await GnosisSafe.deploy();
+        await gnosisSafe.deployed();
 
         const GnosisSafeProxyFactory = await ethers.getContractFactory("GnosisSafeProxyFactory");
         gnosisSafeProxyFactory = await GnosisSafeProxyFactory.deploy();
@@ -63,7 +64,7 @@ describe("Governance OLAS on wveOLAS", function () {
                 }
             );
 
-            const setupData = gnosisSafeL2.interface.encodeFunctionData(
+            const setupData = gnosisSafe.interface.encodeFunctionData(
                 "setup",
                 // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
                 [safeSigners, safeThreshold, AddressZero, "0x", AddressZero, AddressZero, 0, AddressZero]
@@ -71,10 +72,10 @@ describe("Governance OLAS on wveOLAS", function () {
 
             // Create Safe proxy
             const safeContracts = require("@gnosis.pm/safe-contracts");
-            const proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafeL2.address,
+            const proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafe.address,
                 setupData, nonce);
 
-            await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafeL2.address, setupData, nonce).then((tx) => tx.wait());
+            await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafe.address, setupData, nonce).then((tx) => tx.wait());
             // console.log("Safe proxy deployed to", proxyAddress);
 
             // Deploy Timelock
@@ -190,7 +191,7 @@ describe("Governance OLAS on wveOLAS", function () {
                 ethers.provider.send("evm_mine");
             }
 
-            // Executing via this rpoposal will fail as onlyGovernance checks for the proposals passed throught the
+            // Executing via this proposal will fail as onlyGovernance checks for the proposals passed through the
             // governor itself, i.e with voting
             await expect(
                 timelock2.execute(governor.address, 0, callData, bytes32Zero, bytes32Zero)
@@ -417,6 +418,98 @@ describe("Governance OLAS on wveOLAS", function () {
             // Check that the proposal was cancelled: enum value of ProposalState.Canceled == 2
             const proposalState = await governor.state(proposalId);
             expect(proposalState).to.equal(2);
+        });
+    });
+
+    context("Change min delay via CM unsetting the guard and setting it back again", async function () {
+        it("Change minDelay of timelock to zero and change to a meaningful value again", async function () {
+            const deployer = signers[0];
+            // Approve signers[0] for 10 OLAS by voting ve
+            await token.approve(ve.address, tenOLASBalance);
+            // Define 4 years for the lock duration in Voting Escrow.
+            // This will result in voting power being almost exactly as OLAS amount locked:
+            // voting power = amount * t_left_before_unlock / t_max
+            const lockDuration = 4 * 365 * 86400;
+
+            // Lock 10 OLAS, which is enough to cover the 5 OLAS of initial proposal threshold voting power
+            await ve.createLock(tenOLASBalance, lockDuration);
+
+            // Deploy Safe multisig
+            const safeSigners = signers.slice(1, 10).map(
+                function (currentElement) {
+                    return currentElement.address;
+                }
+            );
+
+            const setupData = gnosisSafe.interface.encodeFunctionData(
+                "setup",
+                // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
+                [safeSigners, safeThreshold, AddressZero, "0x", AddressZero, AddressZero, 0, AddressZero]
+            );
+
+            // Create Safe proxy
+            const safeContracts = require("@gnosis.pm/safe-contracts");
+            const proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafe.address,
+                setupData, nonce);
+
+            await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafe.address, setupData, nonce).then((tx) => tx.wait());
+            // Get the multisig
+            const multisig = await ethers.getContractAt("GnosisSafe", proxyAddress);
+
+            // Deploy first timelock
+            const executors = [deployer.address, multisig.address];
+            const proposers = [deployer.address, multisig.address];
+            const Timelock = await ethers.getContractFactory("Timelock");
+            const timelock = await Timelock.deploy(minDelay, proposers, executors);
+            await timelock.deployed();
+
+            // Add timelock as a module
+            nonce = await multisig.nonce();
+            let txHashData = await safeContracts.buildContractCall(multisig, "enableModule", [timelock.address], nonce, 0, 0);
+            let signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Deploy Governance Bravo with a deployer being a timelock address
+            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+                initialVotingPeriod, initialProposalThreshold, quorum);
+            await governor.deployed();
+
+            // Grand governor proposer and executor roles in the timelock
+            const proposerRole = ethers.utils.id("PROPOSER_ROLE");
+            await timelock.grantRole(proposerRole, governor.address);
+            const executorRole = ethers.utils.id("EXECUTOR_ROLE");
+            await timelock.grantRole(executorRole, governor.address);
+
+            // Update minDelay to zero seconds
+            // Let the deployer propose the change of the timelock
+            let callData = timelock.interface.encodeFunctionData("updateDelay", [0]);
+            await governor["propose(address[],uint256[],bytes[],string)"]([timelock.address], [0],
+                [callData], proposalDescription);
+
+            // Get the proposalId
+            const descriptionHash = ethers.utils.id(proposalDescription);
+            const proposalId = await governor.hashProposal([timelock.address], [0], [callData],
+                descriptionHash);
+
+            // If initialVotingDelay is greater than 0 we have to wait that many blocks before the voting starts
+            // Casting votes for the proposalId: 0 - Against, 1 - For, 2 - Abstain
+            await governor.castVote(proposalId, 1);
+            await governor["queue(uint256)"](proposalId);
+
+            // Waiting for the minDelay number of blocks to pass
+            for (let i = 0; i < minDelay; i++) {
+                ethers.provider.send("evm_mine");
+            }
+
+            // Execute the proposed operation and check the execution result
+            await governor["execute(uint256)"](proposalId);
+
+            // Check the new timelock address
+            expect(await timelock.getMinDelay()).to.equal(0);
         });
     });
 });
