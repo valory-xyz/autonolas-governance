@@ -61,7 +61,7 @@ async function main() {
     // Proposal details
     console.log("Target:", wormholeL1MessageRelayerAddress);
     console.log("Value:", quote.nativePriceQuote.toString());
-    console.log("Timelock payload for batch and execute:", timelockPayload);
+    console.log("Timelock payload for schedule and execute:", timelockPayload);
 }
 
 main()
