@@ -26,15 +26,15 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("25. EOA to deploy WormholeRelayerAnyValue contract");
-    const WormholeRelayerAnyValue = await ethers.getContractFactory("WormholeRelayerAnyValue");
-    console.log("You are signing the following transaction: WormholeRelayerAnyValue.connect(EOA).deploy(OLAS)");
-    const wormholeRelayerAnyValue = await WormholeRelayerAnyValue.connect(EOA).deploy(parsedData.wormholeL1MessageRelayerAddress);
-    const result = await wormholeRelayerAnyValue.deployed();
+    console.log("25. EOA to deploy WormholeRelayerTimelock contract");
+    const WormholeRelayerTimelock = await ethers.getContractFactory("WormholeRelayerTimelock");
+    console.log("You are signing the following transaction: WormholeRelayerTimelock.connect(EOA).deploy(OLAS)");
+    const wormholeRelayerTimelock = await WormholeRelayerTimelock.connect(EOA).deploy(parsedData.wormholeL1MessageRelayerAddress);
+    const result = await wormholeRelayerTimelock.deployed();
 
     // Transaction details
-    console.log("Contract deployment: wormholeRelayerAnyValue");
-    console.log("Contract address:", wormholeRelayerAnyValue.address);
+    console.log("Contract deployment: wormholeRelayerTimelock");
+    console.log("Contract address:", wormholeRelayerTimelock.address);
     console.log("Transaction:", result.deployTransaction.hash);
 
     // If on sepolia, wait half a minute for the transaction completion
@@ -45,11 +45,11 @@ async function main() {
     // Contract verification
     if (parsedData.contractVerification) {
         const execSync = require("child_process").execSync;
-        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_25_wormhole_relayer_any_value.js --network " + providerName + " " + wormholeRelayerAnyValue.address, { encoding: "utf-8" });
+        execSync("npx hardhat verify --constructor-args scripts/deployment/verify_25_wormhole_relayer_timelock.js --network " + providerName + " " + wormholeRelayerTimelock.address, { encoding: "utf-8" });
     }
 
     // Writing updated parameters back to the JSON file
-    parsedData.wormholeRelayerAnyValueAddress = wormholeRelayerAnyValue.address;
+    parsedData.wormholeRelayerTimelockAddress = wormholeRelayerTimelock.address;
     fs.writeFileSync(globalsFile, JSON.stringify(parsedData));
 }
 

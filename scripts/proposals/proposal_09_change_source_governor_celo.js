@@ -28,11 +28,11 @@ async function main() {
 
     const WormholeMessenger = await ethers.getContractFactory("WormholeMessenger");
 
-    let wormholeRelayerAnyValueAddress = parsedData.wormholeRelayerAnyValueAddress;
-    // TODO comment out when deployed
-    wormholeRelayerAnyValueAddress = deployer;
+    let wormholeRelayerTimelockAddress = parsedData.wormholeRelayerTimelockAddress;
+    // TODO Delete next line when wormholeRelayerTimelock is deployed
+    wormholeRelayerTimelockAddress = deployer;
     const rawPayload = WormholeMessenger.interface.encodeFunctionData("changeSourceGovernor",
-        ["0x" + "0".repeat(24) + wormholeRelayerAnyValueAddress.slice(2)]);
+        ["0x" + "0".repeat(24) + wormholeRelayerTimelockAddress.slice(2)]);
 
     // Pack the data into one contiguous buffer
     const target = wormholeMessengerAddress;

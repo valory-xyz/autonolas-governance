@@ -54,6 +54,10 @@ error ZeroAddress();
 /// @dev Zero value when it has to be different from zero.
 error ZeroValue();
 
+/// @dev Unauthorized account.
+/// @param account Account address.
+error UnauthorizedAccount(address account);
+
 /// @dev Received lower value than the expected one.
 /// @param provided Provided value is lower.
 /// @param expected Expected value.
@@ -67,12 +71,14 @@ error TransferFailed(address to, uint256 amount);
 // @dev Reentrancy guard.
 error ReentrancyGuard();
 
-/// @title WormholeRelayerAnyValue - Smart contract for the contract interaction with wormhole relayer with any msg.value
+/// @title WormholeRelayerTimelock - Smart contract for the contract interaction with wormhole relayer by timelock with any msg.value
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
-contract WormholeRelayerAnyValue {
+contract WormholeRelayerTimelock {
     event LeftoversRefunded(address indexed sender, uint256 leftovers);
 
+    // Timelock address
+    address public immutable timelock;
     // L1 Wormhole Relayer address that sends the message across the bridge
     address public immutable wormholeRelayer;
 
@@ -81,7 +87,8 @@ contract WormholeRelayerAnyValue {
 
     /// @dev WormholeRelayer constructor.
     /// @param _wormholeRelayer Wormhole relayer address.
-    constructor(address _wormholeRelayer) {
+    constructor(address _timelock, address _wormholeRelayer) {
+        timelock = _timelock;
         wormholeRelayer = _wormholeRelayer;
     }
 
@@ -112,6 +119,11 @@ contract WormholeRelayerAnyValue {
             revert ReentrancyGuard();
         }
         _locked = 2;
+
+        // Check for timelock access
+        if (msg.sender != timelock) {
+            revert UnauthorizedAccount(msg.sender);
+        }
 
         // Check for zero addresses
         if (targetAddress == address(0) || refundChainAddress == address(0)) {

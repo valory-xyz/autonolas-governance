@@ -541,9 +541,9 @@ describe("Governance OLAS on wveOLAS", function () {
 
             // ============================= GOVERNOR CHANGE ON L2 BEGINS =============================
             // Construct payload for changing the governor on L2: see changeSourceGovernor encoding example in WormholeMessenger
-            // New governor: WormholeRelayer
+            // New governor: WormholeRelayerTimelock
             // Get the quote for changing the governor payload and supply the result via a value param in a batch calls
-            // Encode payload into scheduleBatch and executeBatch
+            // Encode payload into schedule and execute of Timelock by the CM
             // ============================= GOVERNOR CHANGE ON L2 ENDS =============================
 
 
