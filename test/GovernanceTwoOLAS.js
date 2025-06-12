@@ -15,8 +15,8 @@ describe("Governance OLAS on wveOLAS", function () {
     const twoOLASBalance = ethers.utils.parseEther("2");
     const fiveOLASBalance = ethers.utils.parseEther("5");
     const tenOLASBalance = ethers.utils.parseEther("10");
-    const AddressZero = "0x" + "0".repeat(40);
-    const bytes32Zero = "0x" + "0".repeat(64);
+    const AddressZero = ethers.constants.AddressZero;
+    const HashZero = ethers.constants.HashZero;
     const safeThreshold = 7;
     let nonce =  0;
     const minDelay = 1; // seconds
@@ -184,7 +184,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Trying to change back timelock with just the proposal roles
             callData = governor.interface.encodeFunctionData("updateTimelock", [timelock.address]);
             // Schedule the change right away by the deployer as a proposer
-            await timelock2.schedule(governor.address, 0, callData, bytes32Zero, bytes32Zero, minDelay);
+            await timelock2.schedule(governor.address, 0, callData, HashZero, HashZero, minDelay);
 
             // Waiting for the minDelay number of blocks to pass
             for (let i = 0; i < minDelay; i++) {
@@ -194,7 +194,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Executing via this proposal will fail as onlyGovernance checks for the proposals passed through the
             // governor itself, i.e with voting
             await expect(
-                timelock2.execute(governor.address, 0, callData, bytes32Zero, bytes32Zero)
+                timelock2.execute(governor.address, 0, callData, HashZero, HashZero)
             ).to.be.revertedWith("TimelockController: underlying transaction reverted");
         });
 
@@ -410,9 +410,9 @@ describe("Governance OLAS on wveOLAS", function () {
 
             // Cancel the proposal via the timelock
             // We need to encode the exact same data that was coded into the proposal with descriptionHash being the salt
-            // It has to correspond to: timelock.hashOperationBatch([AddressZero], [0], [callData], bytes32Zero, descriptionHash);
+            // It has to correspond to: timelock.hashOperationBatch([AddressZero], [0], [callData], HashZero, descriptionHash);
             const proposalHash = timelock.hashOperationBatch(proposalArgs[2], proposalArgs[3],
-                proposalArgs[5], bytes32Zero, ethers.utils.id(proposalArgs[8]));
+                proposalArgs[5], HashZero, ethers.utils.id(proposalArgs[8]));
             await timelock.cancel(proposalHash);
 
             // Check that the proposal was cancelled: enum value of ProposalState.Canceled == 2
@@ -422,7 +422,7 @@ describe("Governance OLAS on wveOLAS", function () {
     });
 
     context("Change min delay via CM unsetting the guard and setting it back again", async function () {
-        it("Change minDelay of timelock to zero and change to a meaningful value again", async function () {
+        it("Change minDelay of timelock to zero and change to a meaningful value again via CM", async function () {
             const deployer = signers[0];
             // Approve signers[0] for 10 OLAS by voting ve
             await token.approve(ve.address, tenOLASBalance);
@@ -434,7 +434,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Lock 10 OLAS, which is enough to cover the 5 OLAS of initial proposal threshold voting power
             await ve.createLock(tenOLASBalance, lockDuration);
 
-            // Deploy Safe multisig
+            // Deploy Safe multisig (CM)
             const safeSigners = signers.slice(1, 10).map(
                 function (currentElement) {
                     return currentElement.address;
@@ -456,7 +456,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Get the multisig
             const multisig = await ethers.getContractAt("GnosisSafe", proxyAddress);
 
-            // Deploy first timelock
+            // Deploy timelock
             const executors = [deployer.address, multisig.address];
             const proposers = [deployer.address, multisig.address];
             const Timelock = await ethers.getContractFactory("Timelock");
@@ -472,28 +472,56 @@ describe("Governance OLAS on wveOLAS", function () {
             }
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
-            // Deploy Governance Bravo with a deployer being a timelock address
+            // Deploy Governor
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum);
             await governor.deployed();
 
-            // Grand governor proposer and executor roles in the timelock
+            // Grant governor proposer and executor roles in the timelock
             const proposerRole = ethers.utils.id("PROPOSER_ROLE");
             await timelock.grantRole(proposerRole, governor.address);
             const executorRole = ethers.utils.id("EXECUTOR_ROLE");
             await timelock.grantRole(executorRole, governor.address);
 
-            // Update minDelay to zero seconds
-            // Let the deployer propose the change of the timelock
-            let callData = timelock.interface.encodeFunctionData("updateDelay", [0]);
-            await governor["propose(address[],uint256[],bytes[],string)"]([timelock.address], [0],
-                [callData], proposalDescription);
+            // Deploy Guard CM
+            const GuardCM = await ethers.getContractFactory("GuardCM");
+            const guard = await GuardCM.deploy(timelock.address, multisig.address, governor.address);
+            await guard.deployed();
+
+            // Setting the CM guard
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Attempt to update minDelay via a CM with a guard on
+            let minDelayPayload = timelock.interface.encodeFunctionData("updateDelay", [0]);
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [timelock.address, 0, minDelayPayload,
+                HashZero, HashZero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+
+            // Update minDelay to zero seconds via Governance and remove guard
+            let setGuardPayload = await safeContracts.buildContractCall(multisig, "setGuard", [AddressZero], nonce, 0, 0);
+            setGuardPayload = multisig.interface.encodeFunctionData("execTransactionFromModule", [setGuardPayload.to,
+                0, setGuardPayload.data, setGuardPayload.operation]);
+            await governor["propose(address[],uint256[],bytes[],string)"]([timelock.address, multisig.address], [0, 0],
+                [minDelayPayload, setGuardPayload], proposalDescription);
 
             // Get the proposalId
             const descriptionHash = ethers.utils.id(proposalDescription);
-            const proposalId = await governor.hashProposal([timelock.address], [0], [callData],
-                descriptionHash);
+            const proposalId = await governor.hashProposal([timelock.address, multisig.address], [0, 0],
+                [minDelayPayload, setGuardPayload], descriptionHash);
 
             // If initialVotingDelay is greater than 0 we have to wait that many blocks before the voting starts
             // Casting votes for the proposalId: 0 - Against, 1 - For, 2 - Abstain
@@ -510,6 +538,52 @@ describe("Governance OLAS on wveOLAS", function () {
 
             // Check the new timelock address
             expect(await timelock.getMinDelay()).to.equal(0);
+
+            // TODO: Wrap those below into a MultiSend
+            // ============================= MULTISEND BEGINS =============================
+
+            // Now the CM is able to do any action on the timelock without min delay concern
+            // Update minDelay back and set the guard for self
+            minDelayPayload = timelock.interface.encodeFunctionData("updateDelay", [minDelay]);
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "scheduleBatch",
+                [[timelock.address], [0], [minDelayPayload], HashZero, HashZero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            //  Able to execute right away since the minDelay is zero
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "executeBatch",
+                [[timelock.address], [0], [minDelayPayload], HashZero, HashZero], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Setting the CM guard back
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(multisig, "setGuard", [guard.address], nonce, 0, 0);
+            signMessageData = new Array();
+            for (let i = 1; i <= safeThreshold; i++) {
+                signMessageData.push(await safeContracts.safeSignMessage(signers[i], multisig, txHashData, 0));
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // ============================= MULTISEND ENDS =============================
+
+
+            // Check for attempt to update minDelay via a CM after the guard is on again
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [timelock.address, 0, minDelayPayload,
+                HashZero, HashZero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
         });
     });
 });
