@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.30;
 
 interface IWormhole {
     /// @dev Returns the price to request a relay to chain `targetChain`, using the default delivery provider
@@ -67,10 +67,10 @@ error TransferFailed(address to, uint256 amount);
 // @dev Reentrancy guard.
 error ReentrancyGuard();
 
-/// @title WormholeRelayer - Smart contract for the contract interaction with wormhole relayer with any msg.value
+/// @title WormholeRelayerAnyValue - Smart contract for the contract interaction with wormhole relayer with any msg.value
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
-contract WormholeRelayer {
+contract WormholeRelayerAnyValue {
     event LeftoversRefunded(address indexed sender, uint256 leftovers);
 
     // L1 Wormhole Relayer address that sends the message across the bridge
@@ -96,7 +96,7 @@ contract WormholeRelayer {
     /// @param gasLimit gas limit with which to call `targetAddress`. Any units of gas unused will be refunded according to the
     ///        `targetChainRefundPerGasUnused` rate quoted by the delivery provider.
     /// @param refundChain The chain to deliver any refund to, in Wormhole Chain ID format.
-    /// @param refundAddress The address on `refundChain` to deliver any refund to.
+    /// @param refundChainAddress The address on `refundChain` to deliver any refund to.
     /// @return sequence Sequence number of published VAA containing delivery instructions.
     function sendPayloadToEvm(
         uint16 targetChain,
@@ -105,7 +105,8 @@ contract WormholeRelayer {
         uint256 receiverValue,
         uint256 gasLimit,
         uint16 refundChain,
-        address refundAddress
+        address refundChainAddress,
+        address refundValueAddress
     ) external payable returns (uint64 sequence) {
         if (_locked > 1) {
             revert ReentrancyGuard();
@@ -113,7 +114,7 @@ contract WormholeRelayer {
         _locked = 2;
 
         // Check for zero addresses
-        if (targetAddress == address(0) || refundAddress == address(0)) {
+        if (targetAddress == address(0) || refundChainAddress == address(0)) {
             revert ZeroAddress();
         }
 
@@ -135,18 +136,23 @@ contract WormholeRelayer {
 
         // Send leftover amount back to the sender, if any
         if (leftovers > 0) {
-            // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = tx.origin.call{value: leftovers}("");
-            if (!success) {
-                revert TransferFailed(tx.origin, leftovers);
+            // If refundValueAddress is zero, fallback to tx.origin
+            if (refundValueAddress == address(0)) {
+                refundValueAddress = tx.origin;
             }
 
-            emit LeftoversRefunded(tx.origin, leftovers);
+            // solhint-disable-next-line avoid-low-level-calls
+            (bool success, ) = refundValueAddress.call{value: leftovers}("");
+            if (!success) {
+                revert TransferFailed(refundValueAddress, leftovers);
+            }
+
+            emit LeftoversRefunded(refundValueAddress, leftovers);
         }
 
         // Send payload via the Wormhole relayer with exact required cost
         sequence = IWormhole(wormholeRelayer).sendPayloadToEvm{value: cost}(targetChain, targetAddress, payload,
-            receiverValue, gasLimit, refundChain, refundAddress);
+            receiverValue, gasLimit, refundChain, refundChainAddress);
 
         _locked = 1;
     }

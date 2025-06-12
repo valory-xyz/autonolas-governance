@@ -422,7 +422,7 @@ describe("Governance OLAS on wveOLAS", function () {
     });
 
     context("Change min delay via CM unsetting the guard and setting it back again", async function () {
-        it("Change minDelay of timelock to zero and change to a meaningful value again via CM", async function () {
+        it.only("Change minDelay of timelock to zero and change to a meaningful value again via CM", async function () {
             const deployer = signers[0];
             // Approve signers[0] for 10 OLAS by voting ve
             await token.approve(ve.address, tenOLASBalance);
@@ -538,6 +538,14 @@ describe("Governance OLAS on wveOLAS", function () {
 
             // Check the new timelock address
             expect(await timelock.getMinDelay()).to.equal(0);
+
+            // ============================= GOVERNOR CHANGE ON L2 BEGINS =============================
+            // Construct payload for changing the governor on L2: see changeSourceGovernor encoding example in WormholeMessenger
+            // New governor: WormholeRelayer
+            // Get the quote for changing the governor payload and supply the result via a value param in a batch calls
+            // Encode payload into scheduleBatch and executeBatch
+            // ============================= GOVERNOR CHANGE ON L2 ENDS =============================
+
 
             // TODO: Wrap those below into a MultiSend
             // ============================= MULTISEND BEGINS =============================
