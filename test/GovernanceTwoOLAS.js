@@ -422,7 +422,7 @@ describe("Governance OLAS on wveOLAS", function () {
     });
 
     context("Change min delay via CM unsetting the guard and setting it back again", async function () {
-        it.only("Change minDelay of timelock to zero and change to a meaningful value again via CM", async function () {
+        it("Change minDelay of timelock to zero and change to a meaningful value again via CM", async function () {
             const deployer = signers[0];
             // Approve signers[0] for 10 OLAS by voting ve
             await token.approve(ve.address, tenOLASBalance);
