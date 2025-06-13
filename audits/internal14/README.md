@@ -31,12 +31,12 @@ Two refund addresses are not an bug, but they can be confusing (IMO).
 What about returning everything to one address in L1?
 But this is not a bug.
 ```
-[]
+[x] Noted
 
 Low issue/Notes: <br>
 - ZeroAddress check in `constructor`
 ```
 But this is not a bug. Checked by deployment process.
 ```
-[] 
+[x] Fixed 
 

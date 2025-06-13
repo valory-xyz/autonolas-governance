@@ -74,6 +74,7 @@ error ReentrancyGuard();
 /// @title WormholeRelayerTimelock - Smart contract for the contract interaction with wormhole relayer by timelock with any msg.value
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
+/// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract WormholeRelayerTimelock {
     event LeftoversRefunded(address indexed sender, uint256 leftovers);
 
@@ -88,6 +89,11 @@ contract WormholeRelayerTimelock {
     /// @dev WormholeRelayer constructor.
     /// @param _wormholeRelayer Wormhole relayer address.
     constructor(address _timelock, address _wormholeRelayer) {
+        // Check for zero addresses
+        if (_timelock == address(0) || _wormholeRelayer == address(0)) {
+            revert ZeroAddress();
+        }
+
         timelock = _timelock;
         wormholeRelayer = _wormholeRelayer;
     }
