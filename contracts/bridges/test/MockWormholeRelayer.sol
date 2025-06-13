@@ -4,6 +4,8 @@ pragma solidity ^0.8.30;
 contract MockWormholeRelayer {
     event messageSent(uint256 indexed sequence);
 
+    uint256 public constant COST = 2;
+
     /// @dev Returns the price to request a relay to chain `targetChain`, using the default delivery provider
     ///
     /// @param targetChain in Wormhole Chain ID format
@@ -20,7 +22,7 @@ contract MockWormholeRelayer {
         uint256 receiverValue,
         uint256 gasLimit
     ) external view returns (uint256 nativePriceQuote, uint256 targetChainRefundPerGasUnused) {
-        nativePriceQuote = 1;
+        nativePriceQuote = COST;
         targetChainRefundPerGasUnused = 1;
     }
 
