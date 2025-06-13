@@ -17,7 +17,7 @@ Hardhat coverage has been performed before the audit and can be found here:
   WormholeRelayerTimelock.sol         |        0 |        0 |        0 |        0 |... 162,166,169 |
 ```
 Please, pay attention and add tests.
-[]
+[x] Fixed
 
 
 ### Security issues
