@@ -1,0 +1,28 @@
+
+
+
+INFO:Detectors:
+WormholeRelayerTimelock.constructor(address,address)._timelock (WormholeRelayerTimelock-flatten.sol#96) lacks a zero-check on :
+		- timelock = _timelock (WormholeRelayerTimelock-flatten.sol#97)
+WormholeRelayerTimelock.constructor(address,address)._wormholeRelayer (WormholeRelayerTimelock-flatten.sol#96) lacks a zero-check on :
+		- wormholeRelayer = _wormholeRelayer (WormholeRelayerTimelock-flatten.sol#98)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Reentrancy in WormholeRelayerTimelock.sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address,address) (WormholeRelayerTimelock-flatten.sol#114-176):
+	External calls:
+	- (success) = refundValueAddress.call{value: leftovers}() (WormholeRelayerTimelock-flatten.sol#163)
+	Event emitted after the call(s):
+	- LeftoversRefunded(refundValueAddress,leftovers) (WormholeRelayerTimelock-flatten.sol#168)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+Pragma version^0.8.25 (WormholeRelayerTimelock-flatten.sol#8) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+solc-0.8.25 is not recommended for deployment
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in WormholeRelayerTimelock.sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address,address) (WormholeRelayerTimelock-flatten.sol#114-176):
+	- (success) = refundValueAddress.call{value: leftovers}() (WormholeRelayerTimelock-flatten.sol#163)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Variable WormholeRelayerTimelock._locked (WormholeRelayerTimelock-flatten.sol#92) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Slither:. analyzed (2 contracts with 108 detectors), 11 result(s) found

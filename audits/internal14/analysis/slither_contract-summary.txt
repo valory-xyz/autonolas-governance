@@ -1,0 +1,14 @@
+'solc --version' running
+'solc ./WormholeRelayerTimelock-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal14/analysis/contracts' running
+INFO:Printers:
++ Contract IWormhole (Most derived contract)
+  - From IWormhole
+    - quoteEVMDeliveryPrice(uint16,uint256,uint256) (external)
+    - sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address) (external)
+
++ Contract WormholeRelayerTimelock (Most derived contract)
+  - From WormholeRelayerTimelock
+    - constructor(address,address) (public)
+    - sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address,address) (external)
+
+INFO:Slither:. analyzed (2 contracts)
