@@ -29,7 +29,8 @@ async function main() {
     console.log("25. EOA to deploy WormholeRelayerTimelock contract");
     const WormholeRelayerTimelock = await ethers.getContractFactory("WormholeRelayerTimelock");
     console.log("You are signing the following transaction: WormholeRelayerTimelock.connect(EOA).deploy(OLAS)");
-    const wormholeRelayerTimelock = await WormholeRelayerTimelock.connect(EOA).deploy(parsedData.wormholeL1MessageRelayerAddress);
+    const wormholeRelayerTimelock = await WormholeRelayerTimelock.connect(EOA).deploy(parsedData.timelockAddress,
+        parsedData.wormholeL1MessageRelayerAddress);
     const result = await wormholeRelayerTimelock.deployed();
 
     // Transaction details
