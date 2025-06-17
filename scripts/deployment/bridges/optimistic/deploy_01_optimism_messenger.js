@@ -28,7 +28,7 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("1. EOA to deploy home mediator contract");
+    console.log("1. EOA to deploy Optimism Messenger contract");
     const OptimismMessenger = await ethers.getContractFactory("OptimismMessenger");
     console.log("You are signing the following transaction: OptimismMessenger.connect(EOA).deploy(L2CrossDomainMessengerAddress, timelockAddress)");
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
