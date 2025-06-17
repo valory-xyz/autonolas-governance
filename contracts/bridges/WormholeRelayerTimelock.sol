@@ -78,6 +78,9 @@ error ReentrancyGuard();
 contract WormholeRelayerTimelock {
     event LeftoversRefunded(address indexed sender, uint256 leftovers);
 
+    // Message transfer minimum gas limit for L2
+    uint256 public constant MIN_GAS_LIMIT = 2_000_000;
+
     // Timelock address
     address public immutable timelock;
     // L1 Wormhole Relayer address that sends the message across the bridge
@@ -116,8 +119,8 @@ contract WormholeRelayerTimelock {
     /// @param payload arbitrary bytes to pass in as parameter in call to `targetAddress`.
     /// @param receiverValue msg.value that delivery provider should pass in for call to `targetAddress`
     ///        in `targetChain` currency units.
-    /// @param gasLimit gas limit with which to call `targetAddress`. Any units of gas unused will be refunded according to the
-    ///        `targetChainRefundPerGasUnused` rate quoted by the delivery provider.
+    /// @param gasLimit gas limit with which to call `targetAddress`. Any units of gas unused will be refunded according
+    ///        to the `targetChainRefundPerGasUnused` rate quoted by the delivery provider.
     /// @param refundAddress The address on `refundChainId` to deliver any refund to.
     /// @return sequence Sequence number of published VAA containing delivery instructions.
     function sendPayloadToEvm(
@@ -144,8 +147,13 @@ contract WormholeRelayerTimelock {
         }
 
         // Check for zero values
-        if (targetChain == 0 || payload.length == 0 || gasLimit == 0) {
+        if (targetChain == 0 || payload.length == 0) {
             revert ZeroValue();
+        }
+
+        // Check for the message gas limit
+        if (gasLimit < MIN_GAS_LIMIT) {
+            gasLimit = MIN_GAS_LIMIT;
         }
 
         // If refundAddress is zero, fallback to tx.origin

@@ -129,9 +129,7 @@ describe("WormholeRelayerTimelock", function () {
                 refundAddress
             ]);
 
-            await expect(
-                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
-            ).to.be.reverted;
+            await timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") });
         });
 
         it("Should revert when msg.value is less than cost", async function () {
