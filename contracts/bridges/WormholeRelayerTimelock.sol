@@ -82,20 +82,30 @@ contract WormholeRelayerTimelock {
     address public immutable timelock;
     // L1 Wormhole Relayer address that sends the message across the bridge
     address public immutable wormholeRelayer;
+    // The chain to deliver any refund to, in Wormhole Chain ID format
+    uint16 public immutable refundChainId;
 
     // Reentrancy lock
     uint256 internal _locked = 1;
 
-    /// @dev WormholeRelayer constructor.
+    /// @dev WormholeRelayerTimelock constructor.
+    /// @param _timelock Timelock address.
     /// @param _wormholeRelayer Wormhole relayer address.
-    constructor(address _timelock, address _wormholeRelayer) {
+    /// @param _refundChainId Refund chain Id.
+    constructor(address _timelock, address _wormholeRelayer, uint16 _refundChainId) {
         // Check for zero addresses
         if (_timelock == address(0) || _wormholeRelayer == address(0)) {
             revert ZeroAddress();
         }
 
+        // Check for zero value
+        if (_refundChainId == 0) {
+            revert ZeroValue();
+        }
+
         timelock = _timelock;
         wormholeRelayer = _wormholeRelayer;
+        refundChainId = _refundChainId;
     }
 
     /// @dev Relays a payload via Wormhole relayer to the address `targetAddress` on chain `targetChain`
@@ -108,8 +118,7 @@ contract WormholeRelayerTimelock {
     ///        in `targetChain` currency units.
     /// @param gasLimit gas limit with which to call `targetAddress`. Any units of gas unused will be refunded according to the
     ///        `targetChainRefundPerGasUnused` rate quoted by the delivery provider.
-    /// @param refundChain The chain to deliver any refund to, in Wormhole Chain ID format.
-    /// @param refundChainAddress The address on `refundChain` to deliver any refund to.
+    /// @param refundAddress The address on `refundChainId` to deliver any refund to.
     /// @return sequence Sequence number of published VAA containing delivery instructions.
     function sendPayloadToEvm(
         uint16 targetChain,
@@ -117,9 +126,7 @@ contract WormholeRelayerTimelock {
         bytes memory payload,
         uint256 receiverValue,
         uint256 gasLimit,
-        uint16 refundChain,
-        address refundChainAddress,
-        address refundValueAddress
+        address refundAddress
     ) external payable returns (uint64 sequence) {
         if (_locked > 1) {
             revert ReentrancyGuard();
@@ -131,14 +138,19 @@ contract WormholeRelayerTimelock {
             revert UnauthorizedAccount(msg.sender);
         }
 
-        // Check for zero addresses
-        if (targetAddress == address(0) || refundChainAddress == address(0)) {
+        // Check for zero address
+        if (targetAddress == address(0)) {
             revert ZeroAddress();
         }
 
         // Check for zero values
-        if (targetChain == 0 || payload.length == 0 || gasLimit == 0 || refundChain == 0) {
+        if (targetChain == 0 || payload.length == 0 || gasLimit == 0) {
             revert ZeroValue();
+        }
+
+        // If refundAddress is zero, fallback to tx.origin
+        if (refundAddress == address(0)) {
+            refundAddress = tx.origin;
         }
 
         // Get the message cost in order to adjust leftovers
@@ -154,23 +166,18 @@ contract WormholeRelayerTimelock {
 
         // Send leftover amount back to the sender, if any
         if (leftovers > 0) {
-            // If refundValueAddress is zero, fallback to tx.origin
-            if (refundValueAddress == address(0)) {
-                refundValueAddress = tx.origin;
-            }
-
             // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = refundValueAddress.call{value: leftovers}("");
+            (bool success, ) = refundAddress.call{value: leftovers}("");
             if (!success) {
-                revert TransferFailed(refundValueAddress, leftovers);
+                revert TransferFailed(refundAddress, leftovers);
             }
 
-            emit LeftoversRefunded(refundValueAddress, leftovers);
+            emit LeftoversRefunded(refundAddress, leftovers);
         }
 
         // Send payload via the Wormhole relayer with exact required cost
         sequence = IWormhole(wormholeRelayer).sendPayloadToEvm{value: cost}(targetChain, targetAddress, payload,
-            receiverValue, gasLimit, refundChain, refundChainAddress);
+            receiverValue, gasLimit, refundChainId, refundAddress);
 
         _locked = 1;
     }

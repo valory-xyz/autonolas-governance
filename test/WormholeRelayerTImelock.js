@@ -11,14 +11,13 @@ describe("WormholeRelayerTimelock", function () {
     let deployer;
     const AddressZero = ethers.constants.AddressZero;
     const Bytes32Zero = ethers.constants.HashZero;
-    const targetChain = 2;
+    const targetChainId = 5;
     const targetAddress = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
     const payload = "0x1234";
     const receiverValue = ethers.utils.parseEther("1");
     const gasLimit = 100000;
-    const refundChain = 1;
-    const refundChainAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
-    const refundValueAddress = "0x90F79bf6EB2c4f870365E785982E1f101E93b906";
+    const refundChainId = 2;
+    const refundAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
 
     beforeEach(async function () {
         signers = await ethers.getSigners();
@@ -36,19 +35,22 @@ describe("WormholeRelayerTimelock", function () {
 
         // Deploy Wormhole Relayer Timelock
         const WormholeRelayerTimelock = await ethers.getContractFactory("WormholeRelayerTimelock");
-        wormholeRelayerTimelock = await WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address);
+        wormholeRelayerTimelock = await WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, refundChainId);
         await wormholeRelayerTimelock.deployed();
     });
 
     context("Initialization", async function () {
-        it("Deploying with zero addresses", async function () {
+        it("Deploying with zero addresses and values", async function () {
             const WormholeRelayerTimelock = await ethers.getContractFactory("WormholeRelayerTimelock");
             await expect(
-                WormholeRelayerTimelock.deploy(AddressZero, AddressZero)
+                WormholeRelayerTimelock.deploy(AddressZero, AddressZero, 0)
             ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroAddress");
             await expect(
-                WormholeRelayerTimelock.deploy(timelock.address, AddressZero)
+                WormholeRelayerTimelock.deploy(timelock.address, AddressZero, 0)
             ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroAddress");
+            await expect(
+                WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, 0)
+            ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroValue");
         });
 
         it("Should set correct initial values", async function () {
@@ -61,14 +63,12 @@ describe("WormholeRelayerTimelock", function () {
         it("Should revert when called by non-timelock", async function () {
             await expect(
                 wormholeRelayerTimelock.sendPayloadToEvm(
-                    targetChain,
+                    targetChainId,
                     targetAddress,
                     payload,
                     receiverValue,
                     gasLimit,
-                    refundChain,
-                    refundChainAddress,
-                    refundValueAddress,
+                    refundAddress,
                     { value: ethers.utils.parseEther("2") }
                 )
             ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "UnauthorizedAccount")
@@ -77,31 +77,12 @@ describe("WormholeRelayerTimelock", function () {
 
         it("Should revert with zero target address", async function () {
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 AddressZero,
                 payload,
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
-                refundValueAddress
-            ]);
-
-            await expect(
-                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
-            ).to.be.reverted;
-        });
-
-        it("Should revert with zero refund chain address", async function () {
-            const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
-                targetAddress,
-                payload,
-                receiverValue,
-                gasLimit,
-                refundChain,
-                AddressZero,
-                refundValueAddress
+                refundAddress
             ]);
 
             await expect(
@@ -117,9 +98,7 @@ describe("WormholeRelayerTimelock", function () {
                 payload,
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
-                refundValueAddress
+                refundAddress
             ]);
 
             await expect(
@@ -128,14 +107,12 @@ describe("WormholeRelayerTimelock", function () {
 
             // Test zero payload
             calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 targetAddress,
                 "0x",
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
-                refundValueAddress
+                refundAddress
             ]);
 
             await expect(
@@ -144,30 +121,12 @@ describe("WormholeRelayerTimelock", function () {
 
             // Test zero gas limit
             calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 targetAddress,
                 payload,
                 receiverValue,
                 0,
-                refundChain,
-                refundChainAddress,
-                refundValueAddress
-            ]);
-
-            await expect(
-                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
-            ).to.be.reverted;
-
-            // Test zero refund chain
-            calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
-                targetAddress,
-                payload,
-                receiverValue,
-                gasLimit,
-                0,
-                refundChainAddress,
-                refundValueAddress
+                refundAddress
             ]);
 
             await expect(
@@ -177,14 +136,12 @@ describe("WormholeRelayerTimelock", function () {
 
         it("Should revert when msg.value is less than cost", async function () {
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 targetAddress,
                 payload,
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
-                refundValueAddress
+                refundAddress
             ]);
 
             await expect(
@@ -192,19 +149,17 @@ describe("WormholeRelayerTimelock", function () {
             ).to.be.reverted;
         });
 
-        it("Should use tx.origin as refund address when refundValueAddress is zero", async function () {
+        it("Should use tx.origin as refund address when refundAddress is zero", async function () {
             const cost = await wormholeRelayer.COST();
             const msgValue = cost.add(1);
             const expectedLeftovers = msgValue.sub(cost);
 
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 targetAddress,
                 payload,
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
                 AddressZero
             ]);
 
@@ -214,19 +169,17 @@ describe("WormholeRelayerTimelock", function () {
                 .withArgs(deployer.address, expectedLeftovers);
         });
 
-        it("Should use timelock as refund address when refundValueAddress is zero", async function () {
+        it("Should use timelock as refund address when refundAddress is zero", async function () {
             const cost = await wormholeRelayer.COST();
             const msgValue = cost.add(1);
             const expectedLeftovers = msgValue.sub(cost);
 
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 targetAddress,
                 payload,
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
                 timelock.address
             ]);
 
@@ -240,13 +193,11 @@ describe("WormholeRelayerTimelock", function () {
             const msgValue = await wormholeRelayer.COST();
 
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
-                targetChain,
+                targetChainId,
                 targetAddress,
                 payload,
                 receiverValue,
                 gasLimit,
-                refundChain,
-                refundChainAddress,
                 AddressZero
             ]);
 
