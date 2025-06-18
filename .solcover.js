@@ -6,6 +6,7 @@ module.exports = {
         "bridges/test/MockAMBMediator.sol",
         "bridges/test/MockL2Relayer.sol",
         "bridges/test/MockTimelock.sol",
+        "bridges/test/MockWormholeRelayer",
         "bridges/test/WormholeL1Receiver.sol",
         "bridges/test/WormholeL1Sender.sol",
         "bridges/test/WormholeL2ReceiverL1Sender.sol",

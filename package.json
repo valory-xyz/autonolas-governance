@@ -33,7 +33,7 @@
     "eslint": "^8.57.0",
     "solhint": "^5.0.3",
     "ethers": "^5.7.2",
-    "hardhat": "^2.22.15",
+    "hardhat": "^2.24.3",
     "hardhat-contract-sizer": "^2.10.0",
     "hardhat-deploy": "^0.12.1",
     "hardhat-deploy-ethers": "^0.4.1",

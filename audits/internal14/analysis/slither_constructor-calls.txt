@@ -1,0 +1,20 @@
+'solc --version' running
+'solc ./WormholeRelayerTimelock-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal14/analysis/contracts' running
+INFO:Printers:
+#######################################
+####### WormholeRelayerTimelock #######
+#######################################
+
+## Constructor Call Sequence
+	- WormholeRelayerTimelock
+
+## Constructor Definitions
+
+### WormholeRelayerTimelock
+
+     constructor(address _timelock, address _wormholeRelayer) {
+        timelock = _timelock;
+        wormholeRelayer = _wormholeRelayer;
+    }
+
+INFO:Slither:. analyzed (2 contracts)
