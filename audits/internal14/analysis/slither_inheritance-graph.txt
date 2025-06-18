@@ -1,0 +1,5 @@
+'solc --version' running
+'solc ./WormholeRelayerTimelock-flatten.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/home/andrey/valory/autonolas-governance/audits/internal14/analysis/contracts' running
+INFO:Printers:Inheritance Graph: ./WormholeRelayerTimelock-flatten.sol.inheritance-graph.dot
+
+INFO:Slither:. analyzed (2 contracts)

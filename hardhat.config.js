@@ -245,13 +245,13 @@ module.exports = {
     solidity: {
         compilers: [
             {
-                version: "0.8.28",
+                version: "0.8.30",
                 settings: {
                     optimizer: {
                         enabled: true,
                         runs: 1000000,
                     },
-                    evmVersion: "cancun"
+                    evmVersion: "prague"
                 },
             }
         ]

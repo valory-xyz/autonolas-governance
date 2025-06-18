@@ -4,5 +4,7 @@ const dataFromJSON = fs.readFileSync(globalsFile, "utf8");
 const parsedData = JSON.parse(dataFromJSON);
 
 module.exports = [
-    parsedData.wormholeL1MessageRelayerAddress
+    parsedData.timelockAddress,
+    parsedData.wormholeL1MessageRelayerAddress,
+    parsedData.refundChainId
 ];

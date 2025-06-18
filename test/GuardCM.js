@@ -24,8 +24,8 @@ describe("Community Multisig Guard", function () {
     let signers;
     let deployer;
 
-    const AddressZero = "0x" + "0".repeat(40);
-    const Bytes32Zero = "0x" + "0".repeat(64);
+    const AddressZero = ethers.constants.AddressZero;
+    const Bytes32Zero = ethers.constants.HashZero;
     const Bytes4Zero = "0x" + "0".repeat(8);
 
     const l1BridgeMediators = [
