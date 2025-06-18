@@ -561,7 +561,7 @@ describe("Governance OLAS on wveOLAS", function () {
             }
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
-            //  Able to execute right away since the minDelay is zero
+            //  Able to execute changeSourceGovernor right away since the minDelay is zero
             nonce = await multisig.nonce();
             txHashData = await safeContracts.buildContractCall(timelock, "executeBatch",
                 [[timelock.address], [0], [minDelayPayload], HashZero, HashZero], nonce, 0, 0);
