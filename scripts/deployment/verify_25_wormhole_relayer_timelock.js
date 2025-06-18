@@ -5,5 +5,6 @@ const parsedData = JSON.parse(dataFromJSON);
 
 module.exports = [
     parsedData.timelockAddress,
-    parsedData.wormholeL1MessageRelayerAddress
+    parsedData.wormholeL1MessageRelayerAddress,
+    parsedData.refundChainId
 ];
