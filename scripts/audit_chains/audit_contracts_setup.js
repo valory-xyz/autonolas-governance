@@ -550,9 +550,6 @@ async function main() {
             } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "34443" || configs[i]["chainId"] == "42220") {
                 let log = initLog + ", contract: " + "OptimismMessenger";
                 await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
-            } else if (configs[i]["chainId"] == "42220") {
-                let log = initLog + ", contract: " + "WormholeMessenger";
-                await checkWormholeMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "WormholeMessenger", log);
             }
         }
     }
