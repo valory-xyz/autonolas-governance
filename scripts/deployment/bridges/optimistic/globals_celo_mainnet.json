@@ -1,1 +1,14 @@
-{"contractVerification":true,"useLedger":true,"derivationPath":"m/44'/60'/2'/0/0","providerName":"celo","gasPriceInGwei":"2","networkURL":"https://forno.celo.org","L1CrossDomainMessengerProxyAddress":"0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95","timelockAddress":"0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE","L2CrossDomainMessengerAddress":"0x4200000000000000000000000000000000000007"}
+{
+  "contractVerification": true,
+  "useLedger": false,
+  "derivationPath": "m/44'/60'/2'/0/0",
+  "providerName": "celo",
+  "gasPriceInGwei": "2",
+  "chainId": "42220",
+  "networkURL": "https://forno.celo.org",
+  "blockscoutURL": "https://celo.blockscout.com",
+  "L1CrossDomainMessengerProxyAddress": "0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95",
+  "timelockAddress": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+  "L2CrossDomainMessengerAddress": "0x4200000000000000000000000000000000000007",
+  "optimismMessengerAddress": "0xaC26774616bbeD41b0CB69EA2ae7de366F430b23"
+}
