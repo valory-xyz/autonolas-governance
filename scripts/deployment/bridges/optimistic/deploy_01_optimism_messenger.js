@@ -32,7 +32,7 @@ async function main() {
     const OptimismMessenger = await ethers.getContractFactory("OptimismMessenger");
     console.log("You are signing the following transaction: OptimismMessenger.connect(EOA).deploy(L2CrossDomainMessengerAddress, timelockAddress)");
     const gasPrice = ethers.utils.parseUnits(gasPriceInGwei, "gwei");
-    const optimismMessenger = await OptimismMessenger.connect(EOA).deploy(parsedData.L2CrossDomainMessengerAddress, parsedData.timelockAddress, { gasPrice });
+    const optimismMessenger = await OptimismMessenger.connect(EOA).deploy(parsedData.L2CrossDomainMessengerAddress, parsedData.timelockAddress);
     const result = await optimismMessenger.deployed();
 
     // Transaction details
