@@ -47,13 +47,17 @@ async function checkBytecode(provider, configContracts, contractName, log) {
             // Get the contract instance
             const contractFromJSON = fs.readFileSync(configContracts[i]["artifact"], "utf8");
             const parsedFile = JSON.parse(contractFromJSON);
-            const bytecode = parsedFile["deployedBytecode"];
+            // Forge JSON
+            let bytecode = parsedFile["deployedBytecode"]["object"];
+            if (bytecode === undefined) {
+                // Hardhat JSON
+                bytecode = parsedFile["deployedBytecode"];
+            }
             const onChainCreationCode = await provider.getCode(configContracts[i]["address"]);
 
-            // Compare last 8-th part of deployed bytecode bytes (wveOLAS can't manage more)
+            // Compare last 43 bytes as they reflect the deployed contract metadata hash
             // We cannot compare the full one since the repo deployed bytecode does not contain immutable variable info
-            const slicePart = -bytecode.length / 8;
-            customExpectContain(onChainCreationCode, bytecode.slice(slicePart),
+            customExpectContain(onChainCreationCode, bytecode.slice(-86),
                 log + ", address: " + configContracts[i]["address"] + ", failed bytecode comparison");
             return;
         }
@@ -467,7 +471,7 @@ async function main() {
             "gnosis": "scripts/deployment/bridges/gnosis/globals_gnosis_mainnet.json",
             "optimistic": "scripts/deployment/bridges/optimistic/globals_optimistic_mainnet.json",
             "base": "scripts/deployment/bridges/optimistic/globals_base_mainnet.json",
-            "celo": "scripts/deployment/bridges/wormhole/globals_celo_mainnet.json",
+            "celo": "scripts/deployment/bridges/optimistic/globals_celo_mainnet.json",
             "mode": "scripts/deployment/bridges/optimistic/globals_mode_mainnet.json"
         };
 
@@ -543,7 +547,7 @@ async function main() {
             } else if (configs[i]["chainId"] == "100") {
                 let log = initLog + ", contract: " + "HomeMediator";
                 await checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log);
-            } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "34443") {
+            } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "34443" || configs[i]["chainId"] == "42220") {
                 let log = initLog + ", contract: " + "OptimismMessenger";
                 await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
             } else if (configs[i]["chainId"] == "42220") {

@@ -117,6 +117,11 @@
         "name": "WormholeMessenger",
         "artifact": "abis/0.8.23/WormholeMessenger.json",
         "address": "0x397125902ED2cA2d42104F621f448A2cE1bC8Fb7"
+      },
+      {
+        "name": "OptimismMessenger",
+        "artifact": "abis/0.8.30/OptimismMessenger.json",
+        "address": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d"
       }
     ]
   },
