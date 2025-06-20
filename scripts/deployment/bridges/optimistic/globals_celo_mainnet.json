@@ -9,5 +9,6 @@
   "blockscoutURL": "https://celo.blockscout.com",
   "L1CrossDomainMessengerProxyAddress": "0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95",
   "timelockAddress": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
-  "L2CrossDomainMessengerAddress": "0x4200000000000000000000000000000000000007"
+  "L2CrossDomainMessengerAddress": "0x4200000000000000000000000000000000000007",
+  "optimismMessengerAddress": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d"
 }
