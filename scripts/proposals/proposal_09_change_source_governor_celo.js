@@ -16,11 +16,11 @@ async function main() {
     const deployer = await EOA.getAddress();
     console.log("EOA is:", deployer);
 
-    // Wormhole Messenger address on Celo (from globals_celo_mainnet.json)
+    // Wormhole Messenger address on Celo (from scripts/deployment/bridges/wormhole/deprecated_globals_celo_mainnet.json)
     const wormholeMessengerAddress = "0x397125902ED2cA2d42104F621f448A2cE1bC8Fb7";
     const wormholeL1MessageRelayerAddress = parsedData.wormholeL1MessageRelayerAddress;
 
-    // WormholeRelayer address on sepolia
+    // WormholeRelayer contract
     const wormholeRelayerJSON = "abis/test/WormholeRelayer.json";
     const contractFromJSON = fs.readFileSync(wormholeRelayerJSON, "utf8");
     const wormholeRelayerABI = JSON.parse(contractFromJSON);
