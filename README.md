@@ -8,8 +8,9 @@ This repository contains the Autonolas `OLAS` token and the governance part of t
 
 A graphical overview of the whole on-chain architecture is available here:
 
-![architecture](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v5.png)
-Please note that `buOLAS` contract is not part of the diagram.
+A graphical overview is available [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/flowchart.md).
+
+For reference purposes only, an older version of the general Autonolas architecture is available [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v5.png).
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
 
@@ -21,13 +22,13 @@ An overview of the design is provided [here](https://github.com/valory-xyz/auton
 - [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol).
 
 For team incentivisation we have a burnable locked `OLAS` token - `buOLAS`:
-- [buOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol).
+- [buOLAS (deprecated)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol).
 
 In order to deploy OLAS and veOLAS contracts via the create2() method, the following contract is utilized for vanity addresses:
 - [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol).
 
 To address several found `veOLAS` contract view functions issues, a wrapper contract `wveOLAS` is implemented:
-- [veOLAS wrapper (wveOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol).
+- [wveOLAS (veOLAS wrapper)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol).
 
 The changelog leading to the implementation of `wveOLAS` can be found here: [Changelog_v1.1.0](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Changelog_v1.1.0.pdf)
 
