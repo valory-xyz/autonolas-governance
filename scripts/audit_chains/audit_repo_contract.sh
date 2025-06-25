@@ -10,21 +10,26 @@ then
     npm i ethereum-sources-downloader
 fi
 
+outDirName="out_static_audit"
+
 # clean before
-rm -rf out
-node_modules/ethereum-sources-downloader/dist/index.js $1 $3 2>&1 > /dev/null
+if [ -d "$outDirName" ]; then
+  rm -rf $outDirName
+fi
+
+node_modules/ethereum-sources-downloader/dist/index.js $1 $3 $outDirName -a v2 -k $ETHERSCAN_API_KEY 2>&1 > /dev/null
 # ignore only in dir
-r=$(diff -r out/$2/contracts/ contracts/ | grep -v Only)
+r=$(diff -r $outDirName/$2/contracts/ contracts/ | grep -v Only)
 #clear after
-rm -rf out 
+rm -rf $outDirName
 if [ -z "$r" ]
 then
       echo "OK. $2 ($3) on $1 eq contracts"
       EXIT_CODE=0 
 else
       >&2 echo "FAILED: $2 ($3) on $1 NOT eq contracts"
+      >&2 echo $r
       EXIT_CODE=1
-      >&2 echo "$r"
 fi
 
 exit $EXIT_CODE

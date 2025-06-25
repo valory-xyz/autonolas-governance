@@ -429,34 +429,23 @@ async function main() {
     const numChains = configs.length;
     // ################################# VERIFY CONTRACTS WITH REPO #################################
     if (verifyRepo) {
-        // For now gnosis chains are not supported
-        const networks = {
-            "mainnet": "etherscan",
-            "polygon": "polygonscan",
-            "optimistic": "optimistic.etherscan"
-        };
-
         console.log("\nVerifying deployed contracts vs the repo... If no error is output, then the contracts are correct.");
 
         // Traverse all chains
         for (let i = 0; i < numChains; i++) {
-            // Skip unsupported chains
-            if (!networks[configs[i]["name"]]) {
-                continue;
-            }
-
             console.log("\n\nNetwork:", configs[i]["name"]);
-            const network = networks[configs[i]["name"]];
             const contracts = configs[i]["contracts"];
+            const chainId = configs[i]["chainId"];
+            console.log("chainId", chainId);
 
             // Verify contracts
             for (let j = 0; j < contracts.length; j++) {
                 console.log("Checking " + contracts[j]["name"]);
                 const execSync = require("child_process").execSync;
                 try {
-                    execSync("scripts/audit_chains/audit_repo_contract.sh " + network + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
-                } catch (error) {
-                    continue;
+                    execSync("scripts/audit_chains/audit_repo_contract.sh " + chainId + " " + contracts[j]["name"] + " " + contracts[j]["address"]);
+                } catch (err) {
+                    err.stderr.toString();
                 }
             }
         }
