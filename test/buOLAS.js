@@ -344,6 +344,48 @@ describe("buOLAS", function () {
             await snapshot.restore();
         });
 
+        it("Fail to withdraw with revoke after the next-to-last withdraw", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            const owner = signers[0];
+            const account = signers[1];
+
+            // Approve owner for 1 OLAS by buOLAS that will be locked for account
+            await olas.connect(owner).approve(bu.address, oneOLASBalance);
+
+            // Define 3 years for the lock duration
+            const numSteps = 3;
+            await bu.connect(owner).createLockFor(account.address, oneOLASBalance, numSteps);
+
+            // Move one year in time
+            await helpers.time.increase(oneYear + 100);
+
+            // Withdraw after the first year
+            await bu.connect(account).withdraw();
+
+            // Move one more year in time
+            await helpers.time.increase(oneYear + 100);
+
+            // Withdraw after the second year
+            await bu.connect(account).withdraw();
+
+            // Revoke at this point of time
+            await bu.connect(owner).revoke([account.address]);
+
+            // The lockedBalance.endTime is zero after revoke
+            // The lockedBalance.transferredAmount is incorrectly set to zero as well, thus the balance returns zero
+            const balance = await bu.balanceOf(account.address);
+            expect(balance).to.equal(0);
+
+            // The releasable amount is then incorrectly reflected as zero
+            let amount = await bu.releasableAmount(account.address);
+            expect(amount).to.equal(0);
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
+
         it("Withdraw with revoke after the full lock period", async function () {
             // Take a snapshot of the current state of the blockchain
             const snapshot = await helpers.takeSnapshot();

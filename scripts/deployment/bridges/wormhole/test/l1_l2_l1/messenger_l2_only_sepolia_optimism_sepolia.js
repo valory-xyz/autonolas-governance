@@ -9,34 +9,34 @@ async function main() {
         console.log("Current block number sepolia: " + result);
     });
 
-    const optimisticSepoliaURL = "https://sepolia.optimism.io";
-    const optimisticSepoliaProvider = new ethers.providers.JsonRpcProvider(optimisticSepoliaURL);
-    await optimisticSepoliaProvider.getBlockNumber().then((result) => {
-        console.log("Current block number optimisticSepolia: " + result);
+    const optimismSepoliaURL = "https://sepolia.optimism.io";
+    const optimismSepoliaProvider = new ethers.providers.JsonRpcProvider(optimismSepoliaURL);
+    await optimismSepoliaProvider.getBlockNumber().then((result) => {
+        console.log("Current block number optimismSepolia: " + result);
     });
 
     const fs = require("fs");
-    // WormholeRelayer address on optimistic sepolia
+    // WormholeRelayer address on optimism sepolia
     const wormholeRelayerAddress = "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE";
     const wormholeRelayerJSON = "abis/test/WormholeRelayer.json";
     let contractFromJSON = fs.readFileSync(wormholeRelayerJSON, "utf8");
     const wormholeRelayerABI = JSON.parse(contractFromJSON);
-    const wormholeRelayer = new ethers.Contract(wormholeRelayerAddress, wormholeRelayerABI, optimisticSepoliaProvider);
+    const wormholeRelayer = new ethers.Contract(wormholeRelayerAddress, wormholeRelayerABI, optimismSepoliaProvider);
 
-    // Test deployed WormholeMessenger address on optimisticSepolia
+    // Test deployed WormholeMessenger address on optimismSepolia
     const wormholeMessengerAddress = "0x04A0afD079F14D539B17253Ea93563934A024165"; // payable process on L2
     const wormholeMessengerJSON = "artifacts/contracts/bridges/test/WormholeL2ReceiverL1Sender.sol/WormholeL2ReceiverL1Sender.json";
     contractFromJSON = fs.readFileSync(wormholeMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
     const wormholeMessengerABI = parsedFile["abi"];
-    const wormholeMessenger = new ethers.Contract(wormholeMessengerAddress, wormholeMessengerABI, optimisticSepoliaProvider);
+    const wormholeMessenger = new ethers.Contract(wormholeMessengerAddress, wormholeMessengerABI, optimismSepoliaProvider);
 
     // Get the EOA
     const account = ethers.utils.HDNode.fromMnemonic(process.env.TESTNET_MNEMONIC).derivePath("m/44'/60'/0'/0/0");
     const EOAsepolia = new ethers.Wallet(account, sepoliaProvider);
-    const EOAoptimisticSepolia = new ethers.Wallet(account, optimisticSepoliaProvider);
+    const EOAoptimismSepolia = new ethers.Wallet(account, optimismSepoliaProvider);
     console.log("EOA address",EOAsepolia.address);
-    if (EOAoptimisticSepolia.address == EOAsepolia.address) {
+    if (EOAoptimismSepolia.address == EOAsepolia.address) {
         console.log("Correct wallet setup");
     }
 
@@ -44,8 +44,8 @@ async function main() {
     const minGasLimit = "50000";
     const transferCost = await wormholeRelayer["quoteEVMDeliveryPrice(uint16,uint256,uint256)"](targetChain, 0, minGasLimit);
 
-    // Send the message to optimisticSepolia receiver
-    const tx = await wormholeMessenger.connect(EOAoptimisticSepolia).sendMessage({ value: transferCost.nativePriceQuote });
+    // Send the message to optimismSepolia receiver
+    const tx = await wormholeMessenger.connect(EOAoptimismSepolia).sendMessage({ value: transferCost.nativePriceQuote });
     console.log("Execution hash", tx.hash);
     await tx.wait();
     // https://wormholescan.io/#/tx/0xef934da740738881b3069373602a64148944e15ae3b5da2c2630f85886ae6453?network=TESTNET
