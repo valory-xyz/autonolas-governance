@@ -458,17 +458,17 @@ async function main() {
             "mainnet": "scripts/deployment/globals_mainnet.json",
             "polygon": "scripts/deployment/bridges/polygon/globals_polygon_mainnet.json",
             "gnosis": "scripts/deployment/bridges/gnosis/globals_gnosis_mainnet.json",
-            "optimistic": "scripts/deployment/bridges/optimistic/globals_optimistic_mainnet.json",
-            "base": "scripts/deployment/bridges/optimistic/globals_base_mainnet.json",
-            "celo": "scripts/deployment/bridges/optimistic/globals_celo_mainnet.json",
-            "mode": "scripts/deployment/bridges/optimistic/globals_mode_mainnet.json"
+            "optimism": "scripts/deployment/bridges/optimism/globals_optimism_mainnet.json",
+            "base": "scripts/deployment/bridges/optimism/globals_base_mainnet.json",
+            "celo": "scripts/deployment/bridges/optimism/globals_celo_mainnet.json",
+            "mode": "scripts/deployment/bridges/optimism/globals_mode_mainnet.json"
         };
 
         const providerLinks = {
             "mainnet": "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MAINNET,
             "polygon": "https://polygon-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY_MATIC,
             "gnosis": "https://rpc.gnosischain.com",
-            "optimistic": "https://optimism.drpc.org",
+            "optimism": "https://optimism.drpc.org",
             "base": "https://mainnet.base.org",
             "celo": "https://forno.celo.org",
             "mode": "https://mainnet.mode.network"

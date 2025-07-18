@@ -182,8 +182,8 @@ Autonolas will use the [L1 Cross Domain Messenger](https://docs.optimism.io/buil
 developed and designed by the Optimism team to support cross-chain bridging from Ethereum to Optimism / Base Chains.
 
 For running a test between L1 `sepolia` and L2 `sepolia`, run the test script with your own credentials:
-[`sepolia-optimistic-sepolia` governor bridge test](scripts/deployment/bridges/optimistic/test/messenger_sepolia_optimistic_sepolia_governor.js)
-and [`sepolia-base-sepolia` governor bridge test](scripts/deployment/bridges/optimistic/test/messenger_sepolia_base_sepolia_governor.js).
+[`sepolia-optimistic-sepolia` governor bridge test](scripts/deployment/bridges/optimism/test/messenger_sepolia_optimistic_sepolia_governor.js)
+and [`sepolia-base-sepolia` governor bridge test](scripts/deployment/bridges/optimism/test/messenger_sepolia_base_sepolia_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 #### Wormhole governance bridge

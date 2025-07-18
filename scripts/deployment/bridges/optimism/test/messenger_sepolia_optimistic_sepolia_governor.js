@@ -12,10 +12,10 @@ async function main() {
         console.log("Current block number sepolia: " + result);
     });
 
-    const optimisticSepoliaURL = "https://sepolia.optimism.io";
-    const optimisticSepoliaProvider = new ethers.providers.JsonRpcProvider(optimisticSepoliaURL);
-    await optimisticSepoliaProvider.getBlockNumber().then((result) => {
-        console.log("Current block number optimisticSepolia: " + result);
+    const optimismSepoliaURL = "https://sepolia.optimism.io";
+    const optimismSepoliaProvider = new ethers.providers.JsonRpcProvider(optimismSepoliaURL);
+    await optimismSepoliaProvider.getBlockNumber().then((result) => {
+        console.log("Current block number optimismSepolia: " + result);
     });
 
     const fs = require("fs");
@@ -26,13 +26,13 @@ async function main() {
     const CDMProxyABI = JSON.parse(contractFromJSON);
     const CDMProxy = new ethers.Contract(CDMProxyAddress, CDMProxyABI, sepoliaProvider);
 
-    // Test deployed OptimismMessenger address on optimisticSepolia
+    // Test deployed OptimismMessenger address on optimismSepolia
     const optimismMessengerAddress = "0xaC26774616bbeD41b0CB69EA2ae7de366F430b23"; // payable process on L2
     const optimismMessengerJSON = "artifacts/contracts/bridges/OptimismMessenger.sol/OptimismMessenger.json";
     contractFromJSON = fs.readFileSync(optimismMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
     const optimismMessengerABI = parsedFile["abi"];
-    const optimismMessenger = new ethers.Contract(optimismMessengerAddress, optimismMessengerABI, optimisticSepoliaProvider);
+    const optimismMessenger = new ethers.Contract(optimismMessengerAddress, optimismMessengerABI, optimismSepoliaProvider);
 
     // Mock Timelock contract address on sepolia (has CDMProxy address in it already)
     const mockTimelockAddress = "0x43d28764bB39936185c84906983fB57A8A905a4F"; // payable
@@ -42,20 +42,20 @@ async function main() {
     const mockTimelockABI = parsedFile["abi"];
     const mockTimelock = new ethers.Contract(mockTimelockAddress, mockTimelockABI, sepoliaProvider);
 
-    // ChildMockERC20 address on optimisticSepolia
+    // ChildMockERC20 address on optimismSepolia
     const mockChildERC20Address = "0x0338893fB1A1D9Df03F72CC53D8f786487d3D03E";
     const mockChildERC20JSON = "artifacts/contracts/bridges/test/ChildMockERC20.sol/ChildMockERC20.json";
     contractFromJSON = fs.readFileSync(mockChildERC20JSON, "utf8");
     parsedFile = JSON.parse(contractFromJSON);
     const mockChildERC20ABI = parsedFile["abi"];
-    const mockChildERC20 = new ethers.Contract(mockChildERC20Address, mockChildERC20ABI, optimisticSepoliaProvider);
+    const mockChildERC20 = new ethers.Contract(mockChildERC20Address, mockChildERC20ABI, optimismSepoliaProvider);
 
     // Get the EOA
     const account = ethers.utils.HDNode.fromMnemonic(process.env.TESTNET_MNEMONIC).derivePath("m/44'/60'/0'/0/0");
     const EOAsepolia = new ethers.Wallet(account, sepoliaProvider);
-    const EOAoptimisticSepolia = new ethers.Wallet(account, optimisticSepoliaProvider);
+    const EOAoptimismSepolia = new ethers.Wallet(account, optimismSepoliaProvider);
     console.log("EOA address",EOAsepolia.address);
-    if (EOAoptimisticSepolia.address == EOAsepolia.address) {
+    if (EOAoptimismSepolia.address == EOAsepolia.address) {
         console.log("Correct wallet setup");
     }
 
@@ -68,13 +68,13 @@ async function main() {
     let tx;
     if (!sendFundsFromL1) {
         // Feed the contract with funds on the L2 side
-        tx = await EOAoptimisticSepolia.sendTransaction({to: optimismMessenger.address, value: amountToSend});
+        tx = await EOAoptimismSepolia.sendTransaction({to: optimismMessenger.address, value: amountToSend});
         console.log("Send xETH hash", tx.hash);
         await tx.wait();
     }
 
     // Pack the first part of  with the zero payload
-    let target = EOAoptimisticSepolia.address;
+    let target = EOAoptimismSepolia.address;
     let value = amountToSend;
     const payloadLength = 0;
     let data = ethers.utils.solidityPack(
@@ -83,7 +83,7 @@ async function main() {
     );
 
     // Mock Token contract across the bridge must mint 100 OLAS for the deployer
-    const rawPayload = mockChildERC20.interface.encodeFunctionData("mint", [EOAoptimisticSepolia.address, amountToMint]);
+    const rawPayload = mockChildERC20.interface.encodeFunctionData("mint", [EOAoptimismSepolia.address, amountToMint]);
     // Pack the second part of data
     target = mockChildERC20Address;
     value = 0;
@@ -94,9 +94,9 @@ async function main() {
     ).slice(2);
 
     // Balance of mock tokens before the cross-bridge transaction
-    const balanceERC20Before = Number(await mockChildERC20.balanceOf(EOAoptimisticSepolia.address));
+    const balanceERC20Before = Number(await mockChildERC20.balanceOf(EOAoptimismSepolia.address));
     // Balance of xETH of the OptimismMessenger before the cross-bridge transaction
-    const balanceETHBefore = await optimisticSepoliaProvider.getBalance(EOAoptimisticSepolia.address);
+    const balanceETHBefore = await optimismSepoliaProvider.getBalance(EOAoptimismSepolia.address);
 
     // Build the final payload to be passed from the imaginary Timelock
     const messengerPayload = await optimismMessenger.interface.encodeFunctionData("processMessageFromSource", [data]);
@@ -104,7 +104,7 @@ async function main() {
     const timelockPayload = await CDMProxy.interface.encodeFunctionData("sendMessage", [optimismMessengerAddress,
         messengerPayload, minGasLimit]);
 
-    // Send the message to optimisticSepolia receiver
+    // Send the message to optimismSepolia receiver
     if (!sendFundsFromL1) {
         // Funds are not sent from the L1 side, so if the value in payload is non-zero - make sure the L2 contract is fed
         const gasLimit = "3000000";
@@ -120,7 +120,7 @@ async function main() {
         await tx.wait();
     }
 
-    // Wait for the event of a processed data on optimisticSepolia
+    // Wait for the event of a processed data on optimismSepolia
     // catch NewFxMessage event from mockChildERC20 and MessageReceived event from optimismMessenger
     // Compare the data sent and the data from the NewFxMessage event that must match
     // MessageReceived(uint256 indexed stateId, address indexed sender, bytes message)
@@ -131,7 +131,7 @@ async function main() {
         events.forEach((item) => {
             const msg = item["args"]["data"];
             if (msg == data) {
-                console.log("Event MessageReceived. Message in optimisticSepolia:", msg);
+                console.log("Event MessageReceived. Message in optimismSepolia:", msg);
                 waitForEvent = false;
             }
         });
@@ -144,14 +144,14 @@ async function main() {
     }
 
     // Balance of ERC20 token after the cross-bridge transaction
-    const balanceERC20After = Number(await mockChildERC20.balanceOf(EOAoptimisticSepolia.address));
+    const balanceERC20After = Number(await mockChildERC20.balanceOf(EOAoptimismSepolia.address));
     const balanceERC20Diff = balanceERC20After - balanceERC20Before;
     if (balanceERC20Diff == amountToMint) {
         console.log("Successfully minted MockChildERC20");
     }
 
     // Balance of xETH of the OptimismMessenger after the cross-bridge transaction
-    const balanceETHAfter = await optimisticSepoliaProvider.getBalance(EOAoptimisticSepolia.address);
+    const balanceETHAfter = await optimismSepoliaProvider.getBalance(EOAoptimismSepolia.address);
     const balanceETHDiff = balanceETHAfter - balanceETHBefore;
     if (balanceETHDiff == amountToSend) {
         console.log("Successfully sent xETH");

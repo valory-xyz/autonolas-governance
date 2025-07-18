@@ -62,7 +62,7 @@ module.exports = {
             accounts: accounts,
             chainId: 42161,
         },
-        optimistic: {
+        optimism: {
             url: "https://optimism.drpc.org",
             accounts: accounts,
             chainId: 10,
@@ -100,7 +100,7 @@ module.exports = {
             accounts: accounts,
             chainId: 421614,
         },
-        optimisticSepolia: {
+        optimismSepolia: {
             url: "https://sepolia.optimism.io",
             accounts: accounts,
             chainId: 11155420,
@@ -159,7 +159,7 @@ module.exports = {
                 },
             },
             {
-                network: "optimistic",
+                network: "optimism",
                 chainId: 10,
                 urls: {
                     apiURL: "https://api-optimistic.etherscan.io/api",
@@ -167,10 +167,10 @@ module.exports = {
                 },
             },
             {
-                network: "optimisticSepolia",
+                network: "optimismSepolia",
                 chainId: 11155420,
                 urls: {
-                    apiURL: "https://api-sepolia-optimism.etherscan.io/api",
+                    apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
                     browserURL: "https://sepolia-optimistic.etherscan.io"
                 },
             },
@@ -228,14 +228,14 @@ module.exports = {
             polygon: POLYGONSCAN_API_KEY,
             gnosis: GNOSISSCAN_API_KEY,
             arbitrumOne: ARBISCAN_API_KEY,
-            optimistic: OPSCAN_API_KEY,
+            optimism: OPSCAN_API_KEY,
             base: BASESCAN_API_KEY,
             celo: CELOSCAN_API_KEY,
             sepolia: ETHERSCAN_API_KEY,
             polygonAmoy: POLYGONSCAN_API_KEY,
             chiado: GNOSISSCAN_API_KEY,
             arbitrumSepolia: ARBISCAN_API_KEY,
-            optimisticSepolia: OPSCAN_API_KEY,
+            optimismSepolia: OPSCAN_API_KEY,
             baseSepolia: OPSCAN_API_KEY,
             celoAlfajores: CELOSCAN_API_KEY,
             mode: OPSCAN_API_KEY,
