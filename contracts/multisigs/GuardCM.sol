@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.30;
 
 import {Enum} from "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
 import {VerifyData} from "./VerifyData.sol";

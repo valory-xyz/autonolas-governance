@@ -61,10 +61,17 @@ function generateReport() {
 
     // Manually specified contracts in contracts/ directory
     const contractsInContractsDir = [
+        "bridges/BridgeMessenger.sol",
+        "bridges/OptimismMessenger.sol",
+        "bridges/WormholeMessenger.sol",
         "multisigs/GuardCM.sol",
         "multisigs/VerifyData.sol",
-        "VoteWeighting.sol"
-
+        "multisigs/bridge_verifier/ProcessBridgedDataArbitrum.sol",
+        "multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol",
+        "multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol",
+        "multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol",
+        "multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol",
+        "multisigs/bridge_verifier/VerifyBridgedData.sol",
     ];
 
     contractsInContractsDir.forEach(contractName => {
