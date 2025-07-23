@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.30;
 
 /// @dev Only `owner` has a privilege, but the `sender` was provided.
 /// @param sender Sender address.

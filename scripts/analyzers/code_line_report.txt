@@ -6,8 +6,16 @@
     4 | ProcessBridgedDataPolygon.sol                                                                                            |         32 |
     5 | ProcessBridgedDataWormhole.sol                                                                                           |         41 |
     6 | VerifyBridgedData.sol                                                                                                    |         36 |
-    7 | contracts/multisigs/GuardCM.sol                                                                                          |        253 |
-    8 | contracts/multisigs/VerifyData.sol                                                                                       |         14 |
-    9 | contracts/VoteWeighting.sol                                                                                              |        427 |
+    7 | contracts/bridges/BridgeMessenger.sol                                                                                    |         43 |
+    8 | contracts/bridges/OptimismMessenger.sol                                                                                  |         40 |
+    9 | contracts/bridges/WormholeMessenger.sol                                                                                  |         55 |
+   10 | contracts/multisigs/GuardCM.sol                                                                                          |        253 |
+   11 | contracts/multisigs/VerifyData.sol                                                                                       |         14 |
+   12 | contracts/multisigs/bridge_verifier/ProcessBridgedDataArbitrum.sol                                                       |         30 |
+   13 | contracts/multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol                                                         |         42 |
+   14 | contracts/multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol                                                       |         42 |
+   15 | contracts/multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol                                                        |         32 |
+   16 | contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol                                                       |         41 |
+   17 | contracts/multisigs/bridge_verifier/VerifyBridgedData.sol                                                                |         36 |
 ----------------------------------------------------------------------------------------------------------------------------------------------
-    9 | All Governance contracts                                                                                                 |        917 |
+   17 | All Governance contracts                                                                                                 |        851 |
