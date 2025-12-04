@@ -7,7 +7,7 @@ import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/Go
 import {GovernorCompatibilityBravo} from "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
 import {GovernorVotes, IVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import {GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import {GovernorTimelockControl, TimelockController} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import {GovernorTimelockControl, TimelockController} from "./utils/GovernorTimelockControl.sol";
 
 /// @title Governor OLAS - Smart contract for Autonolas governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
@@ -19,13 +19,14 @@ contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo,
         uint256 initialVotingDelay,
         uint256 initialVotingPeriod,
         uint256 initialProposalThreshold,
-        uint256 quorumFraction
+        uint256 quorumFraction,
+        uint256 initialGovernorDelay
     )
         Governor("Governor OLAS")
         GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
         GovernorVotes(governanceToken)
         GovernorVotesQuorumFraction(quorumFraction)
-        GovernorTimelockControl(timelock)
+        GovernorTimelockControl(timelock, initialGovernorDelay)
     {}
 
     /// @dev Current state of a proposal, following Compound’s convention.
