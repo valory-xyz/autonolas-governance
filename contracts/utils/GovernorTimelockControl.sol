@@ -42,9 +42,9 @@ abstract contract GovernorTimelockControl is IGovernorTimelock, Governor {
     /**
      * @dev Set timelock and governor delay.
      */
-    constructor(TimelockController timelockAddress, uint256 initGovernorDelay) {
+    constructor(TimelockController timelockAddress, uint256 initialGovernorDelay) {
         _updateTimelock(timelockAddress);
-        _updateGovernorDelay(initGovernorDelay);
+        _updateGovernorDelay(initialGovernorDelay);
     }
 
     /**

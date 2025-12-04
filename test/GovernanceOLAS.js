@@ -18,7 +18,7 @@ describe("Governance OLAS", function () {
     const bytes32Zero = "0x" + "0".repeat(64);
     const safeThreshold = 7;
     const nonce =  0;
-    const minDelay = 1; // blocks
+    const minDelay = 1; // seconds
     const initialVotingDelay = 0; // blocks
     const initialVotingPeriod = 1; // blocks
     const initialProposalThreshold = fiveOLASBalance; // required voting power
@@ -83,7 +83,7 @@ describe("Governance OLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
             // console.log("Governor Bravo deployed to", governor.address);
 
@@ -128,7 +128,7 @@ describe("Governance OLAS", function () {
             // Deploy Governance Bravo with a deployer being a timelock address
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Check the initial timelock address
@@ -221,7 +221,7 @@ describe("Governance OLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Grand governor an admin, proposer, executor and canceller role in the timelock
@@ -322,7 +322,7 @@ describe("Governance OLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Initial proposal threshold is 10 OLAS, our delegatee voting power is almost 5 OLAS
@@ -367,7 +367,7 @@ describe("Governance OLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(ve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Grand governor an admin, proposer, executor and canceller role in the timelock

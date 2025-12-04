@@ -54,4 +54,8 @@ contract MockTimelockCM {
     ) external {
         emit CallScheduled(targets[0], values[0], datas[0], predecessor, salt, delay);
     }
+
+    function getMinDelay() external pure returns (uint256) {
+        return 1;
+    }
 }

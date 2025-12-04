@@ -89,7 +89,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
             // console.log("Governor Bravo deployed to", governor.address);
 
@@ -134,7 +134,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Deploy Governance Bravo with a deployer being a timelock address
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Check the initial timelock address
@@ -148,7 +148,7 @@ describe("Governance OLAS on wveOLAS", function () {
 
             // Update timelock to a different address: possible via governor execute function
             // The action from timelock itself without the governance proposal will fail as it tries to match
-            // the execution request in the msg.value coming to the governor, and straight call to the function is rejecte.
+            // the execution request in the msg.value coming to the governor, and straight call to the function is rejected.
             await expect(
                 governor.updateTimelock(timelock2.address)
             ).to.be.revertedWith("Governor: onlyGovernance");
@@ -227,7 +227,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Grand governor an admin, proposer, executor and canceller role in the timelock
@@ -328,7 +328,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Initial proposal threshold is 10 OLAS, our delegatee voting power is almost 5 OLAS
@@ -373,7 +373,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Deploy Governance Bravo
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Grand governor an admin, proposer, executor and canceller role in the timelock
@@ -475,7 +475,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Deploy Governor
             const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // Grant governor proposer and executor roles in the timelock
