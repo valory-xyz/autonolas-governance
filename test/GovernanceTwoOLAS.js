@@ -556,7 +556,6 @@ describe("Governance OLAS on wveOLAS", function () {
                 signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
             }
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
-            return;
 
             //  Able to execute changeSourceGovernor right away since the minDelay is zero
             nonce = await multisig.nonce();
