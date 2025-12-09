@@ -652,7 +652,7 @@ describe("Governance OLAS on wveOLAS", function () {
             let signMessageData = new Array();
             let governorDelayPayload = governor.interface.encodeFunctionData("updateGovernorDelay", [0]);
             nonce = await multisig.nonce();
-            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [timelock.address, 0,
+            let txHashData = await safeContracts.buildContractCall(timelock, "schedule", [timelock.address, 0,
                 governorDelayPayload, HashZero, HashZero, 0], nonce, 0, 0);
             for (let i = 0; i < safeThreshold; i++) {
                 signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
