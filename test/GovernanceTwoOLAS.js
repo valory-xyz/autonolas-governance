@@ -2,6 +2,7 @@
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("Governance OLAS on wveOLAS", function () {
     let gnosisSafe;
@@ -20,6 +21,7 @@ describe("Governance OLAS on wveOLAS", function () {
     const safeThreshold = 7;
     let nonce =  0;
     const minDelay = 1; // seconds
+    const governorDelay = 10; // seconds
     const initialVotingDelay = 0; // blocks
     const initialVotingPeriod = 1; // blocks
     const initialProposalThreshold = fiveOLASBalance; // required voting power
@@ -87,8 +89,8 @@ describe("Governance OLAS on wveOLAS", function () {
             // console.log("Timelock deployed to", timelock.address);
 
             // Deploy Governance Bravo
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
-            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
             // console.log("Governor Bravo deployed to", governor.address);
@@ -132,8 +134,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await timelock2.deployed();
 
             // Deploy Governance Bravo with a deployer being a timelock address
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
-            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
@@ -169,10 +171,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await governor["queue(address[],uint256[],bytes[],bytes32)"]([governor.address], [0],
                 [callData], descriptionHash);
 
-            // Waiting for the minDelay number of blocks to pass
-            for (let i = 0; i < minDelay; i++) {
-                ethers.provider.send("evm_mine");
-            }
+            // Waiting for the minDelay number of seconds to pass
+            await helpers.time.increase(minDelay);
 
             // Execute the proposed operation and check the execution result
             await governor["execute(uint256)"](proposalId);
@@ -186,10 +186,8 @@ describe("Governance OLAS on wveOLAS", function () {
             // Schedule the change right away by the deployer as a proposer
             await timelock2.schedule(governor.address, 0, callData, HashZero, HashZero, minDelay);
 
-            // Waiting for the minDelay number of blocks to pass
-            for (let i = 0; i < minDelay; i++) {
-                ethers.provider.send("evm_mine");
-            }
+            // Waiting for the minDelay number of seconds to pass
+            await helpers.time.increase(minDelay);
 
             // Executing via this proposal will fail as onlyGovernance checks for the proposals passed through the
             // governor itself, i.e with voting
@@ -225,8 +223,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await timelock.deployed();
 
             // Deploy Governance Bravo
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
-            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
@@ -326,8 +324,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await timelock.deployed();
 
             // Deploy Governance Bravo
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
-            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
@@ -371,8 +369,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await timelock.deployed();
 
             // Deploy Governance Bravo
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
-            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
@@ -421,7 +419,7 @@ describe("Governance OLAS on wveOLAS", function () {
         });
     });
 
-    context("Change min delay via CM unsetting the guard and setting it back again", async function () {
+    context("Min delay and governor delay", async function () {
         it("Change minDelay of timelock to zero and change to a meaningful value again via CM", async function () {
             const deployer = signers[0];
             // Approve signers[0] for 10 OLAS by voting ve
@@ -473,8 +471,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
             // Deploy Governor
-            const GovernorBravo = await ethers.getContractFactory("GovernorOLAS");
-            const governor = await GovernorBravo.deploy(wve.address, timelock.address, initialVotingDelay,
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
                 initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
@@ -528,10 +526,8 @@ describe("Governance OLAS on wveOLAS", function () {
             await governor.castVote(proposalId, 1);
             await governor["queue(uint256)"](proposalId);
 
-            // Waiting for the minDelay number of blocks to pass
-            for (let i = 0; i < minDelay; i++) {
-                ethers.provider.send("evm_mine");
-            }
+            // Waiting for the minDelay number of seconds to pass
+            await helpers.time.increase(minDelay);
 
             // Execute the proposed operation and check the execution result
             await governor["execute(uint256)"](proposalId);
@@ -592,6 +588,152 @@ describe("Governance OLAS on wveOLAS", function () {
             await expect(
                 safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
             ).to.be.reverted;
+        });
+
+        it("Change governorDelay to be different from minDelay", async function () {
+            const deployer = signers[0];
+            // Approve signers[0] for 10 OLAS by voting ve
+            await token.approve(ve.address, tenOLASBalance);
+            // Define 4 years for the lock duration in Voting Escrow.
+            // This will result in voting power being almost exactly as OLAS amount locked:
+            // voting power = amount * t_left_before_unlock / t_max
+            const lockDuration = 4 * 365 * 86400;
+
+            // Lock 10 OLAS, which is enough to cover the 5 OLAS of initial proposal threshold voting power
+            await ve.createLock(tenOLASBalance, lockDuration);
+
+            // Deploy Safe multisig (CM)
+            const safeSigners = signers.slice(1, 10).map(
+                function (currentElement) {
+                    return currentElement.address;
+                }
+            );
+
+            const setupData = gnosisSafe.interface.encodeFunctionData(
+                "setup",
+                // signers, threshold, to_address, data, fallback_handler, payment_token, payment, payment_receiver
+                [safeSigners, safeThreshold, AddressZero, "0x", AddressZero, AddressZero, 0, AddressZero]
+            );
+
+            // Create Safe proxy
+            const safeContracts = require("@gnosis.pm/safe-contracts");
+            const proxyAddress = await safeContracts.calculateProxyAddress(gnosisSafeProxyFactory, gnosisSafe.address,
+                setupData, nonce);
+
+            await gnosisSafeProxyFactory.createProxyWithNonce(gnosisSafe.address, setupData, nonce).then((tx) => tx.wait());
+            // Get the multisig
+            const multisig = await ethers.getContractAt("GnosisSafe", proxyAddress);
+
+            // Deploy timelock with minDelay
+            const executors = [deployer.address, multisig.address];
+            const proposers = [deployer.address, multisig.address];
+            const Timelock = await ethers.getContractFactory("Timelock");
+            const timelock = await Timelock.deploy(minDelay, proposers, executors);
+            await timelock.deployed();
+
+            // Deploy Governor with a separate governorDelay
+            const Governor = await ethers.getContractFactory("GovernorOLAS");
+            const governor = await Governor.deploy(wve.address, timelock.address, initialVotingDelay,
+                initialVotingPeriod, initialProposalThreshold, quorum, governorDelay);
+            await governor.deployed();
+
+            // Grant governor proposer and executor roles in the timelock
+            const proposerRole = ethers.utils.id("PROPOSER_ROLE");
+            await timelock.grantRole(proposerRole, governor.address);
+            const executorRole = ethers.utils.id("EXECUTOR_ROLE");
+            await timelock.grantRole(executorRole, governor.address);
+
+            // Try to update governorDelay not by the timelock
+            await expect(
+                governor.updateGovernorDelay(5)
+            ).to.be.reverted;
+
+            // Try to update governorDelay which is less than minDelay
+            let signMessageData = new Array();
+            let governorDelayPayload = governor.interface.encodeFunctionData("updateGovernorDelay", [0]);
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule", [timelock.address, 0,
+                governorDelayPayload, HashZero, HashZero, 0], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+
+            // Try to update governorDelay to zero seconds via Governance
+            await governor["propose(address[],uint256[],bytes[],string)"]([governor.address], [0],
+                [governorDelayPayload], proposalDescription);
+
+            // Get the proposalId
+            let descriptionHash = ethers.utils.id(proposalDescription);
+            let proposalId = await governor.hashProposal([governor.address], [0], [governorDelayPayload],
+                descriptionHash);
+
+            // If initialVotingDelay is greater than 0 we have to wait that many blocks before the voting starts
+            // Casting votes for the proposalId: 0 - Against, 1 - For, 2 - Abstain
+            await governor.castVote(proposalId, 1);
+            await governor["queue(uint256)"](proposalId);
+
+            // Waiting for the minDelay number of seconds to pass
+            await helpers.time.increase(minDelay);
+
+            // The proposal is going to revert since it's not yet ready (minDelay < governorDelay)
+            await expect(
+                governor["execute(uint256)"](proposalId)
+            ).to.be.reverted;
+
+            // Waiting for the governorDelay number of seconds to pass
+            await helpers.time.increase(governorDelay);
+
+            // The proposal is going to revert since proposed governorDelay < minDelay
+            await expect(
+                governor["execute(uint256)"](proposalId)
+            ).to.be.reverted;
+
+            // Check that governor Delay was not changed
+            expect(await governor.governorDelay()).to.equal(governorDelay);
+
+            // Update governorDelay another value
+            const updatedGovernorDelay = 5;
+            governorDelayPayload = governor.interface.encodeFunctionData("updateGovernorDelay", [updatedGovernorDelay]);
+            await governor["propose(address[],uint256[],bytes[],string)"]([governor.address], [0],
+                [governorDelayPayload], proposalDescription);
+
+            // Get the proposalId
+            descriptionHash = ethers.utils.id(proposalDescription);
+            proposalId = await governor.hashProposal([governor.address], [0], [governorDelayPayload],
+                descriptionHash);
+
+            // If initialVotingDelay is greater than 0 we have to wait that many blocks before the voting starts
+            // Casting votes for the proposalId: 0 - Against, 1 - For, 2 - Abstain
+            await governor.castVote(proposalId, 1);
+
+            // Queue the proposal
+            await governor["queue(uint256)"](proposalId);
+
+            // Get latest block
+            let block = await ethers.provider.getBlock("latest");
+
+            // Get proposal ETA
+            const eta = await governor.proposalEta(proposalId);
+
+            // ETA must be governorDelay more than block timestamp
+            expect(eta).to.equal(block.timestamp + governorDelay);
+
+            // Waiting for the governorDelay number of seconds to pass
+            await helpers.time.increase(governorDelay);
+
+            // The proposal is going to revert since proposed governorDelay < minDelay
+            await governor["execute(uint256)"](proposalId);
+
+            // Check that governor Delay was not changed
+            expect(await governor.governorDelay()).to.equal(updatedGovernorDelay);
+
+            // Check that the proposal was executed: enum value of ProposalState.Executed == 7
+            const proposalState = await governor.state(proposalId);
+            expect(proposalState).to.equal(7);
         });
     });
 });

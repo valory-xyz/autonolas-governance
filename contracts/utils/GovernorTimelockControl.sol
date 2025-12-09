@@ -105,6 +105,8 @@ abstract contract GovernorTimelockControl is IGovernorTimelock, Governor {
 
         require(state(proposalId) == ProposalState.Succeeded, "Governor: proposal not successful");
 
+        // This is the major chain in the following line, compare with the original contract at:
+        // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.3/contracts/governance/extensions/GovernorTimelockControl.sol#L100
         uint256 delay = governorDelay;
         _timelockIds[proposalId] = _timelock.hashOperationBatch(targets, values, calldatas, 0, descriptionHash);
         _timelock.scheduleBatch(targets, values, calldatas, 0, descriptionHash, delay);
@@ -174,6 +176,8 @@ abstract contract GovernorTimelockControl is IGovernorTimelock, Governor {
 
     /**
      * @dev Updates governor delay.
+     *
+     * CAUTION: It is not recommended to change the timelock while there are other queued governance proposals.
      */
     function updateGovernorDelay(uint256 newGovernorDelay) external virtual onlyGovernance {
         _updateGovernorDelay(newGovernorDelay);

@@ -163,7 +163,7 @@ describe("Governance OLAS", function () {
             await governor["queue(address[],uint256[],bytes[],bytes32)"]([governor.address], [0],
                 [callData], descriptionHash);
 
-            // Waiting for the minDelay number of blocks to pass
+            // Waiting for the minDelay number of seconds to pass
             for (let i = 0; i < minDelay; i++) {
                 ethers.provider.send("evm_mine");
             }
@@ -180,7 +180,7 @@ describe("Governance OLAS", function () {
             // Schedule the change right away by the deployer as a proposer
             await timelock2.schedule(governor.address, 0, callData, bytes32Zero, bytes32Zero, minDelay);
 
-            // Waiting for the minDelay number of blocks to pass
+            // Waiting for the minDelay number of seconds to pass
             for (let i = 0; i < minDelay; i++) {
                 ethers.provider.send("evm_mine");
             }
