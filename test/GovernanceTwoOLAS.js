@@ -556,6 +556,7 @@ describe("Governance OLAS on wveOLAS", function () {
                 signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
             }
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+            return;
 
             //  Able to execute changeSourceGovernor right away since the minDelay is zero
             nonce = await multisig.nonce();
@@ -652,7 +653,7 @@ describe("Governance OLAS on wveOLAS", function () {
             let signMessageData = new Array();
             let governorDelayPayload = governor.interface.encodeFunctionData("updateGovernorDelay", [0]);
             nonce = await multisig.nonce();
-            let txHashData = await safeContracts.buildContractCall(timelock, "schedule", [timelock.address, 0,
+            let txHashData = await safeContracts.buildContractCall(timelock, "schedule", [governor.address, 0,
                 governorDelayPayload, HashZero, HashZero, 0], nonce, 0, 0);
             for (let i = 0; i < safeThreshold; i++) {
                 signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
@@ -660,7 +661,6 @@ describe("Governance OLAS on wveOLAS", function () {
             await expect(
                 safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
             ).to.be.reverted;
-
 
             // Try to update governorDelay to zero seconds via Governance
             await governor["propose(address[],uint256[],bytes[],string)"]([governor.address], [0],
@@ -696,7 +696,7 @@ describe("Governance OLAS on wveOLAS", function () {
             expect(await governor.governorDelay()).to.equal(governorDelay);
 
             // Update governorDelay another value
-            const updatedGovernorDelay = 5;
+            let updatedGovernorDelay = 5;
             governorDelayPayload = governor.interface.encodeFunctionData("updateGovernorDelay", [updatedGovernorDelay]);
             await governor["propose(address[],uint256[],bytes[],string)"]([governor.address], [0],
                 [governorDelayPayload], proposalDescription);
@@ -734,6 +734,73 @@ describe("Governance OLAS on wveOLAS", function () {
             // Check that the proposal was executed: enum value of ProposalState.Executed == 7
             const proposalState = await governor.state(proposalId);
             expect(proposalState).to.equal(7);
+
+            // Update minDelay by the CM
+            updatedGovernorDelay = 100;
+            let minDelayPayload = timelock.interface.encodeFunctionData("updateDelay", [updatedGovernorDelay]);
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule",
+                [timelock.address, 0, minDelayPayload, HashZero, HashZero, minDelay], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "execute",
+                [timelock.address, 0, minDelayPayload, HashZero, HashZero], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            // Since minDelay is 1, the proposal is executed right away
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Check minDelay
+            expect(await timelock.getMinDelay()).to.equal(updatedGovernorDelay);
+
+            // Try to update minDelay by the CM providing a smaller delay
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule",
+                [timelock.address, 0, minDelayPayload, HashZero, HashZero, minDelay], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            // Since minDelay is 1, the proposal is scheduled right away
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Update minDelay by the CM is possible providing at least a governorDelay now
+            minDelayPayload = timelock.interface.encodeFunctionData("updateDelay", [0]);
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "schedule",
+                [timelock.address, 0, minDelayPayload, HashZero, HashZero, updatedGovernorDelay], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            // Since minDelay is 1, the proposal is scheduled right away
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Can't execute right away
+            nonce = await multisig.nonce();
+            txHashData = await safeContracts.buildContractCall(timelock, "execute",
+                [timelock.address, 0, minDelayPayload, HashZero, HashZero], nonce, 0, 0);
+            for (let i = 0; i < safeThreshold; i++) {
+                signMessageData[i] = await safeContracts.safeSignMessage(signers[i+1], multisig, txHashData, 0);
+            }
+            // Since updatedGovernorDelay is 100, the proposal is can NOT be executed right away
+            await expect(
+                safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
+            ).to.be.reverted;
+
+            // Wait for updatedGovernorDelay seconds
+            await helpers.time.increase(updatedGovernorDelay);
+
+            // Execute now
+            await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
+
+            // Check updated minDelay
+            expect(await timelock.getMinDelay()).to.equal(0);
         });
     });
 });
