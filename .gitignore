@@ -9,3 +9,7 @@ typechain
 # Hardhat files
 cache
 artifacts
+
+# Audit related files
+audits/*/analysis/slither_data-dependency.txt
+audits/*/analysis/slither_function-summary.txt
