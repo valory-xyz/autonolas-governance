@@ -769,7 +769,7 @@ describe("Governance OLAS on wveOLAS", function () {
                 safeContracts.executeTx(multisig, txHashData, signMessageData, 0)
             ).to.be.reverted;
 
-            // Update minDelay by the CM is possible providing at least a governorDelay now
+            // Update minDelay by the CM providing at least a governorDelay now
             minDelayPayload = timelock.interface.encodeFunctionData("updateDelay", [0]);
             nonce = await multisig.nonce();
             txHashData = await safeContracts.buildContractCall(timelock, "schedule",
