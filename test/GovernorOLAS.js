@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("Governance OLAS on wveOLAS", function () {
+describe("Governor OLAS on wveOLAS", function () {
     let gnosisSafe;
     let gnosisSafeProxyFactory;
     let token;
