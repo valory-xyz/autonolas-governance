@@ -780,7 +780,7 @@ describe("Governance OLAS on wveOLAS", function () {
             // Since minDelay is 1, the proposal is scheduled right away
             await safeContracts.executeTx(multisig, txHashData, signMessageData, 0);
 
-            // Can't execute right away
+            // After the change, CM can't execute right away
             nonce = await multisig.nonce();
             txHashData = await safeContracts.buildContractCall(timelock, "execute",
                 [timelock.address, 0, minDelayPayload, HashZero, HashZero], nonce, 0, 0);
