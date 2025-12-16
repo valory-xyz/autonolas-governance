@@ -1,6 +1,6 @@
 {
   "contractVerification": true,
-  "useLedger": false,
+  "useLedger": true,
   "derivationPath": "m/44'/60'/2'/0/0",
   "providerName": "mainnet",
   "networkURL": "https://eth-mainnet.g.alchemy.com/v2/",
@@ -45,6 +45,5 @@
   "wormholeL1CoreAddress": "0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B",
   "wormholeL1MessageRelayerAddress": "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911",
   "wormholeL1TokenBridgeAddress": "0x3ee18B2214AFF97000D974cf647E7C347E8fa585",
-  "refundChainId": "2",
-  "wormholeRelayerTimelockAddress": "0x17806E2a12d5E0F48C9803cd397DB3F044DA3b77"
+  "refundChainId": "2"
 }
