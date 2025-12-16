@@ -22,11 +22,10 @@ interface IWormhole {
     ///        Note: This value can be overridden by the delivery provider on the target chain. The returned value here should be considered to be a
     ///        promise by the delivery provider of the amount of refund per gas unused that will be returned to the refundAddress at the target chain.
     ///        If a delivery provider decides to override, this will be visible as part of the emitted Delivery event on the target chain.
-    function quoteEVMDeliveryPrice(
-        uint16 targetChain,
-        uint256 receiverValue,
-        uint256 gasLimit
-    ) external view returns (uint256 nativePriceQuote, uint256 targetChainRefundPerGasUnused);
+    function quoteEVMDeliveryPrice(uint16 targetChain, uint256 receiverValue, uint256 gasLimit)
+        external
+        view
+        returns (uint256 nativePriceQuote, uint256 targetChainRefundPerGasUnused);
 
     /// @dev Publishes an instruction for the default delivery provider
     /// to relay a payload to the address `targetAddress` on chain `targetChain`
@@ -56,7 +55,6 @@ interface IWormhole {
         address refundAddress
     ) external payable returns (uint64 sequence);
 
-
     /// @dev Transfers tokens through portal.
     /// @param token Token address.
     /// @param amount Token amount.
@@ -65,7 +63,14 @@ interface IWormhole {
     /// @param arbiterFee Optional amount of tokens as relayer fee, claimed by relayers who submit VAA on target chain.
     /// @param nonce Nonce value.
     /// @return sequence Sequence number of published VAA containing delivery instructions.
-    function transferTokens(address token, uint256 amount, uint16 targetChain, bytes32 recipient, uint256 arbiterFee, uint32 nonce) external payable returns (uint64 sequence);
+    function transferTokens(
+        address token,
+        uint256 amount,
+        uint16 targetChain,
+        bytes32 recipient,
+        uint256 arbiterFee,
+        uint32 nonce
+    ) external payable returns (uint64 sequence);
 
     /// @dev Gets Wormhole Core message fee.
     function messageFee() external view returns (uint256);
@@ -99,8 +104,16 @@ error ReentrancyGuard();
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract WormholeRelayerTimelock {
-    event MessageSent(uint256 indexed sequence, address indexed targetAddress, uint256 targetChain, uint256 receiverValue, bytes payload);
-    event TokensSent(uint256 indexed sequence, bytes32 indexed recipient, uint256 targetChain, uint256 amount, uint256 nonce);
+    event MessageSent(
+        uint256 indexed sequence,
+        address indexed targetAddress,
+        uint256 targetChain,
+        uint256 receiverValue,
+        bytes payload
+    );
+    event TokensSent(
+        uint256 indexed sequence, bytes32 indexed recipient, uint256 targetChain, uint256 amount, uint256 nonce
+    );
     event LeftoversRefunded(address indexed sender, uint256 leftovers);
 
     // Message transfer minimum gas limit for L2
@@ -129,9 +142,18 @@ contract WormholeRelayerTimelock {
     /// @param _wormholeRelayer Wormhole relayer address.
     /// @param _wormholeTokenBridge Wormhole token bridge address.
     /// @param _refundChainId Refund chain Id in Wormhole format: must be set to corresponding block.chainid.
-    constructor(address _timelock, address _wormholeCore, address _wormholeRelayer, address _wormholeTokenBridge, uint16 _refundChainId) {
+    constructor(
+        address _timelock,
+        address _wormholeCore,
+        address _wormholeRelayer,
+        address _wormholeTokenBridge,
+        uint16 _refundChainId
+    ) {
         // Check for zero addresses
-        if (_timelock == address(0) || _wormholeCore == address(0) || _wormholeRelayer == address(0) || _wormholeTokenBridge == address(0)) {
+        if (
+            _timelock == address(0) || _wormholeCore == address(0) || _wormholeRelayer == address(0)
+                || _wormholeTokenBridge == address(0)
+        ) {
             revert ZeroAddress();
         }
 
@@ -159,7 +181,7 @@ contract WormholeRelayerTimelock {
         // Send leftover amount back to the sender, if any
         if (leftovers > 0) {
             // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = refundAddress.call{value: leftovers}("");
+            (bool success,) = refundAddress.call{value: leftovers}("");
             if (!success) {
                 revert TransferFailed(refundAddress, leftovers);
             }
@@ -215,14 +237,15 @@ contract WormholeRelayerTimelock {
         }
 
         // Get the message cost in order to adjust leftovers
-        (uint256 cost, ) = IWormhole(wormholeRelayer).quoteEVMDeliveryPrice(targetChain, receiverValue, gasLimit);
+        (uint256 cost,) = IWormhole(wormholeRelayer).quoteEVMDeliveryPrice(targetChain, receiverValue, gasLimit);
 
         // Manage fee
         _manageFee(cost, refundAddress);
 
         // Send payload via the Wormhole relayer with exact required cost
-        sequence = IWormhole(wormholeRelayer).sendPayloadToEvm{value: cost}(targetChain, targetAddress, payload,
-            receiverValue, gasLimit, refundChainId, refundAddress);
+        sequence = IWormhole(wormholeRelayer).sendPayloadToEvm{value: cost}(
+            targetChain, targetAddress, payload, receiverValue, gasLimit, refundChainId, refundAddress
+        );
 
         emit MessageSent(sequence, targetAddress, targetChain, receiverValue, payload);
 
@@ -237,7 +260,11 @@ contract WormholeRelayerTimelock {
     /// @param recipient Recipient address to call on targetChain in bytes32 format.
     /// @param refundAddress The address on `refundChainId` to deliver any refund to.
     /// @return sequence Sequence number of published VAA containing delivery instructions.
-    function transferTokens(address token, uint256 amount, uint16 targetChain, bytes32 recipient, address refundAddress) external payable returns (uint64 sequence) {
+    function transferTokens(address token, uint256 amount, uint16 targetChain, bytes32 recipient, address refundAddress)
+        external
+        payable
+        returns (uint64 sequence)
+    {
         if (_locked > 1) {
             revert ReentrancyGuard();
         }
@@ -271,7 +298,9 @@ contract WormholeRelayerTimelock {
 
         // Transfer tokens
         // Note that arbiter fee is set to zero as it is optional
-        sequence = IWormhole(wormholeTokenBridge).transferTokens{value: cost}(token, amount, targetChain, recipient, 0, localNonce);
+        sequence = IWormhole(wormholeTokenBridge).transferTokens{value: cost}(
+            token, amount, targetChain, recipient, 0, localNonce
+        );
 
         // Update nonce
         nonce = localNonce + 1;
