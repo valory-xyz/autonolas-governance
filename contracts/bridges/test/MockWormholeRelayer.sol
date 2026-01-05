@@ -56,4 +56,29 @@ contract MockWormholeRelayer {
         sequence = uint64(uint256(keccak256(abi.encode(targetChain, targetAddress, payload))));
         emit messageSent(sequence);
     }
+
+    /// @dev Transfers tokens through portal.
+    /// @param token Token address.
+    /// @param amount Token amount.
+    /// @param targetChain in Wormhole Chain ID format.
+    /// @param recipient Recipient address to call on targetChain in bytes32 format.
+    /// @param arbiterFee Optional amount of tokens as relayer fee, claimed by relayers who submit VAA on target chain.
+    /// @param nonce Nonce value.
+    /// @return sequence Sequence number of published VAA containing delivery instructions.
+    function transferTokens(
+        address token,
+        uint256 amount,
+        uint16 targetChain,
+        bytes32 recipient,
+        uint256 arbiterFee,
+        uint32 nonce
+    ) external payable returns (uint64 sequence) {
+        sequence = uint64(uint256(keccak256(abi.encode(targetChain, recipient, nonce))));
+        emit messageSent(sequence);
+    }
+
+    /// @dev Gets Wormhole Core message fee.
+    function messageFee() external pure returns (uint256) {
+        return COST;
+    }
 }

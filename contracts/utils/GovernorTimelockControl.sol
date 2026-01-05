@@ -8,6 +8,11 @@ import {IGovernorTimelock} from "@openzeppelin/contracts/governance/extensions/I
 import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
+/// @dev Value underflow.
+/// @param provided Underflow value.
+/// @param min Minimum possible value.
+error Underflow(uint256 provided, uint256 min);
+
 /**
  * @dev Extension of {Governor} that binds the execution process to an instance of {TimelockController}. This adds a
  * delay, enforced by the {TimelockController} to all successful proposal (in addition to the voting duration). The
@@ -95,12 +100,12 @@ abstract contract GovernorTimelockControl is IGovernorTimelock, Governor {
     /**
      * @dev Function to queue a proposal to the timelock.
      */
-    function queue(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) public virtual override returns (uint256) {
+    function queue(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash)
+        public
+        virtual
+        override
+        returns (uint256)
+    {
         uint256 proposalId = hashProposal(targets, values, calldatas, descriptionHash);
 
         require(state(proposalId) == ProposalState.Succeeded, "Governor: proposal not successful");
@@ -178,15 +183,20 @@ abstract contract GovernorTimelockControl is IGovernorTimelock, Governor {
      * @dev Updates governor delay.
      *
      * CAUTION: It is not recommended to change the timelock while there are other queued governance proposals.
+     * CAUTION: minDelay is able to be updated separately, thus it is highly recommended to change governanceDelay
+     *          simultaneously in order for it to never be smaller than minDelay.
      */
     function updateGovernorDelay(uint256 newGovernorDelay) external virtual onlyGovernance {
         _updateGovernorDelay(newGovernorDelay);
     }
 
     function _updateGovernorDelay(uint256 newGovernorDelay) internal {
+        // Get timelock min delay
+        uint256 minDelay = _timelock.getMinDelay();
+
         // Check that new governor delay is not smaller than timelock one
-        if (newGovernorDelay < _timelock.getMinDelay()) {
-            revert();
+        if (newGovernorDelay < minDelay) {
+            revert Underflow(newGovernorDelay, minDelay);
         }
 
         emit GovernorDelayChange(newGovernorDelay);

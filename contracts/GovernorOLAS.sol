@@ -4,15 +4,26 @@ pragma solidity ^0.8.20;
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import {GovernorCompatibilityBravo} from "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
+import {
+    GovernorCompatibilityBravo
+} from "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
 import {GovernorVotes, IVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import {GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import {
+    GovernorVotesQuorumFraction
+} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import {GovernorTimelockControl, TimelockController} from "./utils/GovernorTimelockControl.sol";
 
 /// @title Governor OLAS - Smart contract for Autonolas governance
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @dev The OpenZeppelin functions are used as is, version 4.8.3.
-contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
+contract GovernorOLAS is
+    Governor,
+    GovernorSettings,
+    GovernorCompatibilityBravo,
+    GovernorVotes,
+    GovernorVotesQuorumFraction,
+    GovernorTimelockControl
+{
     constructor(
         IVotes governanceToken,
         TimelockController timelock,
@@ -31,7 +42,10 @@ contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo,
 
     /// @dev Current state of a proposal, following Compound’s convention.
     /// @param proposalId Proposal Id.
-    function state(uint256 proposalId) public view override(IGovernor, Governor, GovernorTimelockControl)
+    function state(uint256 proposalId)
+        public
+        view
+        override(IGovernor, Governor, GovernorTimelockControl)
         returns (ProposalState)
     {
         return super.state(proposalId);
@@ -48,15 +62,13 @@ contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo,
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) public override(IGovernor, Governor, GovernorCompatibilityBravo) returns (uint256)
-    {
+    ) public override(IGovernor, Governor, GovernorCompatibilityBravo) returns (uint256) {
         return super.propose(targets, values, calldatas, description);
     }
 
     /// @dev Gets the voting power for the proposal threshold.
     /// @return The voting power required in order for a voter to become a proposer.
-    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256)
-    {
+    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.proposalThreshold();
     }
 
@@ -72,8 +84,7 @@ contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo,
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl)
-    {
+    ) internal override(Governor, GovernorTimelockControl) {
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
@@ -88,22 +99,23 @@ contract GovernorOLAS is Governor, GovernorSettings, GovernorCompatibilityBravo,
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) returns (uint256)
-    {
+    ) internal override(Governor, GovernorTimelockControl) returns (uint256) {
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
     /// @dev Gets the executor address.
     /// @return Executor address.
-    function _executor() internal view override(Governor, GovernorTimelockControl) returns (address)
-    {
+    function _executor() internal view override(Governor, GovernorTimelockControl) returns (address) {
         return super._executor();
     }
 
     /// @dev Gets information about the interface support.
     /// @param interfaceId A specified interface Id.
     /// @return True if this contract implements the interface defined by interfaceId.
-    function supportsInterface(bytes4 interfaceId) public view override(IERC165, Governor, GovernorTimelockControl)
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(IERC165, Governor, GovernorTimelockControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

@@ -5,6 +5,7 @@ const { ethers } = require("hardhat");
 
 describe("WormholeRelayerTimelock", function () {
     let timelock;
+    let token;
     let wormholeRelayer;
     let wormholeRelayerTimelock;
     let signers;
@@ -13,15 +14,21 @@ describe("WormholeRelayerTimelock", function () {
     const Bytes32Zero = ethers.constants.HashZero;
     const targetChainId = 5;
     const targetAddress = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+    const recipient = "0x00000000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8";
     const payload = "0x1234";
     const receiverValue = ethers.utils.parseEther("1");
     const gasLimit = 100000;
     const refundChainId = 2;
     const refundAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
+    const amount = 10;
 
     beforeEach(async function () {
         signers = await ethers.getSigners();
         deployer = signers[0];
+
+        const Token = await ethers.getContractFactory("OLAS");
+        token = await Token.deploy();
+        await token.deployed();
 
         // Deploy mock of Timelock contract
         const Timelock = await ethers.getContractFactory("MockTimelock");
@@ -35,7 +42,8 @@ describe("WormholeRelayerTimelock", function () {
 
         // Deploy Wormhole Relayer Timelock
         const WormholeRelayerTimelock = await ethers.getContractFactory("WormholeRelayerTimelock");
-        wormholeRelayerTimelock = await WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, refundChainId);
+        wormholeRelayerTimelock = await WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address,
+            wormholeRelayer.address, wormholeRelayer.address, refundChainId);
         await wormholeRelayerTimelock.deployed();
     });
 
@@ -43,13 +51,19 @@ describe("WormholeRelayerTimelock", function () {
         it("Deploying with zero addresses and values", async function () {
             const WormholeRelayerTimelock = await ethers.getContractFactory("WormholeRelayerTimelock");
             await expect(
-                WormholeRelayerTimelock.deploy(AddressZero, AddressZero, 0)
+                WormholeRelayerTimelock.deploy(AddressZero, AddressZero, AddressZero, AddressZero, 0)
             ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroAddress");
             await expect(
-                WormholeRelayerTimelock.deploy(timelock.address, AddressZero, 0)
+                WormholeRelayerTimelock.deploy(timelock.address, AddressZero, AddressZero, AddressZero, 0)
             ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroAddress");
             await expect(
-                WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, 0)
+                WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, AddressZero, AddressZero, 0)
+            ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroAddress");
+            await expect(
+                WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, wormholeRelayer.address, AddressZero, 0)
+            ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroAddress");
+            await expect(
+                WormholeRelayerTimelock.deploy(timelock.address, wormholeRelayer.address, wormholeRelayer.address, wormholeRelayer.address, 0)
             ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "ZeroValue");
         });
 
@@ -147,10 +161,9 @@ describe("WormholeRelayerTimelock", function () {
             ).to.be.reverted;
         });
 
-        it("Should use tx.origin as refund address when refundAddress is zero", async function () {
+        it("Should revert when refundAddress is zero", async function () {
             const cost = await wormholeRelayer.COST();
             const msgValue = cost.add(1);
-            const expectedLeftovers = msgValue.sub(cost);
 
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
                 targetChainId,
@@ -163,11 +176,10 @@ describe("WormholeRelayerTimelock", function () {
 
             await expect(
                 timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: msgValue })
-            ).to.emit(wormholeRelayerTimelock, "LeftoversRefunded")
-                .withArgs(deployer.address, expectedLeftovers);
+            ).to.be.reverted;
         });
 
-        it("Should use timelock as refund address when refundAddress is zero", async function () {
+        it("Use timelock as refund address", async function () {
             const cost = await wormholeRelayer.COST();
             const msgValue = cost.add(1);
             const expectedLeftovers = msgValue.sub(cost);
@@ -196,7 +208,138 @@ describe("WormholeRelayerTimelock", function () {
                 payload,
                 receiverValue,
                 gasLimit,
+                refundAddress
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: msgValue })
+            ).to.not.emit(wormholeRelayerTimelock, "LeftoversRefunded");
+        });
+    });
+
+    context("transferTokens", async function () {
+        it("Should revert when called by non-timelock", async function () {
+            await expect(
+                wormholeRelayerTimelock.transferTokens(
+                    AddressZero,
+                    0,
+                    targetChainId,
+                    recipient,
+                    refundAddress
+                )
+            ).to.be.revertedWithCustomError(wormholeRelayerTimelock, "UnauthorizedAccount")
+                .withArgs(deployer.address);
+        });
+
+        it("Should revert with zero token address", async function () {
+            const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                AddressZero,
+                amount,
+                targetChainId,
+                recipient,
+                refundAddress
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
+            ).to.be.reverted;
+        });
+
+        it("Should revert with zero amount", async function () {
+            let calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                0,
+                targetChainId,
+                recipient,
+                refundAddress
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
+            ).to.be.reverted;
+
+            // Test zero target chain Id
+            calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                amount,
+                0,
+                recipient,
+                refundAddress
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
+            ).to.be.reverted;
+
+            // Test zero address recipient
+            calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                amount,
+                targetChainId,
+                Bytes32Zero,
+                refundAddress
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
+            ).to.be.reverted;
+
+            // Test zero refund address
+            calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                amount,
+                targetChainId,
+                recipient,
                 AddressZero
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: ethers.utils.parseEther("2") })
+            ).to.be.reverted;
+        });
+
+        it("Should revert when msg.value is less than cost", async function () {
+            const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                amount,
+                targetChainId,
+                recipient,
+                refundAddress
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: 1 })
+            ).to.be.reverted;
+        });
+
+        it("Use timelock as refund address", async function () {
+            const cost = await wormholeRelayer.COST();
+            const msgValue = cost.add(1);
+            const expectedLeftovers = msgValue.sub(cost);
+
+            const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                amount,
+                targetChainId,
+                recipient,
+                timelock.address
+            ]);
+
+            await expect(
+                timelock.executeCustomRelayer(wormholeRelayerTimelock.address, calldata, { value: msgValue })
+            ).to.emit(wormholeRelayerTimelock, "LeftoversRefunded")
+                .withArgs(timelock.address, expectedLeftovers);
+        });
+
+        it("No leftovers", async function () {
+            const msgValue = await wormholeRelayer.COST();
+
+            const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("transferTokens", [
+                token.address,
+                amount,
+                targetChainId,
+                recipient,
+                refundAddress
             ]);
 
             await expect(
