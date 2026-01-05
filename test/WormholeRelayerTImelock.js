@@ -164,7 +164,6 @@ describe("WormholeRelayerTimelock", function () {
         it("Should revert when refundAddress is zero", async function () {
             const cost = await wormholeRelayer.COST();
             const msgValue = cost.add(1);
-            const expectedLeftovers = msgValue.sub(cost);
 
             const calldata = wormholeRelayerTimelock.interface.encodeFunctionData("sendPayloadToEvm", [
                 targetChainId,
