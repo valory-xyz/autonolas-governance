@@ -236,7 +236,7 @@ describe("Deployment", function () {
             const quorum = 4;
             const GovernorOLAS = await ethers.getContractFactory("GovernorOLAS");
             const governor = await GovernorOLAS.connect(EOA).deploy(ve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
             // End of 8: EOA is the owner of: factory, OLAS
             //           EOA is the admin of timelock
@@ -370,7 +370,7 @@ describe("Deployment", function () {
             // 17. EOA to deploy GovernorOLAS contract with wveOLAS and Timelock addresses as input parameters
             // and other defined governor-related parameters;
             const governorTwo = await GovernorOLAS.connect(EOA).deploy(wve.address, timelock.address, initialVotingDelay,
-                initialVotingPeriod, initialProposalThreshold, quorum);
+                initialVotingPeriod, initialProposalThreshold, quorum, minDelay);
             await governor.deployed();
 
             // 18. Timelock to revoke admin ("TIMELOCK_ADMIN_ROLE"), proposer ("PROPOSER_ROLE"), executor ("EXECUTOR_ROLE"),

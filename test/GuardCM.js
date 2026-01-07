@@ -104,6 +104,7 @@ describe("Community Multisig Guard", function () {
     const initialVotingPeriod = 10;
     const initialProposalThreshold = ethers.utils.parseEther("5");
     const quorum = 1;
+    const governorDelay = 1;
     const localChainId = 31337;
 
     beforeEach(async function () {
@@ -164,7 +165,7 @@ describe("Community Multisig Guard", function () {
         // Deploy the governor
         const Governor = await ethers.getContractFactory("GovernorOLAS");
         governor = await Governor.deploy(ve.address, timelock.address, initialVotingDelay, initialVotingPeriod,
-            initialProposalThreshold, quorum);
+            initialProposalThreshold, quorum, governorDelay);
         await governor.deployed();
 
         // Deploy L2 verifiers

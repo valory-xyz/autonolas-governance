@@ -31,6 +31,10 @@ An internal audit with a focus on `VoteWeighting` (after C4A external audit) is 
 
 An internal audit with a focus on `WormholeRelayerTimelock` is located in this folder: [internal audit 14](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal14).
 
+An internal audit with a focus on `GovernorOLAS` is located in this folder: [internal audit 15](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal15).
+
+An internal audit with a focus on `WormholeRelayerTimelock` is located in this folder: [internal audit 16](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal16).
+
 ### External audit
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
 the recommendations are addressed here: [feedback](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Addressing%20Initial%20ApeWorX%20Recommentations.pdf).
