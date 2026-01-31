@@ -7,6 +7,20 @@ const fs = require("fs");
 const verifyRepo = true;
 const verifySetup = true;
 
+
+// ===================== CSV CONFIG =====================
+const WRITE_OWNERSHIP_CSV = true;
+const OWNERSHIP_CSV_PATH = "scripts/audit_chains/ownable_owners.csv";
+
+// Autonolas deployer (as per your requirement)
+const AUTONOLAS_DEPLOYER = "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E";
+
+// Minimal helper: normalize addresses (case-insensitive compare)
+const norm = (a) => (a ? ethers.utils.getAddress(a) : a);
+
+// Global accumulator for CSV rows (collected during setup checks)
+const ownershipRows = [];
+
 // Custom expect that is wrapped into try / catch block
 function customExpect(arg1, arg2, log) {
     try {
@@ -37,6 +51,52 @@ function customExpectContain(arg1, arg2, log) {
             console.log("\n");
         }
     }
+}
+
+// Write ownership CSV
+function writeOwnershipCsv(rows, outPath) {
+    const headers = [
+        "chainId",
+        "contractName",
+        "contractAddress",
+        "ownerAddress",
+        "ownerCategory",
+        "expectedDaoExecutor",
+        "ownershipChangeRequired",
+    ];
+
+    const escapeCsv = (v) => {
+        if (v === null || v === undefined) return "";
+        const s = String(v);
+        if (s.includes("\"") || s.includes(",") || s.includes("\n")) {
+            return `"${s.replace(/"/g, "\"\"")}"`;
+        }
+        return s;
+    };
+
+    const lines = [
+        headers.join(","),
+        ...rows.map((r) => headers.map((h) => escapeCsv(r[h])).join(",")),
+    ];
+
+    fs.writeFileSync(outPath, lines.join("\n"), "utf8");
+    console.log(`\n[CSV] Wrote ${rows.length} rows to ${outPath}\n`);
+}
+
+
+// Push a row into the ownership CSV accumulator
+function recordOwnershipRow(chainId, contractName, contractAddress, ownerInfo) {
+    if (!WRITE_OWNERSHIP_CSV || !ownerInfo) return;
+
+    ownershipRows.push({
+        chainId: String(chainId),
+        contractName: contractName,
+        contractAddress: norm(contractAddress),
+        ownerAddress: ownerInfo.owner,
+        ownerCategory: ownerInfo.ownerCategory,
+        expectedDaoExecutor: ownerInfo.expectedDaoExecutor,
+        ownershipChangeRequired: ownerInfo.ownershipChangeRequired,
+    });
 }
 
 // Check the bytecode
@@ -79,6 +139,32 @@ async function findContractInstance(provider, configContracts, contractName) {
     }
 }
 
+
+// Check the contract owner
+async function checkOwner(chainId, contract, globalsInstance, log) {
+    const owner = norm(await contract.owner());
+
+    const expected = norm(globalsInstance["timelockAddress"]);
+
+    // Keep existing verification behavior
+    customExpect(owner, expected, log + ", function: owner()");
+
+    // CSV purposes
+    const ownerCategory =
+        owner === norm(AUTONOLAS_DEPLOYER)
+            ? "autonolas_deployer"
+            : (owner === expected ? "dao_executor" : "other");
+
+    const ownershipChangeRequired = owner === expected ? "no" : "yes";
+
+    return {
+        owner,
+        expectedDaoExecutor: expected,
+        ownerCategory: ownerCategory,
+        ownershipChangeRequired: ownershipChangeRequired,
+    };
+}
+
 // Check OLAS: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkOLAS(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
@@ -88,9 +174,10 @@ async function checkOLAS(chainId, provider, globalsInstance, configContracts, co
     const olas = await findContractInstance(provider, configContracts, contractName);
 
     log += ", address: " + olas.address;
-    // Check owner
-    const owner = await olas.owner();
-    customExpect(owner, globalsInstance["timelockAddress"], log + ", function: owner()");
+    
+    // owner + CSV
+    const ownerInfo = await checkOwner(chainId, olas, globalsInstance, log);
+    recordOwnershipRow(chainId, contractName, olas.address, ownerInfo);
 
     // Check minter
     const manager = await olas.minter();
@@ -169,9 +256,9 @@ async function checkBUOLAS(chainId, provider, globalsInstance, configContracts, 
     const token = await buOLAS.token();
     customExpect(token, globalsInstance["olasAddress"], log + ", function: token()");
 
-    // Check owner
-    const owner = await buOLAS.owner();
-    customExpect(owner, globalsInstance["timelockAddress"], log + ", function: owner()");
+    // owner + CSV
+    const ownerInfo = await checkOwner(chainId, buOLAS, globalsInstance, log);
+    recordOwnershipRow(chainId, contractName, buOLAS.address, ownerInfo);
 }
 
 // Check wveOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
@@ -205,9 +292,9 @@ async function checkVoteWeighting(chainId, provider, globalsInstance, configCont
     const ve = await vw.ve();
     customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
 
-    // Check owner
-    const owner = await vw.owner();
-    customExpect(owner, globalsInstance["timelockAddress"], log + ", function: owner()");
+    // owner + CSV
+    const ownerInfo = await checkOwner(chainId, vw, globalsInstance, log);
+    recordOwnershipRow(chainId, contractName, vw.address, ownerInfo);
 }
 
 // Check GolvernorOLAS: chain Id, provider, parsed globals, mainnet globals, configuration contracts, contract name
@@ -257,10 +344,10 @@ async function checkGuardCM(chainId, provider, globalsInstance, configContracts,
     // Check governor
     const governor = await guard.governor();
     customExpect(governor, globalsInstance["governorTwoAddress"], log + ", function: governor()");
-
-    // Check timelock to be the owner
-    const timelock = await guard.owner();
-    customExpect(timelock, globalsInstance["timelockAddress"], log + ", function: owner()");
+    
+    // owner + CSV
+    const ownerInfo = await checkOwner(chainId, guard, globalsInstance, log);
+    recordOwnershipRow(chainId, contractName, guard.address, ownerInfo);
 
     // Check multisig to be the CM
     const multisig = await guard.multisig();
@@ -415,8 +502,8 @@ async function checkWormholeMessenger(chainId, provider, globalsInstance, config
 
 async function main() {
     // Check for the API keys
-    if (!process.env.ALCHEMY_API_KEY_MAINNET || !process.env.ALCHEMY_API_KEY_SEPOLIA ||
-        !process.env.ALCHEMY_API_KEY_MATIC || !process.env.ALCHEMY_API_KEY_AMOY) {
+    if (!process.env.ALCHEMY_API_KEY_MAINNET ||
+        !process.env.ALCHEMY_API_KEY_MATIC) {
         console.log("Check API keys!");
         return;
     }
@@ -540,6 +627,11 @@ async function main() {
                 let log = initLog + ", contract: " + "OptimismMessenger";
                 await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
             }
+        }
+
+        // Write CSV once at the end of setup verification
+        if (WRITE_OWNERSHIP_CSV) {
+            writeOwnershipCsv(ownershipRows, OWNERSHIP_CSV_PATH);
         }
     }
     // ################################# /VERIFY CONTRACTS SETUP #################################
