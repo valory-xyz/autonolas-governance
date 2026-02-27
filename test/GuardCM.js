@@ -50,14 +50,14 @@ describe("Community Multisig Guard", function () {
         // polygon (FxGovernorTunnel)
         "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
         // arbitrum (None)
-        AddressZero,
+        "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F",
         // arbitrum (None)
-        AddressZero,
+        "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F",
         // optimism (OptimismMessenger)
         "0x670Ac235EE13C0B2a5065282bBB0c61cfB354592",
-        // celo (WormholeMessenger)
+        // celo (example of WormholeMessenger)
         "0x945550dECe7E40ae70C6ebf5699637927eAF13E9",
-        // celo (WormholeMessenger)
+        // celo (example of WormholeMessenger)
         "0x945550dECe7E40ae70C6ebf5699637927eAF13E9"
     ];
 

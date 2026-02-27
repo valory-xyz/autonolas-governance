@@ -13,10 +13,22 @@ error IncorrectDataLength(uint256 expected, uint256 provided);
 /// @param chainId Chain Id.
 error WrongSelector(bytes4 functionSig, uint256 chainId);
 
+/// @dev Provided non zero value when it has to be zero.
+/// @param amount Value amount.
+error NonZeroValue(uint256 amount);
+
 /// @dev Provided wrong L2 bridge mediator address.
 /// @param provided Provided address.
 /// @param expected Expected address.
 error WrongL2BridgeMediator(address provided, address expected);
+
+/// @dev Provided wrong refund chain Id.
+/// @param refundChainId Refund chain Id.
+error WrongRefundChainId(uint256 refundChainId);
+
+/// @dev Provided wrong refund address.
+/// @param refundAddress Refund address.
+error WrongRefundAddress(address refundAddress);
 
 /// @title ProcessBridgedDataWormhole - Smart contract for verifying the Guard CM bridged data on L2 via Wormhole standard
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
@@ -29,6 +41,10 @@ contract ProcessBridgedDataWormhole is VerifyBridgedData {
     bytes4 public constant SEND_MESSAGE = bytes4(keccak256(bytes("sendPayloadToEvm(uint16,address,bytes,uint256,uint256)")));
     // Minimum payload length for message sent via Wormhole accounting for all required encoding and at least one selector
     uint256 public constant MIN_WORMHOLE_PAYLOAD_LENGTH = 324;
+    // Refund address: Timelock
+    address public constant TIMELOCK = 0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE;
+    // Refund chain: ETH
+    uint16 public constant REFUND_CHAIN_ID = 2;
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @notice It is out of scope of the verification procedure to check if the Wormhole format chain Id corresponding
@@ -62,12 +78,28 @@ contract ProcessBridgedDataWormhole is VerifyBridgedData {
         // Decode the payload depending on the selector
         address wormholeMessenger;
         bytes memory l2Message;
+        uint256 receiverValue;
         if (functionSig == SEND_MESSAGE) {
-            (, wormholeMessenger, l2Message, , ) =
+            (, wormholeMessenger, l2Message, receiverValue, ) =
                 abi.decode(payload, (uint16, address, bytes, uint256, uint256));
         } else {
-            (, wormholeMessenger, l2Message, , , , ) =
+            uint16 refundChainId;
+            address refundAddress;
+            (, wormholeMessenger, l2Message, receiverValue, , refundChainId, refundAddress) =
                 abi.decode(payload, (uint16, address, bytes, uint256, uint256, uint16, address));
+
+            // Check for refund params
+            if (refundChainId != REFUND_CHAIN_ID) {
+                revert WrongRefundChainId(refundChainId);
+            }
+            if (refundAddress != TIMELOCK) {
+                revert WrongRefundAddress(refundAddress);
+            }
+        }
+
+        // Check for receiver value
+        if (receiverValue > 0) {
+            revert NonZeroValue(receiverValue);
         }
 
         // Check that the wormhole messenger matches the L2 bridge mediator address

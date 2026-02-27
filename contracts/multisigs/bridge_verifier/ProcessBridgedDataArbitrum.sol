@@ -13,6 +13,15 @@ error IncorrectDataLength(uint256 expected, uint256 provided);
 /// @param chainId Chain Id.
 error WrongSelector(bytes4 functionSig, uint256 chainId);
 
+/// @dev Provided non zero value when it has to be zero.
+/// @param amount Value amount.
+error NonZeroValue(uint256 amount);
+
+/// @dev Provided wrong L2 bridge mediator address.
+/// @param provided Provided address.
+/// @param expected Expected address.
+error WrongL2BridgeMediator(address provided, address expected);
+
 /// @title ProcessBridgedDataArbitrum - Smart contract for verifying the Guard CM bridged data on Arbitrum
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
 /// @author Andrey Lebedev - <andrey.lebedev@valory.xyz>
@@ -27,10 +36,11 @@ contract ProcessBridgedDataArbitrum is VerifyBridgedData {
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @param data Full data bytes with the header.
+    /// @param l2Timelock Arbitrum aliased Timelock address.
     /// @param chainId L2 chain Id.
     function processBridgeData(
         bytes memory data,
-        address,
+        address l2Timelock,
         uint256 chainId
     ) external override
     {
@@ -52,8 +62,21 @@ contract ProcessBridgedDataArbitrum is VerifyBridgedData {
         }
 
         // Decode the payload depending on the selector
-        (address targetAddress, , , , , , , bytes memory targetPayload) =
+        (address targetAddress, uint256 l2CallValue, , address excessFeeRefundAddress, address callValueRefundAddress, , , bytes memory targetPayload) =
             abi.decode(payload, (address, uint256, uint256, address, address, uint256, uint256, bytes));
+
+        // Check for value
+        if (l2CallValue > 0) {
+            revert NonZeroValue(l2CallValue);
+        }
+
+        // Check excessFeeRefundAddress and callValueRefundAddress values
+        if (excessFeeRefundAddress != l2Timelock) {
+            revert WrongL2BridgeMediator(excessFeeRefundAddress, l2Timelock);
+        }
+        if (callValueRefundAddress != l2Timelock) {
+            revert WrongL2BridgeMediator(callValueRefundAddress, l2Timelock);
+        }
 
         // Verify the scope of the data
         _verifyData(targetAddress, targetPayload, chainId);
