@@ -49,6 +49,7 @@ contract ProcessBridgedDataWormhole is VerifyBridgedData {
     /// @dev Processes bridged data: checks the header and verifies the payload.
     /// @notice It is out of scope of the verification procedure to check if the Wormhole format chain Id corresponding
     ///         to the original EVM chain Id is correctly setup during the bridge call.
+    /// @notice CM is not supposed to transfer any value.
     /// @param data Full data bytes with the header.
     /// @param bridgeMediatorL2 Address of a bridged mediator on L2.
     /// @param chainId L2 chain Id.

@@ -35,6 +35,7 @@ contract ProcessBridgedDataArbitrum is VerifyBridgedData {
     uint256 public constant MIN_ARBITRUM_PAYLOAD_LENGTH = 324;
 
     /// @dev Processes bridged data: checks the header and verifies the payload.
+    /// @notice CM is not supposed to transfer l2CallValue.
     /// @param data Full data bytes with the header.
     /// @param l2Timelock Arbitrum aliased Timelock address.
     /// @param chainId L2 chain Id.
