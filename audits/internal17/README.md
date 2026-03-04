@@ -65,4 +65,4 @@ Recommendation: update the comment to reflect that bridgeMediatorL2 must be set 
 L2 aliased Timelock address for Arbitrum, and/or add a non-zero check for bridgeMediatorL2 in
 setBridgeMediatorL1BridgeParams when the verifier is ProcessBridgedDataArbitrum.
 ```
-[ ] Not fixed
+[x] Not fixed
