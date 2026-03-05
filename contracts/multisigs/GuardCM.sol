@@ -375,8 +375,7 @@ contract GuardCM is VerifyData {
         // Link L1 and L2 bridge mediators, set L2 chain Ids and L2 verifiers
         for (uint256 i = 0; i < chainIds.length; ++i) {
             // Check for zero addresses
-            // Note that bridgeMediatorL2-s can be zero addresses, for example, for Arbitrum case
-            if (bridgeMediatorL1s[i] == address(0) || verifierL2s[i] == address(0)) {
+            if (bridgeMediatorL1s[i] == address(0) || verifierL2s[i] == address(0) || bridgeMediatorL2s[i] == address(0)) {
                 revert ZeroAddress();
             }
 
