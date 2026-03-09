@@ -2,6 +2,7 @@
 solc = "0.8.30"
 src = "contracts"
 out = "out"
+test = "test/forge"
 libs = ["lib"]
 optimizer = true
 optimizer_runs = 1000000

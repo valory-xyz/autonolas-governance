@@ -32,6 +32,15 @@ npx hardhat coverage
 
 # Fork tests (compare veOLAS against live Curve veCRV, needs ALCHEMY_API_KEY)
 npm run fork
+
+# Forge build
+forge build
+
+# Forge fork tests (requires mainnet RPC URL)
+forge test --fork-url <MAINNET_RPC> -vvv
+
+# Run a single Forge test contract
+forge test --fork-url <MAINNET_RPC> --match-contract ForkDeployGovernance -vvv
 ```
 
 ## Architecture
@@ -73,13 +82,15 @@ These patterns are intentional project choices (see `docs/optimizations.md`):
 
 ## Deployment
 
-Sequential numbered scripts in `scripts/deployment/` (deploy_02 through deploy_25+). Each reads/writes `globals.json` (copied from `globals_mainnet.json` or `globals_sepolia.json`). Run with:
+Sequential numbered scripts in `scripts/deployment/`. Two styles coexist:
 
-```bash
-npx hardhat run scripts/deployment/deploy_XX_name.js --network <network>
-```
+- **Hardhat JS scripts** (deploy_02 through deploy_25): `npx hardhat run scripts/deployment/deploy_XX_name.js --network <network>`
+- **Forge shell scripts** (deploy_26+): `./scripts/deployment/deploy_26_00_guard_cm.sh mainnet` — use `forge create` and `cast send`, read/write `globals_<network>.json`
+- **Configuration scripts** (script_26_*): execute `cast send` calls for post-deployment setup (e.g. `setBridgeMediatorL1BridgeParams`)
 
 Bridge-specific deployments are in `scripts/deployment/bridges/{polygon,gnosis,optimism,wormhole}/`.
+
+Forge fork tests in `test/forge/` validate deployment against mainnet state.
 
 ## CI
 
