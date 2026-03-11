@@ -11,5 +11,5 @@ In a table below one can find OLAS token addresses on corresponding chains and b
 | Arbitrum    | [0x064f8b858c2a603e1b106a2039f5446d32dc81c1](https://arbiscan.io/token/0x064f8b858c2a603e1b106a2039f5446d32dc81c1) | [Arbitrum Bridge](https://bridge.arbitrum.io)                         |
 | Optimism    | [0xFC2E6e6BCbd49ccf3A5f029c79984372DcBFE527](https://optimistic.etherscan.io/token/0xFC2E6e6BCbd49ccf3A5f029c79984372DcBFE527) | [Optimism Bridge](https://superbridge.app/optimism)                   |
 | Base        | [0x54330d28ca3357F294334BDC454a032e7f353416](https://basescan.org/token/0x54330d28ca3357F294334BDC454a032e7f353416) | [Base Bridge](https://superbridge.app/base)                           |
-| Celo        | [0xD80533CA29fF6F033a0b55732Ed792af9Fbb381E](https://celoscan.io/token/0xacffae8e57ec6e394eb1b41939a8cf7892dbdc51) | [Celo Bridge](https://superbridge.app/celo)                           |
+| Celo        | [0xD80533CA29fF6F033a0b55732Ed792af9Fbb381E](https://celoscan.io/address/0xD80533CA29fF6F033a0b55732Ed792af9Fbb381E) | [Celo Bridge](https://superbridge.app/celo)                           |
 | Mode        | [0xcfD1D50ce23C46D3Cf6407487B2F8934e96DC8f9](https://explorer.mode.network/address/0xcfD1D50ce23C46D3Cf6407487B2F8934e96DC8f9) | [Mode Bridge](https://superbridge.app/mode)                           |
