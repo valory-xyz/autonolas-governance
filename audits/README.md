@@ -37,6 +37,8 @@ An internal audit with a focus on `WormholeRelayerTimelock` is located in this f
 
 An internal audit with a focus on `GuardCM` is located in this folder: [internal audit 17](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal17).
 
+An internal audit with a focus on post-external-audit is located in this folder: [internal audit 18](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal18).
+
 ### External audit
 Following the initial contracts [audit report](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Valory%20Review%20Final.pdf),
 the recommendations are addressed here: [feedback](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/Addressing%20Initial%20ApeWorX%20Recommentations.pdf).
