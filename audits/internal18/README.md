@@ -306,7 +306,7 @@ Option B: In removeNominee, also zero the nominee's slope:
 
 Option A is the minimal fix that prevents the DoS. Option B is more thorough.
 ```
-[ ] Open
+[x] Acknowledged — contract is not upgradeable; operational workarounds documented above
 
 #### Notes. FxBaseChildTunnel / FxBaseRootTunnel: `setFxRootTunnel` / `setFxChildTunnel` lack access control (library)
 ```
@@ -457,7 +457,7 @@ it should have basic test coverage for:
 - Revert on zero balance
 - Reentrancy guard
 ```
-[ ] Open
+[x] Fixed — tests added in test/Burner.js (6 tests)
 
 #### Notes. C4A fix revert paths untested
 ```
@@ -469,7 +469,7 @@ added several new revert conditions:
 These revert paths have 0% branch coverage (lines 71, 76, 79 in Arbitrum; 94, 97, 103 in Wormhole).
 The fixes are correct by inspection, but adding regression tests would prevent future regressions.
 ```
-[ ] Open
+[x] Fixed — regression tests added in test/GuardCM.js (7 revert paths across 2 tests)
 
 #### Notes. GovernorOLAS exceeds 24576 byte contract size limit
 ```
