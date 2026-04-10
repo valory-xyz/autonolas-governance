@@ -67,12 +67,12 @@ No tests exist for the 66-LOC Burner contract.
 - Phase 3: Manual review of all 27 contracts
 - Phase 3.5: Full EVM checklist (134 items), DeFi attack patterns (140 items), access control + token patterns
 - Phase 3b: Deep dives — removeNominee slope lifecycle, FxPortal deployment scripts, bridge parameter matrix
-- Phase 3c: Cross-reference with `docs/Vulnerabilities_list_governance.pdf` (10 known issues)
+- Phase 3c: Cross-reference with `docs/Vulnerabilities_list_governance.md` (10 known issues)
 - Phase 4: Checklist compliance report
 
 ## Cross-reference with Known Vulnerabilities
 
-All 10 items from `docs/Vulnerabilities_list_governance.pdf` confirmed. Our removeNominee finding (Low) extends PDF #8 which only mentions orphaned voting power — the slope drift and potential DoS path at line 611 are NEW, though practical exploitation requires rare conditions.
+All 10 items from `docs/Vulnerabilities_list_governance.md` confirmed. Our removeNominee finding (Low) extends PDF #8 which only mentions orphaned voting power — the slope drift and potential DoS path at line 611 are NEW, though practical exploitation requires rare conditions.
 
 ## Key Defensive Properties Verified
 

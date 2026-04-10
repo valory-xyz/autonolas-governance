@@ -9,7 +9,7 @@ Update: 13-05-2024  <br>
 The audit focused on VoteWeighting. <BR>
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal12/analysis/contracts)
 
 
 ### Coverage
@@ -37,12 +37,12 @@ cd ../../../../../../
 # Run 
 ./start_echidna.sh
 ```
-result overflow: [fuzzing-overflow.PNG](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis/fuzzing/overflow/fuzzing-overflow.PNG) <br>
-result assert: [fuzzing-assert.PNG](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis/fuzzing/overflow/fuzzing-assert.PNG)
+result overflow: [fuzzing-overflow.PNG](audits/internal12/analysis/fuzzing/overflow/fuzzing-overflow.PNG) <br>
+result assert: [fuzzing-assert.PNG](audits/internal12/analysis/fuzzing/overflow/fuzzing-assert.PNG)
 
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis/slither_full.txt) <br>
+Details in [slither_full](audits/internal12/analysis/slither_full.txt) <br>
 
 #### Issue
 Bug in viper->solidity conversion.
@@ -174,7 +174,7 @@ The review has been performed based on the contract code in the following reposi
 commit: `9df1f95ec7e51eacb985aece56654b8d2506e29f` or `tag: v1.2.1-pre-internal-audit` <br> 
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis2/contracts)
+Flatten version of contracts. [contracts](audits/internal12/analysis2/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -183,7 +183,7 @@ VoteWeighting.sol                   |      100 |    96.67 |      100 |    98.64 
 ```
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal12/analysis2/slither_full.txt) <br>
+Details in [slither_full](audits/internal12/analysis2/slither_full.txt) <br>
 all false positive cases.
 
 ### Issue
