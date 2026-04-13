@@ -1,5 +1,5 @@
 # Deployment scripts
-This folder contains the scripts to deploy Autonolas governance. These scripts correspond to the steps in the full deployment procedure (as described in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md)).
+This folder contains the scripts to deploy Autonolas governance. These scripts correspond to the steps in the full deployment procedure (as described in [deployment.md](docs/deployment.md)).
 
 ## Observations
 - There are several files with global parameters based on the corresponding network. In order to work with the configuration, please copy `gobals_network.json` file to file the `gobals.json` one, where `network` is the corresponding network. For example: `cp gobals_mainnet.json gobals.json`.
@@ -18,7 +18,7 @@ command and compiled with the
 ```
 npx hardhat compile
 ```
-command as described in the [main readme](https://github.com/valory-xyz/autonolas-governance/blob/main/README.md).
+command as described in the [main readme](README.md).
 
 
 Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/globals_mainnet.json` for the mainnet).
@@ -34,7 +34,7 @@ Parameters of the `globals.json` file:
 Other values are related to the governance and initial mint. The Gnosis Safe contracts are also provided for convenience. The deployed contract addresses will be added / updated during the scripts run.
 
 The script file name identifies the number of deployment steps taken up to the number in the file name. For example:
-- `deploy_02_deployment_factory.js` will complete step 2 from [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md) (1 is already complete as the multisig is created beforehand);
+- `deploy_02_deployment_factory.js` will complete step 2 from [deployment.md](docs/deployment.md) (1 is already complete as the multisig is created beforehand);
 - `deploy_08_09_governor_and_roles.js` will complete steps 8 and 9;
 - etc.
 
@@ -51,7 +51,7 @@ Each script controls the obtained values by checking them against the expected o
 If a contract is deployed with arguments, these arguments are taken from the corresponding `verify_number_and_name` file, where `number_and_name` corresponds to the deployment script number and name.
 
 ## Deployment of supplemental contracts
-For deploying supplemental contracts listed in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md),
+For deploying supplemental contracts listed in [deployment.md](docs/deployment.md),
 run the following scripts:
 ```
 npx hardhat run scripts/deployment/deploy_16_wveolas.js --network network_type
@@ -62,7 +62,7 @@ Then, after successful deployment of two supplemental contracts, the last script
 `npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
 
 ## Deployment of Polygon-Ethereum ERC20 bridging contracts
-For deploying ERC20 bridging contracts listed in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md),
+For deploying ERC20 bridging contracts listed in [deployment.md](docs/deployment.md),
 run the following scripts:
 ```
 npx hardhat run scripts/deployment/deploy_19_bridged_erc20.js --network mainnet

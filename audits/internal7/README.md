@@ -9,7 +9,7 @@ Update: 27-11-2023  <br>
 The audit focused on ERC20 bridging. <BR>
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal7/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal7/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -22,7 +22,7 @@ Hardhat coverage has been performed before the audit and can be found here:
 Notes: Pay attention to coverage FxERC20RootTunnel.sol
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal7/analysis/slither_full.txt) <br>
+Details in [slither_full](audits/internal7/analysis/slither_full.txt) <br>
 
 #### Bug in constructor: 
 ```solidity

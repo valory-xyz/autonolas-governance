@@ -9,7 +9,7 @@ Update: 12-04-2023  <br>
 The audit focused on `FxGovernorTunnel` contract.
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal3/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal3/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -25,7 +25,7 @@ File                    |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered L
 Some of the checks are obtained automatically. They are commented and I do not see any serious problems.
 
 All automatic warnings are listed in the following file, concerns of which we address in more detail below:
-[slither-full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal3/analysis/slither_full.txt)
+[slither-full](audits/internal3/analysis/slither_full.txt)
 - zero-check on ```target.call{value: value}(payload);``` . Low risk.
 [x] fixed.
 

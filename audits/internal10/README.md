@@ -9,7 +9,7 @@ Update: 06-03-2024  <br>
 The audit focused on Guard contract for community mutisig (modular version). <BR>
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal10/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal10/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -38,10 +38,10 @@ Using sol2uml tools: https://github.com/naddison36/sol2uml <br>
 sol2uml storage . -f png -c GuardCM -o .
 Generated png file GuardCM.png
 ```
-Storage: [GuardCM](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal10/analysis/GuardCM.png)
+Storage: [GuardCM](audits/internal10/analysis/GuardCM.png)
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal10/analysis/slither_full.txt) <br>
+Details in [slither_full](audits/internal10/analysis/slither_full.txt) <br>
 All is false positive, discussed https://github.com/pessimistic-io/slitherin/blob/master/docs/arbitrary_call.md
 
 Minor issue: <br>

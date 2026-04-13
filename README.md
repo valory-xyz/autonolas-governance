@@ -8,57 +8,57 @@ This repository contains the Autonolas `OLAS` token and the governance part of t
 
 A graphical overview of the whole on-chain architecture is available here:
 
-A graphical overview is available [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/flowchart.md).
+A graphical overview is available [here](docs/flowchart.md).
 
-For reference purposes only, an older version of the general Autonolas architecture is available [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/On-chain_architecture_v5.png).
+For reference purposes only, an older version of the general Autonolas architecture is available [here](docs/On-chain_architecture_v5.png).
 
 We follow the standard governance setup by OpenZeppelin. Our governance token is a voting escrow token (`veOLAS`) created by locking `OLAS`.
 
-An overview of the design is provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Governance_process.pdf) and the contracts' specifications are provided [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Specs%20of%20governance%20contracts_v1.1.0.pdf).
+An overview of the design is provided [here](docs/Governance_process.pdf) and the contracts' specifications are provided [here](docs/Specs%20of%20governance%20contracts_v1.1.0.pdf).
 
-- [OLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/OLAS.sol);
-- [VotingEscrow (veOLAS)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/veOLAS.sol);
-- [GovernorOLAS](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/GovernorOLAS.sol);
-- [Timelock](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/Timelock.sol).
+- [OLAS](contracts/OLAS.sol);
+- [VotingEscrow (veOLAS)](contracts/veOLAS.sol);
+- [GovernorOLAS](contracts/GovernorOLAS.sol);
+- [Timelock](contracts/Timelock.sol).
 
 For team incentivisation we have a burnable locked `OLAS` token - `buOLAS`:
-- [buOLAS (deprecated)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/buOLAS.sol).
+- [buOLAS (deprecated)](contracts/buOLAS.sol).
 
 In order to deploy OLAS and veOLAS contracts via the create2() method, the following contract is utilized for vanity addresses:
-- [DeploymentFactory](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/DeploymentFactory.sol).
+- [DeploymentFactory](contracts/DeploymentFactory.sol).
 
 To address several found `veOLAS` contract view functions issues, a wrapper contract `wveOLAS` is implemented:
-- [wveOLAS (veOLAS wrapper)](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/wveOLAS.sol).
+- [wveOLAS (veOLAS wrapper)](contracts/wveOLAS.sol).
 
-The changelog leading to the implementation of `wveOLAS` can be found here: [Changelog_v1.1.0](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Changelog_v1.1.0.pdf)
+The changelog leading to the implementation of `wveOLAS` can be found here: [Changelog_v1.1.0](docs/Changelog_v1.1.0.pdf)
 
-To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list_governance.pdf)
+To complement, a list of known vulnerabilities can be found here: [Vulnerabilities list](docs/Vulnerabilities_list_governance.md)
 
 In order to manage cross-bridge transactions via the `Timelock` contract on L2 networks, the following contracts are implemented:
-- Polygon PoS: [FxGovernorTunnel](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/FxGovernorTunnel.sol);
-- Gnosis: [HomeMediator](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/HomeMediator.sol);
-- Optimism and Base: [OptimismMessenger](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/OptimismMessenger.sol);
-- L2 networks without own native bridge: [WormholeMessenger](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/bridges/WormholeMessenger.sol);
+- Polygon PoS: [FxGovernorTunnel](contracts/bridges/FxGovernorTunnel.sol);
+- Gnosis: [HomeMediator](contracts/bridges/HomeMediator.sol);
+- Optimism and Base: [OptimismMessenger](contracts/bridges/OptimismMessenger.sol);
+- L2 networks without own native bridge: [WormholeMessenger](contracts/bridges/WormholeMessenger.sol);
 
-The functionality thereby enabled is outlined in detail here: [Cross-chain governance](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf).
+The functionality thereby enabled is outlined in detail here: [Cross-chain governance](docs/governace_bridge.pdf).
 
 Exceptionally, some changes to the Autonolas Protocol can be executed by a community-owned multisig wallet (CM), bypassing the governance process (see [here](https://github.com/valory-xyz/autonolas-aip/blob/aip-3/content/aips/core-enhancing-autonolas-protocol-security.md)). To align CM actions with the DAO’s intent and ensure their reversibility, the following contracts are implemented:
-- [GuardCM](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/GuardCM.sol)
-- [VerifyData](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/VerifyData.sol)
-- [ProcessBridgedDataArbitrum](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/ProcessBridgedDataArbitrum.sol)
-- [ProcessBridgedDataGnosis](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol)
-- [ProcessBridgedDataOptimism](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol)
-- [ProcessBridgedDataPolygon](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol)
-- [ProcessBridgedDataWormhole](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol)
-- [VerifyBridgedData](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/multisigs/bridge_verifier/VerifyBridgedData.sol)
+- [GuardCM](contracts/multisigs/GuardCM.sol)
+- [VerifyData](contracts/multisigs/VerifyData.sol)
+- [ProcessBridgedDataArbitrum](contracts/multisigs/bridge_verifier/ProcessBridgedDataArbitrum.sol)
+- [ProcessBridgedDataGnosis](contracts/multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol)
+- [ProcessBridgedDataOptimism](contracts/multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol)
+- [ProcessBridgedDataPolygon](contracts/multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol)
+- [ProcessBridgedDataWormhole](contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol)
+- [VerifyBridgedData](contracts/multisigs/bridge_verifier/VerifyBridgedData.sol)
 
-The functionality enabled by this modular guard mechanism is introduced [here](https://github.com/valory-xyz/autonolas-governance/blob/main/governance/docs/guardCM_modular_approach.pdf).
+The functionality enabled by this modular guard mechanism is introduced [here](governance/docs/guardCM_modular_approach.pdf).
 
 The following contract was implemented to allow DAO members (via veOLAS) to vote on staking programs and trigger Olas Staking emissions, assigning weights according to their preferences"
-- [VoteWeighting.sol](https://github.com/valory-xyz/autonolas-governance/blob/main/contracts/VoteWeighting.sol).
+- [VoteWeighting.sol](contracts/VoteWeighting.sol).
 
 This contracts adopts a model similar to the [Curve Gauge Controller](https://curve.readthedocs.io/dao-gauges.html#dao-gauges-controller), maintains a list of gauges and their associated weights.  Modifications from the original Curve Gauge Controller include granting anyone the ability to add staking contracts by removing ownership control on this functionality, and eliminating additional categorization by contract type. 
-For more details on VotingWeight, see [Olas staking smart contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/StakingSmartContracts.pdf) and [Olas staking whitepaper](https://staking.olas.network/poaa-whitepaper.pdf).
+For more details on VotingWeight, see [Olas staking smart contracts](docs/StakingSmartContracts.pdf) and [Olas staking whitepaper](https://staking.olas.network/poaa-whitepaper.pdf).
 
 ## Development
 
@@ -135,33 +135,33 @@ several steps in order to be verified. Those include:
 
 ### Comparison of veOLAS and Curve Voting Escrow (veCRV) contracts via forking
 Several test scripts have been written in order to compare the behavior of veOLAS and veCRV, which can be found here:
-[veCompare](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/veCompare).
+[veCompare](scripts/veCompare).
 
-The original Voting Escrow ABI is located here: [veCRV ABI](https://github.com/valory-xyz/autonolas-governance/blob/main/abis/test/veCRV.json).
+The original Voting Escrow ABI is located here: [veCRV ABI](abis/test/veCRV.json).
 One can run the forking test via the `npm run fork` command as described above.
 
 ## Deployment of Core Contracts
 The deployment of contracts to the test- and main-net is split into step-by-step series of scripts for more control and checkpoint convenience.
-The description of deployment procedure can be found here: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
+The description of deployment procedure can be found here: [deployment](scripts/deployment).
 
 The finalized contract ABIs for deployment and their number of optimization passes are located here:
-[ABIs](https://github.com/valory-xyz/autonolas-governance/blob/main/abis).
+[ABIs](abis).
 
 ## Bridges
 
 ### Cross-chain governance
 Depending on the network, the cross-chain functionalities enabled are outlined in detail here:
-[Cross-chain governance](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/governace_bridge.pdf).
+[Cross-chain governance](docs/governace_bridge.pdf).
 
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
-use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack_data.js).
+use the following script: [cross-bridge data packing](scripts/deployment/bridges/pack_data.js).
 
 #### Polygon governance bridge 
 Autonolas will use the [FxPortal](https://github.com/fx-portal/contracts) developed and designed by the Polygon team to support cross-chain bridging from Ethereum to Polygon.
 
 For running a test between `goerli` and `mumbai`, run the test script with your own credentials:
-[`goerli-mumbai` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_hello_world.js)
-and [`goerli-mumbai` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_governor.js).
+[`goerli-mumbai` hello world bridge test](scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_hello_world.js)
+and [`goerli-mumbai` governor bridge test](scripts/deployment/bridges/polygon/test/fx_goerli_mumbai_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 #### Gnosis governance bridge
@@ -169,8 +169,8 @@ Autonolas will use the [Arbitrary Message Bridge](https://docs.gnosischain.com/b
 and designed by the Gnosis team to support cross-chain bridging from Ethereum to Gnosis Chain.
 
 For running a test between `goerli` and `chiado`, run the test script with your own credentials:
-[`goerli-chiado` hello world bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_hello_world.js)
-and [`goerli-chiado` governor bridge test](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
+[`goerli-chiado` hello world bridge test](scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_hello_world.js)
+and [`goerli-chiado` governor bridge test](scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 #### Arbitrum governance bridge
@@ -197,36 +197,36 @@ Note that the script must be run without Hardhat environment, i.e.: `node test_s
 
 ### Deployment of bridge-related contracts
 The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here:
-- [bridges-polygon](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/polygon);
-- [bridges-gnosis](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/gnosis);
-- [bridges-optimism-base](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/optimistic);
-- [bridges-wormhole](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/wormhole).
+- [bridges-polygon](scripts/deployment/bridges/polygon);
+- [bridges-gnosis](scripts/deployment/bridges/gnosis);
+- [bridges-optimism-base](scripts/deployment/bridges/optimistic);
+- [bridges-wormhole](scripts/deployment/bridges/wormhole).
 
 ### ERC20 token bridging
 Autonolas will use native bridges for ERC20 token transfers, where possible. If a native bridge is not available or
 does not correspond to all the required specifications, the [Wormhole Portal](https://portalbridge.com/advanced-tools/#/transfer)
 is utilized in order to manage the ERC20 token transfers between L1 and L2-s.
 
-For more information about OLAS bridging see [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/olas_bridging.md)  
+For more information about OLAS bridging see [here](docs/olas_bridging.md)  
 
 #### Special case (currently not utilized): ERC20 token bridging between Polygon and Ethereum
 The contract design facilitating token bridging between the Polygon and Ethereum networks, along with the underlying
 motivations driving the creation of these contracts, is outlined here:
-[Bridging token](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Bonding_mechanism_with_Polygon_LP_token.pdf).
+[Bridging token](docs/Bonding_mechanism_with_Polygon_LP_token.pdf).
 
 The description of ERC20 token bridging deployment between Polygon and Ethereum can be found here:
-[deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
+[deployment](scripts/deployment).
 
 ## Documents
-All the project-related documents are located here: [docs](https://github.com/valory-xyz/autonolas-governance/blob/main/docs).
+All the project-related documents are located here: [docs](docs).
 
 ### Code optimizations and best practices
 The list of optimization considerations and best practices exercised during the development of Autonolas governance
-can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/optimizations.md).
+can be found [here](docs/optimizations.md).
 
 ### Audits
-- The audit is provided as development matures. The latest audit report can be found here: [audits](https://github.com/valory-xyz/autonolas-governance/blob/main/audits).
-- The list of known vulnerabilities can be found here: [Vulnerabilities list](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/Vulnerabilities_list_governance.pdf).
+- The audit is provided as development matures. The latest audit report can be found here: [audits](audits).
+- The list of known vulnerabilities can be found here: [Vulnerabilities list](docs/Vulnerabilities_list_governance.md).
 
 #### Static audit
 The static audit checks all the deployed contracts on-chain info correctness and can be run using the following script:
@@ -235,7 +235,7 @@ node scripts/audit_chains/audit_contracts_setup.js
 ```
 
 ### Deployed Protocol
-The list of contract addresses for different chains and their full contract configuration can be found [here](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/configuration.json).
+The list of contract addresses for different chains and their full contract configuration can be found [here](docs/configuration.json).
 
 In order to test the protocol setup on all the deployed chains, the audit script is implemented. Make sure to export
 required API keys for corresponding chains (see the script for more information). The audit script can be run as follows:
