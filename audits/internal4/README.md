@@ -9,7 +9,7 @@ Update: 15-05-2023  <br>
 The audit focused on `HomeMediator` contract.
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal4/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal4/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -24,7 +24,7 @@ File                     |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered 
 Some of the checks are obtained automatically. They are commented and I do not see any serious problems.
 
 All automatic warnings are listed in the following file, concerns of which we address in more detail below:
-[slither-full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal4/analysis/slither_full.txt)
+[slither-full](audits/internal4/analysis/slither_full.txt)
 No issue.
 
 Notes: <br>

@@ -9,7 +9,7 @@ Update: 28-02-2024  <br>
 The audit focused on governance using native bridging to Optimism/Base and Wormhole bridging to EVM-networks supported by Standard Relayer. <BR>
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal9/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal9/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -39,7 +39,7 @@ ref: https://github.com/wormhole-foundation/hello-wormhole/blob/main/src/extensi
 [x] Good point, need to set up these parameters and call the corresponding function on the L1 Relayer (added to test scripts)
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal9/analysis/slither_full.txt) <br>
+Details in [slither_full](audits/internal9/analysis/slither_full.txt) <br>
 Notes: <br>
 All is false positive.
 

@@ -9,7 +9,7 @@ Update: 12-06-2025  <br>
 The audit focused on WormholeRelayerTimelock. <BR>
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal14/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal14/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -21,7 +21,7 @@ Please, pay attention and add tests.
 
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal14/analysis/slither_full.txt) <br>
+Details in [slither_full](audits/internal14/analysis/slither_full.txt) <br>
 All is false positive.
 
 Notes: <br>

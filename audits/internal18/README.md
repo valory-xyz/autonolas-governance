@@ -135,7 +135,7 @@ No actionable Slither findings.
 
 ## Cross-reference with known vulnerabilities
 
-The project maintains `docs/Vulnerabilities_list_governance.pdf` with 10 known issues.
+The project maintains `docs/Vulnerabilities_list_governance.md` with 10 known issues.
 Cross-reference with our findings:
 
 | # | PDF Vulnerability | Severity | Status | Our Assessment |
@@ -495,7 +495,7 @@ autonolas-internal-audit-methodology rules.
 - **Admin roles**: owner (Timelock) = HIGH, multisig (GuardCM) = MEDIUM (pause only if governance dead)
 - **Upgradeability**: None — all contracts deployed directly (no proxy/UUPS/transparent)
 - **Token model**: OLAS (solmate ERC20, standard), veOLAS/buOLAS (non-transferable)
-- **Known issues**: 10 documented in `docs/Vulnerabilities_list_governance.pdf` — all cross-referenced
+- **Known issues**: 10 documented in `docs/Vulnerabilities_list_governance.md` — all cross-referenced
 
 ### Phase 2: Automated Analysis
 - [x] Slither: 242 results, all triaged (see `analysis/slither_full.txt`)
@@ -578,4 +578,4 @@ The following contracts were reviewed in full with no security issues found:
 
 The autonolas-governance codebase is mature and well-audited (17 prior internal audits + C4A external audit). The Curve-derived contracts (veOLAS, VoteWeighting) follow established patterns. The bridge verification system is comprehensive, and the C4A findings have been correctly addressed.
 
-The main finding is the removeNominee slope drift issue (Low), which extends known vulnerability #8 from the project's Vulnerabilities_list_governance.pdf — the PDF documents orphaned voting power but does NOT cover the slope/changesSum drift or the potential DoS path at line 611. The bug is real (raw subtraction should be `_maxAndSub`), but the practical DoS scenario requires a rare confluence of conditions: governance-initiated removal + passive voters + multi-year timeframe. All 10 known vulnerabilities from the PDF were cross-referenced and confirmed.
+The main finding is the removeNominee slope drift issue (Low), which extends known vulnerability #8 from the project's Vulnerabilities_list_governance.md — the document covers orphaned voting power but does NOT cover the slope/changesSum drift or the potential DoS path at line 611. The bug is real (raw subtraction should be `_maxAndSub`), but the practical DoS scenario requires a rare confluence of conditions: governance-initiated removal + passive voters + multi-year timeframe. All 10 known vulnerabilities were cross-referenced and confirmed.
