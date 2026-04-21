@@ -3,14 +3,13 @@
 Repository: https://github.com/valory-xyz/autonolas-governance
 Commit audited: `76bda389` (Merge PR #192 `address_audit18` → main)
 Audit date: 2026-04-21
-Deliverable style: internal15 template (C4A verification matrix + on-chain owner map + Vulnerabilities_list hygiene)
+Deliverable style: internal template (C4A verification matrix + on-chain owner map + Vulnerabilities_list hygiene)
 Prior reference: `audits/internal18/README.md`
 
 ## 1. Objectives
 
-This audit is a **full re-audit** of `autonolas-governance` against the Code4rena (C4A) Olas 2026-01 external audit report, executed per the rules used yesterday for `autonolas-tokenomics/audits/internal15`:
+This audit is a **full re-audit** of `autonolas-governance` against the Code4rena (C4A) Olas 2026-01 external audit report:
 
-- Start from a fresh clone (`~/llm-work/autonolas-governance-2026-04-21/`), **not** from the maintainer's `~/valory/` working copy.
 - Map every applicable C4A finding to the governance repo and verify the fix in the current code.
 - Build an on-chain owner map for all deployed governance contracts and run the Kelp-pattern / OpSec checks required by `AGENT-RULES.md`.
 - Re-verify the 10 entries in `docs/Vulnerabilities_list_governance.md` against current code and update the hygiene table.
@@ -251,9 +250,7 @@ The document currently tracks 10 items (unchanged since 2024). I re-verified eac
 | 6. No premature "all clear" | ✓ §6 lists remaining carry-over findings explicitly |
 | 7. Compliance report | ✓ this section |
 
-**Methodology rules followed (from yesterday's internal15/tokenomics):**
-- Audit from a fresh clone, not `~/valory/`. ✓ — working dir is `~/llm-work/autonolas-governance-2026-04-21/` (`git clone` 2026-04-21, HEAD `76bda389`).
+**Methodology rules followed:**
 - C4A verification matrix tabulating every finding (§4). ✓
 - On-chain owner map with Kelp-pattern check (§5). ✓
 - Vulnerabilities_list hygiene section (§7). ✓
-- No copy into `~/valory/` — maintainer will copy manually.
