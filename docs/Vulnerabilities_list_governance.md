@@ -15,6 +15,8 @@
 | 9 | [_addNominee and removeNominee functions](#9-_addnominee-and-removenominee-functions) | Informative |
 | 10 | [voteForNomineeWeights function](#10-voteforNomineeweights-function) | Informative |
 | 11 | [removeNominee OwnerOnly revert-data argument order](#11-removenominee-owneronly-revert-data-argument-order) | Informative |
+| 12 | [OLAS mint silent no-op on inflation cap](#12-olas-mint-silent-no-op-on-inflation-cap) | Informative |
+| 13 | [governorDelay and timelock minDelay desynchronization](#13-governordelay-and-timelock-mindelay-desynchronization) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -454,6 +456,148 @@ A simple defensive approach is to treat both `(a, b)` and `(b, a)` as valid send
 pairings when decoding reverts from this contract, and to compare both candidates
 against the known owner address. The two call sites that do report arguments in the
 declared order are `changeOwner` and `changeDispenser`.
+
+### 12. OLAS `mint` silent no-op on inflation cap
+
+**Severity:** Informative
+
+In the `OLAS` contract, the `mint()` function is implemented as:
+
+```solidity
+/// @notice If the inflation control does not pass, the revert does not take place,
+///         as well as no action is performed.
+function mint(address account, uint256 amount) external {
+    // Access control
+    if (msg.sender != minter) {
+        revert ManagerOnly(msg.sender, minter);
+    }
+
+    // Check the inflation schedule and mint
+    if (inflationControl(amount)) {
+        _mint(account, amount);
+    }
+}
+```
+
+When the requested `amount` exceeds the current `inflationRemainder()`, the
+`inflationControl(amount)` check returns `false`, the `_mint` call is skipped, and the
+function returns successfully **without reverting** and **without minting any tokens**.
+
+**Impact.** This is documented behaviour (see the natspec comment on the function), but
+it creates an integration footgun for the `minter` contract:
+
+- A minter contract that assumes "`mint()` either reverts or mints the full amount" can
+  silently mis-account. For example, a Treasury/Depository that debits an internal
+  balance before calling `mint()` and expects the call to revert on failure would end
+  up with its internal balance and the actual OLAS `totalSupply` out of sync.
+- The silent-success pattern provides no signal to the caller about which specific
+  branch was taken (access-control revert vs. cap-hit no-op vs. successful mint).
+- Tenderly traces and offline simulations that rely on "tx failed → something was
+  wrong" will not flag a cap-hit call.
+
+**Why this is not fixed.** The silent-no-op behaviour is a deliberate design choice,
+documented in the function's natspec, to avoid bricking the minter contract at the
+moment the cumulative inflation cap is reached. A `revert` at that boundary could force
+a governance intervention to change the minter or migrate accounting — the silent
+no-op lets the minter discover the cap-hit and handle it gracefully at the integration
+layer. `OLAS` is also not upgradeable.
+
+**Mitigation / guidance for integrators.** Any contract that calls `OLAS.mint()` should
+**not** rely on `mint()` reverting when minting is refused. Instead, integrators should:
+
+1. Call `inflationControl(amount)` or `inflationRemainder()` before `mint()` to
+   pre-check the cap, or
+2. Measure the `balanceOf` of the recipient before and after `mint()` and verify the
+   delta matches the requested amount.
+
+Do **not** pattern-match on "the tx did not revert" to conclude minting succeeded.
+
+### 13. `governorDelay` and timelock `minDelay` desynchronization
+
+**Severity:** Informative
+
+The custom `GovernorTimelockControl` contract maintains its own `governorDelay` field,
+which is passed as the `delay` argument to `TimelockController.scheduleBatch` in the
+Governor's `queue()` override:
+
+```solidity
+function queue(address[] memory targets, ...) public virtual override returns (uint256) {
+    ...
+    uint256 delay = governorDelay;
+    _timelock.scheduleBatch(targets, values, calldatas, 0, descriptionHash, delay);
+    ...
+}
+```
+
+`TimelockController.scheduleBatch` enforces that `delay >= getMinDelay()` on the
+timelock itself. The `_updateGovernorDelay` internal setter guards against initial
+misconfiguration by reverting if `newGovernorDelay < minDelay`:
+
+```solidity
+function _updateGovernorDelay(uint256 newGovernorDelay) internal {
+    uint256 minDelay = _timelock.getMinDelay();
+    if (newGovernorDelay < minDelay) {
+        revert Underflow(newGovernorDelay, minDelay);
+    }
+    ...
+    governorDelay = newGovernorDelay;
+}
+```
+
+However, `TimelockController` exposes a separate `updateDelay` function that can raise
+`minDelay` **independently** of `governorDelay`, via a governance-scheduled self-call.
+If a proposal raises `minDelay` above the current `governorDelay` value without
+simultaneously raising `governorDelay`, all subsequent calls to `Governor.queue()`
+will revert at the timelock's `scheduleBatch` `delay >= minDelay` check.
+
+**Impact: circular dependency that can brick governance.**
+
+1. Proposal A raises `minDelay` to a value greater than `governorDelay`.
+2. Proposal A is executed → `minDelay` is now higher.
+3. Any subsequent `Governor.queue()` call reverts.
+4. To recover, governance must call `Governor.updateGovernorDelay(...)`, which is
+   `onlyGovernance` — i.e. it must be scheduled via `Governor.queue()` → which
+   reverts. Recovery requires governance to fix itself, but governance is the thing
+   that's broken.
+
+Recovery paths outside the normal governance flow:
+
+- The `TimelockController` admin (currently the Timelock itself + GovernorOLAS) can
+  directly call `updateDelay` to lower `minDelay` back — but that also requires going
+  through `Governor.queue()`, which is broken.
+- The CM Safe holds `PROPOSER_ROLE` + `EXECUTOR_ROLE` on the Timelock and can
+  therefore schedule + execute a `Timelock.updateDelay(...)` call directly,
+  bypassing the Governor entirely (§5.5 of internal audit 19 describes this
+  fast-path). This is only possible if `Timelock.updateDelay` is in the
+  `GuardCM.mapAllowedTargetSelectorChainIds` allowlist. It is the intended
+  out-of-band recovery path.
+
+**Why this is not fixed.** The risk is explicitly documented in the contract's natspec:
+
+```solidity
+/// CAUTION: It is not recommended to change the timelock while there are other
+///          queued governance proposals.
+/// CAUTION: minDelay is able to be updated separately, thus it is highly recommended
+///          to change governanceDelay simultaneously in order for it to never be
+///          smaller than minDelay.
+```
+
+Enforcing the constraint atomically in code would require `TimelockController`
+upgrades (which Olas doesn't use — contracts are deployed directly, not behind
+proxies) or a more invasive wrapper around `updateDelay`. The documented
+discipline — always update both in the same proposal — is the accepted mitigation.
+
+**Mitigation / guidance for governance operators.**
+
+1. **Always update `minDelay` and `governorDelay` in the same governance proposal.**
+   Any proposal that calls `Timelock.updateDelay(newMinDelay)` should, in the same
+   batch, also call `Governor.updateGovernorDelay(newGovernorDelay)` with
+   `newGovernorDelay >= newMinDelay`.
+2. **Prefer to only ever raise both together, or lower `minDelay` first.** Raising
+   `minDelay` alone is the specific misstep that bricks queueing.
+3. **Keep `Timelock.updateDelay` in the `GuardCM` allowlist** so the CM fast path
+   remains available as a break-glass recovery lane if the constraint is violated
+   despite the above.
 
 [^1]: The level of the bug is assigned by following the [Immunefi classification](https://immunefi.com/).
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.

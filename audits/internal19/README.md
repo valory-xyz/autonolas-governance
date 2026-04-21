@@ -258,8 +258,8 @@ All internal18 findings were re-verified against HEAD `76bda389`:
 | Low — `removeNominee` slope drift (extends Vulnerabilities_list #8) | **Will NOT be fixed** — same reasoning as the N-1 `OwnerOnly` swap: `VoteWeighting` is not upgradeable and we don't redeploy it for non-critical issues. Already captured in `docs/Vulnerabilities_list_governance.md` entry #8 (the slope/`changesSum` drift sub-section was added post-internal18). Operational mitigation (voter cleanup / two-step zero-then-remove) documented there. |
 | Notes — FxPortal `setFxRootTunnel`/`setFxChildTunnel` lack access control during deploy window | Risk window closed (tunnel addresses already set); still "redeploy = re-open" |
 | Notes — `addNomineeEVM` / `addNomineeNonEVM` permissionless | Confirmed; design choice |
-| Notes — `OLAS.mint()` silent no-op when inflation cap hit | Confirmed; documented design |
-| Notes — `governorDelay` ↔ `minDelay` circular desync | Confirmed; see also §5.4 for live-state observation |
+| Notes — `OLAS.mint()` silent no-op when inflation cap hit | Confirmed; documented design. **Migrated this pass to Vulnerabilities_list entry #12** for integrator-facing mitigation guidance. |
+| Notes — `governorDelay` ↔ `minDelay` circular desync | Confirmed; see also §5.4 for live-state observation. **Migrated this pass to Vulnerabilities_list entry #13** with documented CM-fast-path break-glass recovery. |
 | Notes — `ProcessBridgedDataWormhole` hardcoded `TIMELOCK` constant | Confirmed; trade-off for compile-time safety |
 | Notes — Mixed `pragma` across contracts | Confirmed (OLAS/veOLAS/buOLAS `^0.8.15`, wveOLAS/FxGovernorTunnel/HomeMediator `^0.8.19`, GovernorOLAS `^0.8.20`, BridgeMessenger/OptimismMessenger/WormholeMessenger `^0.8.23`, VoteWeighting `^0.8.25`, Burner `^0.8.28`, everything else `^0.8.30`) |
 | Low — `Burner.sol` 0% coverage | **Fixed** — `test/Burner.js` (6 tests) added |
@@ -270,7 +270,7 @@ All internal18 findings were re-verified against HEAD `76bda389`:
 
 ## 7. `docs/Vulnerabilities_list_governance.md` hygiene
 
-The document now tracks **11 items** (10 carried forward + 1 added this pass for N-1). All re-verified against HEAD.
+The document now tracks **13 items** (10 carried forward + 3 added this pass: N-1 OwnerOnly swap, OLAS.mint silent no-op, governorDelay/minDelay desync). All re-verified against HEAD.
 
 | # | Title | Severity | Code still present? | Mitigation in place? |
 |---|---|---|---|---|
@@ -285,11 +285,14 @@ The document now tracks **11 items** (10 carried forward + 1 added this pass for
 | 9 | `_addNominee`/`removeNominee` Dispenser sync | Informative | ✅ yes | deploy Dispenser early |
 | 10 | `voteForNomineeWeights` lock-expiry edge | Informative | ✅ yes | user extends lock |
 | 11 | **`removeNominee` `OwnerOnly` revert-data arg order (NEW — N-1)** | **Informative** | ✅ yes | tooling-side: decode revert as `(owner, sender)` for this call site |
+| 12 | **OLAS `mint` silent no-op on inflation cap (NEW — migrated from internal18)** | **Informative** | ✅ yes | integrators: pre-check `inflationControl`/`inflationRemainder` or verify balance delta, do not assume revert-on-failure |
+| 13 | **`governorDelay` vs timelock `minDelay` desync (NEW — migrated from internal18)** | **Informative** | ✅ yes | always update `minDelay` and `governorDelay` in same proposal; CM fast-path `updateDelay` is break-glass recovery |
 
 **Hygiene status.**
 
-- Entry #8 now includes the slope / `changesSum` drift sub-finding from internal18 (potential `oldSum - oldWeight` underflow DoS), with full scenario and operational workarounds. No further documentation action required on #8.
-- **Entry #11 added in this pass** for the N-1 `OwnerOnly` swapped-args revert in `VoteWeighting.removeNominee`. `VoteWeighting` won't be redeployed for a cosmetic bug, so N-1 is a "deliberately unfixed" trade-off documented for revert-data decoders — exactly the category this document is for.
+- Entry #8 includes the slope / `changesSum` drift sub-finding from internal18 (potential `oldSum - oldWeight` underflow DoS), with full scenario and operational workarounds.
+- **Entry #11 added in this pass** for the N-1 `OwnerOnly` swapped-args revert in `VoteWeighting.removeNominee`.
+- **Entries #12 and #13 added in this pass** — migrated from the internal18 "Notes" section into the formal list, since both are deliberately-unfixed trade-offs with live operational implications (integrator misuse for #12, governance bricking recovery for #13). This brings the formal list into alignment with the README-level audit findings; future audits can treat this document as the single record of truth for deliberately-unfixed governance-repo trade-offs.
 
 **Nothing has been removed** from the list — all previously listed items still describe live code paths.
 
@@ -303,7 +306,7 @@ The document now tracks **11 items** (10 carried forward + 1 added this pass for
 - **CM Safe has `PROPOSER_ROLE` + `EXECUTOR_ROLE`** on the Timelock, with `minDelay = 0` (§5.5) — **setup is correct by design.** The real access-control layer for CM is the Gnosis Safe `GuardCM` guard, which restricts every `scheduleBatch` payload to the governance-curated allowlist `mapAllowedTargetSelectorChainIds`. That allowlist can only be expanded by a Governor vote (`setTargetSelectorChainIds` is Timelock-only). Within the allowlist, CM acts unilaterally — providing a sub-minute operational fast path for bridge messages, module pauses, etc., demonstrated live on 2026-01-21 in two mainnet txs. The Governor redeployment (§5.4) does not close this path (and is not meant to); `governorDelay` applies only to Governor-originated proposals. Residual opsec item: periodically review `mapAllowedTargetSelectorChainIds` contents for anything that shouldn't be in a sub-minute CM lane.
 - **New code findings this pass:** 1 cosmetic (N-1, `OwnerOnly` args swapped in `removeNominee`). **Resolution: will NOT be fixed in code — added as entry #11 in `Vulnerabilities_list_governance.md`, since `VoteWeighting` is not redeployed for non-critical issues.**
 - **Internal18 findings:** all re-verified; Low on Burner coverage and Notes on C4A-fix test gaps are marked Fixed; `removeNominee` slope drift carry-over Low **will NOT be fixed** (same reasoning as N-1 — covered by Vulnerabilities_list entry #8); the rest are unchanged and operationally accepted.
-- **`Vulnerabilities_list_governance.md`** — now 11 entries (10 carried forward + #11 newly added for N-1). Entry #8 already extended with the slope/`changesSum` drift sub-finding.
+- **`Vulnerabilities_list_governance.md`** — now 13 entries (10 carried forward + #11 N-1 + #12 OLAS.mint silent no-op + #13 governorDelay/minDelay desync). Entry #8 already extended with the slope/`changesSum` drift sub-finding. Entries #12 and #13 migrated from internal18 "Notes" so the formal doc now covers every deliberately-unfixed trade-off with operational mitigations.
 
 **Verdict: no High / Medium / exploitable-Low findings in the governance repo on commit `76bda389`.** The C4A external audit closed the only serious governance issue (Arbitrum bridge refund drain). All remaining items are either (a) closed by the pending `GovernorOLAS` redeployment, (b) permanent Vulnerabilities-list entries tracking deliberately-unfixed trade-offs in `VoteWeighting`, or (c) well-understood inherited Curve behaviour and operational discipline items.
 
