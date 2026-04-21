@@ -14,6 +14,7 @@
 | 8 | [removeNominee function](#8-removenominee-function) | Low |
 | 9 | [_addNominee and removeNominee functions](#9-_addnominee-and-removenominee-functions) | Informative |
 | 10 | [voteForNomineeWeights function](#10-voteforNomineeweights-function) | Informative |
+| 11 | [removeNominee OwnerOnly revert-data argument order](#11-removenominee-owneronly-revert-data-argument-order) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -401,6 +402,58 @@ In case of equality, the voting account is not able to place their weights as
 their veOLAS lock expires in a week. We consider this not to be an issue, as one week
 of time results in a very low voting power addition, and the lock can always be extended
 for longer in order to make a bigger weighting input.
+
+### 11. `removeNominee` `OwnerOnly` revert-data argument order
+
+**Severity:** Informative
+
+In the `VoteWeighting` contract, the `OwnerOnly` custom error is declared as:
+
+```solidity
+/// @param sender Sender address.
+/// @param owner  Required sender address as an owner.
+error OwnerOnly(address sender, address owner);
+```
+
+Two of the three revert sites pass arguments in the declared order `(msg.sender, owner)` —
+correct. The site inside `removeNominee` passes them in the reverse order:
+
+```solidity
+function removeNominee(bytes32 account, uint256 chainId) external {
+    // Check for the contract ownership
+    if (msg.sender != owner) {
+        revert OwnerOnly(owner, msg.sender);   // arguments swapped
+    }
+    ...
+}
+```
+
+**Impact.** Cosmetic / debug-info only. The `revert` fires for the correct condition and
+execution behaviour is unaffected — an unauthorized caller still cannot remove a nominee.
+However, any caller that decodes the revert data from `eth_call` simulations, Tenderly
+traces, or incident-response tooling will observe:
+
+- `sender` field populated with the contract's `owner` address (e.g., the Timelock);
+- `owner` field populated with the unauthorized `msg.sender`.
+
+i.e. the opposite of the declared semantics. This can confuse automated tooling or a
+human reading a trace when triaging a failed `removeNominee` call.
+
+**Why this is not fixed.** The `VoteWeighting` contract is not upgradeable, and a redeploy
+is not justified for a revert-data labelling defect that has no effect on execution, access
+control, or user funds. The contract will only be redeployed if a materially more severe
+issue forces it. Fixing the arg order therefore falls into the same "deliberately unfixed
+trade-off" category as the other entries in this document.
+
+**Mitigation / guidance for tooling.** Any tool that decodes `OwnerOnly` reverts
+originating from `VoteWeighting` should be aware that when the revert originates from
+`removeNominee` specifically, the two address fields are reported in reversed order
+relative to the error declaration. The two other call sites
+(`changeOwner`-style paths in the contract) report arguments in the declared order.
+A simple defensive approach is to treat both `(a, b)` and `(b, a)` as valid sender/owner
+pairings when decoding reverts from this contract, and to compare both candidates
+against the known owner address. The two call sites that do report arguments in the
+declared order are `changeOwner` and `changeDispenser`.
 
 [^1]: The level of the bug is assigned by following the [Immunefi classification](https://immunefi.com/).
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
