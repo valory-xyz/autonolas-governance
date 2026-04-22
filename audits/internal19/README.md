@@ -6,6 +6,14 @@ Audit date: 2026-04-21
 Deliverable style: internal template (C4A verification matrix + on-chain owner map + Vulnerabilities_list hygiene)
 Prior reference: `audits/internal18/README.md`
 
+## 0. C4A 2026-01 findings summary (governance-scope)
+
+| C4A ID | Summary | Fixed? | Fix commit |
+|---|---|---|---|
+| **M-01** | Arbitrum bridge — `ProcessBridgedDataArbitrum.processBridgeData` decoded but did not validate `l2CallValue`, `excessFeeRefundAddress`, `callValueRefundAddress`; a CM-scheduled proposal could redirect L2 refunds/call-value to an attacker | ✅ **FIXED** | [`4fd7d98`](https://github.com/valory-xyz/autonolas-governance/commit/4fd7d9896332c3cc5b00de8d67f402cb70c154f9) — branch `audit_fixes`, PR [#185](https://github.com/valory-xyz/autonolas-governance/pull/185) |
+
+All other C4A 2026-01 findings (11H + 11M + 15L + disclosures) target other Olas repos and are out of scope for this audit; see §4 for the full triage. Details of the M-01 fix verification are in §4.1.
+
 ## 1. Objectives
 
 This audit is a **full re-audit** of `autonolas-governance` against the Code4rena (C4A) Olas 2026-01 external audit report:
@@ -58,6 +66,8 @@ All other C4A entries (11H + 11M + 15L + disclosures) target other Olas repos an
 ### 4.1 C4A M-01 — Arbitrum bridge unchecked refund / value
 
 **Original C4A finding.** `ProcessBridgedDataArbitrum.processBridgeData` decoded the Arbitrum retryable-ticket parameters (`l2CallValue`, `excessFeeRefundAddress`, `callValueRefundAddress`) but **did not validate them**. A CM-scheduled proposal could set `callValueRefundAddress` to an attacker address and, if `l2CallValue > 0`, the L2 would refund the non-executed call value to the attacker (or route excess fee refund to an attacker). The scenario drains ETH/refunds from the Timelock's L2 bridge escrow.
+
+**Fix branch:** [`audit_fixes`](https://github.com/valory-xyz/autonolas-governance/tree/audit_fixes) → PR [#185](https://github.com/valory-xyz/autonolas-governance/pull/185), fix commit [`4fd7d98`](https://github.com/valory-xyz/autonolas-governance/commit/4fd7d9896332c3cc5b00de8d67f402cb70c154f9) (`refactor: addressing GuardCM found issues`).
 
 **Fix verified on code (tag: `76bda389`, file `contracts/multisigs/bridge_verifier/ProcessBridgedDataArbitrum.sol`):**
 
