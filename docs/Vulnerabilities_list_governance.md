@@ -17,6 +17,8 @@
 | 11 | [removeNominee OwnerOnly revert-data argument order](#11-removenominee-owneronly-revert-data-argument-order) | Informative |
 | 12 | [OLAS mint silent no-op on inflation cap](#12-olas-mint-silent-no-op-on-inflation-cap) | Informative |
 | 13 | [governorDelay and timelock minDelay desynchronization](#13-governordelay-and-timelock-mindelay-desynchronization) | Informative |
+| 14 | [VoteWeighting addNomineeEVM and addNomineeNonEVM are permissionless](#14-voteweighting-addnomineeevm-and-addnomineenonevm-are-permissionless) | Informative |
+| 15 | [ProcessBridgedDataWormhole hardcoded TIMELOCK constant](#15-processbridgeddatawormhole-hardcoded-timelock-constant) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -598,6 +600,63 @@ discipline — always update both in the same proposal — is the accepted mitig
 3. **Keep `Timelock.updateDelay` in the `GuardCM` allowlist** so the CM fast path
    remains available as a break-glass recovery lane if the constraint is violated
    despite the above.
+
+### 14. `VoteWeighting` `addNomineeEVM` and `addNomineeNonEVM` are permissionless
+
+**Severity:** Informative
+
+In the `VoteWeighting` contract, the following two functions are externally callable by anyone, with no access control:
+
+```solidity
+function addNomineeEVM(address account, uint256 chainId) external
+function addNomineeNonEVM(bytes32 account, uint256 chainId) external
+```
+
+This differs from the upstream Curve `GaugeController.add_gauge` design, which is admin-only. In Olas the asymmetry is intentional: anyone can register a nominee (a service / agent / target on some chain), while only `veOLAS` holders can direct emissions via `voteForNomineeWeights`, and only the contract `owner` (the Timelock) can remove nominees via `removeNominee`.
+
+**Impact / griefing surface.**
+
+- **Unbounded array growth.** Each successful add appends to the `setNominees` array. The array only ever shrinks via owner-driven `removeNominee`. An attacker can register an arbitrary number of distinct nominees (each `(account, chainId)` pair must be unique, but the attacker can vary either field freely), inflating `setNominees.length` and increasing the cost of any iteration over it.
+- **`IDispenser.addNominee` side-effects.** Each `addNominee*` call also invokes `IDispenser.addNominee()` if a Dispenser is configured, which may cause state changes in the Dispenser contract (cost paid by the attacker on L1 gas, but persistent on the Dispenser side).
+- **Misleading nominees.** An attacker can register nominees with names / chain-ids designed to confuse front-end users into voting for the wrong target. The attacker does not gain emissions directly (those still require `veOLAS` voters to allocate weight), but social-engineering attacks on the voter UI become easier.
+
+The practical economic impact is bounded: emissions still require veOLAS voting power, and the asymmetric add-vs-remove cost favours the defender (each spam entry costs the attacker L1 gas; the owner can batch-remove). However, a passive accumulation of spam over months / years would impose a real ops burden.
+
+**Why this is not fixed.** Permissionless add is a deliberate design choice — gating it behind owner-only would add a governance step to every legitimate new nominee, which would slow down the operational cadence of the protocol. The trade-off is "open and slightly griefable" vs. "gated and slow". The Olas design picks the former.
+
+**Mitigation / guidance for operators.**
+
+1. **Off-chain spam filter on the voter UI.** Front-ends that surface the nominee list should filter / rank entries (e.g., by whether the nominee has received any non-attacker votes, or by `(account, chainId)` allowlist), so spam nominees are not equally visible alongside legitimate ones.
+2. **Off-chain monitoring of `AddNomineeHash` event volume.** Set an alert on unusual rate of nominee additions. A sudden burst is the cheap signal of a griefing campaign and triggers the cleanup path below.
+3. **Periodic owner cleanup.** When spam is detected, the owner (Timelock) can `removeNominee` the spam entries. Note that `removeNominee` orphans voting power (entry #8) and has the slope-drift side-effect (entry #8 sub-finding) — the cleanup should be scheduled rather than reactive, and combined with voter cleanup as described in #8.
+4. **Optional code-level cap.** If griefing becomes a sustained problem, a future redeploy could add `if (setNominees.length >= MAX_NOMINEES) revert TooManyNominees();` at the top of `_addNominee`. This is not necessary today.
+
+### 15. `ProcessBridgedDataWormhole` hardcoded `TIMELOCK` constant
+
+**Severity:** Informative
+
+In `ProcessBridgedDataWormhole`, the L1 Timelock address that bridge payloads are required to refund to is a compile-time constant:
+
+```solidity
+address public constant TIMELOCK = 0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE;
+```
+
+The verifier rejects payloads whose `refundAddress != TIMELOCK` and whose `refundChainId != REFUND_CHAIN_ID` (= `2`, Ethereum mainnet in Wormhole chain-id space). This is the correct fix for the C4A 2026-01 Arbitrum-class refund-redirection issue (see internal audit 19 §4.1) — but it bakes the Timelock address into the bytecode of `ProcessBridgedDataWormhole`.
+
+This is **inconsistent with the Arbitrum verifier** (`ProcessBridgedDataArbitrum`), which receives the L2 Timelock equivalent as a parameter via `GuardCM.mapBridgeMediatorL1BridgeParams[target].bridgeMediatorL2`. The Arbitrum approach is more flexible — replacing the L2 mediator is a governance call to `setBridgeMediatorL1BridgeParams`, no redeploy required. The Wormhole approach traps the L1 Timelock address in immutable code.
+
+**Impact.**
+
+- **Timelock redeployment forces verifier redeployment.** If the Olas L1 Timelock is ever redeployed (governance migration, security incident, role-rotation that requires fresh contract), every `ProcessBridgedDataWormhole` instance must be redeployed and re-wired into `GuardCM.mapBridgeMediatorL1BridgeParams` for every Wormhole-bridged target. Forgetting to redeploy the verifier would silently break Wormhole-bridged governance (every payload would revert at the `refundAddress != TIMELOCK` check).
+- **No on-chain mutability.** Unlike the Arbitrum case, there is no governance-side knob to retarget the verifier — the constant is immutable.
+
+**Why this is not fixed.** The hardcoded constant gives compile-time safety: there is no setter to mis-configure, no allowlist row to forget to populate. For the current deployment (one Timelock, no migration on the roadmap), the rigidity is a feature, not a bug. Parameterising it would re-introduce the operational surface that the Arbitrum verifier already has.
+
+**Mitigation / guidance for operators.**
+
+1. **Capture the redeploy-coupling rule in any Timelock-redeploy runbook.** Specifically: "If `Timelock` is redeployed, then every `ProcessBridgedDataWormhole` deployment must also be redeployed at the same time, and `GuardCM.setBridgeMediatorL1BridgeParams` must be re-called for every Wormhole target with the new verifier address."
+2. **On the next bridge-verifier redeploy** (the upcoming one bundled with the C4A M-01 fix and the new `GovernorOLAS`, see internal audit 19 §5.4), consider parameterising the L1 Timelock address the same way the Arbitrum verifier parameterises the L2 mediator. This is a one-time refactor that aligns the two verifier shapes and removes this redeploy-coupling. Not required to land the M-01 fix; can be a follow-up.
+3. **Until then**, treat the Wormhole verifier address as a satellite of the Timelock address — they move together or not at all.
 
 [^1]: The level of the bug is assigned by following the [Immunefi classification](https://immunefi.com/).
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
