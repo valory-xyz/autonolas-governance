@@ -14,7 +14,7 @@ The C4A 2026-01 contest covers the whole Olas mono-org (`autonolas-tokenomics`, 
 |---|---|---|---|---|
 | **S-629 (= M-01)** | Arbitrum bridge — `ProcessBridgedDataArbitrum.processBridgeData` decoded but did not validate `l2CallValue`, `excessFeeRefundAddress`, `callValueRefundAddress`; a CM-scheduled proposal could redirect L2 refunds/call-value to an attacker | ✅ **Fixed in `origin/main`** | ⚪ **Code fix only — never deployed** (modular `bridge_verifier/*` pattern is brand-new; will land on-chain together with the pending GuardCM / GovernorOLAS redeployment, see §5.4) | [`4fd7d98`](https://github.com/valory-xyz/autonolas-governance/commit/4fd7d9896332c3cc5b00de8d67f402cb70c154f9) — branch `audit_fixes`, PR [#185](https://github.com/valory-xyz/autonolas-governance/pull/185) |
 
-The remaining **22 H + M findings** (11H + 11M) and **15 Lows** target `autonolas-tokenomics` or `autonolas-registries`. Per-finding code status, deployment status (where the responsible repo's snapshot expresses one), and per-repo handoff are enumerated row-by-row in **§4 — C4A 2026-01 verification matrix**. Details of the S-629 / M-01 fix verification are in §4.1.
+The remaining **22 H + M findings** (11H + 11M) target `autonolas-tokenomics` or `autonolas-registries` and are enumerated row-by-row in **§4 — C4A 2026-01 verification matrix**; the **15 Lows** are disclosed at aggregate level in §4.0.1. Per-finding code status, deployment status (where the responsible repo's snapshot expresses one), and per-repo handoff are recorded in those sections. Details of the S-629 / M-01 fix verification are in §4.1.
 
 **Status vocabulary (used in §4 matrix and elsewhere in this report):**
 
@@ -77,7 +77,7 @@ The C4A 2026-01 report is repo-wide across the Olas mono-org. Every finding was 
 
 ### 4.0 Full disposition (High + Medium, n = 23 = 11H + 12M)
 
-Source: filtered C4A status snapshot `full_report_2026-01-olas.md` in this repo's working tree (`severity = high|medium`, baseline `origin/main` as of 2026-04-10; `fix_oracle_v2` branch noted where applicable for tokenomics).
+Source: filtered C4A status snapshot — an **external/local audit input**, not committed to this repository. Derived from the C4A 2026-01 submissions index ([`code4rena.com/evaluate/j3PRAMM3fVq`](https://code4rena.com/evaluate/j3PRAMM3fVq)) and filtered to `severity = high|medium`, baseline `origin/main` as of 2026-04-10; `fix_oracle_v2` branch noted where applicable for tokenomics. Reproducing the snapshot from scratch requires re-running that filter against the C4A submissions index — the table below preserves every per-row attribute (sev, repo, status, fix-commit link) needed to re-derive it.
 
 The **Code status** column says where in the source tree the fix lives; the **Deployment status** column says whether that fix is live on-chain. The two are independent and used to be conflated in the prior version of this matrix — the conflation is exactly what this split is meant to resolve. Vocabulary is defined in §0.
 
@@ -130,9 +130,9 @@ The **Code status** column says where in the source tree the fix lives; the **De
 
 ### 4.0.1 Lows (n = 15) — disposition
 
-The 15 Low findings from the C4A 2026-01 report were **not individually enumerated** in the filtered status snapshot used as input here (`full_report_2026-01-olas.md` was filtered to `severity = high|medium` for the H/M handoff round). Per the per-submission repo classification we ran during C4A triage, **none of the 15 Lows landed on a governance-repo contract** — they cluster in `autonolas-tokenomics` (oracle / liquidity-manager paths) and `autonolas-registries` (staking / service-manager paths), and are tracked under those repos' Low-severity handoffs.
+The 15 Low findings from the C4A 2026-01 report were **not individually enumerated** in the filtered status snapshot used as input here (the external/local snapshot referenced in §4.0 was filtered to `severity = high|medium` for the H/M handoff round). Per the per-submission repo classification we ran during C4A triage, **none of the 15 Lows landed on a governance-repo contract** — they cluster in `autonolas-tokenomics` (oracle / liquidity-manager paths) and `autonolas-registries` (staking / service-manager paths), and are tracked under those repos' Low-severity handoffs.
 
-**Honest gap-disclosure:** if a future hygiene pass requires per-ID rows for the 15 Lows in this matrix (with S-IDs, summaries, and current statuses), the C4A submissions index for the 2026-01 contest is the source of truth and the snapshot would need to be re-imported with the severity filter relaxed. The aggregate claim "0 Lows are governance-scope" stands on the repo classification we performed; the per-row enumeration does not appear in this document because it never entered the input snapshot we worked from.
+**Honest gap-disclosure:** if a future hygiene pass requires per-ID rows for the 15 Lows in this matrix (with S-IDs, summaries, and current statuses), the C4A submissions index for the 2026-01 contest ([`code4rena.com/evaluate/j3PRAMM3fVq`](https://code4rena.com/evaluate/j3PRAMM3fVq)) is the source of truth and the snapshot would need to be re-imported with the severity filter relaxed. The aggregate claim "0 Lows are governance-scope" stands on the repo classification we performed; the per-row enumeration does not appear in this document because it never entered the input snapshot we worked from.
 
 **Disposition summary (Lows):** 0 governance-scope, 15 tracked in `autonolas-tokenomics` / `autonolas-registries` (per-ID details in those repos' audit handoffs).
 
