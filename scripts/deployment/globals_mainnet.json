@@ -59,5 +59,9 @@
   "modeL1CrossDomainMessengerAddress": "0x95bDCA6c8EdEB69C98Bd5bd17660BaCef1298A6f",
   "modeMessengerL2Address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
   "celoL1CrossDomainMessengerAddress": "0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95",
-  "celoMessengerL2Address": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d"
+  "celoMessengerL2Address": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d",
+  "processBridgedDataGnosisAddress": "0xDc871b7833932D45023755C9De3786060a934c48",
+  "processBridgedDataPolygonAddress": "0x133A6d318FA0C9413A70C149E7f630015044Dec3",
+  "processBridgedDataArbitrumAddress": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
+  "processBridgedDataOptimismAddress": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5"
 }
