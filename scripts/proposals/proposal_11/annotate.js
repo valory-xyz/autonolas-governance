@@ -253,7 +253,7 @@ function main() {
     }
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Proposal 11 - Olas Governance & GuardCM activation</title>
 <style>
-:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8a93a2;--sel:#c792ea;--addr:#82aaff;--val:#c3e88d;--role:#89ddff;--box:#161922;--bd:#2a2f3a;--ok:#7fd1a0;--bad:#ff8b8b;--cp:#e8e3d4}
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8a93a2;--sel:#c792ea;--addr:#82aaff;--val:#c3e88d;--role:#89ddff;--box:#161922;--bd:#2a2f3a;--ok:#7fd1a0;--bad:#ff8b8b;--cp:#8a93a2}
 body{background:var(--bg);color:var(--fg);font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:24px}
 h1{font-size:18px} h2{font-size:14px;margin:26px 0 8px;color:#fff;border-bottom:1px solid var(--bd);padding-bottom:4px}
 .lead{color:var(--mut);max-width:80ch}
