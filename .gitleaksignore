@@ -66,3 +66,5 @@ bbdf1f63af520cbcf4df1ba814772edb23fa1558:scripts/deployment/globals_mainnet.json
 861120ce3e2ba5962f880111b45414df7cefb4f1:scripts/deployment/globals_mainnet.json:generic-api-key:1
 49aebd976795b0ac7876d22ea40c5c44b1654d3d:scripts/deployment/globals_mainnet.json:generic-api-key:39
 49aebd976795b0ac7876d22ea40c5c44b1654d3d:scripts/deployment/globals_mainnet.json:generic-api-key:47
+b384a724abc63e42d374e23bfcd443bc2cad9074:scripts/proposals/proposal_11/Proposal11Activation.s.sol:generic-api-key:96
+b384a724abc63e42d374e23bfcd443bc2cad9074:scripts/proposals/proposal_11/Proposal11Activation.s.sol:generic-api-key:97
