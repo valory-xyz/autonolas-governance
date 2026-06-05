@@ -17,11 +17,25 @@ interface ITokenomicsProxy {
     function tokenomicsImplementation() external view returns (address);
 }
 
+interface IGovernor {
+    function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) external returns (uint256);
+    function castVote(uint256 proposalId, uint8 support) external returns (uint256);
+    function queue(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash) external returns (uint256);
+    function execute(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash) external payable returns (uint256);
+    function state(uint256 proposalId) external view returns (uint8);
+    function proposalEta(uint256 proposalId) external view returns (uint256);
+    function votingDelay() external view returns (uint256);
+    function votingPeriod() external view returns (uint256);
+    function token() external view returns (address);
+    function hashProposal(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash) external pure returns (uint256);
+}
+
 /// @title Proposal11Activation fork test
-/// @dev Executes the activation proposal as the Timelock (the executor for every call) against a
-///      mainnet fork, and asserts the resulting on-chain state. This validates the calldata is correct
-///      and will not revert. It does NOT run the full propose->vote->queue lifecycle (that adds nothing
-///      to calldata correctness); execution-by-Timelock is exactly what the queued batch does.
+/// @dev Two checks against a mainnet fork, both asserting the same post-activation state:
+///      - test_FullGovernanceLifecycle: the REAL pipeline through the OLD GovernorOLAS + Timelock
+///        (propose -> vote -> queue -> execute). Confirms the precomputed proposalId, the state machine,
+///        timelock scheduling and the atomic batch execution. Only veOLAS vote-weight reads are mocked.
+///      - test_FullProposalExecutes: fast path that executes the batch as the Timelock (final step only).
 ///
 ///      Run: forge test --fork-url $MAINNET_RPC --match-contract Proposal11Activation -vvv
 contract Proposal11ActivationTest is Test, Proposal11Builder {
@@ -55,10 +69,15 @@ contract Proposal11ActivationTest is Test, Proposal11Builder {
         assertFalse(tl.hasRole(PROPOSER_ROLE, NEW_GOV), "new gov should not have PROPOSER pre-vote");
     }
 
-    /// @dev Whole batch executes without reverting and every effect lands.
+    /// @dev Fast path: the batch executes (as the Timelock would in the final step) and every effect lands.
     function test_FullProposalExecutes() public {
         _execAll();
+        _assertEndState();
+    }
 
+    /// @dev Asserts the full post-activation on-chain state. Shared by both the fast-path and the
+    ///      full-governance-lifecycle tests.
+    function _assertEndState() internal view {
         ITimelock tl = ITimelock(TIMELOCK);
         // A) roles migrated
         assertTrue(tl.hasRole(TIMELOCK_ADMIN_ROLE, NEW_GOV), "new gov ADMIN");
@@ -93,5 +112,49 @@ contract Proposal11ActivationTest is Test, Proposal11Builder {
         // E) the Celo sendMessage call succeeded (enqueued on L1CrossDomainMessenger). L2 delivery is not
         //    observable on a mainnet fork; correctness of the bridged payload is covered by the encoding +
         //    GuardCM ProcessBridgedDataOptimism verification tests.
+    }
+
+    /// @dev REAL end-to-end lifecycle through the OLD GovernorOLAS + Timelock:
+    ///      propose -> (advance) -> castVote -> (advance) -> queue -> (warp past eta) -> execute.
+    ///      Only the veOLAS voting-power reads are mocked (to isolate the proposal mechanics from token
+    ///      distribution); the proposal id, state machine, timelock scheduling and batch execution are real.
+    function test_FullGovernanceLifecycle() public {
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            buildProposal();
+        bytes32 descHash = keccak256(bytes(description));
+        IGovernor gov = IGovernor(OLD_GOV);
+        address token = gov.token(); // wveOLAS used for vote weight
+        address proposer = address(0xBEEF);
+        address voter = address(0xCAFE);
+
+        // Inject voting power: large weight for any account, moderate total supply so quorum (3%) is cleared.
+        vm.mockCall(token, abi.encodeWithSignature("getPastVotes(address,uint256)"), abi.encode(uint256(1e27)));
+        vm.mockCall(token, abi.encodeWithSignature("getVotes(address,uint256)"), abi.encode(uint256(1e27)));
+        vm.mockCall(token, abi.encodeWithSignature("getPastTotalSupply(uint256)"), abi.encode(uint256(1e24)));
+
+        // propose
+        vm.prank(proposer);
+        uint256 id = gov.propose(targets, values, calldatas, description);
+        assertEq(id, gov.hashProposal(targets, values, calldatas, descHash), "proposalId mismatch");
+
+        // into Active, then vote For
+        vm.roll(block.number + gov.votingDelay() + 1);
+        assertEq(uint256(gov.state(id)), 1, "not Active");
+        vm.prank(voter);
+        gov.castVote(id, 1);
+
+        // end voting -> Succeeded
+        vm.roll(block.number + gov.votingPeriod() + 1);
+        assertEq(uint256(gov.state(id)), 4, "not Succeeded");
+
+        // queue -> Queued, warp past the timelock eta, then execute -> Executed
+        gov.queue(targets, values, calldatas, descHash);
+        assertEq(uint256(gov.state(id)), 5, "not Queued");
+        uint256 eta = gov.proposalEta(id);
+        if (eta >= block.timestamp) vm.warp(eta + 1);
+        gov.execute(targets, values, calldatas, descHash);
+        assertEq(uint256(gov.state(id)), 7, "not Executed");
+
+        _assertEndState();
     }
 }
