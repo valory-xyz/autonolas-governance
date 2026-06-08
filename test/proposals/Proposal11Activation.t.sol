@@ -136,25 +136,34 @@ contract Proposal11ActivationTest is Test, Proposal11Builder {
         vm.prank(proposer);
         uint256 id = gov.propose(targets, values, calldatas, description);
         assertEq(id, gov.hashProposal(targets, values, calldatas, descHash), "proposalId mismatch");
+        console2.log("1) proposed   | id == hashProposal:", id);
+        console2.log("   state (0=Pending):", gov.state(id));
 
         // into Active, then vote For
         vm.roll(block.number + gov.votingDelay() + 1);
         assertEq(uint256(gov.state(id)), 1, "not Active");
+        console2.log("2) active     | state (1=Active):", gov.state(id));
         vm.prank(voter);
         gov.castVote(id, 1);
+        console2.log("3) voted For");
 
         // end voting -> Succeeded
         vm.roll(block.number + gov.votingPeriod() + 1);
         assertEq(uint256(gov.state(id)), 4, "not Succeeded");
+        console2.log("4) succeeded  | state (4=Succeeded):", gov.state(id));
 
         // queue -> Queued, warp past the timelock eta, then execute -> Executed
         gov.queue(targets, values, calldatas, descHash);
         assertEq(uint256(gov.state(id)), 5, "not Queued");
         uint256 eta = gov.proposalEta(id);
+        console2.log("5) queued     | state (5=Queued):", gov.state(id));
+        console2.log("   timelock eta:", eta);
         if (eta >= block.timestamp) vm.warp(eta + 1);
         gov.execute(targets, values, calldatas, descHash);
         assertEq(uint256(gov.state(id)), 7, "not Executed");
+        console2.log("6) executed   | state (7=Executed):", gov.state(id));
 
         _assertEndState();
+        console2.log("7) end-state asserted: roles migrated, guard configured+swapped, tokenomics impl upgraded");
     }
 }
