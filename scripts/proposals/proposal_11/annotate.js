@@ -45,7 +45,7 @@ const ADDR = {
     "0xff8697d8d2998d6aa2e09b405795c6f4beeb0c81": "Depository (LIVE)",
     "0x3fb926116d454b95c669b6bf2e7c3bad8d19affa": "ServiceRegistryTokenUtility (L1)",
     "0xc096362fa6f4a4b1a9ea68b1043416f3381ce300": "TokenomicsProxy",
-    "0xaeec8bc8e5fe28bc4df2e9586b222924b8a0d5e9": "Tokenomics impl v1.4.3 (NEW)",
+    "0xaeec8bc8e5fe28bc4df2e9586b222924b8a0d5e9": "Tokenomics impl (NEW, post-audit)",
     "0x17d96ba4532fe91809326092fe4d5606a7b7a0d8": "MechMarketplaceProxy (Celo)",
     "0x2e008211f34b25a7d7c102403c6c2c3b665a1abe": "BalanceTracker Native (Celo, NEW)",
     "0xb3921f8d8215603f0bd521341ac45ea8f2d274c1": "BalanceTracker OLAS (Celo, NEW)",

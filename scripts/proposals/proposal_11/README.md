@@ -7,7 +7,7 @@ protocol upgrades. Submitted via `propose()` on the **OLD** GovernorOLAS
 all `values` = 0; every call is executed by the Timelock.
 
 **Pre-computed proposalId:**
-`112894799210697811565600237130962419038093907471146647660799369436721952152939`
+`45361663242668069089223946785328365668773778141285203022311518232566090656298`
 (verified equal to on-chain `GovernorOLAS.hashProposal(...)`).
 
 ## What it does
@@ -19,7 +19,7 @@ all `values` = 0; every call is executed by the Timelock.
 | C (1 call) | Set GuardCM CM allowlist: 16 (target, selector, chainId) entries — Treasury `pause()`/`drainServiceSlashedFunds()`, Depository `close(uint256[])`, ServiceRegistry(L2)/ServiceRegistryTokenUtility `drain()`/`drain(address)` on L1 + 6 L2s | new GuardCM |
 | D (1 call) | Swap the CM guard to the new GuardCM via the Timelock Safe-module (`execTransactionFromModule` → `setGuard`) | Community Multisig |
 | E (1 call) | Register new Celo BalanceTrackers on the Celo MechMarketplace (bridged via Celo L1CrossDomainMessenger) | Celo L1CrossDomainMessenger |
-| F (1 call) | Upgrade Tokenomics implementation to v1.4.3 (`changeTokenomicsImplementation`) | TokenomicsProxy |
+| F (1 call) | Upgrade Tokenomics implementation to a new impl with recent post-audit resolutions (`changeTokenomicsImplementation`) | TokenomicsProxy |
 
 All addresses were verified on-chain (live Depository = `0xfF86…0C81`; the `0x52A0…` deploy is
 decommissioned). See [`docs/activation_checklist_proposal_11.md`](../../../docs/activation_checklist_proposal_11.md)

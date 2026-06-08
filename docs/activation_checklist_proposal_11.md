@@ -137,7 +137,8 @@ Payment type hashes: Native `0xba699a34…abed1`, OLAS `0x3679d66e…45e9`, USDC
 `changeTokenomicsImplementation(address)` (sel `0x590a92d0`), owner-only (owner = Timelock).
 **target = TokenomicsProxy `0xc096…e300`**, value 0. Template: tokenomics repo
 `scripts/proposals/proposal_01_change_tokenomics_implementation.js`. No post-upgrade initializer needed
-(state persists in proxy; v1.4.3 diff is the `checkpoint` effectiveBond fix only).
+(state persists in proxy; the new implementation's diff is the post-audit `checkpoint` effectiveBond fix —
+note `VERSION()` stays "1.3.0", i.e. a same-version re-deploy, not a version bump).
 
 - [x] New impl confirmed deployed on mainnet: `0xaeeC8bC8E5Fe28BC4dF2e9586b222924b8a0d5e9`
       (has code, 19,602 bytes; differs from live impl `0x1ce191601e7f2777EEB797149d6e65aE40dF0e93`).

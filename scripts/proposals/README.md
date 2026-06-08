@@ -18,7 +18,7 @@ effects are validated separately via Tenderly simulations on the destination cha
 
 | # | Summary | Folder | Annotated HTML | Fork test (L1) |
 |---|---------|--------|----------------|----------------|
-| 11 | Olas Governance & GuardCM activation: migrate Timelock roles to the new GovernorOLAS, configure + swap in the new GuardCM, set new Celo BalanceTrackers, upgrade Tokenomics impl to v1.4.3 | [proposal_11/](proposal_11) | [proposal_11.html](proposal_11/proposal_11.html) | [Proposal11Activation.t.sol](../../test/proposals/Proposal11Activation.t.sol) |
+| 11 | Olas Governance & GuardCM activation: migrate Timelock roles to the new GovernorOLAS, configure + swap in the new GuardCM, set new Celo BalanceTrackers, upgrade Tokenomics impl (post-audit resolutions) | [proposal_11/](proposal_11) | [proposal_11.html](proposal_11/proposal_11.html) | [Proposal11Activation.t.sol](../../test/proposals/Proposal11Activation.t.sol) |
 
 ### Legacy proposals
 
