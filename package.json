@@ -51,5 +51,9 @@
     "eth-permit": "^0.2.3",
     "ethereum-sources-downloader": "^0.2.1",
     "fx-portal": "^1.0.3"
+  },
+  "resolutions": {
+    "axios": ">=1.16.0",
+    "ws": ">=8.20.1"
   }
 }
