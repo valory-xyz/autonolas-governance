@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org).
 
-[1.2.5-post-external-audit]: https://github.com/valory-xyz/autonolas-governance/compare/v1.2.3...v1.2.5-post-external-audit
+[1.2.5]: https://github.com/valory-xyz/autonolas-governance/compare/v1.2.3...v1.2.5
 [1.2.3]: https://github.com/valory-xyz/autonolas-governance/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.10...v1.2.2
 [1.1.10]: https://github.com/valory-xyz/autonolas-governance/compare/v1.1.9...v1.1.10
@@ -20,7 +20,8 @@ The format is based on [Common Changelog](https://common-changelog.org).
 [1.0.1]: https://github.com/valory-xyz/autonolas-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valory-xyz/autonolas-governance/releases/tag/v1.0.0
 
-## [v1.2.5-post-external-audit] - 2026-05-07
+## [v1.2.5] - 2026-06-15
+- Deployed the new `GovernorOLAS` (`0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6`, adding a configurable `governorDelay`) and `GuardCM` (`0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B`) together with the `ProcessBridgedData{Gnosis,Polygon,Arbitrum,Optimism}` bridge verifiers on ETH mainnet, and activated them via an on-chain governance vote (proposal executed in [`0x1ea31f…b0168`](https://etherscan.io/tx/0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168)): migrated the `Timelock` roles to the new `GovernorOLAS`, configured the new `GuardCM` bridge mediators/verifiers and CM target-selector allowlist, and swapped in the new CM guard; updated `docs/configuration.json` and the corresponding ABIs
 - Separated `Timelock` and `GovernorOLAS` execution delays ([#178](https://github.com/valory-xyz/autonolas-governance/pull/178)) with the subsequent internal audit ([audit15](https://github.com/valory-xyz/autonolas-governance/tree/main/audits/internal15) via [#179](https://github.com/valory-xyz/autonolas-governance/pull/179))
 - Refactored `WormholeRelayerTimelock` to handle token-amount transfers ([#180](https://github.com/valory-xyz/autonolas-governance/pull/180)) with the subsequent internal audit ([audit16](https://github.com/valory-xyz/autonolas-governance/tree/main/audits/internal16) via [#181](https://github.com/valory-xyz/autonolas-governance/pull/181))
 - Added `create_l2_op_olas` script for Optimism L2 OLAS deployment ([#183](https://github.com/valory-xyz/autonolas-governance/pull/183))
