@@ -199,15 +199,25 @@ async function checkTimelock(chainId, provider, globalsInstance, configContracts
     const executorRole = ethers.utils.id("EXECUTOR_ROLE");
     const cancellerRole = ethers.utils.id("CANCELLER_ROLE");
 
-    // All must be true for the governor
-    let res = await timelock.hasRole(adminRole, globalsInstance["governorTwoAddress"]);
+    // All must be true for the current (new) governor
+    let res = await timelock.hasRole(adminRole, globalsInstance["governorAddress"]);
     customExpect(res, true, log + ", function: hasRole(adminRole)");
-    res = await timelock.hasRole(proposerRole, globalsInstance["governorTwoAddress"]);
+    res = await timelock.hasRole(proposerRole, globalsInstance["governorAddress"]);
     customExpect(res, true, log + ", function: hasRole(proposerRole)");
-    res = await timelock.hasRole(executorRole, globalsInstance["governorTwoAddress"]);
+    res = await timelock.hasRole(executorRole, globalsInstance["governorAddress"]);
     customExpect(res, true, log + ", function: hasRole(executorRole)");
-    res = await timelock.hasRole(cancellerRole, globalsInstance["governorTwoAddress"]);
+    res = await timelock.hasRole(cancellerRole, globalsInstance["governorAddress"]);
     customExpect(res, true, log + ", function: hasRole(cancellerRole)");
+
+    // The previous governor must have all the roles revoked after the migration
+    res = await timelock.hasRole(adminRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, false, log + ", function: hasRole(adminRole), previous governor");
+    res = await timelock.hasRole(proposerRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, false, log + ", function: hasRole(proposerRole), previous governor");
+    res = await timelock.hasRole(executorRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, false, log + ", function: hasRole(executorRole), previous governor");
+    res = await timelock.hasRole(cancellerRole, globalsInstance["governorTwoAddress"]);
+    customExpect(res, false, log + ", function: hasRole(cancellerRole), previous governor");
 
     // CM must have all the roles except for the admin one
     res = await timelock.hasRole(adminRole, globalsInstance["CM"]);
@@ -314,6 +324,10 @@ async function checkGovernorOLAS(chainId, provider, globalsInstance, globalsMain
     const timelock = await governor.timelock();
     customExpect(timelock, globalsInstance["timelockAddress"], log + ", function: timelock()");
 
+    // Check governor delay (separated from the Timelock execution delay)
+    const governorDelay = await governor.governorDelay();
+    customExpect(governorDelay.toString(), globalsInstance["governorDelay"], log + ", function: governorDelay()");
+
     // Check version
     const version = await governor.version();
     customExpect(version, "1", log + ", function: version()");
@@ -343,8 +357,8 @@ async function checkGuardCM(chainId, provider, globalsInstance, configContracts,
     log += ", address: " + guard.address;
     // Check governor
     const governor = await guard.governor();
-    customExpect(governor, globalsInstance["governorTwoAddress"], log + ", function: governor()");
-    
+    customExpect(governor, globalsInstance["governorAddress"], log + ", function: governor()");
+
     // owner + CSV
     const ownerInfo = await checkOwner(chainId, guard, globalsInstance, log);
     recordOwnershipRow(chainId, contractName, guard.address, ownerInfo);
@@ -352,6 +366,26 @@ async function checkGuardCM(chainId, provider, globalsInstance, configContracts,
     // Check multisig to be the CM
     const multisig = await guard.multisig();
     customExpect(multisig, globalsInstance["CM"], log + ", function: multisig()");
+
+    // Check the bridge mediator L1 bridge params (L2 verifier + L2 mediator + chain Id) per L2.
+    // Note: Mode (chain Id 34443) is intentionally not configured on this guard (being deprecated).
+    const bridgeParams = [
+        {name: "gnosis", l1: globalsInstance["AMBContractProxyForeignAddress"], verifier: globalsInstance["processBridgedDataGnosisAddress"], mediatorL2: globalsInstance["gnosisBridgeMediatorL2"], chainId: "100"},
+        {name: "polygon", l1: globalsInstance["fxRootAddress"], verifier: globalsInstance["processBridgedDataPolygonAddress"], mediatorL2: globalsInstance["polygonBridgeMediatorL2"], chainId: "137"},
+        {name: "arbitrum", l1: globalsInstance["arbitrumInboxAddress"], verifier: globalsInstance["processBridgedDataArbitrumAddress"], mediatorL2: globalsInstance["arbitrumBridgeMediatorL2"], chainId: "42161"},
+        {name: "optimism", l1: globalsInstance["optimismL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["optimismMessengerL2Address"], chainId: "10"},
+        {name: "base", l1: globalsInstance["baseL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["baseMessengerL2Address"], chainId: "8453"},
+        {name: "celo", l1: globalsInstance["celoL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["celoMessengerL2Address"], chainId: "42220"}
+    ];
+    for (let b = 0; b < bridgeParams.length; b++) {
+        const params = await guard.mapBridgeMediatorL1BridgeParams(bridgeParams[b].l1);
+        customExpect(norm(params.verifierL2), norm(bridgeParams[b].verifier),
+            log + ", function: mapBridgeMediatorL1BridgeParams(" + bridgeParams[b].name + ").verifierL2");
+        customExpect(norm(params.bridgeMediatorL2), norm(bridgeParams[b].mediatorL2),
+            log + ", function: mapBridgeMediatorL1BridgeParams(" + bridgeParams[b].name + ").bridgeMediatorL2");
+        customExpect(params.chainId.toString(), bridgeParams[b].chainId,
+            log + ", function: mapBridgeMediatorL1BridgeParams(" + bridgeParams[b].name + ").chainId");
+    }
 }
 
 // Check bridgedERC20: chain Id, provider, parsed globals, configuration contracts, contract name
