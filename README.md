@@ -147,6 +147,13 @@ The description of deployment procedure can be found here: [deployment](scripts/
 The finalized contract ABIs for deployment and their number of optimization passes are located here:
 [ABIs](abis).
 
+## Governance proposals
+On-chain governance proposals are prepared under [scripts/proposals](scripts/proposals), where each
+proposal has its own subfolder with the calldata builder, an annotated HTML breakdown (decoded
+selectors, arguments and per-chain explorer-linked addresses, plus the copy-paste `propose()` arrays
+and the pre-computed `proposalId`), and a description. See the [proposals README](scripts/proposals/README.md)
+for the index. Proposal L1 effects are validated by Forge fork tests under [test/proposals](test/proposals).
+
 ## Bridges
 
 ### Cross-chain governance
