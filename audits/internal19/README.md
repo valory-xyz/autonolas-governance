@@ -81,7 +81,7 @@ given. None is reachable as theft or unprivileged governance subversion.
 #### F-7 — `GovernorTimelockControl`: `governorDelay` can drift below the timelock `minDelay`, bricking `queue()`
 - **Location:** `utils/GovernorTimelockControl.sol:115` (`queue` schedules with `delay = governorDelay`); `:193-204` (`_updateGovernorDelay` checks `>= minDelay` only at set-time); `updateTimelock:173-180` does not re-check the floor against a new timelock.
 - **Analysis:** The fork deliberately schedules with `governorDelay` instead of the timelock's `minDelay`. `minDelay` is updatable separately (`TimelockController.updateDelay`), so it can be raised above `governorDelay`; then `queue()` passes `delay = governorDelay < minDelay` to `scheduleBatch`, which reverts, and no proposal can be queued. The in-code CAUTION (`:185-187`) documents the hazard.
-- **Verdict: DEFECT (self-inflicted liveness, fails safe — never under-delays).** **On the live deployment this is dormant: the live `minDelay` is `0` (verified on-chain, §6), so `governorDelay >= minDelay` holds and the desync cannot occur until `minDelay` is raised.** Recoverable through governance (raise `governorDelay` first). **Fix:** in `queue()`, schedule with `delay = governorDelay < minDelay ? minDelay : governorDelay`, or re-validate the floor in `updateTimelock`. Operational rule until then: change `governorDelay` and `minDelay` together.
+- **Verdict: DEFECT (self-inflicted liveness, fails safe — never under-delays).** **On the live deployment this is dormant: the live `minDelay` is `0` and the live `governorDelay` is `157092 s ≈ 1.82 d` (both verified on-chain, §6), so `governorDelay >= minDelay` holds and the desync cannot occur until `minDelay` is raised.** Recoverable through governance (raise `governorDelay` first). **Fix:** in `queue()`, schedule with `delay = governorDelay < minDelay ? minDelay : governorDelay`, or re-validate the floor in `updateTimelock`. Operational rule until then: change `governorDelay` and `minDelay` together.
 
 #### F-8 — `GovernorOLAS` / `GovernorTimelockControl` provenance comments are stale and misleading
 - **Location:** `GovernorOLAS.sol:18` ("The OpenZeppelin functions are used as is, version 4.8.3."); `utils/GovernorTimelockControl.sol:2` ("(last updated v4.6.0)").
@@ -133,8 +133,13 @@ design documentation) or because the protective invariant holds.
 ## 4. Governance-architecture observation
 
 Not a code defect, surfaced for the DAO to own consciously. The Community Multisig holds
-`PROPOSER`+`EXECUTOR`(+`CANCELLER`) directly on the timelock; the post-vote delay (`governorDelay`) binds
-only the Governor's `queue()` path. The live timelock `minDelay` is **`0`** (verified on-chain, §6), so the
+`PROPOSER`+`EXECUTOR`(+`CANCELLER`) directly on the timelock; the post-vote delay binds only the Governor's
+`queue()` path — and that delay is **`governorDelay` (currently `157092 s ≈ 1.82 d` on-chain), not the
+timelock's `minDelay`**: the forked `GovernorTimelockControl.queue()` schedules with `governorDelay`
+(`utils/GovernorTimelockControl.sol:115`), so a *passed governance proposal* is delayed by `governorDelay`,
+and a full proposal therefore takes ≈ `votingDelay (13091 blk) + votingPeriod (19636 blk) + governorDelay
+(157092 s)` ≈ **6.4 days** end-to-end. The live timelock `minDelay` is **`0`** (verified on-chain, §6), and
+`minDelay` governs **only** the CM's *direct* `schedule` path — **not** governance proposals — so the
 CM's direct `schedule`+`execute` path executes with **no timelock delay**, and the CM's `CANCELLER` lets it
 cancel any queued Governor proposal. The **sole containment** on the CM's direct path is therefore the
 `GuardCM` allowlist (target/selector). This is an intentional emergency/operational design, but the practical
@@ -167,17 +172,27 @@ are present and correct — they are the existing mitigation, not findings.
 
 ---
 
-## 6. On-chain verification (Ethereum mainnet, read-only, 2026-06-29)
+## 6. On-chain verification (Ethereum mainnet, read-only; 2026-06-29, re-grounded on the redeployed Governor 2026-06-30)
 
 The deployment-state facts that the verdicts above rely on were confirmed against the live contracts:
 
 | Check | Result |
 |---|---|
-| `GovernorOLAS.token()` | `0x4039B8…` = `wveOLAS` (the deployed Governor reads the guarded wrapper) |
+| `GovernorOLAS.token()` (live governor `0x060D0C…`) | `0x4039B8…` = `wveOLAS` (the deployed Governor reads the guarded wrapper) |
+| `GovernorOLAS.governorDelay()` (live `0x060D0C…`) | `157092 s ≈ 1.82 d` — the proposal-path delay (§4 / F-7); **≠** the timelock `minDelay` |
+| `GovernorOLAS.timelock()` (live `0x060D0C…`) | `0x3C1f…` (the audited Timelock) |
 | `VoteWeighting.ve()` | `0x7e01A5…` = raw `veOLAS` (confirms the §4 split) |
 | `GuardCM` (live) bridge params for the single-relayer L1 address | `0x0` — no such bridge entry configured (D-1 / D-2 dormant) |
 | `Timelock.hasRole(TIMELOCK_ADMIN_ROLE, self)` | `true` (self-administered) |
 | `Timelock.getMinDelay()` | `0` (F-7 dormant; the CM direct-path-no-delay property of §4) |
+
+**Governor redeployment (noted for completeness).** The live `governorAddress` is the **redeployed**
+GovernorOLAS `0x060D0C…`; the prior instance `0x8E84B5…` (`governorTwo`) has had its `PROPOSER` and
+`EXECUTOR` roles on the Timelock **revoked** (verified: the live governor holds both = `true`, the prior
+holds both = `false`), so there is no dual-governance entry point. The redeployment is the **same audited
+source** — between the audit baseline and the deployment-config commit the only change is
+`scripts/deployment/globals_mainnet.json` (no `.sol` delta), so the code reviewed here is the code deployed
+at `0x060D0C…`; no unaudited contract was activated by the redeploy.
 
 (The deployer-EOA admin renunciation behind D-3 is asserted on-chain by the deployment and confirmed by the
 self-administration above; re-confirming `hasRole(TIMELOCK_ADMIN_ROLE, deployerEOA) == false` against the
