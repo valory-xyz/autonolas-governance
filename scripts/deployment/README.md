@@ -61,6 +61,55 @@ npx hardhat run scripts/deployment/deploy_17_governorTwo.js --network network_ty
 Then, after successful deployment of two supplemental contracts, the last script gives the proposal payload necessary to finalize the deployment:
 `npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
 
+## Deployment of the Veto stack (Task 1)
+
+A cancel-only Veto-Governor bound to a dedicated Veto Timelock. Both contracts are
+copies of the audited `Timelock` / `GovernorOLAS` bytecode already used by the main
+stack — only the constructor parameters change.
+
+Three shell scripts, run in strict order (each writes its address back to
+`globals_<network>.json` for the next):
+
+```bash
+# Task 1 — deploy the veto stack
+./scripts/deployment/deploy_28_veto_timelock.sh <network>
+./scripts/deployment/deploy_29_veto_governor.sh <network>
+./scripts/deployment/deploy_30_wire_freeze_veto_timelock.sh <network>
+```
+
+Deploy order is load-bearing:
+
+1. **`deploy_28`** — deploy Veto Timelock empty (no proposers/executors — the Veto-Governor
+   doesn't exist yet). Deployer holds `TIMELOCK_ADMIN_ROLE`.
+2. **`deploy_29`** — deploy Veto-Governor bound to Veto Timelock. Its constructor reads
+   `B.getMinDelay()`, so B must exist. The script sanity-checks `veto.token()` against the
+   live main `Governor.token()` (must be the **wveOLAS wrapper `0x4039…`**, not raw veOLAS —
+   the wveOLAS-wrapper token check). It also aborts if `globals.vetoVotingDelay` diverges from the live main
+   Governor's `votingDelay()` (the design notes: keep today's short value; do not copy the raised
+   Layer-1 value or the veto cycle overflows the 14 d window).
+3. **`deploy_30`** — wire and **role-freeze** Veto Timelock, in this exact order:
+   `grantRole(PROPOSER, VetoGov)` → `grantRole(EXECUTOR, VetoGov)` →
+   `revokeRole(TIMELOCK_ADMIN_ROLE, VT)` → `renounceRole(TIMELOCK_ADMIN_ROLE, deployer)`.
+   After the freeze **no role on VT can ever change again** (hard requirement —
+   closes the self-administration hole where one won veto vote would otherwise mint an
+   attacker a standing PROPOSER). CANCELLER on VT is intentionally NOT granted — its only
+   consumer (`GovernorCompatibilityBravo.cancel(uint256)` reaching `_timelock.cancel`) is
+   unreachable at `vetoGovernorDelay = 0` and not design-critical.
+
+**After Task 1** — Task 2 is a single batched proposal on the main Governor
+(`Timelock A.grantRole(CANCELLER_ROLE, Veto Timelock)` + `setVotingDelay(72000)` +
+`updateGovernorDelay(1209600)`).
+
+Relevant `globals_<network>.json` keys (all pre-populated for mainnet):
+
+| Key | Meaning |
+|---|---|
+| `vetoMinDelay` | Veto Timelock's `minDelay` — always `0` (instant cancels). |
+| `vetoGovernorDelay` | Veto-Governor's `governorDelay` — always `0` (instant queue→execute). |
+| `vetoVotingDelay` / `vetoVotingPeriod` | Kept at today's main values (13091 / 19636); NOT the raised Layer-1 value. |
+| `vetoQuorum` / `vetoProposalThreshold` | Identical to main (3 % / 5,000 veOLAS). |
+| `vetoTimelockAddress` / `vetoGovernorAddress` | Populated by `deploy_28` / `deploy_29`. |
+
 ## Deployment of Polygon-Ethereum ERC20 bridging contracts
 For deploying ERC20 bridging contracts listed in [deployment.md](docs/deployment.md),
 run the following scripts:
