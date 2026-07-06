@@ -85,19 +85,30 @@ if [ "$vetoTimelockAddress" == "null" ] || [ -z "$vetoTimelockAddress" ]; then
   exit 0
 fi
 
-# Sanity: the veto's votingDelay MUST equal the MAIN Governor's live votingDelay.
-# Copying a raised Layer-1 value here would push the veto cycle beyond ~9.45 d of slack.
-mainGovernor=$(jq -r '.governorAddress' $globals)
-if [ "$mainGovernor" != "null" ] && [ -n "$mainGovernor" ]; then
-  liveVotingDelay=$(cast call --rpc-url $networkURL$API_KEY $mainGovernor "votingDelay()(uint256)")
-  # Strip any trailing text (some casters print e.g. "13091 [1.3e4]")
-  liveVotingDelay=$(echo "$liveVotingDelay" | awk '{print $1}')
-  if [ "$liveVotingDelay" != "$vetoVotingDelay" ]; then
-    echo "${red}!!! WARNING: main Governor's live votingDelay ($liveVotingDelay) != globals.vetoVotingDelay ($vetoVotingDelay).${reset}"
-    echo "${red}    Per the design notes: the veto's votingDelay must match today's main value, NOT any raised Layer-1 value.${reset}"
-    echo "${red}    Aborting to avoid a mis-sized veto cycle. Fix globals.vetoVotingDelay and re-run.${reset}"
-    exit 0
-  fi
+mainGovernor=$(jq -r '.governorAddress' $globals)  # used later for the F1 token cross-check
+
+# Design invariant (stable across B'-recovery — does NOT depend on live main state):
+#   veto cycle (votingDelay + votingPeriod, converted to seconds) + safety margin
+#   MUST FIT INSIDE the raised main Governor `governorDelay` (14 d, set by Task 2).
+#
+# Reason we do NOT compare to `mainGovernor.votingDelay()` live: pre-Task-2 it is 13091;
+# post-Task-2 it is 72000. A live-match check would ABORT during B'-recovery and instruct
+# the operator to copy the raised value into the veto — precisely the value the design
+# forbids. Pinning the design constants here keeps the check correct in every state.
+mainGovernorDelayTarget=1209600  # 14 d, Task-2 target for updateGovernorDelay
+marginSeconds=86400              # 1 d slack (block-time jitter + Bravo cancel overhead)
+# Pin (typo-catch): operator should not silently change these without also rechecking
+# the invariant. Kept as today's live main values, which the design mandates for the veto.
+if [ "$vetoVotingDelay" != "13091" ] || [ "$vetoVotingPeriod" != "19636" ]; then
+  echo "${red}!!! globals.vetoVotingDelay/vetoVotingPeriod ($vetoVotingDelay/$vetoVotingPeriod) != design pin (13091/19636).${reset}"
+  echo "${red}    Update the pin here consciously if this is intentional, and re-check the invariant below.${reset}"
+  exit 0
+fi
+vetoCycleSeconds=$(( (vetoVotingDelay + vetoVotingPeriod) * 12 ))
+if [ $(( vetoCycleSeconds + marginSeconds )) -gt $mainGovernorDelayTarget ]; then
+  echo "${red}!!! Veto cycle overflow: (votingDelay+votingPeriod)*12s + margin = $((vetoCycleSeconds + marginSeconds)) s${reset}"
+  echo "${red}    > mainGovernorDelayTarget ($mainGovernorDelayTarget s = 14 d). Aborting.${reset}"
+  exit 0
 fi
 
 contractName="GovernorOLAS"

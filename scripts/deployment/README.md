@@ -84,21 +84,43 @@ Deploy order is load-bearing:
 2. **`deploy_29`** — deploy Veto-Governor bound to Veto Timelock. Its constructor reads
    `B.getMinDelay()`, so B must exist. The script sanity-checks `veto.token()` against the
    live main `Governor.token()` (must be the **wveOLAS wrapper `0x4039…`**, not raw veOLAS —
-   the wveOLAS-wrapper token check). It also aborts if `globals.vetoVotingDelay` diverges from the live main
-   Governor's `votingDelay()` (the design notes: keep today's short value; do not copy the raised
-   Layer-1 value or the veto cycle overflows the 14 d window).
+   the wveOLAS-wrapper token check). It also asserts the veto-cycle invariant
+   `(vetoVotingDelay + vetoVotingPeriod) * 12 s + margin ≤ 1209600 s (14 d)` — the veto
+   cycle MUST fit within the raised main `governorDelay` window (Task-2 target). The
+   check is against the design constant, not live main state, so it stays correct through
+   B′-recovery (when live main `votingDelay = 72000` — never copy that into the veto).
 3. **`deploy_30`** — wire and **role-freeze** Veto Timelock, in this exact order:
    `grantRole(PROPOSER, VetoGov)` → `grantRole(EXECUTOR, VetoGov)` →
-   `revokeRole(TIMELOCK_ADMIN_ROLE, VT)` → `renounceRole(TIMELOCK_ADMIN_ROLE, deployer)`.
+   `grantRole(CANCELLER, VetoGov)` → `revokeRole(TIMELOCK_ADMIN_ROLE, VT)` →
+   `renounceRole(TIMELOCK_ADMIN_ROLE, deployer)`.
    After the freeze **no role on VT can ever change again** (hard requirement —
    closes the self-administration hole where one won veto vote would otherwise mint an
-   attacker a standing PROPOSER). CANCELLER on VT is intentionally NOT granted — its only
-   consumer (`GovernorCompatibilityBravo.cancel(uint256)` reaching `_timelock.cancel`) is
-   unreachable at `vetoGovernorDelay = 0` and not design-critical.
+   attacker a standing PROPOSER). CANCELLER on VT is granted so
+   `GovernorCompatibilityBravo.cancel(uint256)` can reach `_timelock.cancel` during the
+   (unbounded) queued-but-unexecuted window — restores proposer self-withdrawal and
+   below-threshold cleanup. VT can only cancel proposals it itself queued, so the grant
+   adds no new attack surface.
 
 **After Task 1** — Task 2 is a single batched proposal on the main Governor
 (`Timelock A.grantRole(CANCELLER_ROLE, Veto Timelock)` + `setVotingDelay(72000)` +
 `updateGovernorDelay(1209600)`).
+
+### Running the fork tests
+
+`test/forge/ForkGovernanceVetoDelay.t.sol` is a mainnet-fork verification of the veto
+stack. It (and the pre-existing `ForkDeployGovernance.t.sol`) depend on `forge-std`,
+which is **not** tracked as a submodule in this repo. From a fresh clone:
+
+```bash
+# One-time: install forge-std into lib/
+forge install foundry-rs/forge-std --no-commit
+
+# Run the veto-stack suite (mainnet fork)
+ETH_RPC_URL=<mainnet-rpc-url> forge test --match-contract ForkGovernanceVetoDelay -vv
+```
+
+Expected: **12/12 PASS**. Public RPCs (e.g. `https://ethereum-rpc.publicnode.com`) work
+but are slow; Alchemy/Infura recommended.
 
 Relevant `globals_<network>.json` keys (all pre-populated for mainnet):
 

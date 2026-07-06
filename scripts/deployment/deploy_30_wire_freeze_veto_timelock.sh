@@ -7,17 +7,19 @@
 #         (needed: GovernorTimelockControl.queue → _timelock.scheduleBatch)
 #   2. grantRole(EXECUTOR_ROLE, vetoGovernor) on Veto Timelock
 #         (needed: GovernorTimelockControl._execute → _timelock.executeBatch)
-#   3. revokeRole(TIMELOCK_ADMIN_ROLE, vetoTimelockAddress) — closes the self-administration hole
+#   3. grantRole(CANCELLER_ROLE, vetoGovernor) on Veto Timelock
+#         (needed: GovernorCompatibilityBravo.cancel(uint256) reaches
+#          GovernorTimelockControl._cancel → _timelock.cancel(id) whenever a veto proposal
+#          is already queued on VT. queue() and execute() are separate permissionless txs,
+#          so the queued-but-unexecuted window is unbounded — proposer self-withdrawal or
+#          below-threshold cleanup would otherwise revert forever without this grant.)
+#   4. revokeRole(TIMELOCK_ADMIN_ROLE, vetoTimelockAddress) — closes the self-administration hole
 #         that would otherwise let ONE won veto vote grant an attacker standing PROPOSER on VT
 #         (permanent, voteless griefing of every Timelock A op). Hard requirement.
-#   4. renounceRole(TIMELOCK_ADMIN_ROLE, deployer) — deployer relinquishes its admin.
+#   5. renounceRole(TIMELOCK_ADMIN_ROLE, deployer) — deployer relinquishes its admin.
 #
-# CANCELLER_ROLE on VT is INTENTIONALLY NOT granted. Its only consumer would be
-# GovernorCompatibilityBravo.cancel(uint256) reaching _timelock.cancel — reachable
-# only in the zero-second window between queue() and execute() at vetoGovernorDelay = 0,
-# and only by the proposer (or anyone when proposer < 5000 veOLAS). Not a design-critical
-# path; grants trimmed to the strict minimum. The CANCELLER role the veto stack DOES need
-# is on **Timelock A** (granted in Task 2), so VT can call A.cancel(badId).
+# The CANCELLER role the veto stack ALSO needs is on **Timelock A** (granted in Task 2),
+# so VT can call A.cancel(badId) — orthogonal to the CANCELLER-on-VT grant above.
 #
 # After step 5, NO account holds TIMELOCK_ADMIN_ROLE on Veto Timelock — B's role set is frozen for
 # life. Any future re-pointing requires redeploying a fresh B'. Note that `B.updateDelay(...)`
@@ -105,21 +107,33 @@ fi
 send() {
   local step="$1"; local sig="$2"; local addr="$3"; shift 3
   echo "${yellow}[$step] cast send $addr $sig $@${reset}"
-  cast send --rpc-url $rpcURL $walletArgs $addr "$sig" "$@" >/dev/null
+  # HARD abort on any failed tx: without this, a failed grant would let the script fall
+  # through to the IRREVERSIBLE revoke/renounce steps, leaving VT with no admin and no
+  # proposer/executor/canceller.
+  if ! cast send --rpc-url $rpcURL $walletArgs $addr "$sig" "$@" >/dev/null; then
+    echo "${red}!!! [$step] cast send FAILED. Aborting BEFORE any subsequent step runs.${reset}"
+    echo "${red}    Deployer still holds TIMELOCK_ADMIN_ROLE — re-run once the failure is fixed.${reset}"
+    exit 1
+  fi
 }
 
 # --- (1) grant PROPOSER to Veto-Governor ---
-send "1/4 grant PROPOSER" "grantRole(bytes32,address)" $vetoTimelockAddress $proposerRole $vetoGovernorAddress
+send "1/5 grant PROPOSER" "grantRole(bytes32,address)" $vetoTimelockAddress $proposerRole $vetoGovernorAddress
 # --- (2) grant EXECUTOR to Veto-Governor ---
-send "2/4 grant EXECUTOR" "grantRole(bytes32,address)" $vetoTimelockAddress $executorRole $vetoGovernorAddress
+send "2/5 grant EXECUTOR" "grantRole(bytes32,address)" $vetoTimelockAddress $executorRole $vetoGovernorAddress
+# --- (3) grant CANCELLER to Veto-Governor ---
+#     Enables the Bravo cancel(uint256) path (proposer self-withdrawal, or anyone once
+#     proposer drops below 5000 veOLAS) to clear a queued-but-unexecuted veto proposal
+#     on VT. Frozen immutably in step 5; VT can only cancel proposals it itself queued.
+send "3/5 grant CANCELLER" "grantRole(bytes32,address)" $vetoTimelockAddress $cancellerRole $vetoGovernorAddress
 
-# --- (3) FREEZE — revoke Veto Timelock's own TIMELOCK_ADMIN_ROLE ---
+# --- (4) FREEZE — revoke Veto Timelock's own TIMELOCK_ADMIN_ROLE ---
 # deployer is the ADMIN of ADMIN (OZ TimelockController._setRoleAdmin(TIMELOCK_ADMIN_ROLE, TIMELOCK_ADMIN_ROLE)),
 # so deployer can revoke VT's self-admin here.
-send "3/4 REVOKE VT self-admin (freeze)" "revokeRole(bytes32,address)" $vetoTimelockAddress $adminRole $vetoTimelockAddress
+send "4/5 REVOKE VT self-admin (freeze)" "revokeRole(bytes32,address)" $vetoTimelockAddress $adminRole $vetoTimelockAddress
 
-# --- (4) FREEZE — deployer renounces its own admin ---
-send "4/4 renounce deployer admin (freeze)" "renounceRole(bytes32,address)" $vetoTimelockAddress $adminRole $deployer
+# --- (5) FREEZE — deployer renounces its own admin ---
+send "5/5 renounce deployer admin (freeze)" "renounceRole(bytes32,address)" $vetoTimelockAddress $adminRole $deployer
 
 echo ""
 echo "${green}Post-freeze verification (all must match — abort ANY deviation before Task 2):${reset}"
@@ -132,13 +146,13 @@ minDelay=$(cast call --rpc-url $rpcURL $vetoTimelockAddress "getMinDelay()(uint2
 
 echo "  hasRole(PROPOSER, vetoGov)         : $propOK   (must be true)"
 echo "  hasRole(EXECUTOR, vetoGov)         : $execOK   (must be true)"
-echo "  hasRole(CANCELLER, vetoGov)        : $cancOK   (must be false — intentionally not granted)"
+echo "  hasRole(CANCELLER, vetoGov)        : $cancOK   (must be true — Bravo cancel(uint256) path)"
 echo "  hasRole(ADMIN, vetoTimelock) [FRZ] : $selfAdm  (must be false — role-freeze)"
 echo "  hasRole(ADMIN, deployer)     [FRZ] : $depAdm   (must be false — deployer renounced)"
 echo "  getMinDelay()                       : $minDelay (must be 0; monitor this — T9 alerts if != 0)"
 
 if [ "$propOK" != "true" ] || [ "$execOK" != "true" ] \
-   || [ "$cancOK" != "false" ] \
+   || [ "$cancOK" != "true" ] \
    || [ "$selfAdm" != "false" ] || [ "$depAdm" != "false" ]; then
   echo "${red}!!! Post-freeze verification FAILED. Do NOT proceed to Task 2.${reset}"
   echo "${red}    Investigate, revert if possible, or redeploy VT' from deploy_28.${reset}"

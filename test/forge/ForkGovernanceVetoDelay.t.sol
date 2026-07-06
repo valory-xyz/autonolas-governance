@@ -87,7 +87,7 @@ contract ForkGovernanceVetoDelay is Test {
     // GovernorTimelockControl.sol). The Timelock's own `minDelay` remains 0 today (it only
     // enforces a floor). Bumping `governorDelay` is what gates every Governor proposal without
     // touching Timelock A's `minDelay` (which would affect any non-Governor proposer path).
-    uint256 constant D_A = 10 days; // Governor A `governorDelay` after activation
+    uint256 constant D_A = 14 days; // Governor A `governorDelay` after activation (1209600 s, Task-2 target)
 
     // --- Test actors ------------------------------------------------------------------
     address constant ATTACKER = address(0xA77ACE1);
@@ -148,11 +148,15 @@ contract ForkGovernanceVetoDelay is Test {
         address[] memory executors = new address[](0);
         B = new TimelockController(0, proposers, executors, address(this));
 
-        // Iterative wiring. CANCELLER on VT is INTENTIONALLY NOT granted: its only consumer is
-        // GovernorCompatibilityBravo.cancel(uint256) reaching _timelock.cancel, unreachable at
-        // vetoGovernorDelay = 0.
+        // Iterative wiring. CANCELLER on VT IS granted here to match deploy_30's five-step
+        // sequence. Its consumer is GovernorCompatibilityBravo.cancel(uint256) reaching
+        // GovernorTimelockControl._cancel → _timelock.cancel(id) once a veto proposal is
+        // queued but not yet executed. queue() and execute() are separate permissionless
+        // txs on the Governor, so the queued-but-unexecuted window is unbounded — proposer
+        // self-withdrawal / below-threshold cleanup would revert forever without this grant.
         B.grantRole(PROPOSER_ROLE, VETO_GOVERNOR);
         B.grantRole(EXECUTOR_ROLE, VETO_GOVERNOR);
+        B.grantRole(CANCELLER_ROLE, VETO_GOVERNOR);
 
         // HARD REQUIREMENT (role-freeze): TimelockController's constructor grants
         // TIMELOCK_ADMIN_ROLE to `address(this)` (= VT). Veto proposals execute AS VT, so an
@@ -165,8 +169,7 @@ contract ForkGovernanceVetoDelay is Test {
         B.renounceRole(TIMELOCK_ADMIN_ROLE, address(this));
         assertFalse(B.hasRole(TIMELOCK_ADMIN_ROLE, address(B)), "freeze: VT must not self-admin");
         assertFalse(B.hasRole(TIMELOCK_ADMIN_ROLE, address(this)), "freeze: deployer must not admin VT");
-        // CANCELLER on VT intentionally NOT granted.
-        assertFalse(B.hasRole(CANCELLER_ROLE, VETO_GOVERNOR), "CANCELLER on VT: intentionally NOT granted");
+        assertTrue(B.hasRole(CANCELLER_ROLE, VETO_GOVERNOR), "CANCELLER on VT: granted for Bravo cancel path");
 
         // Activation step 1: Timelock A grants CANCELLER_ROLE to Veto Timelock. In production
         // this is a proposal executed through A (currently at governorDelay ~1.82 d).
@@ -308,6 +311,21 @@ contract ForkGovernanceVetoDelay is Test {
         assertTrue(A.hasRole(CANCELLER_ROLE, ATTACKER), "bad op fired: ATTACKER gained CANCELLER");
         assertTrue(A.isOperationDone(badId), "bad op is now Done");
 
+        // Prerequisite for a clean "not Pending" assertion:
+        //   The good op's payload is `A.cancel(badId)`. When Timelock A executes it, the inner
+        //   `A.cancel` self-call runs with `msg.sender = A`. OZ v4.8.3 `cancel` is
+        //   `onlyRole(CANCELLER_ROLE)` — checked BEFORE `require(isOperationPending, ...)`.
+        //   Live Timelock A does NOT hold CANCELLER on itself, so without this grant the revert
+        //   would come from the role check, not from the not-Pending check — the SAME bubbled
+        //   "underlying transaction reverted" string, but for the wrong reason. Grant CANCELLER
+        //   to A on itself so the revert genuinely proves the "cancel op scheduled AFTER a Done
+        //   bad op is trapped by isOperationPending==false" invariant this test exists for.
+        vm.prank(TIMELOCK_A);
+        A.grantRole(CANCELLER_ROLE, TIMELOCK_A);
+
+        // Sanity: badId is no longer Pending — this is precisely the state the retry must revert on.
+        assertFalse(A.isOperationPending(badId), "bad op is not Pending after execution (cancel trap)");
+
         // Warp to good's eta and try to execute the cancel - reverts because badId is no longer
         // Pending on A (isOperationPending is false for a Done op). The trap has closed.
         vm.warp(goodEta);
@@ -327,8 +345,8 @@ contract ForkGovernanceVetoDelay is Test {
 
         // Simulate the community reacting quickly: veto cancel fires right after the bad
         // op is scheduled. In production this would be gated by the Veto-Governor voting
-        // cycle (~4.55 days); that latency is bounded by the ~5.5-day post-passage reaction
-        // budget at D = 10 d. Here we exercise the primitive.
+        // cycle (~4.55 days); that latency is bounded by the ~9.45-day post-passage reaction
+        // budget at D = 14 d. Here we exercise the primitive.
         _vetoCancelViaB(badId, bytes32(uint256(0xF171)));
 
         // Cancelled: getTimestamp == 0 (OZ deletes _timestamps[id]).
@@ -454,8 +472,8 @@ contract ForkGovernanceVetoDelay is Test {
     /// @notice Micro-check (the design notes rigour precondition): `TimelockController.cancel(id)`
     ///         requires `isOperationPending(id)`. A veto that reaches B *before* the attacker
     ///         even queues the bad op does not silently succeed on a nonexistent id - it
-    ///         reverts, and (in the production Veto-Governor) `execute()` is retryable + B's
-    ///         op does not expire, so the veto simply fires the moment the bad op is queued.
+    ///         reverts atomically, leaving no state on A. The operational retry pattern is a
+    ///         fresh Veto-Governor proposal targeting the observed badId once it appears.
     function test_precondition_cancel_requires_pending_op() public {
         bytes32 nonexistent = keccak256("not-yet-queued");
         bytes memory cancelCalldata = abi.encodeWithSelector(ITimelock.cancel.selector, nonexistent);
@@ -466,23 +484,26 @@ contract ForkGovernanceVetoDelay is Test {
 
         // B wraps the inner A.cancel revert ("operation cannot be cancelled") into its own
         // "underlying transaction reverted" (OZ TimelockController._execute:354). The Veto-Governor
-        // proposal simply fails; because Governor.execute is retryable and the B op does not expire
-        // (queued at delay 0 with no expiry), the veto retries once the attacker actually queues.
+        // proposal simply fails; the operator (or the Veto-Governor's re-execute path) can retry
+        // once the attacker actually queues the bad op — a fresh veto-Governor proposal targeting
+        // the newly-observed badId is the standard path.
         vm.prank(VETO_GOVERNOR);
         vm.expectRevert(bytes("TimelockController: underlying transaction reverted"));
         B.execute(TIMELOCK_A, 0, cancelCalldata, NO_PREDECESSOR, salt);
 
-        // Retry after the bad op appears: prove the same B op is executable again.
+        // Follow-up: once the attacker queues, a fresh veto op (targeting the real badId, new
+        // salt) cancels cleanly. This is the operational retry pattern — the primitive that
+        // makes the "pre-emptive veto reverts, no state written" property safe in practice.
+        // (Retrying the ORIGINAL nonexistent-id op is unhelpful — attackers rarely reuse the
+        // exact predicted id — so we exercise the practical retry with a fresh cancel op.)
         (bytes32 badId, ) = _schedBadOp_grantRoleToAttacker();
-        assertEq(nonexistent, nonexistent); // silence unused warning; the retry uses a fresh salt
-
         bytes memory cancelCalldata2 = abi.encodeWithSelector(ITimelock.cancel.selector, badId);
         bytes32 salt2 = bytes32(uint256(0xEA71E6));
         vm.prank(VETO_GOVERNOR);
         B.schedule(TIMELOCK_A, 0, cancelCalldata2, NO_PREDECESSOR, salt2, 0);
         vm.prank(VETO_GOVERNOR);
         B.execute(TIMELOCK_A, 0, cancelCalldata2, NO_PREDECESSOR, salt2);
-        assertFalse(A.isOperation(badId), "bad op cancelled by retried veto");
+        assertFalse(A.isOperation(badId), "bad op cancelled by fresh veto");
     }
 
     /// @notice T8 (the design notes, Layer 1 defeat standalone) - the `votingDelay` lever, primary
