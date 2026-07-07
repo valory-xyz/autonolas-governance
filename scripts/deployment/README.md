@@ -109,13 +109,23 @@ Deploy order is load-bearing:
 
 `test/forge/ForkGovernanceVetoDelay.t.sol` is a mainnet-fork verification of the veto
 stack. It (and the pre-existing `ForkDeployGovernance.t.sol`) depend on `forge-std`,
-which is **not** tracked as a submodule in this repo. From a fresh clone:
+which is tracked as a submodule pinned to `v1.9.7` (see `.gitmodules`).
+
+Fresh clone:
 
 ```bash
-# One-time: install forge-std into lib/
-forge install foundry-rs/forge-std --no-commit
+git clone --recursive git@github.com:valory-xyz/autonolas-governance.git
+```
 
-# Run the veto-stack suite (mainnet fork)
+Existing clone that pre-dates the submodule:
+
+```bash
+git submodule update --init --recursive
+```
+
+Then:
+
+```bash
 ETH_RPC_URL=<mainnet-rpc-url> forge test --match-contract ForkGovernanceVetoDelay -vv
 ```
 
