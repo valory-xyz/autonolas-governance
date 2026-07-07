@@ -1,0 +1,1407 @@
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/Burner.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/DeploymentFactory.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+Compilation warnings/errors on contracts/DeploymentFactory.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/wveOLAS.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+Compilation warnings/errors on contracts/wveOLAS.sol:
+Warning: Function state mutability can be restricted to view
+   --> contracts/wveOLAS.sol:297:5:
+    |
+297 |     function transfer(address, uint256) external returns (bool) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning: Function state mutability can be restricted to view
+   --> contracts/wveOLAS.sol:302:5:
+    |
+302 |     function approve(address, uint256) external returns (bool) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning: Function state mutability can be restricted to view
+   --> contracts/wveOLAS.sol:307:5:
+    |
+307 |     function transferFrom(address, address, uint256) external returns (bool) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning: Function state mutability can be restricted to view
+   --> contracts/wveOLAS.sol:322:5:
+    |
+322 |     function delegate(address) external
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning: Function state mutability can be restricted to view
+   --> contracts/wveOLAS.sol:328:5:
+    |
+328 |     function delegateBySig(address, uint256, uint256, uint8, bytes32, bytes32) external
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/buOLAS.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+Compilation warnings/errors on contracts/buOLAS.sol:
+Warning: This declaration shadows an existing declaration.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+Note: The shadowed declaration is here:
+  --> contracts/buOLAS.sol:54:5:
+   |
+54 |     address public owner;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:23:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:316:35:
+    |
+316 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:22:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:321:39:
+    |
+321 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:27:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:41:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:326:53:
+    |
+326 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:24:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/buOLAS.sol:331:39:
+    |
+331 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/GovernorOLAS.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+Compilation warnings/errors on contracts/GovernorOLAS.sol:
+Warning: Contract code size is 24936 bytes and exceeds 24576 bytes (a limit introduced in Spurious Dragon). This contract may not be deployable on Mainnet. Consider enabling the optimizer (with a low "runs" value!), turning off revert strings, or using libraries.
+  --> contracts/GovernorOLAS.sol:19:1:
+   |
+19 | contract GovernorOLAS is
+   | ^ (Relevant source part starts here and spans across multiple lines).
+
+
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/OLAS.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/VoteWeighting.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/veOLAS.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+Compilation warnings/errors on contracts/veOLAS.sol:
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:23:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                       ^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:767:35:
+    |
+767 |     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    |                                   ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:22:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                      ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:772:39:
+    |
+772 |     function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    |                                       ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:27:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                           ^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:41:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                         ^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:777:53:
+    |
+777 |     function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    |                                                     ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:24:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                        ^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:782:39:
+    |
+782 |     function allowance(address owner, address spender) external view virtual override returns (uint256)
+    |                                       ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:788:24:
+    |
+788 |     function delegates(address account) external view virtual override returns (address)
+    |                        ^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:794:23:
+    |
+794 |     function delegate(address delegatee) external virtual override
+    |                       ^^^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:28:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                            ^^^^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:47:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                               ^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:62:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                              ^^^^^^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:78:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                              ^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:87:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                       ^^^^^^^^^
+
+Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> contracts/veOLAS.sol:800:98:
+    |
+800 |     function delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)
+    |                                                                                                  ^^^^^^^^^
+
+
+'forge config --json' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 --version' running
+'/home/andrey/.solc-select/artifacts/solc-0.8.30/solc-0.8.30 @gnosis.pm/=node_modules/@gnosis.pm/ @openzeppelin/=node_modules/@openzeppelin/ fx-portal/=node_modules/fx-portal/ @handlers/=lib/fx-portal/test/handlers/ @mock/=lib/fx-portal/test/mock/ @utils/=lib/fx-portal/test/utils/ ds-test/=lib/solmate/lib/ds-test/src/ forge-std/=lib/fx-portal/lib/forge-std/src/ openzeppelin-contracts/=lib/fx-portal/lib/openzeppelin-contracts/ solmate/=lib/solmate/src/ contracts/Timelock.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --optimize --optimize-runs 1000000 --evm-version prague --allow-paths .,/home/andrey/llm-work/autonolas-governance/contracts' running
+INFO:Detectors:
+Burner.burn() (contracts/Burner.sol#44-65) uses a dangerous strict equality:
+	- olasBalance == 0 (contracts/Burner.sol#55)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+Reentrancy in Burner.burn() (contracts/Burner.sol#44-65):
+	External calls:
+	- IToken(olas).burn(olasBalance) (contracts/Burner.sol#60)
+	State variables written after the call(s):
+	- _locked = 1 (contracts/Burner.sol#64)
+	Burner._locked (contracts/Burner.sol#31) can be used in cross function reentrancies:
+	- Burner.burn() (contracts/Burner.sol#44-65)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+Reentrancy in Burner.burn() (contracts/Burner.sol#44-65):
+	External calls:
+	- IToken(olas).burn(olasBalance) (contracts/Burner.sol#60)
+	Event emitted after the call(s):
+	- Burned(olasBalance) (contracts/Burner.sol#62)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType) (contracts/veOLAS.sol#330-369) ignores return value by IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/veOLAS.sol#364)
+veOLAS.withdraw() (contracts/veOLAS.sol#510-535) ignores return value by IERC20(token).transfer(msg.sender,amount) (contracts/veOLAS.sol#534)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) performs a multiplication on the result of a division:
+	- tStep = (lastCheckpoint / WEEK) * WEEK (contracts/veOLAS.sol#231)
+veOLAS._createLockFor(address,uint256,uint256) (contracts/veOLAS.sol#425-454) performs a multiplication on the result of a division:
+	- unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK (contracts/veOLAS.sol#433)
+veOLAS.increaseUnlockTime(uint256) (contracts/veOLAS.sol#483-507) performs a multiplication on the result of a division:
+	- unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK (contracts/veOLAS.sol#487)
+veOLAS._supplyLockedAt(PointVoting,uint64) (contracts/veOLAS.sol#690-715) performs a multiplication on the result of a division:
+	- tStep = (lastPoint.ts / WEEK) * WEEK (contracts/veOLAS.sol#692)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses a dangerous strict equality:
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#202)
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses a dangerous strict equality:
+	- tStep == block.timestamp (contracts/veOLAS.sol#265)
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses a dangerous strict equality:
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#300)
+veOLAS._supplyLockedAt(PointVoting,uint64) (contracts/veOLAS.sol#690-715) uses a dangerous strict equality:
+	- tStep == ts (contracts/veOLAS.sol#705)
+veOLAS.depositFor(address,uint256) (contracts/veOLAS.sol#376-397) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#383)
+veOLAS.increaseAmount(uint256) (contracts/veOLAS.sol#458-479) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#465)
+veOLAS.increaseUnlockTime(uint256) (contracts/veOLAS.sol#483-507) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#490)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).oldDSlope (contracts/veOLAS.sol#181) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).uOld (contracts/veOLAS.sol#179) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).newDSlope (contracts/veOLAS.sol#182) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).dSlope (contracts/veOLAS.sol#239) is a local variable never initialized
+veOLAS._supplyLockedAt(PointVoting,uint64).dSlope (contracts/veOLAS.sol#698) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).uNew (contracts/veOLAS.sol#180) is a local variable never initialized
+veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType).oldLocked (contracts/veOLAS.sol#345) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).block_slope (contracts/veOLAS.sol#221) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+INFO:Detectors:
+DeploymentFactory.deployVeOLAS(bytes32,address).token (contracts/DeploymentFactory.sol#67) lacks a zero-check on :
+		- veOLASAddress = Create2.deploy(0,salt,abi.encodePacked(type()(veOLAS).creationCode,abi.encode(token,Voting Escrow OLAS,veOLAS))) (contracts/DeploymentFactory.sol#73)
+veOLAS.constructor(address,string,string)._token (contracts/veOLAS.sol#132) lacks a zero-check on :
+		- token = _token (contracts/veOLAS.sol#134)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Reentrancy in veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType) (contracts/veOLAS.sol#330-369):
+	External calls:
+	- IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/veOLAS.sol#364)
+	Event emitted after the call(s):
+	- Deposit(account,amount,lockedBalance.endTime,depositType,block.timestamp) (contracts/veOLAS.sol#367)
+	- Supply(supplyBefore,supplyAfter) (contracts/veOLAS.sol#368)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+OLAS.inflationRemainder() (contracts/OLAS.sol#98-114) uses timestamp for comparisons
+	Dangerous comparisons:
+	- numYears > 9 (contracts/OLAS.sol#105)
+	- i < numYears (contracts/OLAS.sol#108)
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses timestamp for comparisons
+	Dangerous comparisons:
+	- oldLocked.endTime > block.timestamp && oldLocked.amount > 0 (contracts/veOLAS.sol#188)
+	- newLocked.endTime > block.timestamp && newLocked.amount > 0 (contracts/veOLAS.sol#192)
+	- newLocked.endTime > 0 (contracts/veOLAS.sol#201)
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#202)
+	- block.timestamp > lastPoint.ts (contracts/veOLAS.sol#222)
+	- tStep > block.timestamp (contracts/veOLAS.sol#240)
+	- lastPoint.bias < 0 (contracts/veOLAS.sol#247)
+	- lastPoint.slope < 0 (contracts/veOLAS.sol#251)
+	- tStep == block.timestamp (contracts/veOLAS.sol#265)
+	- lastPoint.slope < 0 (contracts/veOLAS.sol#282)
+	- lastPoint.bias < 0 (contracts/veOLAS.sol#285)
+	- oldLocked.endTime > block.timestamp (contracts/veOLAS.sol#297)
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#300)
+	- newLocked.endTime > block.timestamp && newLocked.endTime > oldLocked.endTime (contracts/veOLAS.sol#306)
+veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType) (contracts/veOLAS.sol#330-369) uses timestamp for comparisons
+	Dangerous comparisons:
+	- unlockTime > 0 (contracts/veOLAS.sol#352)
+veOLAS.depositFor(address,uint256) (contracts/veOLAS.sol#376-397) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#383)
+	- lockedBalance.endTime < (block.timestamp + 1) (contracts/veOLAS.sol#387)
+veOLAS._createLockFor(address,uint256,uint256) (contracts/veOLAS.sol#425-454) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount > 0 (contracts/veOLAS.sol#437)
+	- unlockTime < (block.timestamp + 1) (contracts/veOLAS.sol#441)
+	- unlockTime > block.timestamp + MAXTIME (contracts/veOLAS.sol#445)
+veOLAS.increaseAmount(uint256) (contracts/veOLAS.sol#458-479) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#465)
+	- lockedBalance.endTime < (block.timestamp + 1) (contracts/veOLAS.sol#469)
+veOLAS.increaseUnlockTime(uint256) (contracts/veOLAS.sol#483-507) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#490)
+	- lockedBalance.endTime < (block.timestamp + 1) (contracts/veOLAS.sol#494)
+	- unlockTime < (lockedBalance.endTime + 1) (contracts/veOLAS.sol#498)
+	- unlockTime > block.timestamp + MAXTIME (contracts/veOLAS.sol#502)
+veOLAS.withdraw() (contracts/veOLAS.sol#510-535) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.endTime > block.timestamp (contracts/veOLAS.sol#512)
+veOLAS._findPointByBlock(uint256,address) (contracts/veOLAS.sol#542-587) uses timestamp for comparisons
+	Dangerous comparisons:
+	- point.blockNumber < (blockNumber + 1) (contracts/veOLAS.sol#574)
+veOLAS._balanceOfLocked(address,uint64) (contracts/veOLAS.sol#593-602) uses timestamp for comparisons
+	Dangerous comparisons:
+	- uPoint.bias > 0 (contracts/veOLAS.sol#598)
+veOLAS.balanceOfAt(address,uint256) (contracts/veOLAS.sol#622-629) uses timestamp for comparisons
+	Dangerous comparisons:
+	- uPoint.blockNumber < (blockNumber + 1) (contracts/veOLAS.sol#626)
+veOLAS._getBlockTime(uint256) (contracts/veOLAS.sol#643-666) uses timestamp for comparisons
+	Dangerous comparisons:
+	- minPointNumber < totalNumPoints (contracts/veOLAS.sol#654)
+	- dBlock > 0 (contracts/veOLAS.sol#663)
+veOLAS.getPastVotes(address,uint256) (contracts/veOLAS.sol#672-684) uses timestamp for comparisons
+	Dangerous comparisons:
+	- uPoint.bias > 0 (contracts/veOLAS.sol#681)
+veOLAS._supplyLockedAt(PointVoting,uint64) (contracts/veOLAS.sol#690-715) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tStep > ts (contracts/veOLAS.sol#699)
+	- tStep == ts (contracts/veOLAS.sol#705)
+	- lastPoint.bias > 0 (contracts/veOLAS.sol#712)
+veOLAS.totalSupplyAt(uint256) (contracts/veOLAS.sol#726-733) uses timestamp for comparisons
+	Dangerous comparisons:
+	- sPoint.blockNumber < (blockNumber + 1) (contracts/veOLAS.sol#730)
+ERC20.permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (lib/solmate/src/tokens/ERC20.sol#116-160) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(deadline >= block.timestamp,PERMIT_DEADLINE_EXPIRED) (lib/solmate/src/tokens/ERC20.sol#125)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+Create2.deploy(uint256,bytes32,bytes) (node_modules/@openzeppelin/contracts/utils/Create2.sol#30-42) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Create2.sol#38-40)
+Create2.computeAddress(bytes32,bytes32,address) (node_modules/@openzeppelin/contracts/utils/Create2.sol#56-82) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Create2.sol#62-81)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+3 different versions of Solidity are used:
+	- Version constraint ^0.8.15 is used by:
+		-^0.8.15 (contracts/DeploymentFactory.sol#2)
+		-^0.8.15 (contracts/OLAS.sol#2)
+		-^0.8.15 (contracts/interfaces/IErrors.sol#2)
+		-^0.8.15 (contracts/veOLAS.sol#2)
+	- Version constraint >=0.8.0 is used by:
+		->=0.8.0 (lib/solmate/src/tokens/ERC20.sol#2)
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol#3)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Create2.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) has a high cyclomatic complexity (20).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+INFO:Detectors:
+Version constraint ^0.8.15 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- StorageWriteRemovalBeforeConditionalTermination
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup.
+It is used by:
+	- ^0.8.15 (contracts/DeploymentFactory.sol#2)
+	- ^0.8.15 (contracts/OLAS.sol#2)
+	- ^0.8.15 (contracts/interfaces/IErrors.sol#2)
+	- ^0.8.15 (contracts/veOLAS.sol#2)
+Version constraint >=0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- >=0.8.0 (lib/solmate/src/tokens/ERC20.sol#2)
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol#3)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Create2.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Contract veOLAS (contracts/veOLAS.sol#86-805) is not in CapWords
+Function ERC20.DOMAIN_SEPARATOR() (lib/solmate/src/tokens/ERC20.sol#162-164) is not in mixedCase
+Variable ERC20.INITIAL_CHAIN_ID (lib/solmate/src/tokens/ERC20.sol#41) is not in mixedCase
+Variable ERC20.INITIAL_DOMAIN_SEPARATOR (lib/solmate/src/tokens/ERC20.sol#43) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+DeploymentFactory.deployOLAS(bytes32) (contracts/DeploymentFactory.sol#44-56) uses literals with too many digits:
+	- olasAddress = Create2.deploy(0,salt,abi.encodePacked(type()(OLAS).creationCode)) (contracts/DeploymentFactory.sol#51)
+DeploymentFactory.computeOLASAddress(bytes32) (contracts/DeploymentFactory.sol#61-63) uses literals with too many digits:
+	- Create2.computeAddress(salt,keccak256(bytes)(abi.encodePacked(type()(OLAS).creationCode))) (contracts/DeploymentFactory.sol#62)
+DeploymentFactory.deployVeOLAS(bytes32,address) (contracts/DeploymentFactory.sol#67-74) uses literals with too many digits:
+	- veOLASAddress = Create2.deploy(0,salt,abi.encodePacked(type()(veOLAS).creationCode,abi.encode(token,Voting Escrow OLAS,veOLAS))) (contracts/DeploymentFactory.sol#73)
+DeploymentFactory.computeVeOLASAddress(bytes32,address) (contracts/DeploymentFactory.sol#79-81) uses literals with too many digits:
+	- Create2.computeAddress(salt,keccak256(bytes)(abi.encodePacked(type()(veOLAS).creationCode,abi.encode(token,Voting Escrow OLAS,veOLAS)))) (contracts/DeploymentFactory.sol#80)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#too-many-digits
+INFO:Detectors:
+Version constraint ^0.8.19 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.19 (contracts/wveOLAS.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+wveOLAS (contracts/wveOLAS.sol#130-337) should inherit from IVEOLAS (contracts/wveOLAS.sol#13-105)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-inheritance
+INFO:Detectors:
+Contract wveOLAS (contracts/wveOLAS.sol#130-337) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+buOLAS.createLockFor(address,uint256,uint256) (contracts/buOLAS.sol#95-149) ignores return value by IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/buOLAS.sol#145)
+buOLAS.withdraw() (contracts/buOLAS.sol#152-207) ignores return value by IERC20(token).transfer(msg.sender,amount) (contracts/buOLAS.sol#205)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+INFO:Detectors:
+buOLAS._releasableAmount(LockedBalance) (contracts/buOLAS.sol#271-299) performs a multiplication on the result of a division:
+	- releasedSteps = (uint32(block.timestamp) - lockedBalance.startTime) / STEP_TIME (contracts/buOLAS.sol#283)
+	- amount = uint256(lockedBalance.totalAmount * releasedSteps / numSteps) (contracts/buOLAS.sol#295)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+buOLAS._releasableAmount(LockedBalance) (contracts/buOLAS.sol#271-299) uses a dangerous strict equality:
+	- lockedBalance.endTime == 0 (contracts/buOLAS.sol#273)
+buOLAS.balanceOf(address) (contracts/buOLAS.sol#242-252) uses a dangerous strict equality:
+	- lockedBalance.endTime == 0 (contracts/buOLAS.sol#245)
+buOLAS.withdraw() (contracts/buOLAS.sol#152-207) uses a dangerous strict equality:
+	- amount == 0 (contracts/buOLAS.sol#159)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+Reentrancy in buOLAS.withdraw() (contracts/buOLAS.sol#152-207):
+	External calls:
+	- IOLAS(token).burn(amountBurn) (contracts/buOLAS.sol#183)
+	State variables written after the call(s):
+	- mapLockedBalances[msg.sender] = LockedBalance(0,0,0,0) (contracts/buOLAS.sol#192)
+	buOLAS.mapLockedBalances (contracts/buOLAS.sol#56) can be used in cross function reentrancies:
+	- buOLAS.balanceOf(address) (contracts/buOLAS.sol#242-252)
+	- buOLAS.createLockFor(address,uint256,uint256) (contracts/buOLAS.sol#95-149)
+	- buOLAS.lockedEnd(address) (contracts/buOLAS.sol#304-306)
+	- buOLAS.mapLockedBalances (contracts/buOLAS.sol#56)
+	- buOLAS.releasableAmount(address) (contracts/buOLAS.sol#263-266)
+	- buOLAS.revoke(address[]) (contracts/buOLAS.sol#212-237)
+	- buOLAS.withdraw() (contracts/buOLAS.sol#152-207)
+	- supply = supplyAfter (contracts/buOLAS.sol#198)
+	buOLAS.supply (contracts/buOLAS.sol#47) can be used in cross function reentrancies:
+	- buOLAS.createLockFor(address,uint256,uint256) (contracts/buOLAS.sol#95-149)
+	- buOLAS.supply (contracts/buOLAS.sol#47)
+	- buOLAS.totalSupply() (contracts/buOLAS.sol#256-258)
+	- buOLAS.withdraw() (contracts/buOLAS.sol#152-207)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+buOLAS.allowance(address,address).owner (contracts/buOLAS.sol#331) shadows:
+	- buOLAS.owner (contracts/buOLAS.sol#54) (state variable)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
+INFO:Detectors:
+buOLAS.constructor(address,string,string)._token (contracts/buOLAS.sol#67) lacks a zero-check on :
+		- token = _token (contracts/buOLAS.sol#69)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Reentrancy in buOLAS.createLockFor(address,uint256,uint256) (contracts/buOLAS.sol#95-149):
+	External calls:
+	- IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/buOLAS.sol#145)
+	Event emitted after the call(s):
+	- Lock(account,amount,block.timestamp,unlockTime) (contracts/buOLAS.sol#147)
+	- Supply(supplyBefore,supplyAfter) (contracts/buOLAS.sol#148)
+Reentrancy in buOLAS.withdraw() (contracts/buOLAS.sol#152-207):
+	External calls:
+	- IOLAS(token).burn(amountBurn) (contracts/buOLAS.sol#183)
+	Event emitted after the call(s):
+	- Burn(msg.sender,amountBurn,block.timestamp) (contracts/buOLAS.sol#189)
+	- Supply(supplyBefore,supplyAfter) (contracts/buOLAS.sol#202)
+	- Withdraw(msg.sender,amount,block.timestamp) (contracts/buOLAS.sol#201)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+buOLAS.createLockFor(address,uint256,uint256) (contracts/buOLAS.sol#95-149) uses timestamp for comparisons
+	Dangerous comparisons:
+	- unlockTime > type()(uint32).max (contracts/buOLAS.sol#115)
+	- lockedBalance.totalAmount > 0 (contracts/buOLAS.sol#125)
+buOLAS.withdraw() (contracts/buOLAS.sol#152-207) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.startTime > 0 (contracts/buOLAS.sol#155)
+	- amount == 0 (contracts/buOLAS.sol#159)
+	- lockedBalance.endTime > 0 (contracts/buOLAS.sol#166)
+	- (lockedBalance.transferredAmount + 1) > lockedBalance.totalAmount (contracts/buOLAS.sol#173)
+	- amountBurn > 0 (contracts/buOLAS.sol#182)
+buOLAS.balanceOf(address) (contracts/buOLAS.sol#242-252) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.endTime == 0 (contracts/buOLAS.sol#245)
+buOLAS._releasableAmount(LockedBalance) (contracts/buOLAS.sol#271-299) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.endTime == 0 (contracts/buOLAS.sol#273)
+	- (releasedSteps + 1) > numSteps (contracts/buOLAS.sol#287)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+2 different versions of Solidity are used:
+	- Version constraint ^0.8.15 is used by:
+		-^0.8.15 (contracts/buOLAS.sol#2)
+		-^0.8.15 (contracts/interfaces/IErrors.sol#2)
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Version constraint ^0.8.15 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- StorageWriteRemovalBeforeConditionalTermination
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup.
+It is used by:
+	- ^0.8.15 (contracts/buOLAS.sol#2)
+	- ^0.8.15 (contracts/interfaces/IErrors.sol#2)
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Contract buOLAS (contracts/buOLAS.sol#34-335) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+Governor._execute(uint256,address[],uint256[],bytes[],bytes32) (node_modules/@openzeppelin/contracts/governance/Governor.sol#316-328) sends eth to arbitrary user
+	Dangerous calls:
+	- (success,returndata) = targets[i].call{value: values[i]}(calldatas[i]) (node_modules/@openzeppelin/contracts/governance/Governor.sol#325)
+Governor.relay(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/Governor.sol#543-550) sends eth to arbitrary user
+	Dangerous calls:
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/Governor.sol#548)
+TimelockController._execute(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#348-355) sends eth to arbitrary user
+	Dangerous calls:
+	- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#functions-that-send-ether-to-arbitrary-destinations
+INFO:Detectors:
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) has bitwise-xor operator ^ instead of the exponentiation operator **: 
+	 - inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#117)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-exponentiation
+INFO:Detectors:
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#117)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#121)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#122)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#123)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#124)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#125)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#126)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- prod0 = prod0 / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#105)
+	- result = prod0 * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#132)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+Checkpoints._insert(Checkpoints.Checkpoint[],uint32,uint224) (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#136-161) uses a dangerous strict equality:
+	- last._blockNumber == key (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#151)
+TimelockController.isOperationDone(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#162-164) uses a dangerous strict equality:
+	- getTimestamp(id) == _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#163)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+Governor._execute(uint256,address[],uint256[],bytes[],bytes32) (node_modules/@openzeppelin/contracts/governance/Governor.sol#316-328) ignores return value by Address.verifyCallResult(success,returndata,errorMessage) (node_modules/@openzeppelin/contracts/governance/Governor.sol#326)
+Governor.relay(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/Governor.sol#543-550) ignores return value by Address.verifyCallResult(success,returndata,Governor: relay reverted without message) (node_modules/@openzeppelin/contracts/governance/Governor.sol#549)
+GovernorVotesQuorumFraction._updateQuorumNumerator(uint256) (node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol#99-118) ignores return value by _quorumNumeratorHistory.push(newQuorumNumerator) (node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol#115)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+GovernorOLAS.constructor(IVotes,TimelockController,uint256,uint256,uint256,uint256,uint256).timelock (contracts/GovernorOLAS.sol#29) shadows:
+	- GovernorTimelockControl.timelock() (node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol#75-77) (function)
+	- IGovernorTimelock.timelock() (node_modules/@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol#16) (function)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
+INFO:Detectors:
+Governor.relay(address,uint256,bytes).target (node_modules/@openzeppelin/contracts/governance/Governor.sol#544) lacks a zero-check on :
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/Governor.sol#548)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+TimelockController._execute(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#348-355) has external calls inside a loop: (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in TimelockController.execute(address,uint256,bytes,bytes32,bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#295-308):
+	External calls:
+	- _execute(target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#305)
+		- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+	Event emitted after the call(s):
+	- CallExecuted(id,0,target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#306)
+Reentrancy in TimelockController.executeBatch(address[],uint256[],bytes[],bytes32,bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#322-343):
+	External calls:
+	- _execute(target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#339)
+		- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+	Event emitted after the call(s):
+	- CallExecuted(id,i,target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#340)
+Reentrancy in GovernorTimelockControl.queue(address[],uint256[],bytes[],bytes32) (contracts/utils/GovernorTimelockControl.sol#103-122):
+	External calls:
+	- _timelock.scheduleBatch(targets,values,calldatas,0,descriptionHash,delay) (contracts/utils/GovernorTimelockControl.sol#117)
+	Event emitted after the call(s):
+	- ProposalQueued(proposalId,block.timestamp + delay) (contracts/utils/GovernorTimelockControl.sol#119)
+Reentrancy in GovernorTimelockControl.queue(address[],uint256[],bytes[],bytes32) (node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol#90-107):
+	External calls:
+	- _timelock.scheduleBatch(targets,values,calldatas,0,descriptionHash,delay) (node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol#102)
+	Event emitted after the call(s):
+	- ProposalQueued(proposalId,block.timestamp + delay) (node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol#104)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+TimelockController.isOperation(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#140-142) uses timestamp for comparisons
+	Dangerous comparisons:
+	- getTimestamp(id) > 0 (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#141)
+TimelockController.isOperationPending(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#147-149) uses timestamp for comparisons
+	Dangerous comparisons:
+	- getTimestamp(id) > _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#148)
+TimelockController.isOperationReady(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#154-157) uses timestamp for comparisons
+	Dangerous comparisons:
+	- timestamp > _DONE_TIMESTAMP && timestamp <= block.timestamp (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#156)
+TimelockController.isOperationDone(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#162-164) uses timestamp for comparisons
+	Dangerous comparisons:
+	- getTimestamp(id) == _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#163)
+TimelockController._beforeCall(bytes32,bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#360-363) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(predecessor == bytes32(0) || isOperationDone(predecessor),TimelockController: missing dependency) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#362)
+Timers.isPending(Timers.Timestamp) (node_modules/@openzeppelin/contracts/utils/Timers.sol#34-36) uses timestamp for comparisons
+	Dangerous comparisons:
+	- timer._deadline > block.timestamp (node_modules/@openzeppelin/contracts/utils/Timers.sol#35)
+Timers.isExpired(Timers.Timestamp) (node_modules/@openzeppelin/contracts/utils/Timers.sol#38-40) uses timestamp for comparisons
+	Dangerous comparisons:
+	- isStarted(timer) && timer._deadline <= block.timestamp (node_modules/@openzeppelin/contracts/utils/Timers.sol#39)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+Void constructor called in GovernorOLAS.constructor(IVotes,TimelockController,uint256,uint256,uint256,uint256,uint256) (contracts/GovernorOLAS.sol#27-41):
+	- GovernorTimelockControl(timelock,initialGovernorDelay) (contracts/GovernorOLAS.sol#40)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#void-constructor
+INFO:Detectors:
+Address._revert(bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#231-243) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Address.sol#236-239)
+Checkpoints._unsafeAccess(Checkpoints.Checkpoint[],uint256) (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#212-217) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#213-216)
+Checkpoints._unsafeAccess(Checkpoints.Checkpoint224[],uint256) (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#376-385) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#381-384)
+Checkpoints._unsafeAccess(Checkpoints.Checkpoint160[],uint256) (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#544-553) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#549-552)
+Strings.toString(uint256) (node_modules/@openzeppelin/contracts/utils/Strings.sol#18-38) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Strings.sol#24-26)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Strings.sol#30-32)
+ECDSA.tryRecover(bytes32,bytes) (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#55-72) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#63-67)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#66-70)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#86-93)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#100-109)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+5 different versions of Solidity are used:
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (contracts/GovernorOLAS.sol#2)
+	- Version constraint ^0.8.30 is used by:
+		-^0.8.30 (contracts/utils/GovernorTimelockControl.sol#4)
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/AccessControl.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/IAccessControl.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/Governor.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/compatibility/IGovernorCompatibilityBravo.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorSettings.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotes.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol#3)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#5)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Strings.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Timers.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol#5)
+	- Version constraint ^0.8.1 is used by:
+		-^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+	- Version constraint ^0.8.4 is used by:
+		-^0.8.4 (node_modules/@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol#3)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Governor._execute(uint256,address[],uint256[],bytes[],bytes32) (node_modules/@openzeppelin/contracts/governance/Governor.sol#316-328) is never used and should be removed
+Governor._executor() (node_modules/@openzeppelin/contracts/governance/Governor.sol#556-558) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+INFO:Detectors:
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.20 (contracts/GovernorOLAS.sol#2)
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/AccessControl.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/IAccessControl.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/Governor.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/compatibility/IGovernorCompatibilityBravo.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorSettings.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotes.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol#3)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Checkpoints.sol#5)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Strings.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Timers.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol#5)
+Version constraint ^0.8.1 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+Version constraint ^0.8.4 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables.
+It is used by:
+	- ^0.8.4 (node_modules/@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol#3)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in Governor._execute(uint256,address[],uint256[],bytes[],bytes32) (node_modules/@openzeppelin/contracts/governance/Governor.sol#316-328):
+	- (success,returndata) = targets[i].call{value: values[i]}(calldatas[i]) (node_modules/@openzeppelin/contracts/governance/Governor.sol#325)
+Low level call in Governor.relay(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/Governor.sol#543-550):
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/Governor.sol#548)
+Low level call in TimelockController._execute(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#348-355):
+	- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+Low level call in Address.sendValue(address,uint256) (node_modules/@openzeppelin/contracts/utils/Address.sol#60-65):
+	- (success,None) = recipient.call{value: amount}() (node_modules/@openzeppelin/contracts/utils/Address.sol#63)
+Low level call in Address.functionCallWithValue(address,bytes,uint256,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#128-137):
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+Low level call in Address.functionStaticCall(address,bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#155-162):
+	- (success,returndata) = target.staticcall(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#160)
+Low level call in Address.functionDelegateCall(address,bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#180-187):
+	- (success,returndata) = target.delegatecall(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#185)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Function IGovernor.COUNTING_MODE() (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#107) is not in mixedCase
+Function GovernorCompatibilityBravo.COUNTING_MODE() (node_modules/@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol#44-46) is not in mixedCase
+Variable EIP712._CACHED_DOMAIN_SEPARATOR (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#31) is not in mixedCase
+Variable EIP712._CACHED_CHAIN_ID (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#32) is not in mixedCase
+Variable EIP712._CACHED_THIS (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#33) is not in mixedCase
+Variable EIP712._HASHED_NAME (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#35) is not in mixedCase
+Variable EIP712._HASHED_VERSION (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#36) is not in mixedCase
+Variable EIP712._TYPE_HASH (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#37) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+GovernorTimelockControl (contracts/utils/GovernorTimelockControl.sol#32-205) does not implement functions:
+	- IGovernor.COUNTING_MODE() (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#107)
+	- Governor._countVote(uint256,address,uint8,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/Governor.sol#224-230)
+	- Governor._getVotes(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/Governor.sol#213-217)
+	- Governor._quorumReached(uint256) (node_modules/@openzeppelin/contracts/governance/Governor.sol#203)
+	- Governor._voteSucceeded(uint256) (node_modules/@openzeppelin/contracts/governance/Governor.sol#208)
+	- IGovernor.hasVoted(uint256,address) (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#189)
+	- IGovernor.quorum(uint256) (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#164)
+	- IGovernor.votingDelay() (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#146)
+	- IGovernor.votingPeriod() (node_modules/@openzeppelin/contracts/governance/IGovernor.sol#155)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unimplemented-functions
+INFO:Detectors:
+OLAS.inflationRemainder() (contracts/OLAS.sol#98-114) uses timestamp for comparisons
+	Dangerous comparisons:
+	- numYears > 9 (contracts/OLAS.sol#105)
+	- i < numYears (contracts/OLAS.sol#108)
+ERC20.permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (lib/solmate/src/tokens/ERC20.sol#116-160) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(deadline >= block.timestamp,PERMIT_DEADLINE_EXPIRED) (lib/solmate/src/tokens/ERC20.sol#125)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+2 different versions of Solidity are used:
+	- Version constraint ^0.8.15 is used by:
+		-^0.8.15 (contracts/OLAS.sol#2)
+	- Version constraint >=0.8.0 is used by:
+		->=0.8.0 (lib/solmate/src/tokens/ERC20.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Version constraint ^0.8.15 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- StorageWriteRemovalBeforeConditionalTermination
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup.
+It is used by:
+	- ^0.8.15 (contracts/OLAS.sol#2)
+Version constraint >=0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- >=0.8.0 (lib/solmate/src/tokens/ERC20.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Function ERC20.DOMAIN_SEPARATOR() (lib/solmate/src/tokens/ERC20.sol#162-164) is not in mixedCase
+Variable ERC20.INITIAL_CHAIN_ID (lib/solmate/src/tokens/ERC20.sol#41) is not in mixedCase
+Variable ERC20.INITIAL_DOMAIN_SEPARATOR (lib/solmate/src/tokens/ERC20.sol#43) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+VoteWeighting.constructor(address) (contracts/VoteWeighting.sol#206-220) performs a multiplication on the result of a division:
+	- timeSum = block.timestamp / WEEK * WEEK (contracts/VoteWeighting.sol#215)
+VoteWeighting._addNominee(Nominee) (contracts/VoteWeighting.sol#293-320) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (contracts/VoteWeighting.sol#310)
+VoteWeighting._nomineeRelativeWeight(bytes32,uint256,uint256) (contracts/VoteWeighting.sol#420-435) performs a multiplication on the result of a division:
+	- t = time / WEEK * WEEK (contracts/VoteWeighting.sol#425)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (contracts/VoteWeighting.sol#474-558) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (contracts/VoteWeighting.sol#490)
+VoteWeighting.removeNominee(bytes32,uint256) (contracts/VoteWeighting.sol#587-642) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (contracts/VoteWeighting.sol#606)
+VoteWeighting.revokeRemovedNomineeVotingPower(bytes32,uint256) (contracts/VoteWeighting.sol#647-684) performs a multiplication on the result of a division:
+	- nextTime = (block.timestamp + WEEK) / WEEK * WEEK (contracts/VoteWeighting.sol#663)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256).oldBias (contracts/VoteWeighting.sol#510) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+INFO:Detectors:
+VoteWeighting.changeDispenser(address).newDispenser (contracts/VoteWeighting.sol#387) lacks a zero-check on :
+		- dispenser = newDispenser (contracts/VoteWeighting.sol#393)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (contracts/VoteWeighting.sol#474-558) has external calls inside a loop: userSlope = IVEOLAS(ve).getLastUserPoint(msg.sender).slope (contracts/VoteWeighting.sol#484)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (contracts/VoteWeighting.sol#474-558) has external calls inside a loop: lockEnd = IVEOLAS(ve).lockedEnd(msg.sender) (contracts/VoteWeighting.sol#489)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in VoteWeighting._addNominee(Nominee) (contracts/VoteWeighting.sol#293-320):
+	External calls:
+	- IDispenser(localDispenser).addNominee(nomineeHash) (contracts/VoteWeighting.sol#316)
+	Event emitted after the call(s):
+	- AddNominee(nominee.account,nominee.chainId,id) (contracts/VoteWeighting.sol#319)
+Reentrancy in VoteWeighting.removeNominee(bytes32,uint256) (contracts/VoteWeighting.sol#587-642):
+	External calls:
+	- IDispenser(localDispenser).removeNominee(nomineeHash) (contracts/VoteWeighting.sol#638)
+	Event emitted after the call(s):
+	- RemoveNominee(account,chainId,newSum) (contracts/VoteWeighting.sol#641)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+VoteWeighting._getSum() (contracts/VoteWeighting.sol#224-249) uses timestamp for comparisons
+	Dangerous comparisons:
+	- t > block.timestamp (contracts/VoteWeighting.sol#229)
+	- t > block.timestamp (contracts/VoteWeighting.sol#244)
+VoteWeighting._getWeight(bytes32,uint256) (contracts/VoteWeighting.sol#255-289) uses timestamp for comparisons
+	Dangerous comparisons:
+	- t > block.timestamp (contracts/VoteWeighting.sol#269)
+	- t > block.timestamp (contracts/VoteWeighting.sol#284)
+VoteWeighting.voteForNomineeWeights(bytes32,uint256,uint256) (contracts/VoteWeighting.sol#474-558) uses timestamp for comparisons
+	Dangerous comparisons:
+	- nextTime >= lockEnd (contracts/VoteWeighting.sol#493)
+	- nextAllowedVotingTime > block.timestamp (contracts/VoteWeighting.sol#504)
+	- oldSlope.end > nextTime (contracts/VoteWeighting.sol#511)
+	- oldSlope.end > nextTime (contracts/VoteWeighting.sol#535)
+	- oldSlope.end > block.timestamp (contracts/VoteWeighting.sol#543)
+VoteWeighting._maxAndSub(uint256,uint256) (contracts/VoteWeighting.sol#579-581) uses timestamp for comparisons
+	Dangerous comparisons:
+	- a > b (contracts/VoteWeighting.sol#580)
+VoteWeighting.revokeRemovedNomineeVotingPower(bytes32,uint256) (contracts/VoteWeighting.sol#647-684) uses timestamp for comparisons
+	Dangerous comparisons:
+	- oldSlope.end > nextTime (contracts/VoteWeighting.sol#665)
+	- oldSlope.end > block.timestamp (contracts/VoteWeighting.sol#672)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+VoteWeighting._getSum() (contracts/VoteWeighting.sol#224-249) has costly operations inside a loop:
+	- timeSum = t (contracts/VoteWeighting.sol#245)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
+INFO:Detectors:
+veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType) (contracts/veOLAS.sol#330-369) ignores return value by IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/veOLAS.sol#364)
+veOLAS.withdraw() (contracts/veOLAS.sol#510-535) ignores return value by IERC20(token).transfer(msg.sender,amount) (contracts/veOLAS.sol#534)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) performs a multiplication on the result of a division:
+	- tStep = (lastCheckpoint / WEEK) * WEEK (contracts/veOLAS.sol#231)
+veOLAS._createLockFor(address,uint256,uint256) (contracts/veOLAS.sol#425-454) performs a multiplication on the result of a division:
+	- unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK (contracts/veOLAS.sol#433)
+veOLAS.increaseUnlockTime(uint256) (contracts/veOLAS.sol#483-507) performs a multiplication on the result of a division:
+	- unlockTime = ((block.timestamp + unlockTime) / WEEK) * WEEK (contracts/veOLAS.sol#487)
+veOLAS._supplyLockedAt(PointVoting,uint64) (contracts/veOLAS.sol#690-715) performs a multiplication on the result of a division:
+	- tStep = (lastPoint.ts / WEEK) * WEEK (contracts/veOLAS.sol#692)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses a dangerous strict equality:
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#202)
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses a dangerous strict equality:
+	- tStep == block.timestamp (contracts/veOLAS.sol#265)
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses a dangerous strict equality:
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#300)
+veOLAS._supplyLockedAt(PointVoting,uint64) (contracts/veOLAS.sol#690-715) uses a dangerous strict equality:
+	- tStep == ts (contracts/veOLAS.sol#705)
+veOLAS.depositFor(address,uint256) (contracts/veOLAS.sol#376-397) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#383)
+veOLAS.increaseAmount(uint256) (contracts/veOLAS.sol#458-479) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#465)
+veOLAS.increaseUnlockTime(uint256) (contracts/veOLAS.sol#483-507) uses a dangerous strict equality:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#490)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).block_slope (contracts/veOLAS.sol#221) is a local variable never initialized
+veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType).oldLocked (contracts/veOLAS.sol#345) is a local variable never initialized
+veOLAS._supplyLockedAt(PointVoting,uint64).dSlope (contracts/veOLAS.sol#698) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).oldDSlope (contracts/veOLAS.sol#181) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).uOld (contracts/veOLAS.sol#179) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).newDSlope (contracts/veOLAS.sol#182) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).dSlope (contracts/veOLAS.sol#239) is a local variable never initialized
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128).uNew (contracts/veOLAS.sol#180) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+INFO:Detectors:
+veOLAS.constructor(address,string,string)._token (contracts/veOLAS.sol#132) lacks a zero-check on :
+		- token = _token (contracts/veOLAS.sol#134)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Reentrancy in veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType) (contracts/veOLAS.sol#330-369):
+	External calls:
+	- IERC20(token).transferFrom(msg.sender,address(this),amount) (contracts/veOLAS.sol#364)
+	Event emitted after the call(s):
+	- Deposit(account,amount,lockedBalance.endTime,depositType,block.timestamp) (contracts/veOLAS.sol#367)
+	- Supply(supplyBefore,supplyAfter) (contracts/veOLAS.sol#368)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) uses timestamp for comparisons
+	Dangerous comparisons:
+	- oldLocked.endTime > block.timestamp && oldLocked.amount > 0 (contracts/veOLAS.sol#188)
+	- newLocked.endTime > block.timestamp && newLocked.amount > 0 (contracts/veOLAS.sol#192)
+	- newLocked.endTime > 0 (contracts/veOLAS.sol#201)
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#202)
+	- block.timestamp > lastPoint.ts (contracts/veOLAS.sol#222)
+	- tStep > block.timestamp (contracts/veOLAS.sol#240)
+	- lastPoint.bias < 0 (contracts/veOLAS.sol#247)
+	- lastPoint.slope < 0 (contracts/veOLAS.sol#251)
+	- tStep == block.timestamp (contracts/veOLAS.sol#265)
+	- lastPoint.slope < 0 (contracts/veOLAS.sol#282)
+	- lastPoint.bias < 0 (contracts/veOLAS.sol#285)
+	- oldLocked.endTime > block.timestamp (contracts/veOLAS.sol#297)
+	- newLocked.endTime == oldLocked.endTime (contracts/veOLAS.sol#300)
+	- newLocked.endTime > block.timestamp && newLocked.endTime > oldLocked.endTime (contracts/veOLAS.sol#306)
+veOLAS._depositFor(address,uint256,uint256,LockedBalance,veOLAS.DepositType) (contracts/veOLAS.sol#330-369) uses timestamp for comparisons
+	Dangerous comparisons:
+	- unlockTime > 0 (contracts/veOLAS.sol#352)
+veOLAS.depositFor(address,uint256) (contracts/veOLAS.sol#376-397) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#383)
+	- lockedBalance.endTime < (block.timestamp + 1) (contracts/veOLAS.sol#387)
+veOLAS._createLockFor(address,uint256,uint256) (contracts/veOLAS.sol#425-454) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount > 0 (contracts/veOLAS.sol#437)
+	- unlockTime < (block.timestamp + 1) (contracts/veOLAS.sol#441)
+	- unlockTime > block.timestamp + MAXTIME (contracts/veOLAS.sol#445)
+veOLAS.increaseAmount(uint256) (contracts/veOLAS.sol#458-479) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#465)
+	- lockedBalance.endTime < (block.timestamp + 1) (contracts/veOLAS.sol#469)
+veOLAS.increaseUnlockTime(uint256) (contracts/veOLAS.sol#483-507) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.amount == 0 (contracts/veOLAS.sol#490)
+	- lockedBalance.endTime < (block.timestamp + 1) (contracts/veOLAS.sol#494)
+	- unlockTime < (lockedBalance.endTime + 1) (contracts/veOLAS.sol#498)
+	- unlockTime > block.timestamp + MAXTIME (contracts/veOLAS.sol#502)
+veOLAS.withdraw() (contracts/veOLAS.sol#510-535) uses timestamp for comparisons
+	Dangerous comparisons:
+	- lockedBalance.endTime > block.timestamp (contracts/veOLAS.sol#512)
+veOLAS._findPointByBlock(uint256,address) (contracts/veOLAS.sol#542-587) uses timestamp for comparisons
+	Dangerous comparisons:
+	- point.blockNumber < (blockNumber + 1) (contracts/veOLAS.sol#574)
+veOLAS._balanceOfLocked(address,uint64) (contracts/veOLAS.sol#593-602) uses timestamp for comparisons
+	Dangerous comparisons:
+	- uPoint.bias > 0 (contracts/veOLAS.sol#598)
+veOLAS.balanceOfAt(address,uint256) (contracts/veOLAS.sol#622-629) uses timestamp for comparisons
+	Dangerous comparisons:
+	- uPoint.blockNumber < (blockNumber + 1) (contracts/veOLAS.sol#626)
+veOLAS._getBlockTime(uint256) (contracts/veOLAS.sol#643-666) uses timestamp for comparisons
+	Dangerous comparisons:
+	- minPointNumber < totalNumPoints (contracts/veOLAS.sol#654)
+	- dBlock > 0 (contracts/veOLAS.sol#663)
+veOLAS.getPastVotes(address,uint256) (contracts/veOLAS.sol#672-684) uses timestamp for comparisons
+	Dangerous comparisons:
+	- uPoint.bias > 0 (contracts/veOLAS.sol#681)
+veOLAS._supplyLockedAt(PointVoting,uint64) (contracts/veOLAS.sol#690-715) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tStep > ts (contracts/veOLAS.sol#699)
+	- tStep == ts (contracts/veOLAS.sol#705)
+	- lastPoint.bias > 0 (contracts/veOLAS.sol#712)
+veOLAS.totalSupplyAt(uint256) (contracts/veOLAS.sol#726-733) uses timestamp for comparisons
+	Dangerous comparisons:
+	- sPoint.blockNumber < (blockNumber + 1) (contracts/veOLAS.sol#730)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+2 different versions of Solidity are used:
+	- Version constraint ^0.8.15 is used by:
+		-^0.8.15 (contracts/interfaces/IErrors.sol#2)
+		-^0.8.15 (contracts/veOLAS.sol#2)
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol#3)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+veOLAS._checkpoint(address,LockedBalance,LockedBalance,uint128) (contracts/veOLAS.sol#173-317) has a high cyclomatic complexity (20).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+INFO:Detectors:
+Version constraint ^0.8.15 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- StorageWriteRemovalBeforeConditionalTermination
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup.
+It is used by:
+	- ^0.8.15 (contracts/interfaces/IErrors.sol#2)
+	- ^0.8.15 (contracts/veOLAS.sol#2)
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol#3)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Contract veOLAS (contracts/veOLAS.sol#86-805) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+TimelockController._execute(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#348-355) sends eth to arbitrary user
+	Dangerous calls:
+	- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#functions-that-send-ether-to-arbitrary-destinations
+INFO:Detectors:
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) has bitwise-xor operator ^ instead of the exponentiation operator **: 
+	 - inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#117)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-exponentiation
+INFO:Detectors:
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#117)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#121)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#122)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#123)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#124)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#125)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#102)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#126)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) performs a multiplication on the result of a division:
+	- prod0 = prod0 / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#105)
+	- result = prod0 * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#132)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+TimelockController.isOperationDone(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#162-164) uses a dangerous strict equality:
+	- getTimestamp(id) == _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#163)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+TimelockController._execute(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#348-355) has external calls inside a loop: (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in TimelockController.execute(address,uint256,bytes,bytes32,bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#295-308):
+	External calls:
+	- _execute(target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#305)
+		- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+	Event emitted after the call(s):
+	- CallExecuted(id,0,target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#306)
+Reentrancy in TimelockController.executeBatch(address[],uint256[],bytes[],bytes32,bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#322-343):
+	External calls:
+	- _execute(target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#339)
+		- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+	Event emitted after the call(s):
+	- CallExecuted(id,i,target,value,payload) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#340)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+TimelockController.isOperation(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#140-142) uses timestamp for comparisons
+	Dangerous comparisons:
+	- getTimestamp(id) > 0 (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#141)
+TimelockController.isOperationPending(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#147-149) uses timestamp for comparisons
+	Dangerous comparisons:
+	- getTimestamp(id) > _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#148)
+TimelockController.isOperationReady(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#154-157) uses timestamp for comparisons
+	Dangerous comparisons:
+	- timestamp > _DONE_TIMESTAMP && timestamp <= block.timestamp (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#156)
+TimelockController.isOperationDone(bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#162-164) uses timestamp for comparisons
+	Dangerous comparisons:
+	- getTimestamp(id) == _DONE_TIMESTAMP (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#163)
+TimelockController._beforeCall(bytes32,bytes32) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#360-363) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(predecessor == bytes32(0) || isOperationDone(predecessor),TimelockController: missing dependency) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#362)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+Address._revert(bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#231-243) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Address.sol#236-239)
+Strings.toString(uint256) (node_modules/@openzeppelin/contracts/utils/Strings.sol#18-38) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Strings.sol#24-26)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Strings.sol#30-32)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-135) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#66-70)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#86-93)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#100-109)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+3 different versions of Solidity are used:
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (contracts/Timelock.sol#2)
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/AccessControl.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/IAccessControl.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Strings.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#4)
+	- Version constraint ^0.8.1 is used by:
+		-^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Context._msgData() (node_modules/@openzeppelin/contracts/utils/Context.sol#21-23) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+INFO:Detectors:
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.20 (contracts/Timelock.sol#2)
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/AccessControl.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/IAccessControl.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Strings.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#4)
+Version constraint ^0.8.1 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in TimelockController._execute(address,uint256,bytes) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#348-355):
+	- (success,None) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/governance/TimelockController.sol#353)
+Low level call in Address.sendValue(address,uint256) (node_modules/@openzeppelin/contracts/utils/Address.sol#60-65):
+	- (success,None) = recipient.call{value: amount}() (node_modules/@openzeppelin/contracts/utils/Address.sol#63)
+Low level call in Address.functionCallWithValue(address,bytes,uint256,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#128-137):
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+Low level call in Address.functionStaticCall(address,bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#155-162):
+	- (success,returndata) = target.staticcall(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#160)
+Low level call in Address.functionDelegateCall(address,bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#180-187):
+	- (success,returndata) = target.delegatecall(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#185)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Slither:contracts/ analyzed (69 contracts with 93 detectors), 242 result(s) found

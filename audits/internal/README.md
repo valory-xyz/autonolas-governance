@@ -9,7 +9,7 @@ Update: 09-06-2022  <br>
 The audit focused primarily on `tokens` and `governance` contracts.
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal/analysis/contracts)
 
 ### ERC20 checks
 ```
@@ -148,28 +148,28 @@ slither-check-erc buOLAS-flatten.sol buOLAS
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here (archive):
-[pre_audit_coverage](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_pre_audit.tar.gz).
+[pre_audit_coverage](audits/internal/analysis/coverage_pre_audit.tar.gz).
 
 After addressing all the issues mentioned below, the coverage has been re-run, and the results are available here (archive):
-[post_audit_coverage](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage_post_audit.tar.gz).
+[post_audit_coverage](audits/internal/analysis/coverage_post_audit.tar.gz).
 
 One can take a look at the image representing the final coverage stage:
-[coverage_image](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/coverage.png).
+[coverage_image](audits/internal/analysis/coverage.png).
 
 Note that the remaining branches are not covered in the `veOLAS` contract since those conditions are unreachable in real meaningful numbers, that has been verified
 by the `echidna` fuzzer (discussed in detail below):
-[example_branches_1](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/fuzzing/VotingEscrow/VotingEscrowVerySimple.sol#L170-L184);
-[example_branches_2](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/fuzzing/VotingEscrow/VotingEscrowFuzzing.sol#L584-L593).
+[example_branches_1](audits/internal/analysis/fuzzing/VotingEscrow/VotingEscrowVerySimple.sol#L170-L184);
+[example_branches_2](audits/internal/analysis/fuzzing/VotingEscrow/VotingEscrowFuzzing.sol#L584-L593).
 
 ### Fuzzing re-check
-The full set of `echidna` fuzzer performance can be found here: [fuzzing](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/fuzzing).
+The full set of `echidna` fuzzer performance can be found here: [fuzzing](audits/internal/analysis/fuzzing).
 
 ### Security issues
 
 Some of the checks are obtained automatically. They are commented and I do not see any serious problems.
 
 All automatic warnings are listed in the following file, concerns of which we address in more detail below:
-[slither-full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/slither_full.txt)
+[slither-full](audits/internal/analysis/slither_full.txt)
 
 ### Addressing issues from the initial report. Updated on the 09-06-2022
 
@@ -185,7 +185,7 @@ Missing tests for OLAS token:
 Missing tests for veOLAS:
 - supportsInterface [x] (fixed)
 - if (amount > type(uint96).max) [x] (fixed)
-- Pay attention to the result of fuzzing: [pre audit fuzzing](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal/analysis/fuzzing/VotingEscrow). Specifically:
+- Pay attention to the result of fuzzing: [pre audit fuzzing](audits/internal/analysis/fuzzing/VotingEscrow). Specifically:
   - Pay attention to getPastVotes(0,0) [x] (fixed by additional testing).
 It can be taken into account that there is a contract deploy/start time for OLAS: timeLaunch.
 veOLAS should not allow tx to be made earlier than this time.

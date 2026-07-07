@@ -1,5 +1,5 @@
 # Bridge-related deployment scripts
-This process is the same as described in the original deployment procedure: [deployment](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment).
+This process is the same as described in the original deployment procedure: [deployment](scripts/deployment).
 
 ## Steps to engage
 The project has submodules to get the dependencies. Make sure you run `git clone --recursive` or init the submodules yourself.
@@ -37,7 +37,7 @@ If a contract is deployed with arguments, these arguments are taken from the cor
 
 ## Data packing for cross-bridge transactions
 In order to correctly pack the data and supply it to the Timelock such that it is correctly processed across the bridge,
-use the following script: [cross-bridge data packing](https://github.com/valory-xyz/autonolas-governance/blob/main/scripts/deployment/bridges/pack-data.js).
+use the following script: [cross-bridge data packing](scripts/deployment/bridges/pack-data.js).
 
 
 

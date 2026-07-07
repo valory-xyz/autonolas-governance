@@ -1,5 +1,5 @@
 # Deployment scripts
-This folder contains the scripts to deploy Autonolas governance. These scripts correspond to the steps in the full deployment procedure (as described in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md)).
+This folder contains the scripts to deploy Autonolas governance. These scripts correspond to the steps in the full deployment procedure (as described in [deployment.md](docs/deployment.md)).
 
 ## Observations
 - There are several files with global parameters based on the corresponding network. In order to work with the configuration, please copy `gobals_network.json` file to file the `gobals.json` one, where `network` is the corresponding network. For example: `cp gobals_mainnet.json gobals.json`.
@@ -18,7 +18,7 @@ command and compiled with the
 ```
 npx hardhat compile
 ```
-command as described in the [main readme](https://github.com/valory-xyz/autonolas-governance/blob/main/README.md).
+command as described in the [main readme](README.md).
 
 
 Create a `globals.json` file in the root folder, or copy it from the file with pre-defined parameters (i.e., `scripts/deployment/globals_mainnet.json` for the mainnet).
@@ -34,7 +34,7 @@ Parameters of the `globals.json` file:
 Other values are related to the governance and initial mint. The Gnosis Safe contracts are also provided for convenience. The deployed contract addresses will be added / updated during the scripts run.
 
 The script file name identifies the number of deployment steps taken up to the number in the file name. For example:
-- `deploy_02_deployment_factory.js` will complete step 2 from [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md) (1 is already complete as the multisig is created beforehand);
+- `deploy_02_deployment_factory.js` will complete step 2 from [deployment.md](docs/deployment.md) (1 is already complete as the multisig is created beforehand);
 - `deploy_08_09_governor_and_roles.js` will complete steps 8 and 9;
 - etc.
 
@@ -51,7 +51,7 @@ Each script controls the obtained values by checking them against the expected o
 If a contract is deployed with arguments, these arguments are taken from the corresponding `verify_number_and_name` file, where `number_and_name` corresponds to the deployment script number and name.
 
 ## Deployment of supplemental contracts
-For deploying supplemental contracts listed in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md),
+For deploying supplemental contracts listed in [deployment.md](docs/deployment.md),
 run the following scripts:
 ```
 npx hardhat run scripts/deployment/deploy_16_wveolas.js --network network_type
@@ -61,8 +61,79 @@ npx hardhat run scripts/deployment/deploy_17_governorTwo.js --network network_ty
 Then, after successful deployment of two supplemental contracts, the last script gives the proposal payload necessary to finalize the deployment:
 `npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
 
+## Deployment of the Veto stack (Task 1)
+
+A cancel-only Veto-Governor bound to a dedicated Veto Timelock. Both contracts are
+copies of the audited `Timelock` / `GovernorOLAS` bytecode already used by the main
+stack — only the constructor parameters change.
+
+Three shell scripts, run in strict order (each writes its address back to
+`globals_<network>.json` for the next):
+
+```bash
+# Task 1 — deploy the veto stack
+./scripts/deployment/deploy_28_veto_timelock.sh <network>
+./scripts/deployment/deploy_29_veto_governor.sh <network>
+./scripts/deployment/deploy_30_wire_freeze_veto_timelock.sh <network>
+```
+
+Deploy order is load-bearing:
+
+1. **`deploy_28`** — deploy Veto Timelock empty (no proposers/executors — the Veto-Governor
+   doesn't exist yet). Deployer holds `TIMELOCK_ADMIN_ROLE`.
+2. **`deploy_29`** — deploy Veto-Governor bound to Veto Timelock. Its constructor reads
+   `B.getMinDelay()`, so B must exist. The script sanity-checks `veto.token()` against the
+   live main `Governor.token()` (must be the **wveOLAS wrapper `0x4039…`**, not raw veOLAS —
+   the wveOLAS-wrapper token check). It also asserts the veto-cycle invariant
+   `(vetoVotingDelay + vetoVotingPeriod) * 12 s + margin ≤ 1209600 s (14 d)` — the veto
+   cycle MUST fit within the raised main `governorDelay` window (Task-2 target). The
+   check is against the design constant, not live main state, so it stays correct through
+   B′-recovery (when live main `votingDelay = 72000` — never copy that into the veto).
+3. **`deploy_30`** — wire and **role-freeze** Veto Timelock, in this exact order:
+   `grantRole(PROPOSER, VetoGov)` → `grantRole(EXECUTOR, VetoGov)` →
+   `grantRole(CANCELLER, VetoGov)` → `revokeRole(TIMELOCK_ADMIN_ROLE, VT)` →
+   `renounceRole(TIMELOCK_ADMIN_ROLE, deployer)`.
+   After the freeze **no role on VT can ever change again** (hard requirement —
+   closes the self-administration hole where one won veto vote would otherwise mint an
+   attacker a standing PROPOSER). CANCELLER on VT is granted so
+   `GovernorCompatibilityBravo.cancel(uint256)` can reach `_timelock.cancel` during the
+   (unbounded) queued-but-unexecuted window — restores proposer self-withdrawal and
+   below-threshold cleanup. VT can only cancel proposals it itself queued, so the grant
+   adds no new attack surface.
+
+**After Task 1** — Task 2 is a single batched proposal on the main Governor
+(`Timelock A.grantRole(CANCELLER_ROLE, Veto Timelock)` + `setVotingDelay(72000)` +
+`updateGovernorDelay(1209600)`).
+
+### Running the fork tests
+
+`test/forge/ForkGovernanceVetoDelay.t.sol` is a mainnet-fork verification of the veto
+stack. It (and the pre-existing `ForkDeployGovernance.t.sol`) depend on `forge-std`,
+which is **not** tracked as a submodule in this repo. From a fresh clone:
+
+```bash
+# One-time: install forge-std into lib/
+forge install foundry-rs/forge-std --no-commit
+
+# Run the veto-stack suite (mainnet fork)
+ETH_RPC_URL=<mainnet-rpc-url> forge test --match-contract ForkGovernanceVetoDelay -vv
+```
+
+Expected: **12/12 PASS**. Public RPCs (e.g. `https://ethereum-rpc.publicnode.com`) work
+but are slow; Alchemy/Infura recommended.
+
+Relevant `globals_<network>.json` keys (all pre-populated for mainnet):
+
+| Key | Meaning |
+|---|---|
+| `vetoMinDelay` | Veto Timelock's `minDelay` — always `0` (instant cancels). |
+| `vetoGovernorDelay` | Veto-Governor's `governorDelay` — always `0` (instant queue→execute). |
+| `vetoVotingDelay` / `vetoVotingPeriod` | Kept at today's main values (13091 / 19636); NOT the raised Layer-1 value. |
+| `vetoQuorum` / `vetoProposalThreshold` | Identical to main (3 % / 5,000 veOLAS). |
+| `vetoTimelockAddress` / `vetoGovernorAddress` | Populated by `deploy_28` / `deploy_29`. |
+
 ## Deployment of Polygon-Ethereum ERC20 bridging contracts
-For deploying ERC20 bridging contracts listed in [deployment.md](https://github.com/valory-xyz/autonolas-governance/blob/main/docs/deployment.md),
+For deploying ERC20 bridging contracts listed in [deployment.md](docs/deployment.md),
 run the following scripts:
 ```
 npx hardhat run scripts/deployment/deploy_19_bridged_erc20.js --network mainnet

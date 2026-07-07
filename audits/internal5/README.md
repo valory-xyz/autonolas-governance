@@ -11,7 +11,7 @@ NOTES: This audit is not an audit of the code OppenZeppelin itself. Audit of OZ 
 It is considering using the previous Timelock contract (without update) with the new version GovernorOLAS.
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal5/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal5/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -44,7 +44,7 @@ Generated png file autonolas-governance/audits/internal5/analysis/Timelock.png
 sol2uml storage . -f png -c Timelock -o ../../cur/
 Generated png file autonolas-governance/audits/internal5/analysis/cur/Timelock.png
 ```
-Line by line diff: [Timelock-flatten-diff.txt](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal5/analysis/Timelock-flatten-diff.txt)
+Line by line diff: [Timelock-flatten-diff.txt](audits/internal5/analysis/Timelock-flatten-diff.txt)
 
 Conclusion: <br>
 - No differences in the `Timelock` code which somehow changes the behavior of its functions. <br>

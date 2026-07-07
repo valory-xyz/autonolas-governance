@@ -1042,5 +1042,150 @@ describe("Community Multisig Guard", function () {
             // Restore to the state of the snapshot
             await snapshot.restore();
         });
+
+        it("Arbitrum l2CallValue, refund address checks", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Authorize pre-defined target, selector and chainId
+            const permissions = new Array(l2ChainIds.length).fill(true);
+            const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+                [l2ContractAddresses, l2Selectors, l2ChainIds, permissions]);
+            await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
+
+            // Set bridge mediator contract addresses and chain Ids
+            const setBridgeMediatorL1BridgeParamsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [l1BridgeMediators, verifiersL2, l2ChainIds, l2BridgeMediators]);
+            await timelock.execute(guard.address, setBridgeMediatorL1BridgeParamsPayload);
+
+            // Inner target payload: mint(address,uint256)
+            const innerPayload = "0x40c10f19" +
+                "00000000000000000000000052370ee170c0e2767b32687166791973a0de7966" +
+                "0000000000000000000000000000000000000000000000000000000000000064";
+
+            const arbIface = new ethers.utils.Interface([
+                "function unsafeCreateRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)"
+            ]);
+            const l2TimelockAddr = l2BridgeMediators[2]; // Arbitrum aliased timelock
+            const wrongAddr = "0x000000000000000000000000000000000000dEaD";
+
+            // 1. l2CallValue > 0 => NonZeroValue
+            let errorPayload = arbIface.encodeFunctionData("unsafeCreateRetryableTicket", [
+                arbitrumContractAddress, 1, 408000000, l2TimelockAddr, l2TimelockAddr, 44158, 100000000, innerPayload
+            ]);
+            let txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[2], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataArbitrum, "NonZeroValue");
+
+            // 2. excessFeeRefundAddress != l2Timelock => WrongL2BridgeMediator
+            errorPayload = arbIface.encodeFunctionData("unsafeCreateRetryableTicket", [
+                arbitrumContractAddress, 0, 408000000, wrongAddr, l2TimelockAddr, 44158, 100000000, innerPayload
+            ]);
+            txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[2], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataArbitrum, "WrongL2BridgeMediator");
+
+            // 3. callValueRefundAddress != l2Timelock => WrongL2BridgeMediator
+            errorPayload = arbIface.encodeFunctionData("unsafeCreateRetryableTicket", [
+                arbitrumContractAddress, 0, 408000000, l2TimelockAddr, wrongAddr, 44158, 100000000, innerPayload
+            ]);
+            txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[2], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataArbitrum, "WrongL2BridgeMediator");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
+
+        it("Wormhole receiverValue, refund chain/address checks", async function () {
+            // Take a snapshot of the current state of the blockchain
+            const snapshot = await helpers.takeSnapshot();
+
+            // Authorize pre-defined target, selector and chainId
+            const permissions = new Array(l2ChainIds.length).fill(true);
+            const setTargetSelectorChainIdsPayload = guard.interface.encodeFunctionData("setTargetSelectorChainIds",
+                [l2ContractAddresses, l2Selectors, l2ChainIds, permissions]);
+            await timelock.execute(guard.address, setTargetSelectorChainIdsPayload);
+
+            // Set bridge mediator contract addresses and chain Ids
+            const setBridgeMediatorL1BridgeParamsPayload = guard.interface.encodeFunctionData("setBridgeMediatorL1BridgeParams",
+                [l1BridgeMediators, verifiersL2, l2ChainIds, l2BridgeMediators]);
+            await timelock.execute(guard.address, setBridgeMediatorL1BridgeParamsPayload);
+
+            // Inner l2Message: packed target(20) + value(12) + payloadLength(4) + payload(68)
+            const innerL2Message = "0x" +
+                celoContractAddress.slice(2).toLowerCase() +
+                "000000000000000000000000" +
+                "00000044" +
+                "40c10f19" +
+                "00000000000000000000000052370ee170c0e2767b32687166791973a0de7966" +
+                "0000000000000000000000000000000000000000000000000000000000000064";
+
+            const wormholeMessengerAddr = l2BridgeMediators[5]; // Celo WormholeMessenger
+            const TIMELOCK_ADDR = "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE";
+            const wrongAddr = "0x000000000000000000000000000000000000dEaD";
+
+            // SEND_MESSAGE selector: sendPayloadToEvm(uint16,address,bytes,uint256,uint256)
+            const sendMsgIface = new ethers.utils.Interface([
+                "function sendPayloadToEvm(uint16,address,bytes,uint256,uint256)"
+            ]);
+            // SEND_MESSAGE_REFUND selector: sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)
+            const sendMsgRefundIface = new ethers.utils.Interface([
+                "function sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)"
+            ]);
+
+            // 1. receiverValue > 0 (SEND_MESSAGE) => NonZeroValue
+            let errorPayload = sendMsgIface.encodeFunctionData(
+                "sendPayloadToEvm(uint16,address,bytes,uint256,uint256)",
+                [14, wormholeMessengerAddr, innerL2Message, 1, 2000000]
+            );
+            let txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[5], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataWormhole, "NonZeroValue");
+
+            // 2. receiverValue > 0 (SEND_MESSAGE_REFUND) => NonZeroValue
+            errorPayload = sendMsgRefundIface.encodeFunctionData(
+                "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)",
+                [14, wormholeMessengerAddr, innerL2Message, 1, 2000000, 2, TIMELOCK_ADDR]
+            );
+            txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[5], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataWormhole, "NonZeroValue");
+
+            // 3. refundChainId != 2 => WrongRefundChainId
+            errorPayload = sendMsgRefundIface.encodeFunctionData(
+                "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)",
+                [14, wormholeMessengerAddr, innerL2Message, 0, 2000000, 5, TIMELOCK_ADDR]
+            );
+            txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[5], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataWormhole, "WrongRefundChainId");
+
+            // 4. refundAddress != TIMELOCK => WrongRefundAddress
+            errorPayload = sendMsgRefundIface.encodeFunctionData(
+                "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)",
+                [14, wormholeMessengerAddr, innerL2Message, 0, 2000000, 2, wrongAddr]
+            );
+            txData = timelock.interface.encodeFunctionData("schedule",
+                [l1BridgeMediators[5], 0, errorPayload, Bytes32Zero, Bytes32Zero, 0]);
+            await expect(
+                guard.checkTransaction(timelock.address, 0, txData, 0, 0, 0, 0, AddressZero, AddressZero, "0x", AddressZero)
+            ).to.be.revertedWithCustomError(processBridgedDataWormhole, "WrongRefundAddress");
+
+            // Restore to the state of the snapshot
+            await snapshot.restore();
+        });
     });
 });

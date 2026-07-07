@@ -9,7 +9,7 @@ Update: 15-12-2023  <br>
 The audit focused on update Guard contract for community mutisig (L2 protection). <BR>
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal8/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal8/analysis/contracts)
 
 ### Coverage
 Hardhat coverage has been performed before the audit and can be found here:
@@ -32,10 +32,10 @@ Using sol2uml tools: https://github.com/naddison36/sol2uml <br>
 sol2uml storage . -f png -c GuardCM -o .
 Generated png file GuardCM.png
 ```
-Storage: [GuardCM](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal8/analysis/GuardCM.png)
+Storage: [GuardCM](audits/internal8/analysis/GuardCM.png)
 
 ### Security issues
-Details in [slither_full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal8/analysis/slither_full.txt) <br>
+Details in [slither_full](audits/internal8/analysis/slither_full.txt) <br>
 
 Notes: <br>
 - chainIds[i] in constructor not checked by zero. 

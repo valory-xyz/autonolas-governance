@@ -30,8 +30,8 @@
       },
       {
         "name": "GovernorOLAS",
-        "artifact": "abis/0.8.20/GovernorOLAS.json",
-        "address": "0x8e84b5055492901988b831817e4ace5275a3b401"
+        "artifact": "abis/0.8.30/GovernorOLAS.json",
+        "address": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6"
       },
       {
         "name": "VoteWeighting",
@@ -45,8 +45,28 @@
       },
       {
         "name": "GuardCM",
-        "artifact": "abis/0.8.23/GuardCM.json",
-        "address": "0x7bB7998b210cFfE10ca1e41f16341Abe53f76f3a"
+        "artifact": "abis/0.8.30/GuardCM.json",
+        "address": "0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B"
+      },
+      {
+        "name": "ProcessBridgedDataGnosis",
+        "artifact": "abis/0.8.30/ProcessBridgedDataGnosis.json",
+        "address": "0xDc871b7833932D45023755C9De3786060a934c48"
+      },
+      {
+        "name": "ProcessBridgedDataPolygon",
+        "artifact": "abis/0.8.30/ProcessBridgedDataPolygon.json",
+        "address": "0x133A6d318FA0C9413A70C149E7f630015044Dec3"
+      },
+      {
+        "name": "ProcessBridgedDataArbitrum",
+        "artifact": "abis/0.8.30/ProcessBridgedDataArbitrum.json",
+        "address": "0x0F33636698F6607B2FDdC1e857788535914C44d4"
+      },
+      {
+        "name": "ProcessBridgedDataOptimism",
+        "artifact": "abis/0.8.30/ProcessBridgedDataOptimism.json",
+        "address": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5"
       },
       {
         "name": "BridgedERC20",

@@ -9,7 +9,7 @@ Update: 09-03-2023  <br>
 The audit focused on `wveOLAS` contract.
 
 ### Flatten version
-Flatten version of contracts. [contracts](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal2/analysis/contracts)
+Flatten version of contracts. [contracts](audits/internal2/analysis/contracts)
 
 ### ERC20 checks
 ```
@@ -115,7 +115,7 @@ Not implemented in wveOLAS, although logically they should be
 Some of the checks are obtained automatically. They are commented and I do not see any serious problems.
 
 All automatic warnings are listed in the following file, concerns of which we address in more detail below:
-[slither-full](https://github.com/valory-xyz/autonolas-governance/blob/main/audits/internal2/analysis/slither_full.txt)
+[slither-full](audits/internal2/analysis/slither_full.txt)
 
 ### Needed Improvements and Bugs fixning
 No major bugs, but some fixes needed
