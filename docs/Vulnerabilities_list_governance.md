@@ -19,6 +19,15 @@
 | 13 | [governorDelay and timelock minDelay desynchronization](#13-governordelay-and-timelock-mindelay-desynchronization) | Informative |
 | 14 | [VoteWeighting addNomineeEVM and addNomineeNonEVM are permissionless](#14-voteweighting-addnomineeevm-and-addnomineenonevm-are-permissionless) | Informative |
 | 15 | [ProcessBridgedDataWormhole hardcoded TIMELOCK constant](#15-processbridgeddatawormhole-hardcoded-timelock-constant) | Informative |
+| 16 | [GuardCM setTargetSelectorChainIds does not bound chainId](#16-guardcm-settargetselectorchainids-does-not-bound-chainid) | Informative |
+| 17 | [Cross-chain verifiers do not bound the per-record native value](#17-cross-chain-verifiers-do-not-bound-the-per-record-native-value) | Low |
+| 18 | [VoteWeighting _nomineeRelativeWeight not capped at 1e18](#18-voteweighting-_nomineerelativeweight-not-capped-at-1e18) | Low |
+| 19 | [VoteWeighting removeNominee last-element guard mismatch](#19-voteweighting-removenominee-last-element-guard-mismatch) | Informative |
+| 20 | [VoteWeighting revokeRemovedNomineeVotingPower missing checkpoint advance](#20-voteweighting-revokeremovednomineevotingpower-missing-checkpoint-advance) | Informative |
+| 21 | [GuardCM mapBridgeMediatorL1BridgeParams keyed by L1 address only](#21-guardcm-mapbridgemediatorl1bridgeparams-keyed-by-l1-address-only) | Informative |
+| 22 | [WormholeMessenger single sourceGovernor authentication](#22-wormholemessenger-single-sourcegovernor-authentication) | Informative |
+| 23 | [Timelock deployer-EOA admin bootstrap window](#23-timelock-deployer-eoa-admin-bootstrap-window) | Informative |
+| 24 | [FxERC20RootTunnel setFxChildTunnel is a permissionless one-shot](#24-fxerc20roottunnel-setfxchildtunnel-is-a-permissionless-one-shot) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -657,6 +666,184 @@ This is **inconsistent with the Arbitrum verifier** (`ProcessBridgedDataArbitrum
 1. **Capture the redeploy-coupling rule in any Timelock-redeploy runbook.** Specifically: "If `Timelock` is redeployed, then every `ProcessBridgedDataWormhole` deployment must also be redeployed at the same time, and `GuardCM.setBridgeMediatorL1BridgeParams` must be re-called for every Wormhole target with the new verifier address."
 2. **On the next bridge-verifier redeploy** (the upcoming one bundled with the C4A M-01 fix and the new `GovernorOLAS`, see internal audit 19 §5.4), consider parameterising the L1 Timelock address the same way the Arbitrum verifier parameterises the L2 mediator. This is a one-time refactor that aligns the two verifier shapes and removes this redeploy-coupling. Not required to land the M-01 fix; can be a follow-up.
 3. **Until then**, treat the Wormhole verifier address as a satellite of the Timelock address — they move together or not at all.
+
+### 16. `GuardCM` `setTargetSelectorChainIds` does not bound `chainId`
+
+**Severity:** Informative
+
+In the `GuardCM` contract, the following function is implemented:
+
+```solidity
+function setTargetSelectorChainIds(
+    address[] memory targets,
+    bytes4[] memory selectors,
+    uint256[] memory chainIds,
+    bool[] memory statuses
+) external
+```
+
+The allowlist key packs `target(160) | selector(32) | chainId(64)` into a single `uint256` via `chainId << 192`. Only `chainId != 0` is validated; the sibling setter `setBridgeMediatorL1BridgeParams` additionally enforces `chainId <= MAX_CHAIN_ID`, but this one does not.
+
+**Impact.** A `chainId >= 2^64` shifts its high bits out of the 256-bit word, so e.g. `2^64 + 5` packs identically to `5`. An owner authorizing a malformed or oversized `chainId` therefore writes the allow-flag under `(chainId mod 2^64)` — a different combination than intended. The enforcement read (`VerifyData.sol` around line 31) and the bridged path pass an already-bounded `chainId`, so this is an **owner-write configuration-integrity defect only**, not an unprivileged exploit. Discovered in the internal19 manual re-audit.
+
+**Why this is not fixed.** `GuardCM` is not upgradeable. Owner input is trusted (owner is the Timelock), so a mis-entry does not break funds or grant new capabilities to third parties — it only silently mis-keys the allowlist. Fixed on a future redeployment.
+
+**Mitigation / guidance for governance operators.** Any governance proposal calling `GuardCM.setTargetSelectorChainIds` should be reviewed for `chainId <= MAX_CHAIN_ID` on each entry, matching the sibling setter's constraint. Front-ends and calldata annotators that surface such proposals should flag `chainId >= 2^64` as an error before signing.
+
+**Fix on redeploy.** Add `if (chainIds[i] > MAX_CHAIN_ID) revert L2ChainIdNotSupported(chainIds[i]);` at the top of the loop in `setTargetSelectorChainIds`, matching `setBridgeMediatorL1BridgeParams`.
+
+### 17. Cross-chain verifiers do not bound the per-record native `value`
+
+**Severity:** Low
+
+Location: `multisigs/bridge_verifier/VerifyBridgedData.sol` (record-parsing helper skips the per-record 12-byte `value`); L2 executors forward it at `bridges/HomeMediator.sol`, `bridges/FxGovernorTunnel.sol`, `bridges/BridgeMessenger.sol`.
+
+The bridged-payload verifier authorizes `(target, selector, chainId)` per record but skips the 12-byte per-record native `value`. The L2 executors then forward that value via `target.call{value: value}(payload)`, bounded only by the mediator's own native balance.
+
+**Impact.** A guard-authorized `(target, selector, chainId)` triple says nothing about the native value the L2 mediator will spend on it. A scheduled record can carry an arbitrary `value` (up to the mediator's balance) into an allowlisted target that the L1 authorizer never saw. The trigger is the threshold-trusted Community Multisig (not unprivileged); the destination must still be an allowlisted target; the amount is capped by the mediator's balance (typically ~0 for a pure relay). But the L1 authorizer should constrain what the L2 executor spends. This is a **cross-chain robustness defect**, not a fund-loss exploit on today's mediator balances. Discovered in the internal19 manual re-audit.
+
+Distinct from the top-level `value` checks already present on the Arbitrum / Wormhole verifiers (`l2CallValue == 0` / `receiverValue == 0`): those constrain the outer envelope; this one is the **inner per-record `value`** inside the bridged batch.
+
+**Why this is not fixed.** The verifier contracts are not upgradeable. Live L2 mediators do not hold native balance that could underwrite an unintended spend, so the defect is bounded on the deployment as it stands. Fixed on a future redeployment of the verifiers.
+
+**Mitigation / guidance for operators.**
+
+1. **Do not fund the L2 mediators** (`HomeMediator`, `FxGovernorTunnel`, `BridgeMessenger`) with native tokens above operational-relay needs. The exposure ceiling equals the mediator's balance.
+2. **Off-chain calldata review** of any CM-scheduled bridged batch should inspect the per-record `value` field even though the on-chain verifier does not. Any non-zero per-record `value` on a non-payable target selector is a red flag.
+
+**Fix on redeploy.** In `_verifyBridgedData`, read the 12-byte per-record `value` and require it to be `0` for non-payable allowlisted selectors (mirror the Arbitrum verifier's `l2CallValue == 0` check), or add a per-target `value` bound.
+
+### 18. `VoteWeighting` `_nomineeRelativeWeight` not capped at `1e18`
+
+**Severity:** Low
+
+In the `VoteWeighting` contract, the following internal function is implemented (docstrings around lines 414 and 437 promise "not more than 1.0"):
+
+```solidity
+function _nomineeRelativeWeight(bytes32 account, uint256 chainId, uint256 time)
+    internal view returns (uint256 weight, uint256 totalSum)
+{
+    // ...
+    weight = 1e18 * nomineeWeight / totalSum;
+    // no clamp
+}
+```
+
+The function's own docstring promises `weight <= 1e18`. When `totalSum` under-counts relative to a surviving nominee's `nomineeWeight` — which can happen via the removal-accounting drift documented in entry #8 — the result exceeds `1e18`, violating the contract's own stated invariant.
+
+**Impact — cross-contract seam.** This view is consumed by the off-repo incentive distributor (`Dispenser`) to split staking incentives across nominees. A returned value `> 1e18` at the Dispenser leads to **over-allocation** of staking incentives to that nominee vs. the design (each nominee should receive at most 100 % of the epoch pot). The trigger condition is the removal-accounting drift, so the exposure follows the same feasibility profile as entry #8 (owner-scoped rare action + passive-voter follow-through). Discovered in the internal19 manual re-audit.
+
+**Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment. Operationally, the same voter-cleanup discipline that mitigates entry #8 (voter revoke / vote-zeroing before each `removeNominee`) also prevents the `totalSum` drift that would take `_nomineeRelativeWeight` above `1e18`.
+
+**Mitigation / guidance for the Dispenser integrator.** The staking-incentive distributor should treat `_nomineeRelativeWeight` as a value in `[0, 1e18]` and clamp defensively on its side (`if (w > 1e18) w = 1e18;`) before using it as a fractional multiplier. This is defence in depth against the same accounting-drift condition that mitigates #8 operationally.
+
+**Fix on redeploy.** Clamp at the return site: `if (weight > 1e18) weight = 1e18;`. Independent of the deeper entry #8 accounting fix — the clamp is defence in depth for the Dispenser consumer.
+
+### 19. `VoteWeighting` `removeNominee` last-element guard mismatch
+
+**Severity:** Informative
+
+In the `VoteWeighting` contract, `removeNominee` performs a swap-and-pop over `setNominees`. The intent — stated by the code comment at approximately line 623 — is to skip the swap when removing the last element of the array. The guard implementing that intent uses `if (numNominees > 1)` when it should use `if (id != numNominees)`.
+
+Removing the **last** of ≥ 2 nominees still enters the swap-and-pop branch (`numNominees > 1` is true). Traced on `[sentinel, A, B]` removing `B (id = 2)`:
+
+- line 627 re-reads `setNominees[2] = B`;
+- line 628 recomputes `hash(B)`;
+- line 629 sets `mapNomineeIds[hash(B)] = 2` — **re-writing the value that line 620 had correctly zeroed**;
+- line 633 pops the array.
+
+Post-state: the removed nominee is present in both `mapRemovedNominees` (≠ 0) and `mapNomineeIds` (= its old id, now dangling past the array end).
+
+**Impact — view-only.** `getNomineeId` / `getNextAllowedVotingTimes` (which key existence off `mapNomineeIds == 0`) return stale data to off-chain consumers. Every on-chain value-bearing path is independently guarded by `mapRemovedNominees` (re-add blocked at line 301, voting blocked at line 479, `getNominee(staleId)` reverts on the length bound at line 766), so the dangling entry **cannot be chained into a fund/vote effect**. The on-chain state is genuinely wrong; the downstream guardrails prevent any exploitable consequence. Discovered in the internal19 manual re-audit.
+
+**Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment.
+
+**Mitigation / guidance for tooling.** Off-chain consumers reading `mapNomineeIds` should additionally check `mapRemovedNominees` before treating a returned id as active — matching the on-chain guard set that already gates any value-bearing effect.
+
+**Fix on redeploy.** Change the guard to `if (id != numNominees)` so removing the last element skips the swap-write branch and does not re-populate `mapNomineeIds` for the just-removed nominee.
+
+### 20. `VoteWeighting` `revokeRemovedNomineeVotingPower` missing checkpoint advance
+
+**Severity:** Informative
+
+In the `VoteWeighting` contract, `revokeRemovedNomineeVotingPower` (around lines 666–668) writes `pointsSum` / `pointsWeight` slope via `_maxAndSub` **without first calling** `_getSum()` / `_getWeight()` to advance the slot to `nextTime`. The peer function `voteForNomineeWeights` correctly performs those advances at lines 533–534.
+
+**Impact.** If `revokeRemovedNomineeVotingPower` runs in a week later than the last checkpoint, the target `nextTime` slot is stale (0), so `_maxAndSub(0, oldSlope.slope)` floors to `0` and the voter's slope removal is silently lost — while `changesSum[oldSlope.end] -= oldSlope.slope` (around line 674) still executes. A residual slope then over-decays the sum until natural expiry. (Line 674 itself cannot underflow: the voter's own contribution is present and guarded by `oldSlope.end > block.timestamp`.) The net effect is **gauge-weight accounting drift — no funds, no DoS, self-converging** once the phantom slope decays. Compounds the same class of accounting seam that entry #8 describes. Discovered in the internal19 manual re-audit.
+
+**Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment.
+
+**Mitigation / guidance for voters.** A voter intending to revoke should either:
+
+1. Call `revokeRemovedNomineeVotingPower` in the same week as the removal, before the checkpoint slot goes stale; or
+2. First force a checkpoint advance to `nextTime` by calling a state-writing function on `VoteWeighting` that runs `_getSum()` / `_getWeight()` in the same transaction context (e.g., voting on an existing active nominee), before invoking the revoke.
+
+**Fix on redeploy.** Call `_getSum()` and `_getWeight(account, chainId)` at the start of `revokeRemovedNomineeVotingPower`, mirroring the pattern in `voteForNomineeWeights`.
+
+### 21. `GuardCM` `mapBridgeMediatorL1BridgeParams` keyed by L1 address only
+
+**Severity:** Informative
+
+Location: `multisigs/GuardCM.sol` (`mapBridgeMediatorL1BridgeParams` around line 134, setter around line 394); `BridgeParams` struct around line 42 carries `chainId`, but the mapping key does not.
+
+`GuardCM.mapBridgeMediatorL1BridgeParams` is keyed by the L1 mediator address only, although the `BridgeParams` value struct carries `chainId`. **A bridge family that uses one L1 entry point for multiple destination chains would collide** — the second `setBridgeMediatorL1BridgeParams` call overwrites the first.
+
+This is intended under the documented "each L2 verifier has a unique association with the L1 bridge mediator" design, which holds for the four live verifiers today (Arbitrum / Gnosis / Optimism-stack / Polygon — each has a distinct L1 mediator address). The only family that violates the premise is a single-relayer model where one L1 entry point routes to multiple L2s. Discovered in the internal19 manual re-audit.
+
+**Dormancy status (verified on-chain).** The live `GuardCM` has no bridge entry configured that would share an L1 mediator across chains. No live path can trigger the collision.
+
+**Why this is not fixed.** `GuardCM` is not upgradeable; the mapping shape is fixed. Corrected on a future redeployment.
+
+**Mitigation / guidance for governance operators.** Hold the invariant "never configure two `mapBridgeMediatorL1BridgeParams` entries that share one L1 mediator address" on any future allowlist change. Any bridge family under consideration that violates the premise (a shared single-relayer routing multiple L2s) must be rejected at the allowlist-review stage until the mapping shape is fixed.
+
+**Fix on redeploy.** On any reintroduction of a shared-L1-relayer bridge family, change the mapping to a composite `(L1, chainId)` key before wiring the two conflicting entries. Update `setBridgeMediatorL1BridgeParams` and all reads accordingly.
+
+### 22. `WormholeMessenger` single `sourceGovernor` authentication
+
+**Severity:** Informative
+
+Location: `bridges/WormholeMessenger.sol` (single `sourceGovernor` state variable; authentication around lines 88–95).
+
+`WormholeMessenger` authenticates against a single `sourceGovernor`, which cannot match two distinct L1 sender identities (a direct path and a mediated path) simultaneously. Correspondingly the matching verifier accepts only the direct-relayer signatures. Discovered in the internal19 manual re-audit.
+
+**Dormancy status.** Only the single direct path is (was) live, and that bridge family is being retired. No live path exercises the dual-source case.
+
+**Why this is not fixed.** `WormholeMessenger` is not upgradeable, and the bridge family is being retired. The single-source authentication is correct as long as governance uses only one L1 sender identity for this bridge.
+
+**Mitigation / guidance for governance operators.** If dual-path governance over the Wormhole bridge is ever reintroduced, the receiver / verifier must accept the **set** of legitimate source authorities rather than one. Until then, all cross-chain governance messages over Wormhole must originate from the currently configured `sourceGovernor` only.
+
+**Fix on redeploy.** If dual-path Wormhole governance is reintroduced, extend `sourceGovernor` to a set / mapping keyed on the sender identity, and update the verifier accordingly.
+
+### 23. `Timelock` deployer-EOA admin bootstrap window
+
+**Severity:** Informative
+
+Location: `Timelock.sol` (constructor, passing `msg.sender` as the OZ v4.8 `TimelockController` 4th "admin" argument).
+
+`TimelockController`'s constructor grants `TIMELOCK_ADMIN_ROLE` to the deploying account passed as the 4th constructor arg (`msg.sender` for the Olas wrapper) — a delay-bypassing role during the bootstrap window until the deployer renounces it. Discovered in the internal19 manual re-audit.
+
+**Dormancy status (verified on-chain).** The live deployment renounced the deployer-EOA admin. `Timelock` is now self-administered (`hasRole(TIMELOCK_ADMIN_ROLE, self) == true`, deployer holds `false`). The bootstrap window is closed on the live contract.
+
+**Why this is not fixed.** `Timelock` is deployed and not upgradeable; the window has already closed on the live contract. The bootstrap-role model is inherent to the OZ v4.8 admin pattern.
+
+**Mitigation / guidance for redeployment operators.** Any future `Timelock` redeploy operator should renounce the deployer-EOA admin as the very first post-deploy transaction (no gap between deploy and renounce). The dormancy on the current deployment does not carry over to a future redeploy — the window reopens at every fresh deploy.
+
+**Fix on redeploy.** Pass `address(0)` as the 4th ctor arg to fully remove the bootstrap window, and grant `TIMELOCK_ADMIN_ROLE` to the intended admin (e.g., the Timelock itself) via a separate post-deploy call under a bootstrap key. This removes the deployer-EOA bootstrap window entirely.
+
+### 24. `FxERC20RootTunnel` `setFxChildTunnel` is a permissionless one-shot
+
+**Severity:** Informative
+
+Location: `FxERC20RootTunnel` inherits from `fx-portal`'s `FxBaseRootTunnel`, which exposes `setFxChildTunnel(address)` — permissionless, callable exactly once.
+
+`FxBaseRootTunnel.setFxChildTunnel` is permissionless: whoever calls it first pins the L2 emitter for the token bridge. A front-run before the deployer would pin the L2 emitter to an attacker contract, enabling **mint-without-lock on L1** for the bridged token. Discovered in the internal19 manual re-audit.
+
+**Dormancy status.** The window is deploy-time only; the live `FxERC20RootTunnel` already has its child tunnel set. Any subsequent call reverts (the base contract enforces the one-shot). The window is closed on the live contract.
+
+**Why this is not fixed.** The tunnel is deployed and inherits from `fx-portal`'s base; overriding `setFxChildTunnel` would need a redeploy of the tunnel.
+
+**Mitigation / guidance for redeployment operators.** Any future `FxERC20RootTunnel` redeploy must call `setFxChildTunnel` in the same transaction as (or immediately after) deployment — atomically wrapped in a deployer script — to close the front-run window. The dormancy on the current deployment does not carry over.
+
+**Fix on redeploy.** Override `setFxChildTunnel` with `onlyOwner`, or set it in the constructor along with the L1 checkpoint manager / state sender addresses. Either removes the front-run window entirely.
 
 [^1]: The level of the bug is assigned by following the [Immunefi classification](https://immunefi.com/).
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
