@@ -684,7 +684,7 @@ function setTargetSelectorChainIds(
 
 The allowlist key packs `target(160) | selector(32) | chainId(64)` into a single `uint256` via `chainId << 192`. Only `chainId != 0` is validated; the sibling setter `setBridgeMediatorL1BridgeParams` additionally enforces `chainId <= MAX_CHAIN_ID`, but this one does not.
 
-**Impact.** A `chainId >= 2^64` shifts its high bits out of the 256-bit word, so e.g. `2^64 + 5` packs identically to `5`. An owner authorizing a malformed or oversized `chainId` therefore writes the allow-flag under `(chainId mod 2^64)` — a different combination than intended. The enforcement read (`VerifyData.sol` around line 31) and the bridged path pass an already-bounded `chainId`, so this is an **owner-write configuration-integrity defect only**, not an unprivileged exploit. Discovered in the internal19 manual re-audit.
+**Impact.** A `chainId >= 2^64` shifts its high bits out of the 256-bit word, so e.g. `2^64 + 5` packs identically to `5`. An owner authorizing a malformed or oversized `chainId` therefore writes the allow-flag under `(chainId mod 2^64)` — a different combination than intended. The enforcement read (`VerifyData.sol` around line 31) and the bridged path pass an already-bounded `chainId`, so this is an **owner-write configuration-integrity defect only**, not an unprivileged exploit. Discovered in the internal20 manual re-audit.
 
 **Why this is not fixed.** `GuardCM` is not upgradeable. Owner input is trusted (owner is the Timelock), so a mis-entry does not break funds or grant new capabilities to third parties — it only silently mis-keys the allowlist. Fixed on a future redeployment.
 
@@ -700,7 +700,7 @@ Location: `multisigs/bridge_verifier/VerifyBridgedData.sol` (record-parsing help
 
 The bridged-payload verifier authorizes `(target, selector, chainId)` per record but skips the 12-byte per-record native `value`. The L2 executors then forward that value via `target.call{value: value}(payload)`, bounded only by the mediator's own native balance.
 
-**Impact.** A guard-authorized `(target, selector, chainId)` triple says nothing about the native value the L2 mediator will spend on it. A scheduled record can carry an arbitrary `value` (up to the mediator's balance) into an allowlisted target that the L1 authorizer never saw. The trigger is the threshold-trusted Community Multisig (not unprivileged); the destination must still be an allowlisted target; the amount is capped by the mediator's balance (typically ~0 for a pure relay). But the L1 authorizer should constrain what the L2 executor spends. This is a **cross-chain robustness defect**, not a fund-loss exploit on today's mediator balances. Discovered in the internal19 manual re-audit.
+**Impact.** A guard-authorized `(target, selector, chainId)` triple says nothing about the native value the L2 mediator will spend on it. A scheduled record can carry an arbitrary `value` (up to the mediator's balance) into an allowlisted target that the L1 authorizer never saw. The trigger is the threshold-trusted Community Multisig (not unprivileged); the destination must still be an allowlisted target; the amount is capped by the mediator's balance (typically ~0 for a pure relay). But the L1 authorizer should constrain what the L2 executor spends. This is a **cross-chain robustness defect**, not a fund-loss exploit on today's mediator balances. Discovered in the internal20 manual re-audit.
 
 Distinct from the top-level `value` checks already present on the Arbitrum / Wormhole verifiers (`l2CallValue == 0` / `receiverValue == 0`): those constrain the outer envelope; this one is the **inner per-record `value`** inside the bridged batch.
 
@@ -731,7 +731,7 @@ function _nomineeRelativeWeight(bytes32 account, uint256 chainId, uint256 time)
 
 The function's own docstring promises `weight <= 1e18`. When `totalSum` under-counts relative to a surviving nominee's `nomineeWeight` — which can happen via the removal-accounting drift documented in entry #8 — the result exceeds `1e18`, violating the contract's own stated invariant.
 
-**Impact — cross-contract seam.** This view is consumed by the off-repo incentive distributor (`Dispenser`) to split staking incentives across nominees. A returned value `> 1e18` at the Dispenser leads to **over-allocation** of staking incentives to that nominee vs. the design (each nominee should receive at most 100 % of the epoch pot). The trigger condition is the removal-accounting drift, so the exposure follows the same feasibility profile as entry #8 (owner-scoped rare action + passive-voter follow-through). Discovered in the internal19 manual re-audit.
+**Impact — cross-contract seam.** This view is consumed by the off-repo incentive distributor (`Dispenser`) to split staking incentives across nominees. A returned value `> 1e18` at the Dispenser leads to **over-allocation** of staking incentives to that nominee vs. the design (each nominee should receive at most 100 % of the epoch pot). The trigger condition is the removal-accounting drift, so the exposure follows the same feasibility profile as entry #8 (owner-scoped rare action + passive-voter follow-through). Discovered in the internal20 manual re-audit.
 
 **Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment. Operationally, the same voter-cleanup discipline that mitigates entry #8 (voter revoke / vote-zeroing before each `removeNominee`) also prevents the `totalSum` drift that would take `_nomineeRelativeWeight` above `1e18`.
 
@@ -754,7 +754,7 @@ Removing the **last** of ≥ 2 nominees still enters the swap-and-pop branch (`n
 
 Post-state: the removed nominee is present in both `mapRemovedNominees` (≠ 0) and `mapNomineeIds` (= its old id, now dangling past the array end).
 
-**Impact — view-only.** `getNomineeId` / `getNextAllowedVotingTimes` (which key existence off `mapNomineeIds == 0`) return stale data to off-chain consumers. Every on-chain value-bearing path is independently guarded by `mapRemovedNominees` (re-add blocked at line 301, voting blocked at line 479, `getNominee(staleId)` reverts on the length bound at line 766), so the dangling entry **cannot be chained into a fund/vote effect**. The on-chain state is genuinely wrong; the downstream guardrails prevent any exploitable consequence. Discovered in the internal19 manual re-audit.
+**Impact — view-only.** `getNomineeId` / `getNextAllowedVotingTimes` (which key existence off `mapNomineeIds == 0`) return stale data to off-chain consumers. Every on-chain value-bearing path is independently guarded by `mapRemovedNominees` (re-add blocked at line 301, voting blocked at line 479, `getNominee(staleId)` reverts on the length bound at line 766), so the dangling entry **cannot be chained into a fund/vote effect**. The on-chain state is genuinely wrong; the downstream guardrails prevent any exploitable consequence. Discovered in the internal20 manual re-audit.
 
 **Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment.
 
@@ -768,7 +768,7 @@ Post-state: the removed nominee is present in both `mapRemovedNominees` (≠ 0) 
 
 In the `VoteWeighting` contract, `revokeRemovedNomineeVotingPower` (around lines 666–668) writes `pointsSum` / `pointsWeight` slope via `_maxAndSub` **without first calling** `_getSum()` / `_getWeight()` to advance the slot to `nextTime`. The peer function `voteForNomineeWeights` correctly performs those advances at lines 533–534.
 
-**Impact.** If `revokeRemovedNomineeVotingPower` runs in a week later than the last checkpoint, the target `nextTime` slot is stale (0), so `_maxAndSub(0, oldSlope.slope)` floors to `0` and the voter's slope removal is silently lost — while `changesSum[oldSlope.end] -= oldSlope.slope` (around line 674) still executes. A residual slope then over-decays the sum until natural expiry. (Line 674 itself cannot underflow: the voter's own contribution is present and guarded by `oldSlope.end > block.timestamp`.) The net effect is **gauge-weight accounting drift — no funds, no DoS, self-converging** once the phantom slope decays. Compounds the same class of accounting seam that entry #8 describes. Discovered in the internal19 manual re-audit.
+**Impact.** If `revokeRemovedNomineeVotingPower` runs in a week later than the last checkpoint, the target `nextTime` slot is stale (0), so `_maxAndSub(0, oldSlope.slope)` floors to `0` and the voter's slope removal is silently lost — while `changesSum[oldSlope.end] -= oldSlope.slope` (around line 674) still executes. A residual slope then over-decays the sum until natural expiry. (Line 674 itself cannot underflow: the voter's own contribution is present and guarded by `oldSlope.end > block.timestamp`.) The net effect is **gauge-weight accounting drift — no funds, no DoS, self-converging** once the phantom slope decays. Compounds the same class of accounting seam that entry #8 describes. Discovered in the internal20 manual re-audit.
 
 **Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment.
 
@@ -787,7 +787,7 @@ Location: `multisigs/GuardCM.sol` (`mapBridgeMediatorL1BridgeParams` around line
 
 `GuardCM.mapBridgeMediatorL1BridgeParams` is keyed by the L1 mediator address only, although the `BridgeParams` value struct carries `chainId`. **A bridge family that uses one L1 entry point for multiple destination chains would collide** — the second `setBridgeMediatorL1BridgeParams` call overwrites the first.
 
-This is intended under the documented "each L2 verifier has a unique association with the L1 bridge mediator" design, which holds for the four live verifiers today (Arbitrum / Gnosis / Optimism-stack / Polygon — each has a distinct L1 mediator address). The only family that violates the premise is a single-relayer model where one L1 entry point routes to multiple L2s. Discovered in the internal19 manual re-audit.
+This is intended under the documented "each L2 verifier has a unique association with the L1 bridge mediator" design, which holds for the four live verifiers today (Arbitrum / Gnosis / Optimism-stack / Polygon — each has a distinct L1 mediator address). The only family that violates the premise is a single-relayer model where one L1 entry point routes to multiple L2s. Discovered in the internal20 manual re-audit.
 
 **Dormancy status (verified on-chain).** The live `GuardCM` has no bridge entry configured that would share an L1 mediator across chains. No live path can trigger the collision.
 
@@ -803,7 +803,7 @@ This is intended under the documented "each L2 verifier has a unique association
 
 Location: `bridges/WormholeMessenger.sol` (single `sourceGovernor` state variable; authentication around lines 88–95).
 
-`WormholeMessenger` authenticates against a single `sourceGovernor`, which cannot match two distinct L1 sender identities (a direct path and a mediated path) simultaneously. Correspondingly the matching verifier accepts only the direct-relayer signatures. Discovered in the internal19 manual re-audit.
+`WormholeMessenger` authenticates against a single `sourceGovernor`, which cannot match two distinct L1 sender identities (a direct path and a mediated path) simultaneously. Correspondingly the matching verifier accepts only the direct-relayer signatures. Discovered in the internal20 manual re-audit.
 
 **Dormancy status.** Only the single direct path is (was) live, and that bridge family is being retired. No live path exercises the dual-source case.
 
@@ -819,7 +819,7 @@ Location: `bridges/WormholeMessenger.sol` (single `sourceGovernor` state variabl
 
 Location: `Timelock.sol` (constructor, passing `msg.sender` as the OZ v4.8 `TimelockController` 4th "admin" argument).
 
-`TimelockController`'s constructor grants `TIMELOCK_ADMIN_ROLE` to the deploying account passed as the 4th constructor arg (`msg.sender` for the Olas wrapper) — a delay-bypassing role during the bootstrap window until the deployer renounces it. Discovered in the internal19 manual re-audit.
+`TimelockController`'s constructor grants `TIMELOCK_ADMIN_ROLE` to the deploying account passed as the 4th constructor arg (`msg.sender` for the Olas wrapper) — a delay-bypassing role during the bootstrap window until the deployer renounces it. Discovered in the internal20 manual re-audit.
 
 **Dormancy status (verified on-chain).** The live deployment renounced the deployer-EOA admin. `Timelock` is now self-administered (`hasRole(TIMELOCK_ADMIN_ROLE, self) == true`, deployer holds `false`). The bootstrap window is closed on the live contract.
 
@@ -835,7 +835,7 @@ Location: `Timelock.sol` (constructor, passing `msg.sender` as the OZ v4.8 `Time
 
 Location: `FxERC20RootTunnel` inherits from `fx-portal`'s `FxBaseRootTunnel`, which exposes `setFxChildTunnel(address)` — permissionless, callable exactly once.
 
-`FxBaseRootTunnel.setFxChildTunnel` is permissionless: whoever calls it first pins the L2 emitter for the token bridge. A front-run before the deployer would pin the L2 emitter to an attacker contract, enabling **mint-without-lock on L1** for the bridged token. Discovered in the internal19 manual re-audit.
+`FxBaseRootTunnel.setFxChildTunnel` is permissionless: whoever calls it first pins the L2 emitter for the token bridge. A front-run before the deployer would pin the L2 emitter to an attacker contract, enabling **mint-without-lock on L1** for the bridged token. Discovered in the internal20 manual re-audit.
 
 **Dormancy status.** The window is deploy-time only; the live `FxERC20RootTunnel` already has its child tunnel set. Any subsequent call reverts (the base contract enforces the one-shot). The window is closed on the live contract.
 
