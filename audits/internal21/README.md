@@ -13,7 +13,7 @@ complete, and (c) introduces no regression.
 
 | File | Change |
 |---|---|
-| `contracts/VoteWeighting.sol` | +37 / −13 — the fix |
+| `contracts/VoteWeighting.sol` | +53 / −21 — the fix |
 | `test/forge/VoteWeighting.t.sol` | +481 — 17 unit tests (incl. the DoS regression) |
 | `test/forge/ForkVoteWeighting.t.sol` | +116 — mainnet-fork tests |
 | `contracts/test/VoteWeightingFuzzing.sol` | +48 / −16 — echidna harness |
