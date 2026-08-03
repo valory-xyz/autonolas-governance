@@ -46,7 +46,8 @@ describe("Vote Weighting veOLAS", function () {
         await ve.deployed();
 
         const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
-        vw = await VoteWeighting.deploy(ve.address);
+        // Dispenser is immutable and set at construction; a zero address means no dispenser (general purpose)
+        vw = await VoteWeighting.deploy(ve.address, AddressZero);
         await vw.deployed();
     });
 
@@ -54,7 +55,7 @@ describe("Vote Weighting veOLAS", function () {
         it("Should fail when deploying with the zero address", async function () {
             const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
             await expect(
-                VoteWeighting.deploy(AddressZero)
+                VoteWeighting.deploy(AddressZero, AddressZero)
             ).to.be.revertedWithCustomError(vw, "ZeroAddress");
         });
 
@@ -86,17 +87,19 @@ describe("Vote Weighting veOLAS", function () {
             ).to.be.revertedWithCustomError(vw, "OwnerOnly");
         });
 
-        it("Setting dispenser", async function () {
-            // Try to set not by the owner
-            await expect(
-                vw.connect(signers[1]).changeDispenser(deployer.address)
-            ).to.be.revertedWithCustomError(vw, "OwnerOnly");
+        it("Immutable dispenser", async function () {
+            const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
 
-            // Set dispenser to any address
-            await vw.changeDispenser(deployer.address);
+            // The default deployment has no dispenser (zero address)
+            expect(await vw.dispenser()).to.equal(AddressZero);
 
-            // Zero address
-            await vw.changeDispenser(AddressZero);
+            // Deploying with a dispenser address sets the immutable slot at construction
+            const vwWithDispenser = await VoteWeighting.deploy(ve.address, deployer.address);
+            await vwWithDispenser.deployed();
+            expect(await vwWithDispenser.dispenser()).to.equal(deployer.address);
+
+            // There is no way to change it afterwards: changeDispenser no longer exists
+            expect(vw.changeDispenser).to.equal(undefined);
         });
     });
 
@@ -703,33 +706,59 @@ describe("Vote Weighting veOLAS", function () {
             await snapshot.restore();
         });
 
-        it("Should fail when the dispenser is not correctly called", async function () {
-            // Take a snapshot of the current state of the blockchain
+        it("Should call the immutable dispenser on nominee add and remove", async function () {
             const snapshot = await helpers.takeSnapshot();
 
-            // Lock one OLAS into veOLAS
-            await olas.approve(ve.address, oneOLASBalance);
-            await ve.createLock(oneOLASBalance, oneYear);
+            // Deploy a VoteWeighting wired to a mock dispenser at construction (immutable)
+            const MockDispenser = await ethers.getContractFactory("MockDispenser");
+            const mockDispenser = await MockDispenser.deploy();
+            await mockDispenser.deployed();
 
-            // Add nominee and get their bytes32 addresses
-            let nominee = signers[1].address;
-            await vw.addNomineeEVM(nominee, chainId);
-            nominee = convertAddressToBytes32(nominee);
+            const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
+            const vwd = await VoteWeighting.deploy(ve.address, mockDispenser.address);
+            await vwd.deployed();
+            expect(await vwd.dispenser()).to.equal(mockDispenser.address);
 
-            // Set the dispenser
-            await vw.changeDispenser(deployer.address);
+            // Adding a nominee forwards the call to the dispenser
+            const nominee = signers[1].address;
+            await vwd.addNomineeEVM(nominee, chainId);
+            expect(await mockDispenser.addCount()).to.equal(1);
 
-            // Try to add nominee
+            // Removing a nominee forwards the call to the dispenser
+            await vwd.removeNominee(convertAddressToBytes32(nominee), chainId);
+            expect(await mockDispenser.removeCount()).to.equal(1);
+
+            await snapshot.restore();
+        });
+
+        it("Should fail when the immutable dispenser call reverts", async function () {
+            const snapshot = await helpers.takeSnapshot();
+
+            const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
+
+            // A dispenser that is an EOA (no code) makes the addNominee dispenser call revert
+            const vwEOA = await VoteWeighting.deploy(ve.address, deployer.address);
+            await vwEOA.deployed();
             await expect(
-                vw.addNomineeEVM(convertBytes32ToAddress(nominee), chainId + 1)
+                vwEOA.addNomineeEVM(signers[1].address, chainId)
             ).to.be.reverted;
 
-            // Try to remove nominee
+            // A dispenser that reverts on removeNominee makes removeNominee revert; add still succeeds
+            const MockDispenser = await ethers.getContractFactory("MockDispenser");
+            const mockDispenser = await MockDispenser.deploy();
+            await mockDispenser.deployed();
+
+            const vwd = await VoteWeighting.deploy(ve.address, mockDispenser.address);
+            await vwd.deployed();
+
+            const nominee = signers[1].address;
+            await vwd.addNomineeEVM(nominee, chainId);
+
+            await mockDispenser.setRevertOnRemove(true);
             await expect(
-                vw.removeNominee(nominee, chainId)
+                vwd.removeNominee(convertAddressToBytes32(nominee), chainId)
             ).to.be.reverted;
 
-            // Restore to the state of the snapshot
             await snapshot.restore();
         });
     });

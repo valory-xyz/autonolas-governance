@@ -131,7 +131,6 @@ struct Nominee {
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract VoteWeighting {
     event OwnerUpdated(address indexed owner);
-    event DispenserUpdated(address indexed dispenser);
     event Checkpoint(address indexed sender, uint256 sumBias);
     event CheckpointNominee(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
         uint256 nomineeWeight, uint256 totalSum);
@@ -163,7 +162,10 @@ contract VoteWeighting {
     // Contract owner address
     address public owner;
     // Dispenser contract
-    address public dispenser;
+    // Note: set once at construction and never changed; the Dispenser must therefore be deployed first,
+    // and it independently authorizes addNominee / removeNominee by msg.sender == voteWeighting on its side.
+    // A zero address is allowed when the contract is meant to serve a general purpose with no dispenser.
+    address public immutable dispenser;
 
     // Set of Nominee structs
     Nominee[] public setNominees;
@@ -203,7 +205,8 @@ contract VoteWeighting {
 
     /// @dev Contract constructor.
     /// @param _ve Voting Escrow contract address.
-    constructor(address _ve) {
+    /// @param _dispenser Dispenser contract address (zero address for a general-purpose deployment with no dispenser).
+    constructor(address _ve, address _dispenser) {
         // Check for the zero address
         if (_ve == address(0)) {
             revert ZeroAddress();
@@ -212,6 +215,8 @@ contract VoteWeighting {
         // Set initial parameters
         owner = msg.sender;
         ve = _ve;
+        // Note: the dispenser is intentionally allowed to be a zero address (general-purpose deployment)
+        dispenser = _dispenser;
         timeSum = block.timestamp / WEEK * WEEK;
         // Push empty element to the zero-th index
         setNominees.push(Nominee(0, 0));
@@ -382,19 +387,6 @@ contract VoteWeighting {
 
         owner = newOwner;
         emit OwnerUpdated(newOwner);
-    }
-
-    /// @dev Changes the dispenser contract address.
-    /// @notice Dispenser can be set to a zero address if the contract needs to serve a general purpose.
-    /// @param newDispenser New dispenser contract address.
-    function changeDispenser(address newDispenser) external {
-        // Check for the contract ownership
-        if (msg.sender != owner) {
-            revert OwnerOnly(msg.sender, owner);
-        }
-
-        dispenser = newDispenser;
-        emit DispenserUpdated(newDispenser);
     }
 
     /// @dev Checkpoints to fill data common for all nominees.

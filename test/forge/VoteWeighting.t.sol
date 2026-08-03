@@ -37,7 +37,7 @@ contract VoteWeightingTest is Test {
 
         olas = new OLAS();
         ve = new veOLAS(address(olas), "Voting Escrow OLAS", "veOLAS");
-        vw = new VoteWeighting(address(ve));
+        vw = new VoteWeighting(address(ve), address(0));
 
         // This test contract is the OLAS minter; fund the voters
         olas.mint(alice, 1_000_000 ether);

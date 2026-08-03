@@ -26,10 +26,13 @@ async function main() {
     console.log("EOA is:", deployer);
 
     // Transaction signing and execution
-    console.log("23. EOA to deploy VoteWeighting contract pointed to veOLAS");
+    console.log("23. EOA to deploy VoteWeighting contract pointed to veOLAS and the Dispenser");
     const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
-    console.log("You are signing the following transaction: VoteWeighting.connect(EOA).deploy(veOLAS)");
-    const voteWeighting = await VoteWeighting.connect(EOA).deploy(parsedData.veOLASAddress);
+    // Note: the dispenser is immutable and set at construction; the Dispenser must be deployed beforehand.
+    // Use the zero address for a general-purpose deployment with no dispenser.
+    const dispenserAddress = parsedData.dispenserAddress || ethers.constants.AddressZero;
+    console.log("You are signing the following transaction: VoteWeighting.connect(EOA).deploy(veOLAS, dispenser)");
+    const voteWeighting = await VoteWeighting.connect(EOA).deploy(parsedData.veOLASAddress, dispenserAddress);
     const result = await voteWeighting.deployed();
 
     // Transaction details

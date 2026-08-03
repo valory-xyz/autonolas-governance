@@ -47,7 +47,7 @@ contract ForkVoteWeighting is Test {
 
         ve = IVE(VEOLAS);
         olas = IERC20(ve.token());
-        vw = new VoteWeighting(VEOLAS);
+        vw = new VoteWeighting(VEOLAS, address(0));
     }
 
     function _b32(address a) internal pure returns (bytes32) {
