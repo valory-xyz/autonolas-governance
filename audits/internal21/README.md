@@ -265,27 +265,25 @@ defaults `dispenser` to the zero address when the globals key is absent.
 
 No new defect was found in either change.
 
-## 7. Operational cross-reference — proposal 12 (PR #214) is stale on-chain
+## 7. Operational cross-reference — proposal 12 (PR #214) executed correctly
 
-`removeNominee` — the function this PR fixes — is exercised in bulk by governance
-**proposal 12** (PR #214, "un-nominate 20 legacy staking nominees"). A final review of
-that proposal against **live mainnet** (`VoteWeighting 0x95418b46…c5c1`, block ~25674566,
-2026-08-03) found it **stale**: all 20 target nominees are **already removed**
-(`getNomineeId == 0`, and they are present in the removed set — e.g. Polymarket Alpha - III
-`getRemovedNomineeId == 91`, Pearl Beta MM I `== 83`, Agents.fun 1 `== 99`). An
-owner-simulated `removeNominee(0x8887…C26, 137)` reverts `NomineeDoesNotExist` (`0x31b05a80`),
-while the same call on a still-live nominee succeeds. Because the 20 calls form one atomic
-Timelock batch, `execute()` would revert entirely. The proposal's fork test forks at
-**latest** (unpinned), so its reported "3/3 pass" reflects drafting-time state, not current
-mainnet.
+`removeNominee` — the function this PR fixes — was exercised in bulk by governance
+**proposal 12** (PR #214, "un-nominate 20 legacy staking nominees"), which **executed
+successfully on mainnet**. Confirmed firsthand (2026-08-03): `GovernorOLAS 0x060D0C…251E6`
+returns `state(0xfd0542…ff174) = 7 (Executed)`, the committed builder reproduces exactly
+that `proposalId` (so the merged record is byte-faithful to what executed), and all 20
+target `(account, chainId)` pairs are now in VoteWeighting's removed set
+(`getRemovedNomineeId` nonzero — Polymarket Alpha - III = 91, Pearl Beta MM I = 83,
+Agents.fun 1 = 99); a re-`removeNominee` now reverts `NomineeDoesNotExist`, i.e. the
+removals are in effect and irreversible as designed.
 
 Two consequences for this redeploy:
-- **No interaction with the #8 fix.** The 20 legacy nominees carry zero weight and are
-  already removed, so the checkpoint-drift path this PR closes is not reachable by proposal
-  12; the two changes are independent.
-- **Sequencing note.** Proposal 12 targets the *currently-deployed* `VoteWeighting`
+- **No interaction with the #8 fix.** The 20 legacy nominees carried zero weight, so the
+  checkpoint-drift path this PR closes was not exercised by proposal 12; the two changes are
+  independent. (Note the causal direction: they are *removed because* the proposal executed —
+  not evidence of any fault.)
+- **Redeploy sequencing.** Proposal 12 acted on the *currently-deployed* `VoteWeighting`
   (`0x95418b46…`). If this fixed contract is redeployed at a new address (per the deploy
-  script in §5.1), any legacy-nominee cleanup must be re-scoped to whichever `VoteWeighting`
-  is authoritative at execution time. Recommendation delivered on PR #214: re-scope to the
-  live set or close as obsolete, and gate `test_preconditions` on current state before
-  submission.
+  script in §5.1), the removed-nominee state does **not** carry over — the new instance
+  starts with a fresh nominee set, so any legacy cleanup would be re-scoped to whichever
+  `VoteWeighting` is authoritative at that time.
