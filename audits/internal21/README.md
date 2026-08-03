@@ -9,7 +9,18 @@ suite firsthand. This is a targeted verification that the fix (a) closes the
 `internal20` "Findings to fix" that live in `VoteWeighting.sol`, (b) is correct and
 complete, and (c) introduces no regression.
 
+> **Verified commit / branch drift.** This verification is pinned to `a22490e` — the
+> commit that contains the accounting fix. All file/line references below are relative
+> to `a22490e`. The PR branch has since advanced to `8326d36` with additional commits;
+> the accounting fix verified here is **byte-identical** at the branch tip (only
+> relocated by later comment/reorder edits), but the branch now also carries an
+> **unrelated functional change** that this verification does **not** cover. See
+> §5 (Subsequent changes) before merging.
+
 ## Scope
+
+Diff stats below are the verified snapshot at `a22490e` (vs base `a7f6189`); the branch
+tip `8326d36` differs — see §5.
 
 | File | Change |
 |---|---|
@@ -160,9 +171,42 @@ clean up).
   copies the *latest full audit*; this targeted fix-verification intentionally leaves the
   comprehensive `internal20` copy in place. Deferred to the maintainer whether to mirror.
 
-## 5. Verdict
+## 5. Subsequent changes on the branch (post-verification)
 
-**PASS — merge-ready.** PR #215 closes `internal20` F-3, F-4, F-5, F-6, F-9
-(vuln-list #8, #11, #18, #19, #20) at the source, the reconciliation is exact and
-complete, the DoS regression fails on the pre-fix parent and passes on the fix, and no
-new defect was found in the changed code.
+After this verification (`a22490e`) the PR branch advanced to `8326d36`. The commits
+added since, and their bearing on this verification:
+
+| Commit | Change | Bearing on this verification |
+|---|---|---|
+| `83f6d3e` | Drop audit finding-number tags from `VoteWeighting` / harness comments | Cosmetic (comments only) — no effect |
+| `998418b` | **Make `dispenser` immutable, drop `changeDispenser()` + `DispenserUpdated`; constructor becomes `(address _ve, address _dispenser)`** | **Functional / out of scope** — see below |
+| `64026be` | Comments; pragma bump `^0.8.25 → ^0.8.30` | Comments + compiler-target change — no logic change |
+| `367004d` | Add Forge deploy script `deploy_23_vote_weighting.sh` | New deploy tooling — out of scope |
+| `8326d36` | Variable-declaration reorder (group the `dispenser` immutable with `ve`) | Cosmetic (declaration order of immutables) — no storage-layout or logic change |
+
+**The `removeNominee` / revoke accounting verified above is unchanged by all of these.**
+Diffing `a22490e..8326d36` on `VoteWeighting.sol`, the only non-comment code deltas are
+the constructor signature, the `dispenser` immutability, and the removal of
+`changeDispenser` / `DispenserUpdated` — `_getSum`, `_getWeight`, `removeNominee`
+reconciliation, `revokeRemovedNomineeVotingPower`, the `_maxAndSub` guards and the
+`1e18` clamp are byte-for-byte identical (only shifted ~7 lines down).
+
+**Not covered by this verification (needs separate review):** the immutable-`dispenser`
+refactor (`998418b`). It is a constructor-signature/ABI change with a deployment-ordering
+consequence — the Dispenser must be deployed before `VoteWeighting`, and a future
+Dispenser migration forces a `VoteWeighting` redeploy. Its safety rests on the tokenomics
+`Dispenser` independently authorizing `addNominee` / `removeNominee` by
+`msg.sender == voteWeighting` (with `addNominee` additionally pause-gated), which is a
+cross-repo property outside this document's scope.
+
+## 6. Verdict
+
+**PASS — merge-ready for the accounting fix (`a22490e`).** PR #215 closes `internal20`
+F-3, F-4, F-5, F-6, F-9 (vuln-list #8, #11, #18, #19, #20) at the source, the
+reconciliation is exact and complete, the DoS regression fails on the pre-fix parent and
+passes on the fix, and no new defect was found in the changed accounting code — which is
+unchanged at the current branch tip `8326d36`.
+
+**Scope caveat:** this verdict covers the accounting fix only. The immutable-`dispenser`
+refactor (`998418b`) that the branch has since gained is a separate functional change and
+is **not** part of this PASS — see §5.
