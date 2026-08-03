@@ -157,14 +157,16 @@ contract VoteWeighting {
     uint256 public constant MAX_WEIGHT = 10_000;
     // Maximum chain Id as per EVM specs
     uint256 public constant MAX_EVM_CHAIN_ID = type(uint64).max / 2 - 36;
+
     // veOLAS contract address
     address public immutable ve;
-    // Contract owner address
-    address public owner;
     // Dispenser contract
     // Note: Dispenser independently authorizes addNominee / removeNominee by msg.sender == voteWeighting on its side.
     // A zero address is allowed when the contract is meant to serve a general purpose with no dispenser.
     address public immutable dispenser;
+
+    // Contract owner address
+    address public owner;
 
     // Set of Nominee structs
     Nominee[] public setNominees;
