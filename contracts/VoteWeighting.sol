@@ -235,7 +235,7 @@ contract VoteWeighting {
                 pt.bias -= dBias;
                 uint256 dSlope = changesSum[t];
                 // Guarded subtraction: a scheduled slope change must never underflow the aggregate
-                // slope, otherwise the weekly checkpoint walk would revert permanently (finding #8)
+                // slope, otherwise the weekly checkpoint walk would revert permanently
                 pt.slope = _maxAndSub(pt.slope, dSlope);
             } else {
                 pt.bias = 0;
@@ -276,7 +276,7 @@ contract VoteWeighting {
             if (pt.bias > dBias) {
                 pt.bias -= dBias;
                 uint256 dSlope = changesWeight[nomineeHash][t];
-                // Guarded subtraction, mirroring _getSum (finding #8)
+                // Guarded subtraction, mirroring _getSum
                 pt.slope = _maxAndSub(pt.slope, dSlope);
             } else {
                 pt.bias = 0;
@@ -435,7 +435,7 @@ contract VoteWeighting {
             uint256 nomineeWeight = pointsWeight[nomineeHash][t].bias;
             weight = 1e18 * nomineeWeight / totalSum;
             // Cap at 1.0 (1e18) to honor the documented invariant, defending the Dispenser consumer
-            // against any residual accounting drift (finding #18)
+            // against any residual accounting drift
             if (weight > 1e18) {
                 weight = 1e18;
             }
@@ -595,7 +595,7 @@ contract VoteWeighting {
     function removeNominee(bytes32 account, uint256 chainId) external {
         // Check for the contract ownership
         if (msg.sender != owner) {
-            // Argument order matches the OwnerOnly(sender, owner) declaration (finding #11)
+            // Argument order matches the OwnerOnly(sender, owner) declaration
             revert OwnerOnly(msg.sender, owner);
         }
 
@@ -615,7 +615,7 @@ contract VoteWeighting {
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
 
         // Capture the nominee's currently active aggregate slope before zeroing it, so it can be
-        // subtracted out of the total sum slope below (finding #8)
+        // subtracted out of the total sum slope below
         uint256 nomineeSlope = pointsWeight[nomineeHash][nextTime].slope;
 
         // Zero the nominee weight bias and slope
@@ -625,8 +625,8 @@ contract VoteWeighting {
 
         // Reconcile the total sum: remove both the nominee bias and its still-active slope from the
         // aggregate. Leaving the slope behind (previous behavior) over-decays the sum and, combined
-        // with the retained changesSum entries below, could permanently brick the checkpoint walk
-        // (finding #8). The subtractions are guarded for defense in depth.
+        // with the retained changesSum entries below, could permanently brick the checkpoint walk.
+        // The subtractions are guarded for defense in depth.
         uint256 newSum = _maxAndSub(oldSum, oldWeight);
         pointsSum[nextTime].bias = newSum;
         pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope, nomineeSlope);
@@ -637,7 +637,7 @@ contract VoteWeighting {
         // changesWeight entries mirror exactly its contribution to changesSum, so subtracting them
         // is precise and does not disturb other nominees that share the same week. The loop is
         // bounded by MAX_NUM_WEEKS (the same horizon as _getSum / _getWeight), which exceeds the
-        // maximum four-year veOLAS lock duration (finding #8).
+        // maximum four-year veOLAS lock duration.
         uint256 t = nextTime;
         for (uint256 i = 0; i < MAX_NUM_WEEKS; ++i) {
             t += WEEK;
@@ -659,7 +659,7 @@ contract VoteWeighting {
         // Shuffle the current last nominee id in the set to be placed to the removed one, unless the
         // removed nominee is itself the last element. Using (id != numNominees) rather than
         // (numNominees > 1) prevents re-populating mapNomineeIds for the just-removed nominee when it
-        // is the last element of a set of two or more (finding #19).
+        // is the last element of a set of two or more.
         // Note that the zero-th element of setNominees is always zero and the final length is never below 1
         if (id != numNominees) {
             // Shuffle the current last nominee id in the set to be placed to the removed one
@@ -700,11 +700,10 @@ contract VoteWeighting {
         }
 
         // The aggregate weight, sum and scheduled slope changes for a removed nominee are fully
-        // reconciled inside removeNominee (finding #8). This function must therefore only release the
+        // reconciled inside removeNominee. This function must therefore only release the
         // caller's own voting-power bookkeeping and must NOT touch pointsSum / pointsWeight /
         // changesSum / changesWeight again, otherwise the removed nominee's slope would be
-        // double-subtracted. Removing the aggregate write here also resolves finding #20: there is no
-        // stale next-week checkpoint slot left to mis-advance.
+        // double-subtracted. There is no stale next-week checkpoint slot left to mis-advance.
 
         // Update the voting power
         uint256 powerUsed = voteUserPower[msg.sender];
