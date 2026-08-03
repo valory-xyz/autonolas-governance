@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.30;
 
 // Dispenser interface
 interface IDispenser {
@@ -162,8 +162,7 @@ contract VoteWeighting {
     // Contract owner address
     address public owner;
     // Dispenser contract
-    // Note: set once at construction and never changed; the Dispenser must therefore be deployed first,
-    // and it independently authorizes addNominee / removeNominee by msg.sender == voteWeighting on its side.
+    // Note: Dispenser independently authorizes addNominee / removeNominee by msg.sender == voteWeighting on its side.
     // A zero address is allowed when the contract is meant to serve a general purpose with no dispenser.
     address public immutable dispenser;
 
