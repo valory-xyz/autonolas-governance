@@ -359,3 +359,52 @@ as an enforced launch requirement; (3) forge tests wired into CI; (4) correcting
 severity in the vulnerabilities list; (5) the cross-repo lock — this PR and tokenomics
 #314/#309 are mutually load-bearing (the zero-`voteWeighting` init + proxy remove the circular
 deploy), so neither should ship without the other; (6) renaming the mislabeled test.
+
+---
+
+## CORRECTION 2026-08-13 — two paperwork errors in the 2026-08-12 verdict (found in re-review, verified first-hand)
+
+The re-review correctly caught two factual errors in the section above. Both are in the
+paperwork, not the accounting (which remains correct and byte-unchanged — independently
+re-confirmed by an empty `git diff … -- contracts/VoteWeighting.sol` and 17/17). Recording
+the corrections rather than silently editing.
+
+- **The "zero-`voteWeighting` init" mechanism does not exist — the circular deploy is real.**
+  The verdict above (item #1 and ship-gate 5) stated the deploy cycle was resolved tokenomics-side
+  by a "zero-`voteWeighting` init". Verified against the tokenomics code: `Dispenser.initialize`
+  **reverts** `ZeroAddress()` when `_voteWeighting == address(0)` (`Dispenser.sol:373-374`, dispenser-
+  rework head). There is no zero-`voteWeighting` init; that claim was carried over from a
+  description without checking the other repository, and is withdrawn. What the Dispenser proxy
+  actually provides is a **stable Dispenser address** (the genuinely useful half) — it does **not**
+  break the cycle. The cycle is real and must be broken operationally, and this belongs in the
+  deployment runbook:
+  1. deploy the Dispenser implementation + proxy, initialised with a **placeholder non-zero**
+     `voteWeighting` (the currently-live VoteWeighting address works);
+  2. deploy the new `VoteWeighting(ve, dispenserProxy)`;
+  3. `Dispenser.changeManagers(address(0), newVoteWeighting)`.
+  Ship-gate (5) — this PR and tokenomics #309/#314 are mutually load-bearing — is unchanged and
+  correct; only its stated *reason* is corrected (stable proxy address + operational ordering, not
+  a zero-VW init).
+
+- **Item #7 (vuln-doc drift) is NOT resolved — the `70cf7ab` reword left §20 self-contradictory.**
+  The verdict listed #7 as resolved. In fact §20's **Status** now reads "the checkpoint-advance fix
+  described below is implemented," while the **Fix on redeploy** text immediately below still reads
+  "Call `_getSum()` / `_getWeight()` at the start of `revokeRemovedNomineeVotingPower`." The shipped
+  contract does neither — `revokeRemovedNomineeVotingPower` is reduced to pure per-user bookkeeping,
+  with the aggregate fully reconciled inside `removeNominee` (the shipped code comment says exactly
+  this). So §20 now asserts a specific implementation that was deliberately *not* taken, in the file
+  of record, heading into the external re-audit. **#7 is re-opened**: §20 must be reworded to the
+  design that shipped (by-construction reconciliation in `removeNominee`, no start-of-revoke advance),
+  matching the way §18 and §19 already describe the shipped code exactly. My prior "resolved
+  (verified)" confirmed only that the file changed, not that the reword was accurate — corrected.
+
+- **[Low] `verify_23_vote_weighting.js` kept the zero fallback.** `parsedData.dispenserAddress ||
+  "0x0…0"` (`:8`) — the same silent-zero footgun the deploy scripts now reject; one file missed in
+  the `70cf7ab` sweep. Fold into the #1/#8 hardening.
+
+**Updated residual checklist** (the accounting verdict — approve on merit, byte-unchanged — is
+unchanged): ship gates remain (1) external re-audit adding the #2 revert-repro; (2) drift monitor
+enforced; (3) forge → CI; (4) finding-#8 severity ≥ Medium; (5) cross-repo lock with tokenomics
+#309/#314; (6) test rename — **plus** these three doc/script corrections: **§20 reword (re-opened #7)**,
+the **deploy-ordering runbook** (the real 3-step, replacing the withdrawn zero-VW claim), and the
+**`verify_23` zero fallback**. None touch the audited accounting.
