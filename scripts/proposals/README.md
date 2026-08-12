@@ -19,6 +19,7 @@ effects are validated separately via Tenderly simulations on the destination cha
 | # | Summary | Folder | Annotated HTML | Fork test (L1) |
 |---|---------|--------|----------------|----------------|
 | 11 | Olas Governance & GuardCM activation: migrate Timelock roles to the new GovernorOLAS, configure + swap in the new GuardCM, set new Celo BalanceTrackers, upgrade Tokenomics impl (post-audit resolutions) | [proposal_11/](proposal_11) | [proposal_11.html](proposal_11/proposal_11.html) | [Proposal11Activation.t.sol](../../test/proposals/Proposal11Activation.t.sol) |
+| 12 | Un-nominate 20 legacy staking contract nominees from VoteWeighting (Pearl Beta Mech Marketplace I–VIII, Polymarket ×3, Optimus Alpha II–IV, Pett.AI ×2, Agents.fun ×3, one invalid-metadata contract); LST and the new staking generation stay nominated | [proposal_12/](proposal_12) | [proposal_12.html](proposal_12/proposal_12.html) | [Proposal12Unnominate.t.sol](../../test/proposals/Proposal12Unnominate.t.sol) |
 
 ### Legacy proposals
 
