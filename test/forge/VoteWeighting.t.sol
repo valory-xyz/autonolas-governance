@@ -344,7 +344,14 @@ contract VoteWeightingTest is Test {
 
     /// @dev A voter whose lock already expired (its changesSum decrement was already applied by a
     ///      prior checkpoint) must not cause an underflow or double subtraction on removal.
-    function test_RemoveNominee_ExpiredVoter_NoUnderflow() public {
+    /// @notice NOT a regression test: this case passes on the pre-fix contract too. It is a
+    ///         consistency check on the post-fix reconciliation, kept for coverage of the
+    ///         already-expired-voter path. The regression tests that fail on the pre-fix build are
+    ///         test_RemoveWithoutUnvote_NoCheckpointDoS, test_RemoveNominee_ReconcilesSlopeAndChangesSum
+    ///         and test_RemoveNominee_MultiVoter_FullReconcile. Renamed from
+    ///         test_RemoveNominee_ExpiredVoter_NoUnderflow, whose name implied regression coverage
+    ///         it does not provide.
+    function test_RemoveNominee_ExpiredVoter_Consistent() public {
         _lock(alice, 1_000 ether, 3 * WEEK); // short: will expire before removal
         _lock(carol, 1_000 ether, 200 * WEEK);
 

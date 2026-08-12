@@ -11,7 +11,7 @@
 | 5 | [totalSupplyLockedAtT function](#5-totalsupplylockedatt-function) | Low |
 | 6 | [getPastTotalSupply function](#6-getpasttotalsupply-function) | Low |
 | 7 | [processMessageFromForeign function](#7-processmessagefromforeign-function) | Informative |
-| 8 | [removeNominee function](#8-removenominee-function) | Low |
+| 8 | [removeNominee function](#8-removenominee-function) | Medium |
 | 9 | [_addNominee and removeNominee functions](#9-_addnominee-and-removenominee-functions) | Informative |
 | 10 | [voteForNomineeWeights function](#10-voteforNomineeweights-function) | Informative |
 | 11 | [removeNominee OwnerOnly revert-data argument order](#11-removenominee-owneronly-revert-data-argument-order) | Informative |
@@ -278,7 +278,13 @@ incorporating a `chainId` check.
 
 ### 8. `removeNominee` function
 
-**Severity:** Low
+**Severity:** Medium
+
+> Raised from **Low** to **Medium** in the internal21 fix-verification round. The original label
+> was set against the orphaned-voting-power reading of this entry; the accounting defect documented
+> below is a permanent checkpoint DoS — once triggered, the weekly `_getSum()` walk reverts and
+> `nomineeRelativeWeightWrite` (and with it the Dispenser reward-distribution path) halts, with no
+> recovery short of redeployment. Medium reflects that impact.
 
 In the VoteWeighting contract, the following function is implemented:
 

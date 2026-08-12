@@ -386,6 +386,24 @@ the corrections rather than silently editing.
   correct; only its stated *reason* is corrected (stable proxy address + operational ordering, not
   a zero-VW init).
 
+  > **Superseded 2026-08-13 (post-merge).** The placeholder step above is no longer required.
+  > Tokenomics #314 subsequently landed `cf881af`, which removes the zero check on `_voteWeighting`
+  > in `Dispenser.initialize` precisely to break this cycle, and adds
+  > `scripts/deployment/script_dispenser_change_managers.sh` to do the wiring. The procedure that
+  > actually ships is:
+  >
+  > 1. `deploy_07a_dispenser.sh` — Dispenser implementation;
+  > 2. `deploy_07b_dispenser_proxy.sh` — DispenserProxy, initialised with **`voteWeighting = 0`**
+  >    (the proxy is `StakingIncentivesPaused` by construction, and `addNominee` is unreachable
+  >    while `voteWeighting` is zero, so no claim path can run);
+  > 3. `deploy_23_vote_weighting.sh` — `VoteWeighting(ve, dispenserProxyAddress)`;
+  > 4. `script_dispenser_change_managers.sh` — wires the real Vote Weighting in while still paused;
+  > 5. set deposit processors, then unpause.
+  >
+  > The substance of the correction is unchanged: the Dispenser proxy supplies a **stable address**,
+  > not a broken cycle — the cycle is broken by the zero-VW `initialize` plus the ordering above.
+  > Ship-gate (5) still holds.
+
 - **Item #7 (vuln-doc drift) is NOT resolved — the `70cf7ab` reword left §20 self-contradictory.**
   The verdict listed #7 as resolved. In fact §20's **Status** now reads "the checkpoint-advance fix
   described below is implemented," while the **Fix on redeploy** text immediately below still reads
@@ -408,3 +426,29 @@ enforced; (3) forge → CI; (4) finding-#8 severity ≥ Medium; (5) cross-repo l
 #309/#314; (6) test rename — **plus** these three doc/script corrections: **§20 reword (re-opened #7)**,
 the **deploy-ordering runbook** (the real 3-step, replacing the withdrawn zero-VW claim), and the
 **`verify_23` zero fallback**. None touch the audited accounting.
+
+---
+
+## POST-MERGE 2026-08-13 — gates (4) and (6) closed, deploy ordering corrected
+
+PR #215 merged as `afb00f0`. Three of the residual items were doc/test-only and are now applied
+directly on `main`; the accounting is untouched (`contracts/VoteWeighting.sol` unchanged, forge
+`VoteWeightingTest` 17/17).
+
+- **Gate (4) — finding-#8 severity.** `Vulnerabilities_list_governance.md` §8 raised **Low → Medium**,
+  in both the summary table and the section header, with the rationale recorded inline (the original
+  Low was set against the orphaned-voting-power reading, not the checkpoint-DoS documented in the
+  entry).
+- **Gate (6) — test rename.** `test_RemoveNominee_ExpiredVoter_NoUnderflow` →
+  `test_RemoveNominee_ExpiredVoter_Consistent`, with a `@notice` recording that it is **not** a
+  regression test (it passes on the pre-fix contract) and naming the three that are. References to
+  the old name earlier in this document (§2.2, §"Adjudication") are historical and left as written.
+- **Deploy ordering.** The 3-step procedure in the CORRECTION above is superseded — see the inline
+  "Superseded 2026-08-13" note. Tokenomics #314 (`cf881af`) removed the zero check on
+  `_voteWeighting` in `Dispenser.initialize`, so the shipped order is impl → proxy (VW = 0) →
+  `VoteWeighting(ve, dispenserProxy)` → `script_dispenser_change_managers.sh` → deposit processors →
+  unpause.
+
+**Remaining ship gates, unchanged:** (1) external re-audit adding the #2 revert-repro; (2) drift
+monitor enforced as a launch requirement; (3) forge wired into CI; (5) cross-repo lock with
+tokenomics #309/#314.
