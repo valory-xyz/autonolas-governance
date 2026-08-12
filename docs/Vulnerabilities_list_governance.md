@@ -778,14 +778,14 @@ In the `VoteWeighting` contract, `revokeRemovedNomineeVotingPower` (around lines
 
 **Impact.** If `revokeRemovedNomineeVotingPower` runs in a week later than the last checkpoint, the target `nextTime` slot is stale (0), so `_maxAndSub(0, oldSlope.slope)` floors to `0` and the voter's slope removal is silently lost — while `changesSum[oldSlope.end] -= oldSlope.slope` (around line 674) still executes. A residual slope then over-decays the sum until natural expiry. (Line 674 itself cannot underflow: the voter's own contribution is present and guarded by `oldSlope.end > block.timestamp`.) The net effect is **gauge-weight accounting drift — no funds, no DoS, self-converging** once the phantom slope decays. Compounds the same class of accounting seam that entry #8 describes. Discovered in the internal20 manual re-audit.
 
-**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not upgradeable, so this is fixed by redeploying the contract; the checkpoint-advance fix described below is implemented and takes effect once the new VoteWeighting is deployed and adopted via governance.
+**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not upgradeable, so this is fixed by redeploying the contract; the fix described below is implemented and takes effect once the new VoteWeighting is deployed and adopted via governance. The shipped design differs from the original recommendation: rather than advancing the checkpoint inside revoke, the redeployed `removeNominee` fully reconciles the aggregate, which removes the stale-slot condition by construction (see **Fix on redeploy** below).
 
 **Mitigation / guidance for voters.** A voter intending to revoke should either:
 
 1. Call `revokeRemovedNomineeVotingPower` in the same week as the removal, before the checkpoint slot goes stale; or
 2. First force a checkpoint advance to `nextTime` by calling a state-writing function on `VoteWeighting` that runs `_getSum()` / `_getWeight()` in the same transaction context (e.g., voting on an existing active nominee), before invoking the revoke.
 
-**Fix on redeploy.** Call `_getSum()` and `_getWeight(account, chainId)` at the start of `revokeRemovedNomineeVotingPower`, mirroring the pattern in `voteForNomineeWeights`.
+**Fix on redeploy (as shipped).** The redeployed `removeNominee` fully reconciles the aggregate for a removed nominee — bias, still-active slope, and its future `changesSum` entries — inside the removal itself. `revokeRemovedNomineeVotingPower` is therefore reduced to pure per-user bookkeeping (release the caller's `voteUserSlopes` / `voteUserPower` and emit the event) and deliberately does **not** touch `pointsSum` / `pointsWeight` / `changesSum` / `changesWeight` again. Because the aggregate is already settled at removal time, there is no stale next-week checkpoint slot left to advance — so the missing `_getSum()` / `_getWeight()` advance is resolved **by construction**, not by mirroring `voteForNomineeWeights` (which here would double-subtract the removed nominee's slope).
 
 ### 21. `GuardCM` `mapBridgeMediatorL1BridgeParams` keyed by L1 address only
 
