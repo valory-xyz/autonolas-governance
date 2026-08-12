@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.30;
 
 // Dispenser interface
 interface IDispenser {
@@ -131,7 +131,6 @@ struct Nominee {
 /// @author Mariapia Moscatiello - <mariapia.moscatiello@valory.xyz>
 contract VoteWeighting {
     event OwnerUpdated(address indexed owner);
-    event DispenserUpdated(address indexed dispenser);
     event Checkpoint(address indexed sender, uint256 sumBias);
     event CheckpointNominee(address indexed sender, bytes32 indexed nomineeAccount, uint256 chainId,
         uint256 nomineeWeight, uint256 totalSum);
@@ -158,12 +157,16 @@ contract VoteWeighting {
     uint256 public constant MAX_WEIGHT = 10_000;
     // Maximum chain Id as per EVM specs
     uint256 public constant MAX_EVM_CHAIN_ID = type(uint64).max / 2 - 36;
+
     // veOLAS contract address
     address public immutable ve;
+    // Dispenser contract
+    // Note: Dispenser independently authorizes addNominee / removeNominee by msg.sender == voteWeighting on its side.
+    // A zero address is allowed when the contract is meant to serve a general purpose with no dispenser.
+    address public immutable dispenser;
+
     // Contract owner address
     address public owner;
-    // Dispenser contract
-    address public dispenser;
 
     // Set of Nominee structs
     Nominee[] public setNominees;
@@ -203,7 +206,8 @@ contract VoteWeighting {
 
     /// @dev Contract constructor.
     /// @param _ve Voting Escrow contract address.
-    constructor(address _ve) {
+    /// @param _dispenser Dispenser contract address (zero address for a general-purpose deployment with no dispenser).
+    constructor(address _ve, address _dispenser) {
         // Check for the zero address
         if (_ve == address(0)) {
             revert ZeroAddress();
@@ -212,6 +216,8 @@ contract VoteWeighting {
         // Set initial parameters
         owner = msg.sender;
         ve = _ve;
+        // Note: the dispenser is intentionally allowed to be a zero address (general-purpose deployment)
+        dispenser = _dispenser;
         timeSum = block.timestamp / WEEK * WEEK;
         // Push empty element to the zero-th index
         setNominees.push(Nominee(0, 0));
@@ -234,7 +240,9 @@ contract VoteWeighting {
             if (pt.bias > dBias) {
                 pt.bias -= dBias;
                 uint256 dSlope = changesSum[t];
-                pt.slope -= dSlope;
+                // Guarded subtraction: a scheduled slope change must never underflow the aggregate
+                // slope, otherwise the weekly checkpoint walk would revert permanently
+                pt.slope = _maxAndSub(pt.slope, dSlope);
             } else {
                 pt.bias = 0;
                 pt.slope = 0;
@@ -274,7 +282,8 @@ contract VoteWeighting {
             if (pt.bias > dBias) {
                 pt.bias -= dBias;
                 uint256 dSlope = changesWeight[nomineeHash][t];
-                pt.slope -= dSlope;
+                // Guarded subtraction, mirroring _getSum
+                pt.slope = _maxAndSub(pt.slope, dSlope);
             } else {
                 pt.bias = 0;
                 pt.slope = 0;
@@ -381,19 +390,6 @@ contract VoteWeighting {
         emit OwnerUpdated(newOwner);
     }
 
-    /// @dev Changes the dispenser contract address.
-    /// @notice Dispenser can be set to a zero address if the contract needs to serve a general purpose.
-    /// @param newDispenser New dispenser contract address.
-    function changeDispenser(address newDispenser) external {
-        // Check for the contract ownership
-        if (msg.sender != owner) {
-            revert OwnerOnly(msg.sender, owner);
-        }
-
-        dispenser = newDispenser;
-        emit DispenserUpdated(newDispenser);
-    }
-
     /// @dev Checkpoints to fill data common for all nominees.
     function checkpoint() external {
         uint256 totalSum = _getSum();
@@ -431,6 +427,11 @@ contract VoteWeighting {
         if (totalSum > 0) {
             uint256 nomineeWeight = pointsWeight[nomineeHash][t].bias;
             weight = 1e18 * nomineeWeight / totalSum;
+            // Cap at 1.0 (1e18) to honor the documented invariant, defending the Dispenser consumer
+            // against any residual accounting drift
+            if (weight > 1e18) {
+                weight = 1e18;
+            }
         }
     }
 
@@ -587,7 +588,8 @@ contract VoteWeighting {
     function removeNominee(bytes32 account, uint256 chainId) external {
         // Check for the contract ownership
         if (msg.sender != owner) {
-            revert OwnerOnly(owner, msg.sender);
+            // Argument order matches the OwnerOnly(sender, owner) declaration
+            revert OwnerOnly(msg.sender, owner);
         }
 
         // Get the nominee struct and hash
@@ -600,17 +602,44 @@ contract VoteWeighting {
             revert NomineeDoesNotExist(account, chainId);
         }
 
-        // Set nominee weight to zero
+        // Advance nominee weight and total sum checkpoints to the coming week
         uint256 oldWeight = _getWeight(account, chainId);
         uint256 oldSum = _getSum();
         uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+
+        // Capture the nominee's currently active aggregate slope before zeroing it, so it can be
+        // subtracted out of the total sum slope below
+        uint256 nomineeSlope = pointsWeight[nomineeHash][nextTime].slope;
+
+        // Zero the nominee weight bias and slope
         pointsWeight[nomineeHash][nextTime].bias = 0;
+        pointsWeight[nomineeHash][nextTime].slope = 0;
         timeWeight[nomineeHash] = nextTime;
 
-        // Account for the the sum weight change
-        uint256 newSum = oldSum - oldWeight;
+        // Reconcile the total sum: remove both the nominee bias and its still-active slope from the
+        // aggregate. Leaving the slope behind (previous behavior) over-decays the sum and, combined
+        // with the retained changesSum entries below, could permanently brick the checkpoint walk.
+        // The subtractions are guarded for defense in depth.
+        uint256 newSum = _maxAndSub(oldSum, oldWeight);
         pointsSum[nextTime].bias = newSum;
+        pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope, nomineeSlope);
         timeSum = nextTime;
+
+        // Remove the nominee's future scheduled slope changes from the aggregate changesSum, so no
+        // phantom decrement remains for a nominee whose slope is already gone. The nominee's own
+        // changesWeight entries mirror exactly its contribution to changesSum, so subtracting them
+        // is precise and does not disturb other nominees that share the same week. The loop is
+        // bounded by MAX_NUM_WEEKS (the same horizon as _getSum / _getWeight), which exceeds the
+        // maximum four-year veOLAS lock duration.
+        uint256 t = nextTime;
+        for (uint256 i = 0; i < MAX_NUM_WEEKS; ++i) {
+            t += WEEK;
+            uint256 dSlope = changesWeight[nomineeHash][t];
+            if (dSlope > 0) {
+                changesSum[t] = _maxAndSub(changesSum[t], dSlope);
+                changesWeight[nomineeHash][t] = 0;
+            }
+        }
 
         // Add to the removed nominee map and set
         mapRemovedNominees[nomineeHash] = setRemovedNominees.length;
@@ -620,9 +649,12 @@ contract VoteWeighting {
         mapNomineeIds[nomineeHash] = 0;
 
         uint256 numNominees = setNominees.length - 1;
-        // Shuffle the current last nominee id in the set to be placed to the removed one, if it's not the last nominee
+        // Shuffle the current last nominee id in the set to be placed to the removed one, unless the
+        // removed nominee is itself the last element. Using (id != numNominees) rather than
+        // (numNominees > 1) prevents re-populating mapNomineeIds for the just-removed nominee when it
+        // is the last element of a set of two or more.
         // Note that the zero-th element of setNominees is always zero and the final length is never below 1
-        if (numNominees > 1) {
+        if (id != numNominees) {
             // Shuffle the current last nominee id in the set to be placed to the removed one
             nominee = setNominees[numNominees];
             bytes32 replacedNomineeHash = keccak256(abi.encode(nominee));
@@ -660,19 +692,11 @@ contract VoteWeighting {
             revert ZeroValue();
         }
 
-        uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
-        // Adjust weight and sum slope changes
-        if (oldSlope.end > nextTime) {
-            pointsWeight[nomineeHash][nextTime].slope =
-                _maxAndSub(pointsWeight[nomineeHash][nextTime].slope, oldSlope.slope);
-            pointsSum[nextTime].slope = _maxAndSub(pointsSum[nextTime].slope, oldSlope.slope);
-        }
-
-        // Cancel old slope changes if they still didn't happen
-        if (oldSlope.end > block.timestamp) {
-            changesWeight[nomineeHash][oldSlope.end] -= oldSlope.slope;
-            changesSum[oldSlope.end] -= oldSlope.slope;
-        }
+        // The aggregate weight, sum and scheduled slope changes for a removed nominee are fully
+        // reconciled inside removeNominee. This function must therefore only release the
+        // caller's own voting-power bookkeeping and must NOT touch pointsSum / pointsWeight /
+        // changesSum / changesWeight again, otherwise the removed nominee's slope would be
+        // double-subtracted. There is no stale next-week checkpoint slot left to mis-advance.
 
         // Update the voting power
         uint256 powerUsed = voteUserPower[msg.sender];

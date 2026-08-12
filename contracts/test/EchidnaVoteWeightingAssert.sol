@@ -28,7 +28,7 @@ contract EchidnaVoteWeightingAssert {
         address aolas = address(olas);
         ve = new veOLAS(aolas, "Voting Escrow OLAS", "veOLAS");
         address ave = address(ve); 
-        vw = new VoteWeightingFuzzing(ave);
+        vw = new VoteWeightingFuzzing(ave, address(0));
         olas.mint(address(this),oneOLAS*oneMLN);
     }
 

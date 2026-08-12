@@ -298,7 +298,7 @@ If a nominee is removed and users have allocated non-zero weight to that nominee
 associated voting power becomes orphaned. The contract doesn't automatically retrieve
 or reallocate user voting power within the `removeNominee()` function itself. However,
 users can reclaim their voting power using the
-`retrieveRemovedNomineeVotingPower()` function. It's advisable for voters to update
+`revokeRemovedNomineeVotingPower()` function. It's advisable for voters to update
 a non-zero weight of their nominee to zero before the nominee's removal is expected to
 happen or to reclaim their vote after the nominee's removal has occurred.
 
@@ -373,6 +373,14 @@ would revert.
 3. **Health monitoring:** Deploy off-chain monitoring that tracks `pointsSum` vs. sum of
    individual `pointsWeight` for all active nominees, plus unrevoked voters for
    removed nominees and time until their locks expire.
+
+**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not
+upgradeable, so the accounting defect is fixed by redeploying the contract; the fix is
+implemented and takes effect once the new VoteWeighting is deployed and adopted via
+governance. In the redeployed contract `removeNominee()` reconciles the aggregate bias,
+the still-active slope, and the removed nominee's future `changesSum` entries, so the
+`_getSum()` underflow / checkpoint-DoS path is closed by construction rather than by
+voter-cleanup discipline. The workarounds above apply only until the new contract is live.
 
 ### 9. `_addNominee` and `removeNominee` functions
 
@@ -452,11 +460,11 @@ traces, or incident-response tooling will observe:
 i.e. the opposite of the declared semantics. This can confuse automated tooling or a
 human reading a trace when triaging a failed `removeNominee` call.
 
-**Why this is not fixed.** The `VoteWeighting` contract is not upgradeable, and a redeploy
-is not justified for a revert-data labelling defect that has no effect on execution, access
-control, or user funds. The contract will only be redeployed if a materially more severe
-issue forces it. Fixing the arg order therefore falls into the same "deliberately unfixed
-trade-off" category as the other entries in this document.
+**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not
+upgradeable, so this is fixed by redeploying the contract. A redeploy is already being
+carried out to close the entry #8 accounting defect; the `OwnerOnly(sender, owner)`
+argument order is corrected in that redeployment and takes effect once the new contract is
+deployed and adopted via governance.
 
 **Mitigation / guidance for tooling.** Any tool that decodes `OwnerOnly` reverts
 originating from `VoteWeighting` should be aware that when the revert originates from
@@ -733,7 +741,7 @@ The function's own docstring promises `weight <= 1e18`. When `totalSum` under-co
 
 **Impact — cross-contract seam.** This view is consumed by the off-repo incentive distributor (`Dispenser`) to split staking incentives across nominees. A returned value `> 1e18` at the Dispenser leads to **over-allocation** of staking incentives to that nominee vs. the design (each nominee should receive at most 100 % of the epoch pot). The trigger condition is the removal-accounting drift, so the exposure follows the same feasibility profile as entry #8 (owner-scoped rare action + passive-voter follow-through). Discovered in the internal20 manual re-audit.
 
-**Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment. Operationally, the same voter-cleanup discipline that mitigates entry #8 (voter revoke / vote-zeroing before each `removeNominee`) also prevents the `totalSum` drift that would take `_nomineeRelativeWeight` above `1e18`.
+**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not upgradeable, so this is fixed by redeploying the contract; the clamp described below is implemented and takes effect once the new VoteWeighting is deployed and adopted via governance. Until then, the same voter-cleanup discipline that mitigates entry #8 (voter revoke / vote-zeroing before each `removeNominee`) also prevents the `totalSum` drift that would take `_nomineeRelativeWeight` above `1e18`.
 
 **Mitigation / guidance for the Dispenser integrator.** The staking-incentive distributor should treat `_nomineeRelativeWeight` as a value in `[0, 1e18]` and clamp defensively on its side (`if (w > 1e18) w = 1e18;`) before using it as a fractional multiplier. This is defence in depth against the same accounting-drift condition that mitigates #8 operationally.
 
@@ -756,7 +764,7 @@ Post-state: the removed nominee is present in both `mapRemovedNominees` (≠ 0) 
 
 **Impact — view-only.** `getNomineeId` / `getNextAllowedVotingTimes` (which key existence off `mapNomineeIds == 0`) return stale data to off-chain consumers. Every on-chain value-bearing path is independently guarded by `mapRemovedNominees` (re-add blocked at line 301, voting blocked at line 479, `getNominee(staleId)` reverts on the length bound at line 766), so the dangling entry **cannot be chained into a fund/vote effect**. The on-chain state is genuinely wrong; the downstream guardrails prevent any exploitable consequence. Discovered in the internal20 manual re-audit.
 
-**Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment.
+**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not upgradeable, so this is fixed by redeploying the contract; the guard change described below is implemented and takes effect once the new VoteWeighting is deployed and adopted via governance.
 
 **Mitigation / guidance for tooling.** Off-chain consumers reading `mapNomineeIds` should additionally check `mapRemovedNominees` before treating a returned id as active — matching the on-chain guard set that already gates any value-bearing effect.
 
@@ -770,14 +778,14 @@ In the `VoteWeighting` contract, `revokeRemovedNomineeVotingPower` (around lines
 
 **Impact.** If `revokeRemovedNomineeVotingPower` runs in a week later than the last checkpoint, the target `nextTime` slot is stale (0), so `_maxAndSub(0, oldSlope.slope)` floors to `0` and the voter's slope removal is silently lost — while `changesSum[oldSlope.end] -= oldSlope.slope` (around line 674) still executes. A residual slope then over-decays the sum until natural expiry. (Line 674 itself cannot underflow: the voter's own contribution is present and guarded by `oldSlope.end > block.timestamp`.) The net effect is **gauge-weight accounting drift — no funds, no DoS, self-converging** once the phantom slope decays. Compounds the same class of accounting seam that entry #8 describes. Discovered in the internal20 manual re-audit.
 
-**Why this is not fixed.** `VoteWeighting` is not upgradeable. Fixed on a future redeployment.
+**Status — addressed in the pending VoteWeighting redeployment.** `VoteWeighting` is not upgradeable, so this is fixed by redeploying the contract; the fix described below is implemented and takes effect once the new VoteWeighting is deployed and adopted via governance. The shipped design differs from the original recommendation: rather than advancing the checkpoint inside revoke, the redeployed `removeNominee` fully reconciles the aggregate, which removes the stale-slot condition by construction (see **Fix on redeploy** below).
 
 **Mitigation / guidance for voters.** A voter intending to revoke should either:
 
 1. Call `revokeRemovedNomineeVotingPower` in the same week as the removal, before the checkpoint slot goes stale; or
 2. First force a checkpoint advance to `nextTime` by calling a state-writing function on `VoteWeighting` that runs `_getSum()` / `_getWeight()` in the same transaction context (e.g., voting on an existing active nominee), before invoking the revoke.
 
-**Fix on redeploy.** Call `_getSum()` and `_getWeight(account, chainId)` at the start of `revokeRemovedNomineeVotingPower`, mirroring the pattern in `voteForNomineeWeights`.
+**Fix on redeploy (as shipped).** The redeployed `removeNominee` fully reconciles the aggregate for a removed nominee — bias, still-active slope, and its future `changesSum` entries — inside the removal itself. `revokeRemovedNomineeVotingPower` is therefore reduced to pure per-user bookkeeping (release the caller's `voteUserSlopes` / `voteUserPower` and emit the event) and deliberately does **not** touch `pointsSum` / `pointsWeight` / `changesSum` / `changesWeight` again. Because the aggregate is already settled at removal time, there is no stale next-week checkpoint slot left to advance — so the missing `_getSum()` / `_getWeight()` advance is resolved **by construction**, not by mirroring `voteForNomineeWeights` (which here would double-subtract the removed nominee's slope).
 
 ### 21. `GuardCM` `mapBridgeMediatorL1BridgeParams` keyed by L1 address only
 

@@ -287,3 +287,124 @@ Two consequences for this redeploy:
   script in §5.1), the removed-nominee state does **not** carry over — the new instance
   starts with a fresh nominee set, so any legacy cleanup would be re-scoped to whichever
   `VoteWeighting` is authoritative at that time.
+
+---
+
+## UPDATE 2026-08-12 — post-review-round verdict (after the independent review + follow-up `70cf7ab`)
+
+Since the verification above, PR #215 received an independent code review (DavidMinarsch,
+9 items), a tokenomics-side convergence note, and a follow-up commit (`70cf7ab`). This section
+records the auditor's adjudication of that round.
+
+### Delta verified first-hand
+- The two prior review approvals on the PR were **dismissed** by the subsequent commits, so the
+  live review is the 2026-08-12 one; a fresh verdict is warranted.
+- **`VoteWeighting.sol` is byte-unchanged** since the accounting was verified (§1–§4): the net
+  diff `8326d36…70cf7ab` does **not** contain `VoteWeighting.sol`. The only deltas are the ABI
+  regeneration (`abis/0.8.25→0.8.30`), the `Vulnerabilities_list_governance.md` reword, the
+  deploy/verify scripts, and an unrelated `main` merge (proposal 12). **The audited accounting is
+  intact — the follow-up hardens the deploy path and fixes the ABI/docs only.**
+
+### Core fix — independently re-confirmed
+The accounting redesign is now confirmed sound by two independent hand-traces (this verification
+and the 2026-08-12 review), converging on the same facts: `_getSum`/`_getWeight` `nextTime`
+footing (no off-by-one in the strip loop), `changesSum[t] == Σₙ changesWeight[n][t]` maintained
+exactly (co-tenant nominees undisturbed), the strip horizon `MAX_NUM_WEEKS = 250 wk` exceeds
+veOLAS `MAXTIME ≈ 208.6 wk`, and `id != numNominees` correct for last/first/single removal.
+
+### Adjudication of the review items
+- **Resolved by `70cf7ab` (verified in the diff):** #1 deploy footgun → hard-fail scripts +
+  the circular-deploy resolved tokenomics-side (zero-`voteWeighting` init + Dispenser behind a
+  stable proxy, #314/#309); #5 ABI (`0.8.30` added, `0.8.25` removed); #8 deploy sanity checks
+  now assert; #7 vuln-doc reworded + typo fixed; #9 trailing newline.
+- **Concur:** #3 over-allocation is a **false positive** — the per-nominee `1e18` cap, the
+  maintained `pointsSum.bias == Σ pointsWeight[n].bias` (each `nomineeBias/totalSum` rounds down
+  ⇒ `Σ relativeWeight ≤ 1e18`, drifting *below* from dust), and the Dispenser's own per-nominee
+  cap leave no reachable material over-mint; no Dispenser change. #4 the `_maxAndSub` clamp
+  trading a loud revert for a quiet under-count is the correct liveness call — deferring the
+  diagnostic event (state-free, would re-open the audit surface) is reasonable **provided** the
+  off-chain `pointsSum.slope` vs `Σ pointsWeight.slope` monitor becomes an enforced launch
+  requirement.
+- **Dissent / must not be lost:**
+  - **#2 (no test exercises the actual revert-DoS)** — the most material residual. The headline
+    liveness bug — `_getSum` itself reverting and bricking the checkpoint walk and the
+    Dispenser's `nomineeRelativeWeightWrite` — is not reproduced; the existing test only
+    establishes the drift precondition without executing the reverting call. Correctness is
+    argued, but a security redeploy closing a liveness-DoS with **no regression test for the DoS
+    itself** is a genuine gap. The external re-audit already flagged in the PR body must add a
+    `vm.expectRevert` against the pre-fix build as a **hard condition**, and the mislabeled
+    `test_RemoveNominee_ExpiredVoter_NoUnderflow` (which passes on the pre-fix contract) should be
+    renamed — it is not a regression test.
+  - **#6 (forge tests never run in CI)** — not a "false positive". It is a correctly-scoped
+    pre-existing gap that *this* PR makes material: the entire assurance case rests on forge tests
+    CI will never execute, so they will silently rot and a future change could break the
+    accounting under green CI. Wiring forge into CI (fork tests RPC-gated) is a launch condition.
+  - **#8 severity** — recording finding #8 as **Low** in the governance file of record understates
+    a permanent checkpoint-DoS that halts the weekly walk and the reward-distribution path
+    (no recovery short of redeploy); it is at least **Medium**. Correcting the label keeps the
+    doc-of-record consistent with the impact the PR itself treats as headline.
+
+### Coupling the round overlooked
+#2, #3, and #4 reduce to a single question — *is the `removeNominee`/revoke reconciliation
+exact?* #3's `Σ ≤ 1e18` safety rests on the bias invariant, which rests on the reconciliation;
+#4's guards only ever fire from an already-drifted state; #2 is the test that would prove it.
+The re-audit closing #2 with a real revert-repro simultaneously firms up #3 and #4.
+
+### Verdict
+**Approve on code merit** — the accounting redesign is correct (independently re-confirmed),
+byte-unchanged since verification, and the follow-up resolved every blocking operational item
+without touching the audited logic. Ship is gated on: (1) external re-audit of
+`removeNominee`/revoke that **adds the #2 revert-repro** test; (2) the off-chain drift monitor
+as an enforced launch requirement; (3) forge tests wired into CI; (4) correcting finding #8's
+severity in the vulnerabilities list; (5) the cross-repo lock — this PR and tokenomics
+#314/#309 are mutually load-bearing (the zero-`voteWeighting` init + proxy remove the circular
+deploy), so neither should ship without the other; (6) renaming the mislabeled test.
+
+---
+
+## CORRECTION 2026-08-13 — two paperwork errors in the 2026-08-12 verdict (found in re-review, verified first-hand)
+
+The re-review correctly caught two factual errors in the section above. Both are in the
+paperwork, not the accounting (which remains correct and byte-unchanged — independently
+re-confirmed by an empty `git diff … -- contracts/VoteWeighting.sol` and 17/17). Recording
+the corrections rather than silently editing.
+
+- **The "zero-`voteWeighting` init" mechanism does not exist — the circular deploy is real.**
+  The verdict above (item #1 and ship-gate 5) stated the deploy cycle was resolved tokenomics-side
+  by a "zero-`voteWeighting` init". Verified against the tokenomics code: `Dispenser.initialize`
+  **reverts** `ZeroAddress()` when `_voteWeighting == address(0)` (`Dispenser.sol:373-374`, dispenser-
+  rework head). There is no zero-`voteWeighting` init; that claim was carried over from a
+  description without checking the other repository, and is withdrawn. What the Dispenser proxy
+  actually provides is a **stable Dispenser address** (the genuinely useful half) — it does **not**
+  break the cycle. The cycle is real and must be broken operationally, and this belongs in the
+  deployment runbook:
+  1. deploy the Dispenser implementation + proxy, initialised with a **placeholder non-zero**
+     `voteWeighting` (the currently-live VoteWeighting address works);
+  2. deploy the new `VoteWeighting(ve, dispenserProxy)`;
+  3. `Dispenser.changeManagers(address(0), newVoteWeighting)`.
+  Ship-gate (5) — this PR and tokenomics #309/#314 are mutually load-bearing — is unchanged and
+  correct; only its stated *reason* is corrected (stable proxy address + operational ordering, not
+  a zero-VW init).
+
+- **Item #7 (vuln-doc drift) is NOT resolved — the `70cf7ab` reword left §20 self-contradictory.**
+  The verdict listed #7 as resolved. In fact §20's **Status** now reads "the checkpoint-advance fix
+  described below is implemented," while the **Fix on redeploy** text immediately below still reads
+  "Call `_getSum()` / `_getWeight()` at the start of `revokeRemovedNomineeVotingPower`." The shipped
+  contract does neither — `revokeRemovedNomineeVotingPower` is reduced to pure per-user bookkeeping,
+  with the aggregate fully reconciled inside `removeNominee` (the shipped code comment says exactly
+  this). So §20 now asserts a specific implementation that was deliberately *not* taken, in the file
+  of record, heading into the external re-audit. **#7 is re-opened**: §20 must be reworded to the
+  design that shipped (by-construction reconciliation in `removeNominee`, no start-of-revoke advance),
+  matching the way §18 and §19 already describe the shipped code exactly. My prior "resolved
+  (verified)" confirmed only that the file changed, not that the reword was accurate — corrected.
+
+- **[Low] `verify_23_vote_weighting.js` kept the zero fallback.** `parsedData.dispenserAddress ||
+  "0x0…0"` (`:8`) — the same silent-zero footgun the deploy scripts now reject; one file missed in
+  the `70cf7ab` sweep. Fold into the #1/#8 hardening.
+
+**Updated residual checklist** (the accounting verdict — approve on merit, byte-unchanged — is
+unchanged): ship gates remain (1) external re-audit adding the #2 revert-repro; (2) drift monitor
+enforced; (3) forge → CI; (4) finding-#8 severity ≥ Medium; (5) cross-repo lock with tokenomics
+#309/#314; (6) test rename — **plus** these three doc/script corrections: **§20 reword (re-opened #7)**,
+the **deploy-ordering runbook** (the real 3-step, replacing the withdrawn zero-VW claim), and the
+**`verify_23` zero fallback**. None touch the audited accounting.
