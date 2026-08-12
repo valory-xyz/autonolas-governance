@@ -5,9 +5,10 @@
 # VoteWeighting ctor: (address _ve, address _dispenser)
 #   - _ve         = globals.veOLASAddress   (veOLAS the contract binds to; required, non-zero)
 #   - _dispenser  = globals.dispenserAddress (immutable; set once and never changed).
-#                   The Dispenser must therefore be deployed BEFORE VoteWeighting. A zero address
-#                   is allowed for a general-purpose deployment with no dispenser; when the globals
-#                   key is absent it defaults to the zero address here.
+#                   The Dispenser must therefore be deployed BEFORE VoteWeighting. The contract
+#                   itself accepts a zero dispenser to run standalone, but that is NOT this
+#                   deployment's case: for the tokenomics wiring a zero here would permanently
+#                   brick the Dispenser link, so a missing/zero dispenserAddress is a hard error.
 #
 # Writes:  globals.voteWeightingAddress
 
@@ -63,11 +64,14 @@ if [ "$veOLASAddress" == "null" ] || [ -z "$veOLASAddress" ]; then
   exit 0
 fi
 
-# Dispenser is immutable; default to the zero address when the globals key is absent
+# Dispenser is immutable and must be a real, non-zero address for this deployment. The zero
+# address is a valid ctor input for a standalone VoteWeighting, but here it would silently
+# brick the Dispenser wiring with no recovery but redeployment — so refuse it loudly.
 dispenserAddress=$(jq -r '.dispenserAddress' $globals)
-if [ "$dispenserAddress" == "null" ] || [ -z "$dispenserAddress" ]; then
-  dispenserAddress="0x0000000000000000000000000000000000000000"
-  echo "${green}dispenserAddress not set — deploying with the zero address (no dispenser)${reset}"
+if [ "$dispenserAddress" == "null" ] || [ -z "$dispenserAddress" ] || [ "$dispenserAddress" == "0x0000000000000000000000000000000000000000" ]; then
+  echo "${red}!!! dispenserAddress is not set (or is the zero address) in $globals${reset}"
+  echo "${red}    VoteWeighting binds the dispenser immutably; refusing to deploy with no dispenser.${reset}"
+  exit 1
 fi
 
 contractName="VoteWeighting"
@@ -117,6 +121,23 @@ echo "Post-deploy state:"
 echo "  ve        : $veGetter        (must be $veOLASAddress)"
 echo "  dispenser : $dispenserGetter (must be $dispenserAddress)"
 echo "  owner     : $ownerGetter     (must be the deployer $deployer)"
+
+# Hard assertions: the immutable ve / dispenser slots cannot be fixed post-deploy, so a
+# mismatch must fail the run (case-insensitive compare — cast returns checksummed addresses)
+lc() { echo "$1" | tr '[:upper:]' '[:lower:]'; }
+if [ "$(lc "$veGetter")" != "$(lc "$veOLASAddress")" ]; then
+  echo "${red}!!! ve() mismatch: got $veGetter, expected $veOLASAddress${reset}"
+  exit 1
+fi
+if [ "$(lc "$dispenserGetter")" != "$(lc "$dispenserAddress")" ]; then
+  echo "${red}!!! dispenser() mismatch: got $dispenserGetter, expected $dispenserAddress${reset}"
+  exit 1
+fi
+if [ "$(lc "$ownerGetter")" != "$(lc "$deployer")" ]; then
+  echo "${red}!!! owner() mismatch: got $ownerGetter, expected $deployer${reset}"
+  exit 1
+fi
+echo "${green}Post-deploy sanity checks passed${reset}"
 
 # Verify contract on Etherscan / Blockscout
 if [ "$contractVerification" == "true" ]; then

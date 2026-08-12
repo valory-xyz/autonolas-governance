@@ -29,8 +29,13 @@ async function main() {
     console.log("23. EOA to deploy VoteWeighting contract pointed to veOLAS and the Dispenser");
     const VoteWeighting = await ethers.getContractFactory("VoteWeighting");
     // Note: the dispenser is immutable and set at construction; the Dispenser must be deployed beforehand.
-    // Use the zero address for a general-purpose deployment with no dispenser.
-    const dispenserAddress = parsedData.dispenserAddress || ethers.constants.AddressZero;
+    // The contract accepts a zero dispenser to run standalone, but that is NOT this deployment's case:
+    // for the tokenomics wiring a zero dispenser would permanently brick the Dispenser link, so refuse it.
+    const dispenserAddress = parsedData.dispenserAddress;
+    if (!dispenserAddress || dispenserAddress === ethers.constants.AddressZero) {
+        throw new Error("dispenserAddress is not set (or is the zero address) in " + globalsFile +
+            "; VoteWeighting binds the dispenser immutably — refusing to deploy with no dispenser");
+    }
     console.log("You are signing the following transaction: VoteWeighting.connect(EOA).deploy(veOLAS, dispenser)");
     const voteWeighting = await VoteWeighting.connect(EOA).deploy(parsedData.veOLASAddress, dispenserAddress);
     const result = await voteWeighting.deployed();
