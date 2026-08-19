@@ -61,6 +61,62 @@ npx hardhat run scripts/deployment/deploy_17_governorTwo.js --network network_ty
 Then, after successful deployment of two supplemental contracts, the last script gives the proposal payload necessary to finalize the deployment:
 `npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
 
+## Deployment of VoteWeighting
+
+`VoteWeighting` is an Ethereum **mainnet** contract: it binds `veOLAS` (L1-only) and the L1
+`Dispenser` immutably in its constructor, so it is deployed against `globals_mainnet.json`
+(`chainId` 1) and not on any L2.
+
+### Get into a deployable state
+
+```bash
+git clone --recursive git@github.com:valory-xyz/autonolas-governance.git
+cd autonolas-governance
+yarn
+foundryup
+forge build
+```
+
+Export the original-Etherscan `ETHERSCAN_API_KEY` (used by `forge verify-contract`) and the
+`ALCHEMY_API_KEY_MAINNET` key the script appends to `networkURL`.
+
+### REQUIRED before deploying — refresh `dispenserAddress`
+
+`scripts/deployment/globals_mainnet.json` ships with `dispenserAddress` unset (`null`), and
+`deploy_23_vote_weighting.sh` aborts on a missing/zero value by design. Set it to the current
+live Dispenser address, taken from the [autonolas-tokenomics](https://github.com/valory-xyz/autonolas-tokenomics)
+repo's `scripts/deployment/globals_mainnet.json` key **`dispenserProxyAddress`** — the
+`DispenserProxy`, i.e. the address everything wires to, not the Dispenser implementation.
+
+This has to be re-checked on **every** run: whenever new Dispenser contracts are deployed in
+the tokenomics repo, the proxy address changes, and VoteWeighting stores the dispenser as an
+**immutable** — a stale or wrong address can only be corrected by redeploying VoteWeighting.
+
+```bash
+# in autonolas-governance, with <dispenserProxyAddress> copied from the tokenomics globals
+jq '.dispenserAddress = "<dispenserProxyAddress>"' scripts/deployment/globals_mainnet.json > tmp \
+  && mv tmp scripts/deployment/globals_mainnet.json
+```
+
+### Deploy
+
+```bash
+./scripts/deployment/deploy_23_vote_weighting.sh mainnet
+```
+
+The script deploys `contracts/VoteWeighting.sol`, writes `voteWeightingAddress` back into
+`globals_mainnet.json` (**overwriting** the previous VoteWeighting address), asserts the
+deployed `ve()` / `dispenser()` / `owner()` against the expected values, and verifies the
+contract on Etherscan (plus Blockscout when `blockscoutURL` is set).
+
+### Push back the changes
+
+```bash
+git checkout -b vw_deployment
+git commit -am "chore: deployment of VoteWeighting contract"
+git push origin vw_deployment
+```
+
 ## Deployment of the Veto stack (Task 1)
 
 A cancel-only Veto-Governor bound to a dedicated Veto Timelock. Both contracts are

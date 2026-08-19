@@ -10,7 +10,16 @@
 #                   deployment's case: for the tokenomics wiring a zero here would permanently
 #                   brick the Dispenser link, so a missing/zero dispenserAddress is a hard error.
 #
-# Writes:  globals.voteWeightingAddress
+# PREREQUISITE — refresh globals.dispenserAddress before every run:
+#   globals_<network>.json ships with dispenserAddress unset (null) on purpose. Before deploying,
+#   set it to the CURRENT live Dispenser address taken from the autonolas-tokenomics repo:
+#   its globals_<network>.json key `dispenserProxyAddress` (the DispenserProxy — that proxy, not
+#   the implementation, is the address everything wires to). Whenever new Dispenser contracts are
+#   deployed there, this value changes and MUST be re-copied here before VoteWeighting is deployed:
+#   VoteWeighting binds the dispenser immutably, so a stale address can only be fixed by
+#   redeploying VoteWeighting.
+#
+# Writes:  globals.voteWeightingAddress  (overwrites any previous VoteWeighting address)
 
 red=$(tput setaf 1)
 green=$(tput setaf 2)
@@ -71,6 +80,8 @@ dispenserAddress=$(jq -r '.dispenserAddress' $globals)
 if [ "$dispenserAddress" == "null" ] || [ -z "$dispenserAddress" ] || [ "$dispenserAddress" == "0x0000000000000000000000000000000000000000" ]; then
   echo "${red}!!! dispenserAddress is not set (or is the zero address) in $globals${reset}"
   echo "${red}    VoteWeighting binds the dispenser immutably; refusing to deploy with no dispenser.${reset}"
+  echo "${red}    Copy the current dispenserProxyAddress from the autonolas-tokenomics globals_$1.json${reset}"
+  echo "${red}    into dispenserAddress here, and re-check it after every new Dispenser deployment.${reset}"
   exit 1
 fi
 

@@ -31,6 +31,9 @@ async function main() {
     // Note: the dispenser is immutable and set at construction; the Dispenser must be deployed beforehand.
     // The contract accepts a zero dispenser to run standalone, but that is NOT this deployment's case:
     // for the tokenomics wiring a zero dispenser would permanently brick the Dispenser link, so refuse it.
+    // dispenserAddress must be refreshed before each run from the autonolas-tokenomics repo globals key
+    // `dispenserProxyAddress` (the DispenserProxy). It changes whenever new Dispenser contracts are
+    // deployed there, and a stale value here can only be corrected by redeploying VoteWeighting.
     const dispenserAddress = parsedData.dispenserAddress;
     if (!dispenserAddress || dispenserAddress === ethers.constants.AddressZero) {
         throw new Error("dispenserAddress is not set (or is the zero address) in " + globalsFile +
