@@ -80,23 +80,43 @@ forge build
 Export the original-Etherscan `ETHERSCAN_API_KEY` (used by `forge verify-contract`) and the
 `ALCHEMY_API_KEY_MAINNET` key the script appends to `networkURL`.
 
-### REQUIRED before deploying — refresh `dispenserAddress`
+### REQUIRED before deploying — set `dispenserAddress`
 
-`scripts/deployment/globals_mainnet.json` ships with `dispenserAddress` unset (`null`), and
-`deploy_23_vote_weighting.sh` aborts on a missing/zero value by design. Set it to the current
-live Dispenser address, taken from the [autonolas-tokenomics](https://github.com/valory-xyz/autonolas-tokenomics)
-repo's `scripts/deployment/globals_mainnet.json` key **`dispenserProxyAddress`** — the
-`DispenserProxy`, i.e. the address everything wires to, not the Dispenser implementation.
+`scripts/deployment/globals_mainnet.json` has **no `dispenserAddress` key**, and
+`deploy_23_vote_weighting.sh` aborts on a missing/zero value by design. Add it, set to the
+**current live Dispenser** address from the
+[autonolas-tokenomics](https://github.com/valory-xyz/autonolas-tokenomics) repo's
+`scripts/deployment/globals_<network>.json`.
 
-This has to be re-checked on **every** run: whenever new Dispenser contracts are deployed in
-the tokenomics repo, the proxy address changes, and VoteWeighting stores the dispenser as an
-**immutable** — a stale or wrong address can only be corrected by redeploying VoteWeighting.
+**Which key holds that address depends on whether the proxied-Dispenser migration has happened
+yet** — and the meaning of `dispenserAddress` on the tokenomics side flips at that point:
+
+| State of the tokenomics repo | Live Dispenser = key | Do **not** copy |
+|---|---|---|
+| Before the migration (**today**) | `dispenserAddress` | — (`dispenserProxyAddress` does not exist yet) |
+| After `deploy_07b_dispenser_proxy.sh` has run | `dispenserProxyAddress` (the `DispenserProxy`) | `dispenserAddress` — from then on it is the Dispenser **implementation** |
+
+Copying the implementation address post-migration binds VoteWeighting to a contract with no
+live state, and is only fixable by redeploying VoteWeighting. The cross-repo handoff is
+described from the tokenomics side in its
+[Dispenser migration runbook](https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md)
+(step 9 deploys VoteWeighting against the step-8 proxy).
+
+Re-check the value on **every** run: whenever new Dispenser contracts are deployed, the live
+address changes, and VoteWeighting stores the dispenser as an **immutable**.
 
 ```bash
-# in autonolas-governance, with <dispenserProxyAddress> copied from the tokenomics globals
-jq '.dispenserAddress = "<dispenserProxyAddress>"' scripts/deployment/globals_mainnet.json > tmp \
+# in autonolas-governance, with <liveDispenser> copied from the tokenomics globals per the table above
+jq '.dispenserAddress = "<liveDispenser>"' scripts/deployment/globals_mainnet.json > tmp \
   && mv tmp scripts/deployment/globals_mainnet.json
 ```
+
+Before broadcasting, the script pre-flights the address: it must have contract code, and it must
+read a non-zero `owner()` — a bare Dispenser implementation reads `owner() == 0`, because the
+implementation constructor sets immutables only and `initialize()` is delegatecalled by the
+`DispenserProxy` constructor. `voteWeighting()` is printed but not asserted: a freshly deployed
+proxy is initialized with `voteWeighting == 0` on purpose (VoteWeighting does not exist yet — it
+binds the proxy), so it cannot discriminate.
 
 ### Deploy
 
@@ -104,10 +124,12 @@ jq '.dispenserAddress = "<dispenserProxyAddress>"' scripts/deployment/globals_ma
 ./scripts/deployment/deploy_23_vote_weighting.sh mainnet
 ```
 
-The script deploys `contracts/VoteWeighting.sol`, writes `voteWeightingAddress` back into
-`globals_mainnet.json` (**overwriting** the previous VoteWeighting address), asserts the
-deployed `ve()` / `dispenser()` / `owner()` against the expected values, and verifies the
-contract on Etherscan (plus Blockscout when `blockscoutURL` is set).
+The script pre-flights the dispenser (above), deploys `contracts/VoteWeighting.sol`, writes
+`voteWeightingAddress` back into `globals_mainnet.json` (**overwriting** the previous
+VoteWeighting address), asserts the deployed `ve()` / `dispenser()` / `owner()` against the
+expected values, and verifies the contract on Etherscan (plus Blockscout when `blockscoutURL`
+is set). The post-deploy asserts only *report* a wrong immutable — the pre-flight is what can
+still prevent it.
 
 ### Push back the changes
 
