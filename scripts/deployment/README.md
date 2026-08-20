@@ -61,6 +61,84 @@ npx hardhat run scripts/deployment/deploy_17_governorTwo.js --network network_ty
 Then, after successful deployment of two supplemental contracts, the last script gives the proposal payload necessary to finalize the deployment:
 `npx hardhat run scripts/deployment/deploy_18_governor_to_governorTwo.js --network network_type`.
 
+## Deployment of VoteWeighting
+
+`VoteWeighting` is an Ethereum **mainnet** contract: it binds `veOLAS` (L1-only) and the L1
+`Dispenser` immutably in its constructor, so it is deployed against `globals_mainnet.json`
+(`chainId` 1) and not on any L2.
+
+### Get into a deployable state
+
+```bash
+git clone --recursive git@github.com:valory-xyz/autonolas-governance.git
+cd autonolas-governance
+yarn
+foundryup
+forge build
+```
+
+Export the original-Etherscan `ETHERSCAN_API_KEY` (used by `forge verify-contract`) and the
+`ALCHEMY_API_KEY_MAINNET` key the script appends to `networkURL`.
+
+### REQUIRED before deploying — set `dispenserAddress`
+
+`scripts/deployment/globals_mainnet.json` has **no `dispenserAddress` key**, and
+`deploy_23_vote_weighting.sh` aborts on a missing/zero value by design. Add it, set to the
+**current live Dispenser** address from the
+[autonolas-tokenomics](https://github.com/valory-xyz/autonolas-tokenomics) repo's
+`scripts/deployment/globals_<network>.json`.
+
+**Which key holds that address depends on whether the proxied-Dispenser migration has happened
+yet** — and the meaning of `dispenserAddress` on the tokenomics side flips at that point:
+
+| State of the tokenomics repo | Live Dispenser = key | Do **not** copy |
+|---|---|---|
+| Before the migration (**today**) | `dispenserAddress` | — (`dispenserProxyAddress` does not exist yet) |
+| After `deploy_07b_dispenser_proxy.sh` has run | `dispenserProxyAddress` (the `DispenserProxy`) | `dispenserAddress` — from then on it is the Dispenser **implementation** |
+
+Copying the implementation address post-migration binds VoteWeighting to a contract with no
+live state, and is only fixable by redeploying VoteWeighting. The cross-repo handoff is
+described from the tokenomics side in its
+[Dispenser migration runbook](https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md)
+(step 9 deploys VoteWeighting against the step-8 proxy).
+
+Re-check the value on **every** run: whenever new Dispenser contracts are deployed, the live
+address changes, and VoteWeighting stores the dispenser as an **immutable**.
+
+```bash
+# in autonolas-governance, with <liveDispenser> copied from the tokenomics globals per the table above
+jq '.dispenserAddress = "<liveDispenser>"' scripts/deployment/globals_mainnet.json > tmp \
+  && mv tmp scripts/deployment/globals_mainnet.json
+```
+
+Before broadcasting, the script pre-flights the address: it must have contract code, and it must
+read a non-zero `owner()` — a bare Dispenser implementation reads `owner() == 0`, because the
+implementation constructor sets immutables only and `initialize()` is delegatecalled by the
+`DispenserProxy` constructor. `voteWeighting()` is printed but not asserted: a freshly deployed
+proxy is initialized with `voteWeighting == 0` on purpose (VoteWeighting does not exist yet — it
+binds the proxy), so it cannot discriminate.
+
+### Deploy
+
+```bash
+./scripts/deployment/deploy_23_vote_weighting.sh mainnet
+```
+
+The script pre-flights the dispenser (above), deploys `contracts/VoteWeighting.sol`, writes
+`voteWeightingAddress` back into `globals_mainnet.json` (**overwriting** the previous
+VoteWeighting address), asserts the deployed `ve()` / `dispenser()` / `owner()` against the
+expected values, and verifies the contract on Etherscan (plus Blockscout when `blockscoutURL`
+is set). The post-deploy asserts only *report* a wrong immutable — the pre-flight is what can
+still prevent it.
+
+### Push back the changes
+
+```bash
+git checkout -b vw_deployment
+git commit -am "chore: deployment of VoteWeighting contract"
+git push origin vw_deployment
+```
+
 ## Deployment of the Veto stack (Task 1)
 
 A cancel-only Veto-Governor bound to a dedicated Veto Timelock. Both contracts are
