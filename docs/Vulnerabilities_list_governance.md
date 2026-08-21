@@ -28,6 +28,7 @@
 | 22 | [WormholeMessenger single sourceGovernor authentication](#22-wormholemessenger-single-sourcegovernor-authentication) | Informative |
 | 23 | [Timelock deployer-EOA admin bootstrap window](#23-timelock-deployer-eoa-admin-bootstrap-window) | Informative |
 | 24 | [FxERC20RootTunnel setFxChildTunnel is a permissionless one-shot](#24-fxerc20roottunnel-setfxchildtunnel-is-a-permissionless-one-shot) | Informative |
+| 25 | [Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance](#25-unbounded-governor-settings-and-unchecked-timelock-replacement-can-permanently-brick-governance) | Medium |
 
 ## Involved contracts and level of the bugs
 
@@ -858,6 +859,25 @@ Location: `FxERC20RootTunnel` inherits from `fx-portal`'s `FxBaseRootTunnel`, wh
 **Mitigation / guidance for redeployment operators.** Any future `FxERC20RootTunnel` redeploy must call `setFxChildTunnel` in the same transaction as (or immediately after) deployment — atomically wrapped in a deployer script — to close the front-run window. The dormancy on the current deployment does not carry over.
 
 **Fix on redeploy.** Override `setFxChildTunnel` with `onlyOwner`, or set it in the constructor along with the L1 checkpoint manager / state sender addresses. Either removes the front-run window entirely.
+
+### 25. Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance
+
+**Severity:** Medium
+
+Location: `GovernorOLAS` (via `GovernorSettings` and `GovernorTimelockControl`), functions `setProposalThreshold`, `setVotingDelay`, `updateGovernorDelay`, and `updateTimelock`.
+
+The Governor exposes several configuration setters that accept an unbounded value (or, for the Timelock, an unvalidated replacement), and each is powerful enough that a single unsafe value can leave governance permanently unable to operate:
+
+- **`setProposalThreshold`** — set arbitrarily high, no proposer can ever meet the threshold, so `propose()` can no longer be called and proposal creation is permanently disabled.
+- **`setVotingDelay`** (and `setVotingPeriod`) — set to an extreme value, the voting schedule for any new proposal is pushed out indefinitely, so proposal creation / voting is effectively disabled.
+- **`updateGovernorDelay`** — set to an extreme value, a queued proposal's execution ETA becomes unreachable, so nothing can ever be executed and governance is frozen. (This compounds the `governorDelay` / timelock `minDelay` relationship already noted in item 13.)
+- **`updateTimelock`** — replace the referenced Timelock with one that does not have the proposer / executor / canceller roles wired to the Governor. The replacement is not validated against the required role wiring, so the Governor ends up pointing at a Timelock it cannot drive, orphaning governance.
+
+**Why this is not externally exploitable.** All four setters are `onlyGovernance` — the modifier requires the caller to be the Governor's executor (the Timelock). None is reachable by an arbitrary external account; a direct call reverts. Each can only take effect as the *result of a proposal that has cleared the proposal threshold, quorum and majority vote, waited out the timelock delay, and executed*. There is no value transfer or extraction in any of the four — the only effect is denial of governance, so there is no profit motive: an actor with enough voting power to force one of these through would gain nothing from a self-brick that they could not gain more directly. The realistic path to this state is therefore **operator error** — a legitimate proposal that sets one of these parameters to an unsafe value — rather than an attack.
+
+**Mitigation / guidance for governance operators.** Treat these parameters as safety-critical when composing any proposal: keep `proposalThreshold`, `votingDelay`, `votingPeriod` and `governorDelay` within sane, pre-agreed bounds, and never queue a value that could make proposing, voting or execution infeasible. When replacing the Timelock, wire the proposer / executor / canceller roles to the Governor on the new Timelock **before** (or atomically with) the replacement, and verify the wiring on a testnet fork first. Keep an independent recovery path available so that, if governance ever reaches a non-operational configuration, it can still be restored.
+
+**Fix on redeploy.** On a future Governor redeploy, bound the settable ranges (reject a `proposalThreshold` / `votingDelay` / `votingPeriod` / `governorDelay` outside a configured min–max) and have `updateTimelock` validate that the new Timelock grants the Governor the required roles before accepting it. Both remove the ability to reach an unrecoverable configuration through a single setter.
 
 [^1]: The level of the bug is assigned by following the [Immunefi classification](https://immunefi.com/).
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
