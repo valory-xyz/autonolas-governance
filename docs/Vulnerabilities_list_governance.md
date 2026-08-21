@@ -864,20 +864,48 @@ Location: `FxERC20RootTunnel` inherits from `fx-portal`'s `FxBaseRootTunnel`, wh
 
 **Severity:** Medium
 
-Location: `GovernorOLAS` (via `GovernorSettings` and `GovernorTimelockControl`), functions `setProposalThreshold`, `setVotingDelay`, `updateGovernorDelay`, and `updateTimelock`.
+Location: `GovernorOLAS` (via `GovernorSettings` and `GovernorTimelockControl`), functions `setProposalThreshold`, `setVotingDelay`, `setVotingPeriod`, `updateGovernorDelay`, and `updateTimelock`.
 
 The Governor exposes several configuration setters that accept an unbounded value (or, for the Timelock, an unvalidated replacement), and each is powerful enough that a single unsafe value can leave governance permanently unable to operate:
 
 - **`setProposalThreshold`** — set arbitrarily high, no proposer can ever meet the threshold, so `propose()` can no longer be called and proposal creation is permanently disabled.
 - **`setVotingDelay`** (and `setVotingPeriod`) — set to an extreme value, the voting schedule for any new proposal is pushed out indefinitely, so proposal creation / voting is effectively disabled.
-- **`updateGovernorDelay`** — set to an extreme value, a queued proposal's execution ETA becomes unreachable, so nothing can ever be executed and governance is frozen. (This compounds the `governorDelay` / timelock `minDelay` relationship already noted in item 13.)
-- **`updateTimelock`** — replace the referenced Timelock with one that does not have the proposer / executor / canceller roles wired to the Governor. The replacement is not validated against the required role wiring, so the Governor ends up pointing at a Timelock it cannot drive, orphaning governance.
+- **`updateGovernorDelay`** — set to an extreme value, a queued proposal's execution ETA becomes
+  unreachable, so nothing can ever be executed and governance is frozen. Note this setter is **not**
+  fully unbounded: `_updateGovernorDelay` already rejects a value below the timelock's `minDelay`
+  (`revert Underflow(newGovernorDelay, minDelay)`). Only the **upper** direction is unconstrained.
+  That existing floor is *relative* — it tracks `timelock.getMinDelay()`, which is itself separately
+  updatable, which is the coupling item 13 describes.
+- **`updateTimelock`** — replace the referenced Timelock with one that does not have the proposer /
+  executor / canceller roles wired to the Governor. The replacement is validated against **nothing**:
+  `_updateTimelock` emits and assigns, with no role check and **no zero-address check**, so
+  `updateTimelock(TimelockController(address(0)))` is accepted. A zero Timelock is a worse end state
+  than one that is merely unwired, because every subsequent queue / execute path then calls into a
+  codeless address.
 
 **Why this is not externally exploitable.** All four setters are `onlyGovernance` — the modifier requires the caller to be the Governor's executor (the Timelock). None is reachable by an arbitrary external account; a direct call reverts. Each can only take effect as the *result of a proposal that has cleared the proposal threshold, quorum and majority vote, waited out the timelock delay, and executed*. There is no value transfer or extraction in any of the four — the only effect is denial of governance, so there is no profit motive: an actor with enough voting power to force one of these through would gain nothing from a self-brick that they could not gain more directly. The realistic path to this state is therefore **operator error** — a legitimate proposal that sets one of these parameters to an unsafe value — rather than an attack.
 
 **Mitigation / guidance for governance operators.** Treat these parameters as safety-critical when composing any proposal: keep `proposalThreshold`, `votingDelay`, `votingPeriod` and `governorDelay` within sane, pre-agreed bounds, and never queue a value that could make proposing, voting or execution infeasible. When replacing the Timelock, wire the proposer / executor / canceller roles to the Governor on the new Timelock **before** (or atomically with) the replacement, and verify the wiring on a testnet fork first. Keep an independent recovery path available so that, if governance ever reaches a non-operational configuration, it can still be restored.
 
-**Fix on redeploy.** On a future Governor redeploy, bound the settable ranges (reject a `proposalThreshold` / `votingDelay` / `votingPeriod` / `governorDelay` outside a configured min–max) and have `updateTimelock` validate that the new Timelock grants the Governor the required roles before accepting it. Both remove the ability to reach an unrecoverable configuration through a single setter.
+**Why Medium rather than Informative.** The neighbouring entries with comparable reachability are rated
+Informative — including item 24, which is *permissionless*, and item 13, which concerns this same
+`governorDelay` / `minDelay` relationship. The distinction here is **recoverability**, not reachability:
+item 13's desynchronisation can be corrected by a subsequent proposal, whereas each end state described
+above removes the very mechanism (proposing, voting, or executing) needed to correct it. That is what the
+Medium records.
+
+**Fix on redeploy.** On a future Governor redeploy:
+
+1. **Bound the settable ranges.** Reject a `proposalThreshold` / `votingDelay` / `votingPeriod` /
+   `governorDelay` outside a configured min–max. For `governorDelay`, note that a lower bound already
+   exists and is *relative* to `timelock.getMinDelay()`; only a ceiling is missing. A static min–max must
+   not replace that relative floor, or it would reintroduce the item-13 desynchronisation it currently
+   prevents.
+2. **Add a zero-address check to `updateTimelock`.** One line, and it closes the most damaging variant
+   (a Governor pointed at a codeless address). Worth landing independently of step 3.
+3. **Validate role wiring in `updateTimelock`.** Require that the new Timelock grants the Governor the
+   `PROPOSER` / `EXECUTOR` / `CANCELLER` roles before accepting it. This is the larger change; steps 2
+   and 3 are separable and should not be blocked on each other.
 
 [^1]: The level of the bug is assigned by following the [Immunefi classification](https://immunefi.com/).
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
