@@ -21,6 +21,27 @@ const norm = (a) => (a ? ethers.utils.getAddress(a) : a);
 // Global accumulator for CSV rows (collected during setup checks)
 const ownershipRows = [];
 
+// Set by checkBytecode() when a Tier-1 (code length) mismatch is seen, so main() can exit non-zero.
+let bytecodeMismatchFound = false;
+
+// Set by runCheck() when a contract's checks throw, so main() can exit non-zero.
+let checkAbortedFound = false;
+
+// Run one contract's checks in isolation. Without this a single failure — a missing artifact, an
+// unreachable RPC, an ABI that no longer matches — propagates out of main() and every later contract
+// and chain goes unaudited. A missing abis/0.8.25/VoteWeighting.json did exactly that: it aborted the
+// run on the first contract of the first chain, so nothing after it had been checked in some time.
+// An aborted check is still a failure, it is just a failure that costs one contract instead of all.
+async function runCheck(log, fn) {
+    try {
+        await fn();
+    } catch (error) {
+        console.log(log + ", ERROR: check aborted: " + ((error && error.message) ? error.message : error));
+        console.log("\n");
+        checkAbortedFound = true;
+    }
+}
+
 // Custom expect that is wrapped into try / catch block
 function customExpect(arg1, arg2, log) {
     try {
@@ -104,6 +125,18 @@ async function checkBytecode(provider, configContracts, contractName, log) {
     // Get the contract number from the set of configuration contracts
     for (let i = 0; i < configContracts.length; i++) {
         if (configContracts[i]["name"] === contractName) {
+            // A configuration entry may name an artifact the repo does not ship. That is itself an audit
+            // finding — the repo cannot verify what is deployed at that address — but an unguarded
+            // readFileSync turns it into an uncaught ENOENT that aborts the whole run at that contract,
+            // leaving every later chain and contract unchecked. Report and carry on instead.
+            if (!fs.existsSync(configContracts[i]["artifact"])) {
+                console.log(log + ", address: " + configContracts[i]["address"]
+                    + ", FAIL: artifact not found: " + configContracts[i]["artifact"]);
+                console.log("\n");
+                bytecodeMismatchFound = true;
+                return;
+            }
+
             // Get the contract instance
             const contractFromJSON = fs.readFileSync(configContracts[i]["artifact"], "utf8");
             const parsedFile = JSON.parse(contractFromJSON);
@@ -113,12 +146,39 @@ async function checkBytecode(provider, configContracts, contractName, log) {
                 // Hardhat JSON
                 bytecode = parsedFile["deployedBytecode"];
             }
-            const onChainCreationCode = await provider.getCode(configContracts[i]["address"]);
+            const onChainCode = await provider.getCode(configContracts[i]["address"]);
+            const tag = log + ", address: " + configContracts[i]["address"];
 
-            // Compare last 43 bytes as they reflect the deployed contract metadata hash
-            // We cannot compare the full one since the repo deployed bytecode does not contain immutable variable info
-            customExpectContain(onChainCreationCode, bytecode.slice(-86),
-                log + ", address: " + configContracts[i]["address"] + ", failed bytecode comparison");
+            // Tier 1 (BLOCKING): on-chain code length must match the artifact's deployedBytecode length.
+            // Immutables occupy fixed slots, so they change the bytes but never the length — a length
+            // difference means the deployed instruction code differs from the artifact in the repo, which is
+            // the strongest "wrong implementation deployed" signal available. Flag the run to exit non-zero
+            // (see main()). Ported from the tokenomics auditor (autonolas-tokenomics#322).
+            if (onChainCode.length !== bytecode.length) {
+                console.log(tag + ", FAIL: bytecode length mismatch: artifact="
+                    + Math.max(0, (bytecode.length - 2) / 2) + "B onchain="
+                    + Math.max(0, (onChainCode.length - 2) / 2) + "B");
+                console.log("\n");
+                bytecodeMismatchFound = true;
+                return;
+            }
+
+            // Tier 2 (warning): same length but the trailing CBOR metadata (last 43 bytes) differs.
+            // Common when the deployed bytecode was compiled with a slightly different context
+            // (solc patch version, optimizer settings, source-tree state) than the artifact in main.
+            // This is not a code-level discrepancy, so we emit a single-line warning rather than
+            // dumping the entire on-chain bytecode via an AssertionError.
+            const artifactTail = bytecode.slice(-86).toLowerCase();
+            const onchainTail = onChainCode.slice(-86).toLowerCase();
+            if (artifactTail !== onchainTail) {
+                // Show the leading bytes of the 43-byte CBOR trailer: that is where the metadata hash
+                // sits and therefore where the difference is. The trailing bytes encode the solc version
+                // and are identical whenever both were built by the same compiler, so printing those
+                // would show two identical strings next to the word "drift".
+                console.log(tag + ", WARN: metadata-trailer drift "
+                    + "(artifact " + artifactTail.slice(0, 16) + "..., onchain " + onchainTail.slice(0, 16)
+                    + "...); code length matches.");
+            }
             return;
         }
     }
@@ -168,7 +228,7 @@ async function checkOwner(chainId, contract, globalsInstance, log) {
 // Check OLAS: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkOLAS(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const olas = await findContractInstance(provider, configContracts, contractName);
@@ -187,7 +247,7 @@ async function checkOLAS(chainId, provider, globalsInstance, configContracts, co
 // Check Timelock: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkTimelock(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const timelock = await findContractInstance(provider, configContracts, contractName);
@@ -241,7 +301,7 @@ async function checkTimelock(chainId, provider, globalsInstance, configContracts
 // Check veOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkVEOLAS(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const veOLAS = await findContractInstance(provider, configContracts, contractName);
@@ -256,7 +316,7 @@ async function checkVEOLAS(chainId, provider, globalsInstance, configContracts, 
 // Check buOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkBUOLAS(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const buOLAS = await findContractInstance(provider, configContracts, contractName);
@@ -274,7 +334,7 @@ async function checkBUOLAS(chainId, provider, globalsInstance, configContracts, 
 // Check wveOLAS: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkWrappedVEOLAS(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const wveOLAS = await findContractInstance(provider, configContracts, contractName);
@@ -292,7 +352,7 @@ async function checkWrappedVEOLAS(chainId, provider, globalsInstance, configCont
 // Check VoteWeighting: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkVoteWeighting(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const vw = await findContractInstance(provider, configContracts, contractName);
@@ -310,7 +370,7 @@ async function checkVoteWeighting(chainId, provider, globalsInstance, configCont
 // Check GolvernorOLAS: chain Id, provider, parsed globals, mainnet globals, configuration contracts, contract name
 async function checkGovernorOLAS(chainId, provider, globalsInstance, globalsMainnet, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const governor = await findContractInstance(provider, configContracts, contractName);
@@ -349,7 +409,7 @@ async function checkGovernorOLAS(chainId, provider, globalsInstance, globalsMain
 // Check GuardCM: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkGuardCM(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const guard = await findContractInstance(provider, configContracts, contractName);
@@ -391,7 +451,7 @@ async function checkGuardCM(chainId, provider, globalsInstance, configContracts,
 // Check bridgedERC20: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkBridgedERC20(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const bridgedERC20 = await findContractInstance(provider, configContracts, contractName);
@@ -405,7 +465,7 @@ async function checkBridgedERC20(chainId, provider, globalsInstance, configContr
 // Check FxGovernorTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkFxGovernorTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const fxGovernorTunnel = await findContractInstance(provider, configContracts, contractName);
@@ -423,7 +483,7 @@ async function checkFxGovernorTunnel(chainId, provider, globalsInstance, configC
 // Check FxERC20ChildTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkFxERC20ChildTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const fxERC20ChildTunnel = await findContractInstance(provider, configContracts, contractName);
@@ -449,7 +509,7 @@ async function checkFxERC20ChildTunnel(chainId, provider, globalsInstance, confi
 // Check FxERC20RootTunnel: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkFxERC20RootTunnel(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const fxERC20RootTunnel = await findContractInstance(provider, configContracts, contractName);
@@ -479,7 +539,7 @@ async function checkFxERC20RootTunnel(chainId, provider, globalsInstance, config
 // Check HomeMediator: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkHomeMediator(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const homeMediator = await findContractInstance(provider, configContracts, contractName);
@@ -497,7 +557,7 @@ async function checkHomeMediator(chainId, provider, globalsInstance, configContr
 // Check OptimismMessenger: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkOptimismMessenger(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const optimismMessenger = await findContractInstance(provider, configContracts, contractName);
@@ -515,7 +575,7 @@ async function checkOptimismMessenger(chainId, provider, globalsInstance, config
 // Check WormholeMessenger: chain Id, provider, parsed globals, configuration contracts, contract name
 async function checkWormholeMessenger(chainId, provider, globalsInstance, configContracts, contractName, log) {
     // Check the bytecode
-    await checkBytecode(provider, configContracts, contractName, log);
+    await runCheck(log, () => checkBytecode(provider, configContracts, contractName, log));
 
     // Get the contract instance
     const wormholeMessenger = await findContractInstance(provider, configContracts, contractName);
@@ -613,34 +673,34 @@ async function main() {
         const initLog = "ChainId: " + configs[0]["chainId"] + ", network: " + configs[0]["name"];
 
         let log = initLog + ", contract: " + "OLAS";
-        await checkOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "OLAS", log);
+        await runCheck(log, () => checkOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "OLAS", log));
 
         log = initLog + ", contract: " + "Timelock";
-        await checkTimelock(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "Timelock", log);
+        await runCheck(log, () => checkTimelock(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "Timelock", log));
 
         log = initLog + ", contract: " + "veOLAS";
-        await checkVEOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "veOLAS", log);
+        await runCheck(log, () => checkVEOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "veOLAS", log));
 
         log = initLog + ", contract: " + "buOLAS";
-        await checkBUOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "buOLAS", log);
+        await runCheck(log, () => checkBUOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "buOLAS", log));
 
         log = initLog + ", contract: " + "wveOLAS";
-        await checkWrappedVEOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "wveOLAS", log);
+        await runCheck(log, () => checkWrappedVEOLAS(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "wveOLAS", log));
 
         log = initLog + ", contract: " + "VoteWeighting";
-        await checkVoteWeighting(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "VoteWeighting", log);
+        await runCheck(log, () => checkVoteWeighting(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "VoteWeighting", log));
 
         log = initLog + ", contract: " + "GovernorOLAS";
-        await checkGovernorOLAS(configs[0]["chainId"], providers[0], globals[0], globals[0], configs[0]["contracts"], "GovernorOLAS", log);
+        await runCheck(log, () => checkGovernorOLAS(configs[0]["chainId"], providers[0], globals[0], globals[0], configs[0]["contracts"], "GovernorOLAS", log));
 
         log = initLog + ", contract: " + "GuardCM";
-        await checkGuardCM(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "GuardCM", log);
+        await runCheck(log, () => checkGuardCM(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "GuardCM", log));
 
         log = initLog + ", contract: " + "BridgedERC20";
-        await checkBridgedERC20(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "BridgedERC20", log);
+        await runCheck(log, () => checkBridgedERC20(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "BridgedERC20", log));
 
         log = initLog + ", contract: " + "FxERC20RootTunnel";
-        await checkFxERC20RootTunnel(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "FxERC20RootTunnel", log);
+        await runCheck(log, () => checkFxERC20RootTunnel(configs[0]["chainId"], providers[0], globals[0], configs[0]["contracts"], "FxERC20RootTunnel", log));
 
         // L2 contracts
         for (let i = 1; i < numChains; i++) {
@@ -650,16 +710,16 @@ async function main() {
 
             if (configs[i]["chainId"] == "137") {
                 let log = initLog + ", contract: " + "FxGovernorTunnel";
-                await checkFxGovernorTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxGovernorTunnel", log);
+                await runCheck(log, () => checkFxGovernorTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxGovernorTunnel", log));
 
                 log = initLog + ", contract: " + "FxERC20ChildTunnel";
-                await checkFxERC20ChildTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20ChildTunnel", log);
+                await runCheck(log, () => checkFxERC20ChildTunnel(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "FxERC20ChildTunnel", log));
             } else if (configs[i]["chainId"] == "100") {
                 let log = initLog + ", contract: " + "HomeMediator";
-                await checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log);
+                await runCheck(log, () => checkHomeMediator(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "HomeMediator", log));
             } else if (configs[i]["chainId"] == "10" || configs[i]["chainId"] == "8453" || configs[i]["chainId"] == "34443" || configs[i]["chainId"] == "42220") {
                 let log = initLog + ", contract: " + "OptimismMessenger";
-                await checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log);
+                await runCheck(log, () => checkOptimismMessenger(configs[i]["chainId"], providers[i], globals[i], configs[i]["contracts"], "OptimismMessenger", log));
             }
         }
 
@@ -672,7 +732,15 @@ async function main() {
 }
 
 main()
-    .then(() => process.exit(0))
+    .then(() => {
+        if (bytecodeMismatchFound || checkAbortedFound) {
+            console.error("AUDIT FAILED: see FAIL / ERROR lines above"
+                + (bytecodeMismatchFound ? " (Tier-1 bytecode length mismatch)" : "")
+                + (checkAbortedFound ? " (aborted contract check)" : "") + ".");
+            process.exit(1);
+        }
+        process.exit(0);
+    })
     .catch((error) => {
         console.error(error);
         process.exit(1);
