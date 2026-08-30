@@ -29,6 +29,7 @@
 | 23 | [Timelock deployer-EOA admin bootstrap window](#23-timelock-deployer-eoa-admin-bootstrap-window) | Informative |
 | 24 | [FxERC20RootTunnel setFxChildTunnel is a permissionless one-shot](#24-fxerc20roottunnel-setfxchildtunnel-is-a-permissionless-one-shot) | Informative |
 | 25 | [Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance](#25-unbounded-governor-settings-and-unchecked-timelock-replacement-can-permanently-brick-governance) | Medium |
+| 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -911,3 +912,56 @@ Medium records.
 [^2]: Since no manipulation of governance voting can currently happen, this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
 [^3]: This function is not currently used in any of the Autonolas on-chain contracts, thus this vulnerability identifies a smart contract that fails to deliver promised returns but doesn't lose value.
 [^4]: When voting via veOLAS, the incorrect value is returned as a read-only value, thus this could be declared as a Low severity. However, if there are consequences due to incorrect voting failure, then it is a potential damage to the DAO members, and then the severity is Medium.
+
+### 26. `VoteWeighting` catch-up cursors do not advance across a multi-year gap
+
+**Severity:** Informative
+
+`_getSum()` walks at most `MAX_NUM_WEEKS = 250` weeks per call and persists its cursor **only** when it
+reaches a week beyond the present:
+
+```solidity
+uint256 t = timeSum;
+for (uint256 i = 0; i < MAX_NUM_WEEKS; i++) {
+    if (t > block.timestamp) break;
+    t += WEEK;
+    ...
+    pointsSum[t] = pt;
+    if (t > block.timestamp) {
+        timeSum = t;          // the only write
+    }
+}
+```
+
+If `timeSum` is more than 250 weeks behind `block.timestamp`, the loop exhausts all 250 iterations without
+`t` ever passing the present, so `timeSum` is never written. The next call re-reads the same stale cursor
+and replays the same window: each call performs work, none of it advances the cursor, and the contract stays
+pinned. `_getWeight()` has the same shape for the per-nominee `timeWeight`.
+
+Once pinned, the aggregate is stale for every consumer that reads it. The consequences compound rather than
+stand alone — a stalled aggregate slot can be overwritten and re-read, relative weights derived from it
+over-allocate against a stale total, and a dormant nominee cursor can be advanced by a permissionless
+zero-value vote. All of these follow from the cursor, not from separate defects.
+
+**The precondition is what sets the severity, and the constant documents it as an assumption:**
+
+```solidity
+// The number corresponds to more than four years timeframe
+// It is enough to have at least one vote while veOLAS value is greater than zero
+// In practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
+```
+
+250 weeks is roughly **4.8 years**. Reaching the stuck state requires no checkpoint of any kind for that
+entire period. Checkpointing is permissionless and is driven by ordinary reward claims, so the gap implies a
+protocol with no claims and no votes for nearly five years. The consequences are severe; the entry condition
+is a dormant protocol.
+
+**Related.** Item 8 documents a *different* defect in the same function — a permanent checkpoint DoS from
+phantom slopes left by expired locks. That one reverts the walk; this one completes the walk without
+advancing. They are independent, and a fix for either does not address the other.
+
+**Mitigation.** Persist the cursor unconditionally at the end of the walk rather than only on reaching a
+future week, so that a long gap is closed incrementally across successive calls instead of being replayed.
+Operationally, any checkpoint activity at all — a vote, a reward claim, a manual `checkpoint()` — keeps the
+cursor current and prevents the state from being reachable.
+
