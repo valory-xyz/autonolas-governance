@@ -110,7 +110,14 @@ contract GuardCM is VerifyData {
     bytes4 public constant SCHEDULE_BATCH = bytes4(keccak256(bytes("scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)")));
     // requireToPassMessage selector (Gnosis chain)
     // Initial check governance proposal Id
-    // Calculated from the proposalHash function of the GovernorOLAS
+    // Calculated from the proposalHash function of the GovernorOLAS.
+    // The proposal parameters behind this Id are intentionally NOT committed to this repository. The
+    // heartbeat proposal must only be creatable when the DAO chooses to create it: anyone able to create it
+    // could let it be defeated and thereby arm the multisig release path in pause() on their own schedule.
+    // state() reverting with "unknown proposal id" while no heartbeat is outstanding is therefore the
+    // expected resting state, not a fault.
+    // Older audit artifacts in this repository document a SUPERSEDED Id together with its parameters. Do
+    // not reconcile this value against them, and do not replace it with one whose parameters are public.
     uint256 public governorCheckProposalId = 88250008686885504216650933897987879122244685460173810624866685274624741477673;
     // Minimum data length that is encoded for the schedule function,
     // plus at least 4 bytes or 32 bits for the selector from the payload
