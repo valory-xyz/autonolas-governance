@@ -13,7 +13,7 @@
 | 7 | [processMessageFromForeign function](#7-processmessagefromforeign-function) | Informative |
 | 8 | [removeNominee function](#8-removenominee-function) | Medium |
 | 9 | [_addNominee and removeNominee functions](#9-_addnominee-and-removenominee-functions) | Informative |
-| 10 | [voteForNomineeWeights function](#10-voteforNomineeweights-function) | Informative |
+| 10 | [voteForNomineeWeights function](#10-votefornomineeweights-function) | Informative |
 | 11 | [removeNominee OwnerOnly revert-data argument order](#11-removenominee-owneronly-revert-data-argument-order) | Informative |
 | 12 | [OLAS mint silent no-op on inflation cap](#12-olas-mint-silent-no-op-on-inflation-cap) | Informative |
 | 13 | [governorDelay and timelock minDelay desynchronization](#13-governordelay-and-timelock-mindelay-desynchronization) | Informative |
