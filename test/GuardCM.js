@@ -600,7 +600,9 @@ describe("Community Multisig Guard", function () {
             // Take a snapshot of the current state of the blockchain
             const snapshot = await helpers.takeSnapshot();
 
-            // Change the proposal Id to a known one
+            // Change the proposal Id to a known one. This is a superseded, publicly-documented heartbeat
+            // used so the test can create the proposal; the deployed default's parameters are withheld
+            // deliberately and this value must not be read as the one the deployment should carry.
             const payload = guard.interface.encodeFunctionData("changeGovernorCheckProposalId",
                 ["62151151991217526951504761219057817227643973118811130641152828658327965685127"]);
             await timelock.execute(guard.address, payload);
