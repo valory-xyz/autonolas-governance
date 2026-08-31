@@ -23,6 +23,13 @@ interface IGuardCM {
     function owner() external view returns (address);
     function mapBridgeMediatorL1BridgeParams(address bridgeMediatorL1)
         external view returns (address verifierL2, address bridgeMediatorL2, uint256 chainId);
+    function mapAllowedTargetSelectorChainIds(uint256 targetSelectorChainId) external view returns (bool);
+    function multisig() external view returns (address);
+    function checkTransaction(
+        address to, uint256 value, bytes memory data, uint8 operation,
+        uint256 safeTxGas, uint256 baseGas, uint256 gasPrice,
+        address gasToken, address payable refundReceiver, bytes memory signatures, address msgSender
+    ) external;
 }
 
 /// @notice L1 validation for proposal 13 on a MAINNET fork, through the CURRENTLY-LIVE GovernorOLAS.
@@ -46,6 +53,12 @@ contract Proposal13HousekeepingTest is Test, Proposal13Builder {
     // Routes configured by proposal 11 that MUST survive this proposal untouched.
     address internal constant OP_L1CDM = 0x25ace71c97B33Cc4729CF772ae268934F7ab5fA1;
     uint256 internal constant CID_OPTIMISM = 10;
+
+    // The Mode target already carried by the guard's allowlist. The Community Multisig itself is read
+    // from the guard at runtime rather than hardcoded — a stale constant here would make the capability
+    // test assert against the wrong caller and pass for the wrong reason.
+    address internal constant MODE_SERVICE_REGISTRY_L2 = 0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE;
+    bytes4 internal constant DRAIN_SEL = bytes4(keccak256(bytes("drain()")));
 
     // SentMessage(address indexed target, address sender, bytes message, uint256 messageNonce, uint256 gasLimit)
     bytes32 internal constant SENT_MESSAGE_TOPIC =
@@ -190,6 +203,102 @@ contract Proposal13HousekeepingTest is Test, Proposal13Builder {
 
         _assertModeRouteSet();
         _assertBridgeMessagesEmitted(vm.getRecordedLogs());
+    }
+
+    /// @dev Entry [0] exists to restore a capability, not to write three storage words. This asserts the
+    ///      capability itself: a Mode-bound Community Multisig schedule is REJECTED by the live guard today
+    ///      and ACCEPTED after the proposal executes. It is the assertion that would catch a regression in
+    ///      either half — the bridge route or the target/selector allowlist.
+    function test_L1_modeCmTransaction_rejectedBefore_acceptedAfter() public {
+        _fork();
+        address cm = IGuardCM(GUARD_CM).multisig();
+        bytes memory scheduleCall = _modeCmScheduleCall();
+
+        // The allowlist half is already in place on the live guard — assert it, so a failure below is
+        // attributable to the bridge route and not to a missing target/selector pair.
+        assertTrue(
+            IGuardCM(GUARD_CM).mapAllowedTargetSelectorChainIds(
+                _allowlistKey(MODE_SERVICE_REGISTRY_L2, DRAIN_SEL, CID_MODE)
+            ),
+            "Mode ServiceRegistryL2.drain() not allowlisted"
+        );
+
+        // BEFORE: no Mode route, so the guard cannot verify the bridged payload and fails closed.
+        vm.prank(cm);
+        vm.expectRevert();
+        _checkCmTransaction(scheduleCall, cm);
+
+        _executeProposalAsTimelock();
+
+        // AFTER: the same transaction passes.
+        vm.prank(cm);
+        _checkCmTransaction(scheduleCall, cm);
+        console2.log("Mode CM transaction: rejected before, accepted after");
+    }
+
+    /// @dev A Community Multisig transaction scheduling `ServiceRegistryL2.drain()` on Mode, bridged via
+    ///      the Mode L1 cross-domain messenger — the shape entry [0] exists to make verifiable.
+    function _modeCmScheduleCall() internal pure returns (bytes memory) {
+        bytes memory inner = abi.encodeWithSignature("drain()");
+        bytes memory l2call = abi.encodeWithSignature(
+            "processMessageFromSource(bytes)",
+            abi.encodePacked(MODE_SERVICE_REGISTRY_L2, uint96(0), uint32(inner.length), inner)
+        );
+        return abi.encodeWithSignature(
+            "schedule(address,uint256,bytes,bytes32,bytes32,uint256)",
+            MODE_L1CDM,
+            uint256(0),
+            abi.encodeWithSignature("sendMessage(address,bytes,uint32)", MODE_MESSENGER_L2, l2call, MODE_MIN_GAS),
+            bytes32(0),
+            bytes32(0),
+            uint256(0)
+        );
+    }
+
+    function _checkCmTransaction(bytes memory scheduleCall, address cm) internal {
+        IGuardCM(GUARD_CM).checkTransaction(
+            TIMELOCK, 0, scheduleCall, 0, 0, 0, 0, address(0), payable(address(0)), "", cm
+        );
+    }
+
+    function _executeProposalAsTimelock() internal {
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas,) = buildProposal();
+        vm.startPrank(TIMELOCK);
+        for (uint256 i; i < targets.length; ++i) {
+            (bool ok,) = targets[i].call{value: values[i]}(calldatas[i]);
+            require(ok, "proposal call failed");
+        }
+        vm.stopPrank();
+    }
+
+    /// @dev GuardCM packs (target | selector | chainId) into one key — target in the low 160 bits,
+    ///      selector in the next 32, chain id in the next 64.
+    function _allowlistKey(address target, bytes4 selector, uint256 chainId) internal pure returns (uint256 key) {
+        key = uint256(uint160(target));
+        key |= uint256(uint32(selector)) << 160;
+        key |= chainId << 192;
+    }
+
+    /// @dev The committed artifacts must match the builder, not merely each other. The builder header warns
+    ///      that description.txt has to match byte-for-byte; this checks the file rather than trusting it.
+    function test_committedArtifactsMatchTheBuilder() public view {
+        (address[] memory targets,, bytes[] memory calldatas, string memory description) = buildProposal();
+
+        string memory onDisk = vm.readFile("scripts/proposals/proposal_13/description.txt");
+        assertEq(keccak256(bytes(onDisk)), keccak256(bytes(description)), "description.txt has drifted from the builder");
+
+        string memory json = vm.readFile("scripts/proposals/proposal_13/calldata.json");
+        for (uint256 i; i < targets.length; ++i) {
+            string memory ix = vm.toString(i);
+            assertEq(
+                vm.parseJsonBytes(json, string.concat("$[", ix, "].calldata")), calldatas[i],
+                string.concat("calldata.json entry ", ix, " has drifted from the builder")
+            );
+            assertEq(
+                vm.parseJsonAddress(json, string.concat("$[", ix, "].target")), targets[i],
+                string.concat("calldata.json target ", ix, " has drifted from the builder")
+            );
+        }
     }
 
     /// @dev The proposal must not be submittable by accident with a drifted description.

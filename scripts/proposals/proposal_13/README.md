@@ -27,6 +27,18 @@ L2 where the CM cannot act. Mode is an OP-stack chain and reuses the same
 
 This is a fail-closed gap, so the change **adds** a capability and removes none.
 
+> **A second behavioural delta from the same storage write.** Registering the route also changes how the
+> guard treats a **direct** L1 CM call to the Mode L1 messenger: previously it was verified against
+> `block.chainid` and rejected, and now it is routed through `ProcessBridgedDataOptimism`. No capability is
+> removed either way, but it is worth knowing that entry [0] changes two paths, not one.
+>
+> Note also that `scripts/audit_chains/audit_contracts_setup.js` previously carried a comment saying Mode
+> was *"intentionally not configured on this guard (being deprecated)"* and omitted it from the checked
+> routes. That reasoning is superseded — leaving the route unset is precisely what made Mode the one
+> supported L2 the CM could not reach, because the guard fails closed on an unset route. The audit row is
+> added in this PR so the new route is covered like the others.
+
+
 ### 1 — Mode staking allowlist
 
 Removes a superseded V1 staking implementation from the Mode `StakingVerifier` allowlist. Nothing is
@@ -79,8 +91,13 @@ verified by calling a chain-specific getter **on the chain it is used on**:
 | Mode `0x87c511c8…`.`owner()` | the Mode mediator |
 | Mode `0x87c511c8…`.`implementationsCheck()` | `true` |
 
-The annotated HTML resolves the chain from the **L1 entrypoint**, never from the L2 address, so the
-same address correctly links to polygonscan in entry 2 and to the Mode explorer in entry 1.
+The annotated HTML resolves the chain from the **L1 entrypoint**, never from the L2 address, so the same
+address correctly links to polygonscan in entry 2 and to the Mode explorer in entry 1. Two mechanisms make
+that true rather than incidental: `L1CDM2CHAIN` maps the L1 messenger (unique per chain) to the destination
+chain and *throws* on an unknown one, and `ADDR_BY_CHAIN` keys labels by `chainId:address` so the same
+address renders as `StakingVerifier (Mode)` in entry 1 and `FxGovernorTunnel (Polygon)` in entry 2. The flat
+address→name map alone cannot express that, and previously mislabelled the Mode `StakingVerifier` as
+Optimism's messenger.
 
 ## Preconditions verified on-chain
 
@@ -118,7 +135,7 @@ node scripts/proposals/proposal_13/annotate.js "Proposal 13 — cross-chain hous
 ### L1 — Forge fork test
 
 [`test/proposals/Proposal13Housekeeping.t.sol`](../../../test/proposals/Proposal13Housekeeping.t.sol),
-4 tests against a mainnet fork:
+6 tests against a mainnet fork:
 
 - `test_preconditions` — GuardCM owned by the Timelock, Mode route unset, Optimism route populated as
   a positive control, both bridge entrypoints have code;
@@ -129,7 +146,16 @@ node scripts/proposals/proposal_13/annotate.js "Proposal 13 — cross-chain hous
   `execute()` measured at **2,548,065 gas** against the EIP-7825 cap of 16,777,216;
 - `test_L1_fullProposal_executesAsTimelock` — fast path executing the batch directly as the Timelock;
 - `test_proposalIdMatchesCommittedDescription` — pins the descriptionHash and proposalId so a drifted
-  description cannot be submitted by accident.
+  description cannot be submitted by accident;
+- `test_committedArtifactsMatchTheBuilder` — reads `description.txt` and `calldata.json` off disk and
+  asserts they still match the builder. The pin above only checks the builder against itself; this checks
+  the files the HTML and the on-chain submission are actually made from;
+- `test_L1_modeCmTransaction_rejectedBefore_acceptedAfter` — **the capability assertion**. A Community
+  Multisig transaction scheduling `ServiceRegistryL2.drain()` on Mode is rejected by the live guard and
+  accepted after execution. The storage assertions above show three words landing; this shows the thing
+  entry [0] exists for. It also asserts the target/selector allowlist half is already present, so a failure
+  is attributable to the bridge route rather than to a missing allowlist pair. The CM address is read from
+  the guard at runtime rather than hardcoded.
 
 ```bash
 ETH_RPC=<mainnet rpc> forge test --match-contract Proposal13HousekeepingTest -vvv
@@ -158,9 +184,12 @@ replay the proposal's own packed buffers on a fork of each destination chain:
 - `Proposal13PolygonLegTest` — PolySafe creator de-whitelisted, `GnosisSafeMultisig` untouched; plus
   the same negative test for a foreign root sender.
 
+Both negative tests pin the exact revert (`SourceGovernorOnly` / `RootGovernorOnly`) rather than accepting
+any revert, so they cannot pass because of a malformed buffer or a mock that silently did not apply.
+
 ```bash
 MODE_RPC=https://mainnet.mode.network forge test --match-contract Proposal13ModeLegTest -vvv
-POLYGON_RPC=<polygon rpc>              forge test --match-contract Proposal13PolygonLegTest -vvv
+POLYGON_RPC=https://polygon-bor-rpc.publicnode.com forge test --match-contract Proposal13PolygonLegTest -vvv
 ```
 
-All 8 tests pass.
+All 10 tests pass.

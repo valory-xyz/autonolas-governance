@@ -114,12 +114,15 @@ const SELSIG = {
     "0xece53132": "drain(address)",
 };
 const CHAIN = { 1: "Ethereum", 100: "Gnosis", 137: "Polygon", 42161: "Arbitrum", 10: "Optimism", 8453: "Base", 42220: "Celo", 34443: "Mode" };
-const MSGR2CHAIN = {
-    "0x87c511c8ae3faf0063b3f3cf9c6ab96c4aa5c60c": 10,
-    "0xe49cb081e8d96920c38aa7ab90cb0294ab4bc8ea": 8453,
-    "0xc14e191a64a7fb0e5790a8a0b9a58683dffce04d": 42220,
-    "0x9338b5153ae39bb89f50468e608ed9d764b755fd": 34443,
+// L1 cross-domain messenger -> destination chain. This is the authoritative direction: an L1 entrypoint
+// is unique per chain, while an L2 receiver address may be reused across chains.
+const L1CDM2CHAIN = {
+    "0x25ace71c97b33cc4729cf772ae268934f7ab5fa1": 10,     // Optimism
+    "0x866e82a600a1414e583f7f13623f1ac5d58b0afa": 8453,   // Base
+    "0x1ac1181fc4e4f877963680587aeaa2c90d7ebb95": 42220,  // Celo
+    "0x95bdca6c8edeb69c98bd5bd17660bacef1298a6f": 34443,  // Mode
 };
+
 const EXPLORER = {
     1: "https://etherscan.io/address/",
     100: "https://gnosisscan.io/address/",
@@ -132,10 +135,24 @@ const EXPLORER = {
 };
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// Chain-keyed overrides, consulted BEFORE the flat ADDR map. Several addresses in this proposal are
+// different contracts on different chains through deployer-nonce reuse, and the flat map cannot express
+// that — 0x87c511c8… is Optimism's L2 messenger AND Mode's StakingVerifier, and 0x9338b515… is Polygon's
+// FxGovernorTunnel AND Mode's mediator. Without this the annotated HTML labels them with whichever entry
+// happens to be in ADDR, which is the exact collision this proposal warns reviewers about.
+const ADDR_BY_CHAIN = {
+    "34443:0x87c511c8ae3faf0063b3f3cf9c6ab96c4aa5c60c": "StakingVerifier (Mode)",
+    "34443:0x9338b5153ae39bb89f50468e608ed9d764b755fd": "OptimismMessenger mediator (Mode)",
+    "34443:0x88de734655184a09b70700ae4f72364d1ad23728": "Superseded V1 staking implementation (Mode)",
+    "137:0x9338b5153ae39bb89f50468e608ed9d764b755fd": "FxGovernorTunnel (Polygon)",
+    "137:0xe3607b00e75f6405248323a9417ff6b39b244b50": "ServiceRegistryL2 (Polygon)",
+    "137:0xa749f605d93b3efcc207c54270d83c6e8fa70ff8": "PolySafeCreatorWithRecoveryModule (Polygon)",
+};
+
 const addrSpan = (a, chainId = 1) => {
     const cid = Number(chainId);
     const addr = ethers.utils.getAddress(a);
-    const name = ADDR[lc(a)];
+    const name = ADDR_BY_CHAIN[cid + ":" + lc(a)] || ADDR[lc(a)];
     const label = (name ? name + " · " : "") + (CHAIN[cid] || ("chain " + cid));
     const url = (EXPLORER[cid] || EXPLORER[1]) + addr + "#code";
     return `<a class="addr" href="${url}" target="_blank" rel="noopener" title="${esc(label)}">${esc(addr)}</a>` +
@@ -193,23 +210,16 @@ function decodePacked(packed, chainId) {
     return out;
 }
 
-const DEWHITELIST_SELS = ["0x82694b1d", "0x3dbb202b", "0xdc8601b3", "0xb4720477", "0x679b6ded"];
 function category(sel) {
     if (sel === "0x1602c55c") return "guard";
     if (sel === "0x3dbb202b") return "mode";
     if (sel === "0xb4720477") return "polygon";
-    if (sel === "0xc54dd0d4") return "nominee";
-    if (sel === "0x5d78d469") return "guard";
-    if (DEWHITELIST_SELS.includes(sel)) return "dewhitelist";
     return "other";
 }
 const GROUP_ORDER = [
     ["guard", "GuardCM: register the Mode bridge route (Ethereum, direct)"],
     ["mode", "Mode: de-allowlist the superseded V1 staking implementation (bridged)"],
     ["polygon", "Polygon: retire the PolySafe creator (bridged)"],
-    ["dewhitelist", "De-whitelist same-address multisigs (Ethereum direct + L2s bridged)"],
-    ["nominee", "Un-nominate legacy staking contracts (VoteWeighting.removeNominee, direct L1)"],
-    ["guard", "Extend GuardCM emergency-pause allowlist"],
     ["other", "Other"],
 ];
 
@@ -261,7 +271,13 @@ function decodeEntry(e) {
     }
     if (sel === "0x3dbb202b") {
         const [target, message, minGas] = abi.decode(["address", "bytes", "uint32"], args);
-        const cid = MSGR2CHAIN[lc(target)] || 1;
+        // Resolve the destination chain from the L1 ENTRYPOINT (the proposal target), never from the L2
+        // receiver. The receiver address is ambiguous across chains — 0x9338b515… is both Polygon's
+        // FxGovernorTunnel and Mode's mediator — whereas the L1 messenger is unique per chain.
+        const cid = L1CDM2CHAIN[lc(e.target)];
+        if (!cid) {
+            throw new Error("unknown L1 cross-domain messenger " + e.target + " — add it to L1CDM2CHAIN");
+        }
         const pSel = message.slice(0, 10);
         const [packed] = abi.decode(["bytes"], "0x" + message.slice(10));
         const procBox = callBox(selSpan(pSel), decodePacked(packed, cid), true);

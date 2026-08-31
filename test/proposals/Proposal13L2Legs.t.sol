@@ -87,7 +87,11 @@ contract Proposal13ModeLegTest is Test, Proposal13Builder {
             abi.encode(address(0xBEEF))
         );
         vm.prank(L2_MESSENGER);
-        vm.expectRevert();
+        // Pinned, not a bare expectRevert: a bare one would also pass if the call failed for an unrelated
+        // reason — a malformed buffer, or a mock that silently did not apply.
+        vm.expectRevert(
+            abi.encodeWithSignature("SourceGovernorOnly(address,address)", address(0xBEEF), TIMELOCK)
+        );
         IBridgeMediator(MODE_MESSENGER_L2).processMessageFromSource(modeBridgePayload());
     }
 }
@@ -96,7 +100,7 @@ contract Proposal13PolygonLegTest is Test, Proposal13Builder {
     address internal constant FX_CHILD = 0x8397259c983751DAf40400790063935a11afa28a;
 
     function test_polygon_dewhitelistsPolySafeCreator() public {
-        vm.createSelectFork(vm.envOr("POLYGON_RPC", string("https://polygon-rpc.com")));
+        vm.createSelectFork(vm.envOr("POLYGON_RPC", string("https://polygon-bor-rpc.publicnode.com")));
 
         IServiceRegistryL2 sr = IServiceRegistryL2(POLYGON_SERVICE_REGISTRY_L2);
         address gnosisSafeMultisig = 0x3d77596beb0f130a4415df3D2D8232B3d3D31e44;
@@ -117,9 +121,11 @@ contract Proposal13PolygonLegTest is Test, Proposal13Builder {
 
     /// @dev The tunnel must reject a message whose root sender is not the Timelock.
     function test_polygon_rejectsForeignRootSender() public {
-        vm.createSelectFork(vm.envOr("POLYGON_RPC", string("https://polygon-rpc.com")));
+        vm.createSelectFork(vm.envOr("POLYGON_RPC", string("https://polygon-bor-rpc.publicnode.com")));
         vm.prank(FX_CHILD);
-        vm.expectRevert();
+        vm.expectRevert(
+            abi.encodeWithSignature("RootGovernorOnly(address,address)", address(0xBEEF), TIMELOCK)
+        );
         IBridgeMediator(FX_TUNNEL_L2).processMessageFromRoot(1, address(0xBEEF), polygonBridgePayload());
     }
 }
