@@ -1,6 +1,14 @@
 # Security Policy
 This document outlines security procedures and general policies for the `autonolas-governance` project.
 
+## Bug Bounty
+Vulnerabilities in the deployed contracts are covered by the Autonolas bug bounty programme on Immunefi:
+https://immunefi.com/bounty/autonolas/
+
+Submitting through the programme is the preferred route for anything in its scope — it gives the report a
+tracked triage path and makes it eligible for a reward. Use the email below for anything outside that
+scope, or if you are unsure whether a finding qualifies.
+
 ## Reporting a Vulnerability
 The `autonolas-governance` team and community take all security bugs in `autonolas-governance` very seriously.
 Thank you for improving the security of `autonolas-governance`. We appreciate your efforts and responsible disclosure and will make
