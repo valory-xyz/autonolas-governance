@@ -12,7 +12,9 @@ Every proposal description must contain the sentence:
 > In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u
 
 L1 effects are validated by Forge fork tests under [`test/proposals/`](../../test/proposals). L2 (bridged)
-effects are validated separately via Tenderly simulations on the destination chain.
+effects are validated separately via Tenderly simulations on the destination chain — except where Tenderly
+does not support the chain, as with Mode (34443), in which case a destination-chain Forge fork test stands in
+(see [proposal_13](proposal_13/README.md#l2--destination-chain-validation)).
 
 ## Proposals
 
@@ -20,6 +22,7 @@ effects are validated separately via Tenderly simulations on the destination cha
 |---|---------|--------|----------------|----------------|
 | 11 | Olas Governance & GuardCM activation: migrate Timelock roles to the new GovernorOLAS, configure + swap in the new GuardCM, set new Celo BalanceTrackers, upgrade Tokenomics impl (post-audit resolutions) | [proposal_11/](proposal_11) | [proposal_11.html](proposal_11/proposal_11.html) | [Proposal11Activation.t.sol](../../test/proposals/Proposal11Activation.t.sol) |
 | 12 | Un-nominate 20 legacy staking contract nominees from VoteWeighting (Pearl Beta Mech Marketplace I–VIII, Polymarket ×3, Optimus Alpha II–IV, Pett.AI ×2, Agents.fun ×3, one invalid-metadata contract); LST and the new staking generation stay nominated | [proposal_12/](proposal_12) | [proposal_12.html](proposal_12/proposal_12.html) | [Proposal12Unnominate.t.sol](../../test/proposals/Proposal12Unnominate.t.sol) |
+| 13 | Cross-chain housekeeping: register the Mode bridge route in GuardCM; de-allowlist a superseded V1 staking implementation on Mode; retire the PolySafe creator on Polygon (closes registries #30) | [proposal_13/](proposal_13) | [proposal_13.html](proposal_13/proposal_13.html) | [Proposal13Housekeeping.t.sol](../../test/proposals/Proposal13Housekeeping.t.sol) |
 
 ### Legacy proposals
 

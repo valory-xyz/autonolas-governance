@@ -428,14 +428,18 @@ async function checkGuardCM(chainId, provider, globalsInstance, configContracts,
     customExpect(multisig, globalsInstance["CM"], log + ", function: multisig()");
 
     // Check the bridge mediator L1 bridge params (L2 verifier + L2 mediator + chain Id) per L2.
-    // Note: Mode (chain Id 34443) is intentionally not configured on this guard (being deprecated).
+    // Mode (34443) is included: it was previously left unconfigured on the grounds that the chain was being
+    // deprecated, which left it the one supported L2 the CM could not reach, since the guard fails closed on
+    // an unset route. Proposal 13 registers it, so this row must be checked like the rest — an omission here
+    // is indistinguishable from a route that was never set.
     const bridgeParams = [
         {name: "gnosis", l1: globalsInstance["AMBContractProxyForeignAddress"], verifier: globalsInstance["processBridgedDataGnosisAddress"], mediatorL2: globalsInstance["gnosisBridgeMediatorL2"], chainId: "100"},
         {name: "polygon", l1: globalsInstance["fxRootAddress"], verifier: globalsInstance["processBridgedDataPolygonAddress"], mediatorL2: globalsInstance["polygonBridgeMediatorL2"], chainId: "137"},
         {name: "arbitrum", l1: globalsInstance["arbitrumInboxAddress"], verifier: globalsInstance["processBridgedDataArbitrumAddress"], mediatorL2: globalsInstance["arbitrumBridgeMediatorL2"], chainId: "42161"},
         {name: "optimism", l1: globalsInstance["optimismL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["optimismMessengerL2Address"], chainId: "10"},
         {name: "base", l1: globalsInstance["baseL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["baseMessengerL2Address"], chainId: "8453"},
-        {name: "celo", l1: globalsInstance["celoL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["celoMessengerL2Address"], chainId: "42220"}
+        {name: "celo", l1: globalsInstance["celoL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["celoMessengerL2Address"], chainId: "42220"},
+        {name: "mode", l1: globalsInstance["modeL1CrossDomainMessengerAddress"], verifier: globalsInstance["processBridgedDataOptimismAddress"], mediatorL2: globalsInstance["modeMessengerL2Address"], chainId: "34443"}
     ];
     for (let b = 0; b < bridgeParams.length; b++) {
         const params = await guard.mapBridgeMediatorL1BridgeParams(bridgeParams[b].l1);

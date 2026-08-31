@@ -9,6 +9,10 @@ optimizer = true
 optimizer_runs = 200
 evm_version = "prague"
 
+# Read-only, scoped to the proposal artifacts: the proposal tests assert that description.txt and
+# calldata.json still match the Forge builder, which is the drift the builders warn about.
+fs_permissions = [{ access = "read", path = "./scripts/proposals" }]
+
 remappings = [
     "@gnosis.pm=node_modules/@gnosis.pm",
     "@openzeppelin=node_modules/@openzeppelin",
