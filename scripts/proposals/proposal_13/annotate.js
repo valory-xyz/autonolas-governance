@@ -147,6 +147,10 @@ const ADDR_BY_CHAIN = {
     "137:0x9338b5153ae39bb89f50468e608ed9d764b755fd": "FxGovernorTunnel (Polygon)",
     "137:0xe3607b00e75f6405248323a9417ff6b39b244b50": "ServiceRegistryL2 (Polygon)",
     "137:0xa749f605d93b3efcc207c54270d83c6e8fa70ff8": "PolySafeCreatorWithRecoveryModule (Polygon)",
+    // Fourth collision: the same 20 bytes are the L1 Timelock on Ethereum and ServiceRegistryL2 on Mode.
+    // Without this entry a Mode drain() annotation would print "Timelock".
+    "34443:0x3c1ff68f5aa342d296d4dee4bb1cacca912d95fe": "ServiceRegistryL2 (Mode)",
+    "1:0x3c1ff68f5aa342d296d4dee4bb1cacca912d95fe": "Timelock (Ethereum)",
 };
 
 const addrSpan = (a, chainId = 1) => {
@@ -210,16 +214,27 @@ function decodePacked(packed, chainId) {
     return out;
 }
 
-function category(sel) {
+// Group by what the entry DOES and where it lands, resolving the chain from the L1 entrypoint. Keying an
+// OP-stack entry off its selector would be wrong: 0x3dbb202b is sendMessage on ANY OP-stack L1 messenger,
+// so an Optimism, Base or Celo leg would be filed under whichever chain-named heading was hardcoded.
+const CHAIN_GROUP = {10: "optimism", 8453: "base", 42220: "celo", 34443: "mode"};
+function category(e) {
+    const sel = e.calldata.slice(0, 10);
     if (sel === "0x1602c55c") return "guard";
-    if (sel === "0x3dbb202b") return "mode";
     if (sel === "0xb4720477") return "polygon";
+    if (sel === "0x3dbb202b") {
+        const cid = L1CDM2CHAIN[lc(e.target)];
+        return CHAIN_GROUP[cid] || "other";
+    }
     return "other";
 }
 const GROUP_ORDER = [
     ["guard", "GuardCM: register the Mode bridge route (Ethereum, direct)"],
     ["mode", "Mode: de-allowlist the superseded V1 staking implementation (bridged)"],
     ["polygon", "Polygon: retire the PolySafe creator (bridged)"],
+    ["optimism", "Optimism (bridged)"],
+    ["base", "Base (bridged)"],
+    ["celo", "Celo (bridged)"],
     ["other", "Other"],
 ];
 
@@ -327,7 +342,7 @@ function main() {
 
     // auto-group by selector category
     const byCat = {};
-    entries.forEach((e, i) => { (byCat[category(e.calldata.slice(0, 10))] ||= []).push(i); });
+    entries.forEach((e, i) => { (byCat[category(e)] ||= []).push(i); });
     const nonZero = entries.map((e, i) => (e.value !== "0" ? i : -1)).filter((i) => i >= 0);
 
     const jsonArr = (a) => "[" + a.map((x) => `"${x}"`).join(",") + "]";

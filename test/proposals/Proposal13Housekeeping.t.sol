@@ -57,6 +57,12 @@ contract Proposal13HousekeepingTest is Test, Proposal13Builder {
     // The Mode target already carried by the guard's allowlist. The Community Multisig itself is read
     // from the guard at runtime rather than hardcoded — a stale constant here would make the capability
     // test assert against the wrong caller and pass for the wrong reason.
+    //
+    // ⚠ COLLISION: these 20 bytes are ALSO the L1 `TIMELOCK` in the builder. Same value, opposite meaning
+    // — the Timelock on Ethereum, ServiceRegistryL2 on Mode — and `_modeCmScheduleCall()` uses BOTH
+    // meanings in one call: `TIMELOCK` as the guard's `to`, this constant inside the bridged payload.
+    // Verified on-chain: Ethereum answers `getMinDelay()` and has no `owner()`; Mode answers
+    // `owner()` = `drainer()` = the mediator. Do not "simplify" the two into one constant.
     address internal constant MODE_SERVICE_REGISTRY_L2 = 0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE;
     bytes4 internal constant DRAIN_SEL = bytes4(keccak256(bytes("drain()")));
 
@@ -223,9 +229,22 @@ contract Proposal13HousekeepingTest is Test, Proposal13Builder {
             "Mode ServiceRegistryL2.drain() not allowlisted"
         );
 
-        // BEFORE: no Mode route, so the guard cannot verify the bridged payload and fails closed.
+        // BEFORE: no Mode route, so the guard falls through to the L1 path and fails closed.
+        //
+        // Pinned, not a bare expectRevert. The whole weight of "rejected before, accepted after" rests on
+        // this leg failing for the STATED reason — a bare one would pass just as happily if the schedule
+        // call were malformed or `cm` resolved to something unexpected, and the test would still go green
+        // while proving nothing.
+        //
+        // The revert data is also the evidence for the direct-L1 delta described in the README: chainId 1
+        // and selector `sendMessage` mean the guard treated this as an L1 call, because no Mode route
+        // existed to route it through the OP-stack verifier.
         vm.prank(cm);
-        vm.expectRevert();
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "NotAuthorized(address,bytes4,uint256)", MODE_L1CDM, bytes4(0x3dbb202b), uint256(1)
+            )
+        );
         _checkCmTransaction(scheduleCall, cm);
 
         _executeProposalAsTimelock();

@@ -37,6 +37,11 @@ This is a fail-closed gap, so the change **adds** a capability and removes none.
 > routes. That reasoning is superseded — leaving the route unset is precisely what made Mode the one
 > supported L2 the CM could not reach, because the guard fails closed on an unset route. The audit row is
 > added in this PR so the new route is covered like the others.
+>
+> **The audit row is deliberately ahead of on-chain state.** Until this proposal executes, the Mode row
+> logs three mismatches (`verifierL2`, `bridgeMediatorL2`, `chainId` all zero). That is expected, not a
+> regression: `customExpect` logs rather than throwing and does not set the non-zero exit flag, so the run
+> still exits 0. The mismatches disappear on execution.
 
 
 ### 1 — Mode staking allowlist
@@ -59,7 +64,30 @@ front-run, stranding the intended service identity) outright and with no code ch
 
 **This is a product decision, not only a fix.** PolySafe is not dormant: the creator has emitted 259
 `MultisigCreated` events, the most recent on 2026-08-15, although volume has fallen sharply (92 in
-April 2026 → 3 in August 2026). After execution, a service that would have deployed a PolySafe
+April 2026 → 3 in August 2026).
+
+<details><summary>How to re-derive those figures</summary>
+
+Public Polygon RPCs cap `eth_getLogs` ranges, so a `--from-block 0` scan either times out or returns an
+empty result *without erroring* — which is how this claim came back un-reverified twice. One call that
+does work, no chunking required:
+
+```bash
+curl -s "https://api.etherscan.io/v2/api?chainid=137&module=logs&action=getLogs\
+&address=0xA749f605D93B3efcc207C54270d83C6E8fa70fF8&fromBlock=0&toBlock=latest&apikey=$KEY"
+```
+
+| | |
+|---|---|
+| events | **259** |
+| first | block `81298626`, 2026-01-06 |
+| last | block `92060820`, 2026-08-15 |
+| by month | 01=8, 02=63, 03=75, **04=92**, 05=4, 06=10, 07=4, **08=3** |
+
+If a chunked RPC scan is preferred, chunk from the contract's deployment block and **count unreadable
+chunks** — an empty result and a refused result are indistinguishable otherwise.
+
+</details> After execution, a service that would have deployed a PolySafe
 deploys an ordinary Safe instead. `GnosisSafeMultisig`
 ([`0x3d77596b…`](https://polygonscan.com/address/0x3d77596beb0f130a4415df3D2D8232B3d3D31e44)) remains
 whitelisted and is the fallback; the Polygon fork test asserts it survives untouched. The change is
@@ -79,6 +107,19 @@ Three distinct contracts across this proposal share the numeric address
 and **`0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c`** is *both* Optimism's L2 messenger and Mode's
 `StakingVerifier`.
 
+**A fourth pair, and this one is the sharpest**, because both meanings appear in the same function:
+
+| chain | contract | used here |
+|---|---|---|
+| Ethereum | the **Timelock** | yes — the guard's `to`, and the executor of every entry |
+| Mode | **`ServiceRegistryL2`** | yes — the target inside the bridged payload of the capability test |
+
+**`0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE`.** The builder's `TIMELOCK` and the test's
+`MODE_SERVICE_REGISTRY_L2` are the *same 20 bytes with opposite meanings*, and
+`_modeCmScheduleCall()` uses both in one call. They must not be collapsed into one constant. Verified on
+the chain each is used on: Ethereum answers `getMinDelay()` and has no `owner()`; Mode answers
+`owner()` = `drainer()` = the mediator `0x9338b515…`.
+
 A constant pointed at the wrong chain's contract looks correct on review. Each was therefore
 verified by calling a chain-specific getter **on the chain it is used on**:
 
@@ -90,6 +131,8 @@ verified by calling a chain-specific getter **on the chain it is used on**:
 | Polygon `0x9338b515…`.`rootGovernor()` | the L1 Timelock |
 | Mode `0x87c511c8…`.`owner()` | the Mode mediator |
 | Mode `0x87c511c8…`.`implementationsCheck()` | `true` |
+| Ethereum `0x3C1fF68f…`.`getMinDelay()` | `0` — a TimelockController; no `owner()` |
+| Mode `0x3C1fF68f…`.`owner()` / `drainer()` | the mediator `0x9338b515…` — a ServiceRegistryL2 |
 
 The annotated HTML resolves the chain from the **L1 entrypoint**, never from the L2 address, so the same
 address correctly links to polygonscan in entry 2 and to the Mode explorer in entry 1. Two mechanisms make
