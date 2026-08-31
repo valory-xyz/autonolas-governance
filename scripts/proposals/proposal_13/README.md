@@ -73,8 +73,11 @@ empty result *without erroring* — which is how this claim came back un-reverif
 does work, no chunking required:
 
 ```bash
+# topic0 = keccak("MultisigCreated(address,address)") — without it this returns every
+# log the creator has emitted, which is not the number the sentence above claims.
 curl -s "https://api.etherscan.io/v2/api?chainid=137&module=logs&action=getLogs\
-&address=0xA749f605D93B3efcc207C54270d83C6E8fa70fF8&fromBlock=0&toBlock=latest&apikey=$KEY"
+&address=0xA749f605D93B3efcc207C54270d83C6E8fa70fF8&fromBlock=0&toBlock=latest\
+&topic0=0x38b56a7814c1a51663dba0756bf5ece28e95bcf82cf63a76479424baf9c680f9&apikey=$KEY"
 ```
 
 | | |
@@ -87,7 +90,9 @@ curl -s "https://api.etherscan.io/v2/api?chainid=137&module=logs&action=getLogs\
 If a chunked RPC scan is preferred, chunk from the contract's deployment block and **count unreadable
 chunks** — an empty result and a refused result are indistinguishable otherwise.
 
-</details> After execution, a service that would have deployed a PolySafe
+</details>
+
+After execution, a service that would have deployed a PolySafe
 deploys an ordinary Safe instead. `GnosisSafeMultisig`
 ([`0x3d77596b…`](https://polygonscan.com/address/0x3d77596beb0f130a4415df3D2D8232B3d3D31e44)) remains
 whitelisted and is the fallback; the Polygon fork test asserts it survives untouched. The change is
