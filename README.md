@@ -52,7 +52,7 @@ Exceptionally, some changes to the Autonolas Protocol can be executed by a commu
 - [ProcessBridgedDataWormhole](contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol)
 - [VerifyBridgedData](contracts/multisigs/bridge_verifier/VerifyBridgedData.sol)
 
-The functionality enabled by this modular guard mechanism is introduced [here](governance/docs/guardCM_modular_approach.pdf).
+The functionality enabled by this modular guard mechanism is introduced [here](docs/guardCM_modular_approach.pdf).
 
 The following contract was implemented to allow DAO members (via veOLAS) to vote on staking programs and trigger Olas Staking emissions, assigning weights according to their preferences"
 - [VoteWeighting.sol](contracts/VoteWeighting.sol).
@@ -177,7 +177,7 @@ and designed by the Gnosis team to support cross-chain bridging from Ethereum to
 
 For running a test between `goerli` and `chiado`, run the test script with your own credentials:
 [`goerli-chiado` hello world bridge test](scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_hello_world.js)
-and [`goerli-chiado` governor bridge test](scripts/deployment/bridges/polygon/test/mediator_goerli_chiado_governor.js).
+and [`goerli-chiado` governor bridge test](scripts/deployment/bridges/gnosis/test/mediator_goerli_chiado_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
 #### Arbitrum governance bridge
@@ -206,7 +206,7 @@ Note that the script must be run without Hardhat environment, i.e.: `node test_s
 The description of bridge-related deployment procedure is very similar to the original deployment process and can be found here:
 - [bridges-polygon](scripts/deployment/bridges/polygon);
 - [bridges-gnosis](scripts/deployment/bridges/gnosis);
-- [bridges-optimism-base](scripts/deployment/bridges/optimistic);
+- [bridges-optimism-base](scripts/deployment/bridges/optimism);
 - [bridges-wormhole](scripts/deployment/bridges/wormhole).
 
 ### ERC20 token bridging
