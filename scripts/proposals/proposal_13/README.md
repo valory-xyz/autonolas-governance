@@ -92,11 +92,28 @@ chunks** — an empty result and a refused result are indistinguishable otherwis
 
 </details>
 
-After execution, a service that would have deployed a PolySafe
-deploys an ordinary Safe instead. `GnosisSafeMultisig`
+**There is no on-chain fallback — the caller chooses.** `ServiceRegistryL2.deploy()` does not substitute
+another implementation when the supplied creator is disabled; it checks the bit and reverts:
+
+```solidity
+if (!mapMultisigs[multisigImplementation]) {
+    revert UnauthorizedMultisig(multisigImplementation);   // ServiceRegistryL2.sol:508-510
+}
+```
+
+So after execution a deployment request that still names the PolySafe creator **fails**; it does not
+silently become an ordinary Safe. `GnosisSafeMultisig`
 ([`0x3d77596b…`](https://polygonscan.com/address/0x3d77596beb0f130a4415df3D2D8232B3d3D31e44)) remains
-whitelisted and is the fallback; the Polygon fork test asserts it survives untouched. The change is
-reversible by re-whitelisting, but any in-flight PolySafe deployment reverts in the meantime.
+whitelisted and is the implementation clients should select instead — the Polygon fork test asserts its bit
+survives untouched, which is the same bit `deploy()` reads. Existing PolySafes are unaffected and keep
+operating; only the creation path closes. The change is reversible by re-whitelisting through the same
+tunnel path.
+
+**Why the residual tail is acceptable.** PolySafe is being deprecated across all clients concurrently with
+this proposal, so the expectation is zero callers by execution. The tail above is consistent with that:
+usage fell from 92 in April to 1 in the 30 days to 2026-09-01, the last creation being 2026-08-15. Anyone
+who has not migrated by execution gets a clear `UnauthorizedMultisig` revert rather than a silent
+substitution, and re-whitelisting is one governance action away.
 
 ## ⚠ Address collisions — read before editing any constant
 
