@@ -30,6 +30,7 @@
 | 24 | [FxERC20RootTunnel setFxChildTunnel is a permissionless one-shot](#24-fxerc20roottunnel-setfxchildtunnel-is-a-permissionless-one-shot) | Informative |
 | 25 | [Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance](#25-unbounded-governor-settings-and-unchecked-timelock-replacement-can-permanently-brick-governance) | Medium |
 | 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
+| 27 | [Nominees can be added for chains that cannot receive incentives](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -965,3 +966,29 @@ future week, so that a long gap is closed incrementally across successive calls 
 Operationally, any checkpoint activity at all — a vote, a reward claim, a manual `checkpoint()` — keeps the
 cursor current and prevents the state from being reachable.
 
+### 27. Nominees can be added for chains that cannot receive incentives
+
+**Severity**: Low
+**Source**: internal review
+
+`VoteWeighting.addNomineeEVM` validates the shape of a chain id but not whether that chain can actually be
+paid:
+
+```solidity
+if (account == address(0)) { revert ZeroAddress(); }
+if (chainId == 0) { revert ZeroValue(); }
+if (chainId > MAX_EVM_CHAIN_ID) { revert Overflow(chainId, MAX_EVM_CHAIN_ID); }
+```
+
+There is no check against the deposit-processor map the incentive path relies on. Registration is
+permissionless, so a nominee can be added for a chain with no configured processor and voted into
+`pointsSum` like any other. When a claim is later attempted for it, the incentive path dereferences the
+zero processor and reverts.
+
+**The revert happens on L1, before anything is dispatched, in a call whose targets the caller supplies** —
+so the caller simply omits that nominee and claims the rest. Nothing is denied to anyone else and no funds
+move. What remains is that weight directed at such a nominee is unclaimable and dilutes the nominees that
+can be paid, which costs the voter their own voting power to arrange. Rejecting unsupported chain ids at
+registration closes it at the cheapest point.
+
+At the time of writing every live nominee is on a chain with a configured processor.
