@@ -300,13 +300,32 @@ contract Proposal13HousekeepingTest is Test, Proposal13Builder {
 
     /// @dev The committed artifacts must match the builder, not merely each other. The builder header warns
     ///      that description.txt has to match byte-for-byte; this checks the file rather than trusting it.
+    ///
+    ///      calldata.json is the array a human copy-pastes into GovernorOLAS.propose(), and the README
+    ///      documents extracting it by hand, so EVERY field that reaches propose() is pinned here — count,
+    ///      index, target, value and calldata. Pinning only target and calldata leaves an accidental
+    ///      non-zero value or a fourth entry passing both Solidity tests while changing the proposal that
+    ///      actually executes, and its id.
     function test_committedArtifactsMatchTheBuilder() public view {
-        (address[] memory targets,, bytes[] memory calldatas, string memory description) = buildProposal();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            buildProposal();
 
         string memory onDisk = vm.readFile("scripts/proposals/proposal_13/description.txt");
         assertEq(keccak256(bytes(onDisk)), keccak256(bytes(description)), "description.txt has drifted from the builder");
 
         string memory json = vm.readFile("scripts/proposals/proposal_13/calldata.json");
+
+        // Entry count, by asserting the array ends exactly where the builder does. Without this an
+        // appended fourth entry is simply never looked at by the loop below.
+        assertTrue(
+            vm.keyExistsJson(json, string.concat("$[", vm.toString(targets.length - 1), "]")),
+            "calldata.json has fewer entries than the builder"
+        );
+        assertFalse(
+            vm.keyExistsJson(json, string.concat("$[", vm.toString(targets.length), "]")),
+            "calldata.json has more entries than the builder"
+        );
+
         for (uint256 i; i < targets.length; ++i) {
             string memory ix = vm.toString(i);
             assertEq(
@@ -316,6 +335,16 @@ contract Proposal13HousekeepingTest is Test, Proposal13Builder {
             assertEq(
                 vm.parseJsonAddress(json, string.concat("$[", ix, "].target")), targets[i],
                 string.concat("calldata.json target ", ix, " has drifted from the builder")
+            );
+            // value is written as a JSON string, so compare it as one rather than coercing.
+            assertEq(
+                vm.parseJsonString(json, string.concat("$[", ix, "].value")), vm.toString(values[i]),
+                string.concat("calldata.json value ", ix, " has drifted from the builder")
+            );
+            // index is what tells the operator which row goes where; a wrong one reorders the proposal.
+            assertEq(
+                vm.parseJsonUint(json, string.concat("$[", ix, "].index")), i,
+                string.concat("calldata.json index ", ix, " is not in builder order")
             );
         }
     }
