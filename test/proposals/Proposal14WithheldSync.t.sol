@@ -186,6 +186,57 @@ contract Proposal14WithheldSyncTest is Test, Proposal14Builder {
         }
     }
 
+    /// @notice The base-fee buffer, which is the difference between a proposal that executes and one
+    ///         that reverts days after the vote. The Inbox recomputes the submission fee at execution
+    ///         as 1808 * block.basefee for this payload and reverts if maxSubmissionCost is short —
+    ///         and because entry [6] is in the same batch, that failure takes ALL SEVEN entries down.
+    ///
+    ///         Asserted from both sides so the ceiling is a fact rather than a comment: the entry
+    ///         still executes at the ceiling, and stops executing above it.
+    function test_arbitrumEntrySurvivesABaseFeeSpike() public {
+        _fork();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas,) = buildProposal();
+
+        console2.log("base fee at fork     ", block.basefee);
+        console2.log("ceiling priced for   ", ARB_BASEFEE_CEILING);
+        console2.log("entry [6] value      ", values[6]);
+        assertGe(TIMELOCK.balance, values[6], "Timelock cannot fund the priced ceiling");
+
+        // At the ceiling: still executes.
+        vm.fee(ARB_BASEFEE_CEILING);
+        uint256 snap = vm.snapshotState();
+        vm.prank(TIMELOCK);
+        (bool okAtCeiling,) = targets[6].call{value: values[6]}(calldatas[6]);
+        assertTrue(okAtCeiling, "entry [6] reverts at its own priced ceiling");
+        vm.revertToState(snap);
+
+        // Just above it: the Inbox rejects the submission cost. This is what the buffer buys.
+        vm.fee(ARB_BASEFEE_CEILING + 1 gwei);
+        vm.prank(TIMELOCK);
+        (bool okAbove,) = targets[6].call{value: values[6]}(calldatas[6]);
+        assertFalse(okAbove, "ceiling is not where the pricing says it is");
+    }
+
+    /// @notice Refunds must not be sent to the Timelock's own address on Arbitrum: that address
+    ///         belongs to nobody there, so ETH sent to it is lost. Both refund addresses must be
+    ///         the alias, which this same governance route can spend.
+    function test_arbitrumRefundsGoToTheAlias() public view {
+        (,, bytes[] memory calldatas,) = buildProposal();
+        (,,, address excessFeeRefund, address callValueRefund,,,) = abi.decode(
+            _stripSelector(calldatas[6]), (address, uint256, uint256, address, address, uint256, uint256, bytes)
+        );
+        address alias_ = address(uint160(TIMELOCK) + uint160(0x1111000000000000000000000000000000001111));
+        assertEq(excessFeeRefund, alias_, "excessFeeRefundAddress is not the alias");
+        assertEq(callValueRefund, alias_, "callValueRefundAddress is not the alias");
+    }
+
+    function _stripSelector(bytes memory data) internal pure returns (bytes memory out) {
+        out = new bytes(data.length - 4);
+        for (uint256 i; i < out.length; ++i) {
+            out[i] = data[i + 4];
+        }
+    }
+
     /// @dev Pins the description and the id derived from it, so a drifted description cannot be
     ///      submitted by accident against a reviewed id.
     function test_proposalIdMatchesCommittedDescription() public view {
@@ -195,7 +246,7 @@ contract Proposal14WithheldSyncTest is Test, Proposal14Builder {
         assertEq(dh, 0x993cbb52a409a856560c105510540d773c41589ee5a5b2e46247e5c66801f9ee, "descriptionHash drifted");
         assertEq(
             keccak256(abi.encode(targets, values, calldatas, dh)),
-            0x66300d6030c8f24577e001829ada13f1fc221833e53aba4362c492f51049d508,
+            0x58b6db8a26f1f4bce2e9e454d299b4e0274d3f7186e0e58e695e4326f5f22ed1,
             "proposalId drifted"
         );
     }

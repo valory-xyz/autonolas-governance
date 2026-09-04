@@ -5,8 +5,8 @@ target dispenser to report its withheld OLAS amount back to the L1 `Dispenser`. 
 bridged; six go through a governance receiver, and Arbitrum goes through a retryable ticket.
 
 **Pre-computed proposalId:**
-`46220811530597576928712582252634328695398882917668241371562676590255874364680`
-(= `0x66300d6030c8f24577e001829ada13f1fc221833e53aba4362c492f51049d508`)
+`40126612048141097336620033593318472673469120154184180144739203820830139231953`
+(= `0x58b6db8a26f1f4bce2e9e454d299b4e0274d3f7186e0e58e695e4326f5f22ed1`)
 
 **descriptionHash:** `0x993cbb52a409a856560c105510540d773c41589ee5a5b2e46247e5c66801f9ee`
 
@@ -93,14 +93,44 @@ So a retryable ticket calls the dispenser **directly** and arrives already autho
 asserted in `Proposal14ArbitrumLegTest.test_arbitrumOwnerIsTheTimelockAlias` rather than assumed,
 because it is what makes entry 6 a different shape from the other six.
 
-**Entry 6 is the only one carrying ETH:** `maxSubmissionCost + gasLimit × maxFeePerGas` =
-809,502,808,032 + 300,000 × 0.1 gwei = **30,809,502,808,032 wei (≈ 0.0000308 ETH)**. The **Timelock
-pays it from its own balance** (0.0001 ETH), so no top-up is a prerequisite and no ETH need be
-attached at execution — `test_preconditions` asserts this.
+**Entry 6 is the only one carrying ETH**, and it is priced as a **ceiling rather than as today's
+cost**. This is the detail that decides whether a proposal opened today still executes a week later.
 
-> **Regenerate entry 6 before submission.** `maxSubmissionCost` tracks the L1 base fee. Read it from
-> `Inbox.calculateRetryableSubmissionFee(68, 0)`, update `ARB_MAX_SUBMISSION_COST` in the builder,
-> and regenerate `calldata.json` and the HTML. The proposalId changes with it.
+The Inbox recomputes the submission fee **at execution**, as `(1400 + 6 × dataLength) × block.basefee`
+— `1808 × basefee` for this 68-byte payload — and reverts if `maxSubmissionCost` is short. Because
+entry 6 sits in the same batch as the rest, **that revert takes all seven entries with it.**
+
+| | |
+|---|---|
+| base fee when priced | ~0.41 gwei |
+| priced ceiling | **45 gwei** (~109x) |
+| `maxSubmissionCost` | 1808 × 45 gwei = 81,360,000,000,000 |
+| `gasLimit × maxFeePerGas` | 300,000 × 0.05 gwei = 15,000,000,000,000 |
+| **entry 6 value** | **96,360,000,000,000 wei (≈ 0.0000964 ETH)** |
+| Timelock balance | 0.0001 ETH — covers it, with no top-up and no ETH attached at execution |
+
+`test_arbitrumEntrySurvivesABaseFeeSpike` asserts the ceiling **from both sides**: the entry still
+executes at 45 gwei and stops executing above it, so the number is a fact rather than a comment.
+
+**Why the L2 leg was trimmed to 0.05 gwei.** The Timelock's balance is the whole budget, and the two
+shortfalls are not symmetric: an L1 shortfall **reverts the proposal**, while an L2 shortfall only
+means the ticket must be redeemed by hand within 7 days. So the budget goes to the L1 side. 0.05 gwei
+is still ~5x Arbitrum's 0.01 gwei floor.
+
+**Over-pricing costs nothing but float** — the excess over the actual fee is refunded on L2. And
+**sending ETH to the Timelock is permissionless**, so a higher ceiling is available at any time
+without a vote: top it up, raise `ARB_MAX_SUBMISSION_COST`, regenerate.
+
+> **A reverted execution is not a lost vote.** `execute()` can be retried, and a queued proposal has no
+> deadline, so the fallback if the base fee is above the ceiling on the day is simply to execute in a
+> calmer block.
+
+### Refunds go to the alias, not to the Timelock
+
+`excessFeeRefundAddress` and `callValueRefundAddress` are both the **aliased** Timelock
+(`0x4d30F68F…a70F`), not `0x3C1fF68f…D95fE`. On Arbitrum the Timelock's own address belongs to nobody,
+so a refund sent there would be permanently lost; the alias is spendable through this same governance
+route. `test_arbitrumRefundsGoToTheAlias` decodes the committed calldata and asserts it.
 
 ## Preconditions verified on-chain
 
@@ -112,7 +142,7 @@ attached at execution — `test_preconditions` asserts this.
 | every L2 `withheldAmount` | equals the dispenser's own OLAS balance |
 | every L2 `paused` | `1` (unpaused; `2` is paused) |
 | `ArbitrumTargetDispenserL2.owner()` | the Timelock's L2 alias |
-| Timelock ETH balance | 0.0001 ETH ≥ entry 6's 0.0000308 ETH |
+| Timelock ETH balance | 0.0001 ETH ≥ entry 6's 0.0000964 ETH |
 
 ## Files
 
@@ -137,7 +167,7 @@ node scripts/proposals/proposal_14/annotate.js "Proposal 14 — sync L2 withheld
 ### L1 — Forge fork test
 
 [`test/proposals/Proposal14WithheldSync.t.sol`](../../../test/proposals/Proposal14WithheldSync.t.sol),
-5 tests against a mainnet fork:
+7 tests against a mainnet fork:
 
 - `test_preconditions` — nothing synced yet on any chain, every deposit processor configured as a
   positive control, every bridge entrypoint has code, and the Timelock can fund entry 6;
@@ -147,12 +177,16 @@ node scripts/proposals/proposal_14/annotate.js "Proposal 14 — sync L2 withheld
   `receiver == FxGovernorTunnel`, one AMB `UserRequestForAffirmation`, one
   `InboxMessageDelivered`. Counting matters because four entries share an event signature, so
   "a SentMessage was seen" would pass with three of them missing. `execute()` measured at
-  **9,938,629 gas** against the EIP-7825 cap of 16,777,216;
+  **9,941,101 gas** against the EIP-7825 cap of 16,777,216;
 - `test_L1_fullProposal_executesAsTimelock` — the same batch executed directly as the Timelock;
 - `test_proposalIdMatchesCommittedDescription` — pins the descriptionHash and proposalId;
 - `test_committedArtifactsMatchTheBuilder` — reads `description.txt` and `calldata.json` off disk and
   asserts they still match the builder, so the files the HTML and the submission are made from cannot
-  drift.
+  drift;
+- `test_arbitrumEntrySurvivesABaseFeeSpike` — the entry executes at its priced 45 gwei ceiling and
+  fails above it, so the buffer is asserted from both sides;
+- `test_arbitrumRefundsGoToTheAlias` — decodes the committed calldata and pins both refund addresses
+  to the alias.
 
 ```bash
 ETH_RPC=<mainnet rpc> forge test --match-contract Proposal14WithheldSyncTest -vvv
@@ -187,7 +221,7 @@ cast call 0x5953f21495BD9aF1D78e87bb42AcCAA55C1e896C "syncWithheldAmount(bytes)"
 # -> reverts OwnerOnly(0x…bad0, 0x4d30…a70F)
 ```
 
-All 20 tests pass.
+All 22 tests pass.
 
 ## After execution — this proposal is not finished when it executes
 

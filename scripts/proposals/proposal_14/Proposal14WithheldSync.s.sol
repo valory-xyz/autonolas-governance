@@ -38,8 +38,12 @@ import {Script, console2} from "forge-std/Script.sol";
 // (0x3C1fF68f…D95fE + 0x1111…1111 = 0x4d30F68F…a70F), so a retryable ticket arrives already
 // authorised and calls the dispenser directly. Entry [6] therefore carries
 // maxSubmissionCost + gasLimit * maxFeePerGas as `value`, paid by the Timelock from its own
-// balance. maxSubmissionCost tracks the L1 base fee: REGENERATE entry [6] shortly before
-// submission via Inbox.calculateRetryableSubmissionFee(dataLength, 0).
+// balance, and both refund addresses are the ALIAS rather than the Timelock — on Arbitrum the
+// Timelock's own address belongs to nobody, so a refund sent there is lost.
+//
+// maxSubmissionCost is priced as a CEILING, not as today's cost: the Inbox recomputes the fee at
+// EXECUTION from block.basefee, and a shortfall reverts entry [6] AND every other entry with it.
+// See the constant below for the ceiling and how to raise it.
 //
 // TWO WIRE FORMATS, DO NOT MIX THEM.
 //   - Polygon: FxChild calls processMessageFromRoot itself, so sendMessageToChild carries the
@@ -101,11 +105,31 @@ abstract contract Proposal14Builder {
     // measures ~80k, so the minimum is ample. Polygon and Arbitrum ignore the payload entirely.
     uint256 internal constant RETURN_GAS = 300_000;
 
-    // Arbitrum retryable pricing. REGENERATE maxSubmissionCost before submission — it tracks the
-    // L1 base fee. Read on 2026-09-04 from Inbox.calculateRetryableSubmissionFee(68, 0).
-    uint256 internal constant ARB_MAX_SUBMISSION_COST = 809_502_808_032;
+    // Arbitrum retryable pricing. The Inbox recomputes the submission fee AT EXECUTION as
+    // (1400 + 6 * dataLength) * block.basefee — 1808 * basefee for this 68-byte payload — and
+    // reverts if maxSubmissionCost is short. Entry [6] reverting takes the whole batch with it,
+    // so this is priced as a CEILING rather than as today's cost:
+    //
+    //   45 gwei * 1808 = 81,360,000,000,000 wei   (~109x the 0.41 gwei base fee at build time)
+    //
+    // The excess over the actual fee is refunded on L2, so over-pricing costs nothing but the
+    // float. The ceiling is set by the Timelock's own balance (0.0001 ETH), which must cover
+    // maxSubmissionCost + gasLimit * maxFeePerGas — hence 0.05 gwei for the L2 leg rather than
+    // 0.1: an L1 shortfall reverts, while an L2 shortfall only means the ticket needs redeeming
+    // by hand within 7 days. Sending ETH to the Timelock is permissionless, so a higher ceiling
+    // is available at any time without a vote.
+    uint256 internal constant ARB_MAX_SUBMISSION_COST = 81_360_000_000_000; // 1808 * 45 gwei
     uint256 internal constant ARB_GAS_LIMIT = 300_000;
-    uint256 internal constant ARB_MAX_FEE_PER_GAS = 0.1 gwei;
+    uint256 internal constant ARB_MAX_FEE_PER_GAS = 0.05 gwei;
+
+    /// @dev The L1 base fee this entry tolerates. Exposed so the fork test asserts the ceiling
+    ///      rather than restating the arithmetic.
+    uint256 internal constant ARB_BASEFEE_CEILING = 45 gwei;
+
+    /// The Timelock's Arbitrum alias — see the header. Refunds must go here rather than to the
+    /// Timelock's own address: on Arbitrum that address is nobody's, so ETH sent to it is lost,
+    /// while the alias is spendable by this same governance route.
+    address internal constant TIMELOCK_ARBITRUM_ALIAS = 0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F;
 
     // NOTE: regenerate description.txt to match this byte-for-byte before submission.
     string internal constant DESCRIPTION =
@@ -156,8 +180,8 @@ abstract contract Proposal14Builder {
             ARBITRUM_DISPENSER_L2,
             uint256(0),
             ARB_MAX_SUBMISSION_COST,
-            TIMELOCK,
-            TIMELOCK,
+            TIMELOCK_ARBITRUM_ALIAS,
+            TIMELOCK_ARBITRUM_ALIAS,
             ARB_GAS_LIMIT,
             ARB_MAX_FEE_PER_GAS,
             syncCalldata("")
