@@ -139,39 +139,89 @@ contract Proposal14WithheldSyncTest is Test, Proposal14Builder {
         assertLt(executeGas, 16777216, "execute exceeds EIP-7825 per-tx gas cap");
     }
 
-    /// @dev Every entry must be observed handing its payload to its bridge. Counting is what makes
-    ///      this meaningful: four OP-stack entries share an event signature, so asserting "a
-    ///      SentMessage was seen" would pass with three of them silently missing.
-    function _assertAllSevenDispatched(Vm.Log[] memory logs) internal view {
-        uint256 opCount;
-        bool sawPolygon;
-        bool sawGnosis;
-        bool sawArbitrum;
-        for (uint256 i; i < logs.length; ++i) {
-            bytes32 t0 = logs[i].topics[0];
-            address from = logs[i].emitter;
-            if (
-                t0 == SENT_MESSAGE_TOPIC
-                    && (from == OPTIMISM_L1CDM || from == BASE_L1CDM || from == CELO_L1CDM || from == MODE_L1CDM)
-            ) {
-                opCount++;
-            } else if (t0 == STATE_SYNCED_TOPIC && from == FX_STATE_SENDER) {
-                assertEq(address(uint160(uint256(logs[i].topics[2]))), FX_CHILD, "StateSynced not addressed to FxChild");
-                (address rootSender, address receiver,) =
-                    abi.decode(abi.decode(logs[i].data, (bytes)), (address, address, bytes));
-                assertEq(rootSender, TIMELOCK, "Polygon message not sent by the Timelock");
-                assertEq(receiver, FX_TUNNEL_L2, "Polygon message wrong receiver");
-                sawPolygon = true;
-            } else if (t0 == AFFIRMATION_TOPIC && from == AMB_FOREIGN) {
-                sawGnosis = true;
-            } else if (t0 == INBOX_MESSAGE_TOPIC) {
-                sawArbitrum = true;
-            }
+    /// @dev Every entry must be observed handing ITS OWN payload to ITS OWN bridge. Counting
+    ///      dispatches is not enough: four entries share an event signature, so a count passes with
+    ///      two entries pointed at the same messenger, and a bare bool passes on any AMB or Inbox
+    ///      traffic in the block. Each assertion below is therefore matched against the bytes the
+    ///      builder produced for that entry.
+    function _assertAllSevenDispatched(Vm.Log[] memory logs) internal {
+        (address[] memory targets,, bytes[] memory calldatas,) = buildProposal();
+
+        // [0] Polygon — the synced payload must be the packed buffer this proposal built.
+        (address tunnel, bytes memory packed) = abi.decode(_stripSelector(calldatas[0]), (address, bytes));
+        assertTrue(_sawPolygon(logs, tunnel, packed), "Polygon message not dispatched with the proposal's buffer");
+
+        // [1] Gnosis — the AMB re-encodes with its own header, so assert containment.
+        (, bytes memory gnosisMsg,) = abi.decode(_stripSelector(calldatas[1]), (address, bytes, uint256));
+        assertTrue(_sawContaining(logs, AMB_FOREIGN, AFFIRMATION_TOPIC, gnosisMsg), "Gnosis message not dispatched");
+
+        // [2..5] OP-stack — matched per entry on (emitter, target, message), so a mispaired
+        // (L1 messenger, L2 receiver) survives nothing.
+        for (uint256 i = 2; i <= 5; ++i) {
+            (address receiver, bytes memory message,) =
+                abi.decode(_stripSelector(calldatas[i]), (address, bytes, uint32));
+            assertTrue(_sawOpMessage(logs, targets[i], receiver, message), "OP-stack entry not dispatched as built");
         }
-        assertEq(opCount, 4, "not all four OP-stack messages dispatched");
-        assertTrue(sawPolygon, "Polygon message not dispatched");
-        assertTrue(sawGnosis, "Gnosis message not dispatched");
-        assertTrue(sawArbitrum, "Arbitrum retryable not created");
+
+        // [6] Arbitrum — the Inbox re-encodes the ticket, so assert the L2 calldata is in it.
+        (,,,,,,, bytes memory arbData) = abi.decode(
+            _stripSelector(calldatas[6]), (address, uint256, uint256, address, address, uint256, uint256, bytes)
+        );
+        assertTrue(_sawContaining(logs, ARBITRUM_INBOX, INBOX_MESSAGE_TOPIC, arbData), "Arbitrum retryable not created");
+    }
+
+    function _sawPolygon(Vm.Log[] memory logs, address tunnel, bytes memory packed) internal pure returns (bool) {
+        for (uint256 i; i < logs.length; ++i) {
+            if (logs[i].emitter != FX_STATE_SENDER || logs[i].topics[0] != STATE_SYNCED_TOPIC) continue;
+            if (address(uint160(uint256(logs[i].topics[2]))) != FX_CHILD) continue;
+            (address rootSender, address receiver, bytes memory payload) =
+                abi.decode(abi.decode(logs[i].data, (bytes)), (address, address, bytes));
+            if (rootSender == TIMELOCK && receiver == tunnel && keccak256(payload) == keccak256(packed)) return true;
+        }
+        return false;
+    }
+
+    function _sawOpMessage(Vm.Log[] memory logs, address messenger, address receiver, bytes memory message)
+        internal
+        pure
+        returns (bool)
+    {
+        for (uint256 i; i < logs.length; ++i) {
+            if (logs[i].emitter != messenger || logs[i].topics[0] != SENT_MESSAGE_TOPIC) continue;
+            if (address(uint160(uint256(logs[i].topics[1]))) != receiver) continue;
+            (, bytes memory sent,,) = abi.decode(logs[i].data, (address, bytes, uint256, uint256));
+            if (keccak256(sent) == keccak256(message)) return true;
+        }
+        return false;
+    }
+
+    /// @dev For bridges that wrap our bytes in their own envelope: find the event and require our
+    ///      payload to appear inside it verbatim.
+    function _sawContaining(Vm.Log[] memory logs, address emitter, bytes32 topic0, bytes memory needle)
+        internal
+        pure
+        returns (bool)
+    {
+        for (uint256 i; i < logs.length; ++i) {
+            if (logs[i].emitter != emitter || logs[i].topics[0] != topic0) continue;
+            if (_contains(logs[i].data, needle)) return true;
+        }
+        return false;
+    }
+
+    function _contains(bytes memory haystack, bytes memory needle) internal pure returns (bool) {
+        if (needle.length == 0 || needle.length > haystack.length) return false;
+        for (uint256 i; i <= haystack.length - needle.length; ++i) {
+            bool same = true;
+            for (uint256 j; j < needle.length; ++j) {
+                if (haystack[i + j] != needle[j]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) return true;
+        }
+        return false;
     }
 
     /// @dev Fast path: the same batch executed directly as the Timelock, which is what the

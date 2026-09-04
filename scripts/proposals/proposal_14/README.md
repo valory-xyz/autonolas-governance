@@ -151,7 +151,7 @@ route. `test_arbitrumRefundsGoToTheAlias` decodes the committed calldata and ass
 | `Proposal14WithheldSync.s.sol` | Forge builder — single source of truth for the 7 `(target, value, calldata)` entries and the `DESCRIPTION`. Exposes `packedFor()` / `syncCalldata()` so the L2 tests replay the proposal's own bytes. |
 | `description.txt` | Canonical proposal description (matches the builder byte-for-byte). |
 | `calldata.json` | The builder's emitted `[{index,target,value,calldata}]`, used to generate the HTML. |
-| `annotate.js` | Decodes `calldata.json` + `description.txt` → `proposal_14.html` (and computes the proposalId). |
+| `annotate.js` | Decodes `calldata.json` + `description.txt` → `proposal_14.html` (and computes the proposalId). The value note is **derived from entry [6]'s own bytes** — `maxSubmissionCost`, the base fee it tolerates, and who funds it. Proposal 14 is the first with a non-zero value, so that branch had never run before and carried inherited prose that was false here. |
 | `proposal_14.html` | Self-contained annotated breakdown: copy-paste `propose()` arrays, decoded selectors/args/addresses, raw calldata per entry, proposalId. |
 
 ## Regenerate (only if addresses, gas params or description change)
@@ -172,11 +172,12 @@ node scripts/proposals/proposal_14/annotate.js "Proposal 14 — sync L2 withheld
 - `test_preconditions` — nothing synced yet on any chain, every deposit processor configured as a
   positive control, every bridge entrypoint has code, and the Timelock can fund entry 6;
 - `test_L1_fullGovernanceLifecycle` — propose → vote → queue → execute through the live GovernorOLAS,
-  **counting** the dispatches rather than spot-checking them: four `SentMessage` events across the
-  four OP-stack messengers, one `StateSynced` carrying `rootSender == Timelock` and
-  `receiver == FxGovernorTunnel`, one AMB `UserRequestForAffirmation`, one
-  `InboxMessageDelivered`. Counting matters because four entries share an event signature, so
-  "a SentMessage was seen" would pass with three of them missing. `execute()` measured at
+  asserting each dispatch **against the bytes the builder produced for that entry**: every OP-stack
+  entry matched on `(emitter, SentMessage target, message)`, the Polygon `StateSynced` payload equal
+  to this proposal's packed buffer with `rootSender == Timelock`, and the AMB and Inbox events
+  required to contain their entry's payload verbatim. Counting alone would not do: four entries share
+  an event signature, so a count passes with two entries aimed at the same messenger, and a bare bool
+  passes on unrelated AMB or Inbox traffic in the same block. `execute()` measured at
   **9,941,101 gas** against the EIP-7825 cap of 16,777,216;
 - `test_L1_fullProposal_executesAsTimelock` — the same batch executed directly as the Timelock;
 - `test_proposalIdMatchesCommittedDescription` — pins the descriptionHash and proposalId;
@@ -195,11 +196,25 @@ ETH_RPC=<mainnet rpc> forge test --match-contract Proposal14WithheldSyncTest -vv
 ### L2 — destination-chain validation
 
 [`test/proposals/Proposal14L2Legs.t.sol`](../../../test/proposals/Proposal14L2Legs.t.sol), 15 tests
-across seven chains. Each leg replays the builder's own packed buffer through that chain's receiver,
-pranked from the bridge that would deliver it, and asserts the dispenser syncs down to dust with its
-`stakingBatchNonce` advanced. Each also has a negative test pinning the **exact** revert
-(`RootGovernorOnly` / `ForeignGovernorOnly` / `SourceGovernorOnly`) rather than accepting any revert,
-so a leg cannot pass because of a malformed buffer.
+across seven chains.
+
+**Each leg takes its input from `buildProposal()` and delivers the exact bytes the bridge would
+deliver** — the `_message` out of `sendMessage`, the `_data` out of `requireToPassMessage`, the packed
+buffer out of `sendMessageToChild`, the `data` out of `createRetryableTicket` — by low-level call.
+Nothing re-encodes a wrapper or names a receiver by hand, because **a test that picks its own wrapper
+cannot disagree with the builder about the wire format**, which is the thing most likely to be wrong.
+The receiver and dispenser are read out of the calldata and then checked against that chain's expected
+constants, so a mispaired (L1 entrypoint, L2 receiver, dispenser) triple fails here.
+
+Both failure modes are proven caught, by mutating the builder and re-running:
+
+| mutation | result |
+|---|---|
+| OP-stack leg hands the bare packed buffer to `sendMessage` (wrong wire format) | `entry has the wrong wrapper: 0xaea9ef99… != 0xd3042d2b…` |
+| entry [3] pointed at Optimism's L1 messenger instead of Base's (mispairing) | `entry goes through the wrong L1 messenger: 0x25ace71c… != 0x866E82a6…` |
+
+Each leg also has a negative test pinning the **exact** revert (`RootGovernorOnly` /
+`ForeignGovernorOnly` / `SourceGovernorOnly`) rather than accepting any revert.
 
 ```bash
 POLYGON_RPC=… GNOSIS_RPC=… OPTIMISM_RPC=… BASE_RPC=… CELO_RPC=… MODE_RPC=… ARBITRUM_RPC=… \

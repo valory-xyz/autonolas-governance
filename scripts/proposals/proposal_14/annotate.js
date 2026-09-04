@@ -382,8 +382,36 @@ function main() {
                 `<details class="raw"><summary>raw calldata</summary><pre>${esc(e.calldata)}</pre></details></div>`;
         }
     }
+    // Derived from the calldata, never asserted from memory. This branch had never executed before
+    // proposal 14 — every earlier proposal was all-zero-value — and the sentence it used to carry
+    // (a "deposit x10 buffer" "supplied by the executor") was true of neither this proposal nor any
+    // other. Anything stated here about an entry's value must come out of that entry's own bytes.
+    const describeValue = (i) => {
+        const e = entries[i];
+        const sel = e.calldata.slice(0, 10);
+        if (sel !== "0x679b6ded") {
+            return `entry [${i}] carries ${esc(e.value)} wei`;
+        }
+        const [, , maxSub, , , gasLim, maxFee] = abi.decode(
+            ["address", "uint256", "uint256", "address", "address", "uint256", "uint256", "bytes"],
+            "0x" + e.calldata.slice(10));
+        // The Inbox recomputes the submission fee AT EXECUTION as (1400 + 6*dataLength)*block.basefee,
+        // so what maxSubmissionCost really states is the base fee this entry tolerates.
+        const dataLen = ethers.utils.hexDataLength(
+            abi.decode(["address", "uint256", "uint256", "address", "address", "uint256", "uint256", "bytes"],
+                "0x" + e.calldata.slice(10))[7]);
+        const units = ethers.BigNumber.from(1400 + 6 * dataLen);
+        const ceilingGwei = ethers.utils.formatUnits(maxSub.div(units), "gwei");
+        const gasPart = gasLim.mul(maxFee);
+        return `entry [${i}] (Arbitrum retryable) carries ${esc(e.value)} wei = maxSubmissionCost ` +
+            `${maxSub.toString()} + gasLimit ${gasLim.toString()} &times; maxFeePerGas ${maxFee.toString()} ` +
+            `(${gasPart.toString()}). The Inbox recomputes the submission fee at execution as ` +
+            "(1400 + 6&times;dataLength) &times; block.basefee, so this prices an L1 base fee up to " +
+            `<b>${esc(ceilingGwei)} gwei</b>; above that the entry reverts, and with it the whole batch. ` +
+            "The Timelock funds it from its own balance — no value is attached to execute().";
+    };
     const valNote = nonZero.length
-        ? `All values are 0 EXCEPT ${nonZero.map((i) => "entry [" + i + "]").join(", ")} (Arbitrum retryable), which carries a non-zero value (deposit&times;10 buffer) supplied by the executor of execute() and forwarded through the Timelock to the Inbox.`
+        ? `All values are 0 EXCEPT ${nonZero.map(describeValue).join("; ")}`
         : "Every entry has value 0.";
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
 <style>
