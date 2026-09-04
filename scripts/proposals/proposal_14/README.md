@@ -1,0 +1,209 @@
+# Proposal 14 — sync the L2 withheld OLAS amounts back to L1
+
+Seven actions, one per chain that holds a withheld balance, each instructing that chain's staking
+target dispenser to report its withheld OLAS amount back to the L1 `Dispenser`. All seven are
+bridged; six go through a governance receiver, and Arbitrum goes through a retryable ticket.
+
+**Pre-computed proposalId:**
+`46220811530597576928712582252634328695398882917668241371562676590255874364680`
+(= `0x66300d6030c8f24577e001829ada13f1fc221833e53aba4362c492f51049d508`)
+
+**descriptionHash:** `0x993cbb52a409a856560c105510540d773c41589ee5a5b2e46247e5c66801f9ee`
+
+## What it does
+
+| # | Chain | Route | Withheld at build time (OLAS) |
+|---|---|---|---:|
+| 0 | Polygon | FxRoot → FxGovernorTunnel | 100,408.03 |
+| 1 | Gnosis | AMB → HomeMediator | 2,620,457.10 |
+| 2 | Optimism | L1CDM → OptimismMessenger | 225,834.65 |
+| 3 | Base | L1CDM → OptimismMessenger | 1,380,908.80 |
+| 4 | Celo | L1CDM → OptimismMessenger | 724.80 |
+| 5 | Mode | L1CDM → OptimismMessenger | 703,245.03 |
+| 6 | Arbitrum | Inbox retryable → dispenser directly | 724.80 |
+
+Each entry calls `syncWithheldAmount(bytes)` on that chain's target dispenser. **≈ 5.03M OLAS in
+total**, though the amounts are context rather than parameters — see below.
+
+### Why
+
+A target dispenser caps each staking deposit at what the target can accept
+(`DefaultTargetDispenserL2._processData` → `verifyInstanceAndGetEmissionsAmount`) and keeps the
+remainder as `withheldAmount`. `syncWithheldAmount` reports that figure to L1, where
+`Dispenser.mapChainIdWithheldAmounts` **nets it against future transfers to the same chain**
+(`Dispenser.sol:728-740` and `:1193-1207`).
+
+**No tokens move.** The effect is that L1 stops sending OLAS to a chain that is already holding an
+unspent balance, and that balance is drawn down over subsequent epochs instead.
+
+**The path has never been used.** At build time every L2 `stakingBatchNonce` reads `0` and every
+`mapChainIdWithheldAmounts` entry on L1 reads `0`, while the seven dispensers hold ~5.03M OLAS
+between them.
+
+### The amounts are not in the calldata
+
+Each dispenser reads its own `withheldAmount` at execution time. The figures above are for voters,
+not parameters: they move whenever a distribution is claimed, and that costs this proposal nothing.
+Re-read them shortly before submission so the proposal text is current.
+
+## ⚠ Two wire formats — do not mix them
+
+| route | what the L1 call carries |
+|---|---|
+| **Polygon** | the packed buffer **directly** — FxChild calls `processMessageFromRoot` itself |
+| **Gnosis, OP-stack** | the **encoded call** `processMessageFromForeign(bytes)` / `processMessageFromSource(bytes)` wrapping the packed buffer |
+
+Passing the bare packed buffer on the second kind reaches the mediator with a garbage selector and
+reverts **on the destination chain**, where it is expensive to notice: the L1 leg succeeds either
+way, because `requireToPassMessage` and `sendMessage` only enqueue. The L2 leg tests are what
+distinguish the two, which is why each one replays the builder's own `packedFor(...)` bytes.
+
+The packed buffer is the receivers' shared format:
+`target(20) | value(uint96,12) | payloadLength(uint32,4) | payload`.
+
+## ⚠ Address collision
+
+**`0x9338b5153AE39BB89f50468E608eD9d764B755fD`** is *both* Polygon's `FxGovernorTunnel` (entry 0's
+receiver) and Mode's `OptimismMessenger` mediator (entry 5's receiver), through aligned deployer
+nonces. Both meanings are used in this proposal. Each was verified by calling a chain-specific
+getter **on the chain it is used on**:
+
+| check | result |
+|---|---|
+| Polygon `0x9338b515…`.`fxChild()` | `0x8397259c…` |
+| Polygon `0x9338b515…`.`rootGovernor()` | the L1 Timelock |
+| Mode `0x9338b515…`.`CDMContractProxyHome()` | `0x4200000000000000000000000000000000000007` |
+| Mode `0x9338b515…`.`sourceGovernor()` | the L1 Timelock |
+
+The annotated HTML resolves the chain from the **L1 entrypoint**, never from the L2 address, so the
+same address is labelled correctly in both entries.
+
+## Arbitrum is shaped differently
+
+There is **no governance receiver contract on Arbitrum**. The dispenser's owner is the L1 Timelock's
+L2 **alias**:
+
+```
+0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE          (Timelock, Ethereum)
++ 0x1111000000000000000000000000000000001111        (Arbitrum alias offset)
+= 0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F        = ArbitrumTargetDispenserL2.owner()
+```
+
+So a retryable ticket calls the dispenser **directly** and arrives already authorised. This is
+asserted in `Proposal14ArbitrumLegTest.test_arbitrumOwnerIsTheTimelockAlias` rather than assumed,
+because it is what makes entry 6 a different shape from the other six.
+
+**Entry 6 is the only one carrying ETH:** `maxSubmissionCost + gasLimit × maxFeePerGas` =
+809,502,808,032 + 300,000 × 0.1 gwei = **30,809,502,808,032 wei (≈ 0.0000308 ETH)**. The **Timelock
+pays it from its own balance** (0.0001 ETH), so no top-up is a prerequisite and no ETH need be
+attached at execution — `test_preconditions` asserts this.
+
+> **Regenerate entry 6 before submission.** `maxSubmissionCost` tracks the L1 base fee. Read it from
+> `Inbox.calculateRetryableSubmissionFee(68, 0)`, update `ARB_MAX_SUBMISSION_COST` in the builder,
+> and regenerate `calldata.json` and the HTML. The proposalId changes with it.
+
+## Preconditions verified on-chain
+
+| check | value |
+|---|---|
+| `Dispenser.mapChainIdWithheldAmounts(cid)`, all seven chains | `0` — nothing ever synced |
+| `Dispenser.mapChainIdDepositProcessors(cid)`, all seven | non-zero (control: the zeros above are real) |
+| every L2 `stakingBatchNonce` | `0` |
+| every L2 `withheldAmount` | equals the dispenser's own OLAS balance |
+| every L2 `paused` | `1` (unpaused; `2` is paused) |
+| `ArbitrumTargetDispenserL2.owner()` | the Timelock's L2 alias |
+| Timelock ETH balance | 0.0001 ETH ≥ entry 6's 0.0000308 ETH |
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `Proposal14WithheldSync.s.sol` | Forge builder — single source of truth for the 7 `(target, value, calldata)` entries and the `DESCRIPTION`. Exposes `packedFor()` / `syncCalldata()` so the L2 tests replay the proposal's own bytes. |
+| `description.txt` | Canonical proposal description (matches the builder byte-for-byte). |
+| `calldata.json` | The builder's emitted `[{index,target,value,calldata}]`, used to generate the HTML. |
+| `annotate.js` | Decodes `calldata.json` + `description.txt` → `proposal_14.html` (and computes the proposalId). |
+| `proposal_14.html` | Self-contained annotated breakdown: copy-paste `propose()` arrays, decoded selectors/args/addresses, raw calldata per entry, proposalId. |
+
+## Regenerate (only if addresses, gas params or description change)
+
+```bash
+forge script scripts/proposals/proposal_14/Proposal14WithheldSync.s.sol:Proposal14WithheldSync > /tmp/run.txt
+# re-extract calldata.json from the run output, then:
+node scripts/proposals/proposal_14/annotate.js "Proposal 14 — sync L2 withheld amounts to L1"
+```
+
+## Testing
+
+### L1 — Forge fork test
+
+[`test/proposals/Proposal14WithheldSync.t.sol`](../../../test/proposals/Proposal14WithheldSync.t.sol),
+5 tests against a mainnet fork:
+
+- `test_preconditions` — nothing synced yet on any chain, every deposit processor configured as a
+  positive control, every bridge entrypoint has code, and the Timelock can fund entry 6;
+- `test_L1_fullGovernanceLifecycle` — propose → vote → queue → execute through the live GovernorOLAS,
+  **counting** the dispatches rather than spot-checking them: four `SentMessage` events across the
+  four OP-stack messengers, one `StateSynced` carrying `rootSender == Timelock` and
+  `receiver == FxGovernorTunnel`, one AMB `UserRequestForAffirmation`, one
+  `InboxMessageDelivered`. Counting matters because four entries share an event signature, so
+  "a SentMessage was seen" would pass with three of them missing. `execute()` measured at
+  **9,938,629 gas** against the EIP-7825 cap of 16,777,216;
+- `test_L1_fullProposal_executesAsTimelock` — the same batch executed directly as the Timelock;
+- `test_proposalIdMatchesCommittedDescription` — pins the descriptionHash and proposalId;
+- `test_committedArtifactsMatchTheBuilder` — reads `description.txt` and `calldata.json` off disk and
+  asserts they still match the builder, so the files the HTML and the submission are made from cannot
+  drift.
+
+```bash
+ETH_RPC=<mainnet rpc> forge test --match-contract Proposal14WithheldSyncTest -vvv
+```
+
+### L2 — destination-chain validation
+
+[`test/proposals/Proposal14L2Legs.t.sol`](../../../test/proposals/Proposal14L2Legs.t.sol), 15 tests
+across seven chains. Each leg replays the builder's own packed buffer through that chain's receiver,
+pranked from the bridge that would deliver it, and asserts the dispenser syncs down to dust with its
+`stakingBatchNonce` advanced. Each also has a negative test pinning the **exact** revert
+(`RootGovernorOnly` / `ForeignGovernorOnly` / `SourceGovernorOnly`) rather than accepting any revert,
+so a leg cannot pass because of a malformed buffer.
+
+```bash
+POLYGON_RPC=… GNOSIS_RPC=… OPTIMISM_RPC=… BASE_RPC=… CELO_RPC=… MODE_RPC=… ARBITRUM_RPC=… \
+  forge test --match-contract "Proposal14.*LegTest" -vvv
+```
+
+**Arbitrum's `sendTxToL1` is the ArbSys precompile at `0x64`, which a plain EVM fork does not
+implement** — the unmocked call dies with `InvalidFEOpcode`. The fork test mocks it, so the owner
+gate, normalisation, dust and nonce are still covered. That the **real** precompile accepts this call
+was established separately, against a live Nitro node:
+
+```bash
+cast call 0x5953f21495BD9aF1D78e87bb42AcCAA55C1e896C "syncWithheldAmount(bytes)" 0x \
+  --from 0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F --rpc-url <arbitrum rpc>
+# -> 0x  (succeeds)
+
+cast call 0x5953f21495BD9aF1D78e87bb42AcCAA55C1e896C "syncWithheldAmount(bytes)" 0x \
+  --from 0x000000000000000000000000000000000000bAd0 --rpc-url <arbitrum rpc>
+# -> reverts OwnerOnly(0x…bad0, 0x4d30…a70F)
+```
+
+All 20 tests pass.
+
+## After execution — this proposal is not finished when it executes
+
+Every leg produces an **L2 → L1 message that somebody must claim**. Nothing arrives at the L1
+`Dispenser` on its own:
+
+| chain | claim | latency |
+|---|---|---|
+| Polygon | FxPortal exit — `receiveMessage(proof)` on the L1 deposit processor after the checkpoint | ~30–90 min |
+| Gnosis | AMB validator signatures, then `receiveMessage` | hours |
+| Optimism · Base · Celo · Mode | prove, then finalize the withdrawal | **7 days** |
+| Arbitrum | `Outbox.executeTransaction` after the challenge period | **7 days** |
+
+**Confirm per chain by reading `Dispenser.mapChainIdWithheldAmounts(chainId)` on L1** — it moves from
+`0` to the synced amount. The proposal having executed proves nothing about the credit.
+
+Record each leg's `amount` and `batchHash` at send time:
+`Dispenser.syncWithheldAmountMaintenance(chainId, amount, batchHash)` (Timelock-only) is the fallback
+for a message that never lands, and it must reproduce both exactly.
