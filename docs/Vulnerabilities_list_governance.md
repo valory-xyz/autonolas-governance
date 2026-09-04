@@ -31,6 +31,7 @@
 | 25 | [Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance](#25-unbounded-governor-settings-and-unchecked-timelock-replacement-can-permanently-brick-governance) | Medium |
 | 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
 | 27 | [Nominees can be added for chains that cannot receive incentives](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) | Informative |
+| 28 | [GuardCM does not constrain the value a Timelock schedule carries](#28-guardcm-does-not-constrain-the-value-a-timelock-schedule-carries) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -992,3 +993,42 @@ can be paid, which costs the voter their own voting power to arrange. Rejecting 
 registration closes it at the cheapest point.
 
 At the time of writing every live nominee is on a chain with a configured processor.
+
+### 28. GuardCM does not constrain the value a Timelock schedule carries
+
+**Severity**: Informative
+**Source**: internal review
+
+`GuardCM._verifySchedule` decodes a `schedule` or `scheduleBatch` payload and keeps only the targets and
+the calldatas. The value field is discarded — note the empty slots:
+
+```solidity
+if (selector == SCHEDULE) {
+    (targets[0], , callDatas[0], , , ) =
+        abi.decode(payload, (address, uint256, bytes, bytes32, bytes32, uint256));
+} else {
+    (targets, , callDatas, , , ) =
+        abi.decode(payload, (address[], uint256[], bytes[], bytes32, bytes32, uint256));
+}
+```
+
+The loop that follows verifies each target and calldata, through the bridge verifier where a route is
+configured and through `_verifyData` where it is not. No value is read, so none is constrained: a
+community-multisig transaction that the guard accepts may schedule a Timelock call carrying arbitrary
+native value alongside an allowlisted payload.
+
+Where that value ends up depends on the route. For an OP-stack bridge the Timelock forwards it to a payable
+`sendMessage`, while the packed inner call value is zero, so the ETH remains with the L1 messenger rather
+than reaching the intended L2 target — a loss by stranding rather than a transfer to anyone.
+
+**Two things bound this.** The Timelock holds no ETH, so a schedule carrying a value has nothing to send
+and reverts at execute; the finding requires the Timelock to be funded first, which does not happen on its
+own. And every step needs a community-multisig-approved transaction, so this is a gap in a guard rail on a
+semi-trusted path rather than a route an outsider can walk. It is recorded because the guard's purpose is
+to bound what such a transaction can do, and the value it carries is part of that.
+
+**Mitigation.** Decode the value in `_verifySchedule` and require it to be zero for every scheduled item,
+and require `msg.value == 0` on the multisig-to-Timelock transaction. That is correct for the current
+allowlist, in which no target legitimately needs value. Should a bridge route ever need one, bind it
+instead to an explicit per-target maximum, require equality between the scheduled value, the envelope's
+permitted value and the packed inner values, and reject any unallocated remainder at the L2 messenger.
