@@ -69,5 +69,7 @@
   "processBridgedDataGnosisAddress": "0xDc871b7833932D45023755C9De3786060a934c48",
   "processBridgedDataPolygonAddress": "0x133A6d318FA0C9413A70C149E7f630015044Dec3",
   "processBridgedDataArbitrumAddress": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
-  "processBridgedDataOptimismAddress": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5"
+  "processBridgedDataOptimismAddress": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+  "robinhoodInboxAddress": "0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D",
+  "robinhoodBridgeMediatorL2": "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F"
 }
