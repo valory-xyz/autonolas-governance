@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Proposal 15 — raise proposalThreshold to 250,000 veOLAS and quorum to 10%</title>
+<style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--mut:#8a93a2;--sel:#c792ea;--addr:#82aaff;--val:#c3e88d;--role:#89ddff;--box:#161922;--bd:#2a2f3a;--ok:#7fd1a0;--bad:#ff8b8b;--cp:#8a93a2}
+body{background:var(--bg);color:var(--fg);font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:24px}
+h1{font-size:18px} h2{font-size:14px;margin:26px 0 8px;color:#fff;border-bottom:1px solid var(--bd);padding-bottom:4px}
+.lead{color:var(--mut);max-width:90ch}
+.entry{border:1px solid var(--bd);border-radius:8px;margin:10px 0;padding:10px;background:#11141b}
+.ehead{margin-bottom:6px} .ix{color:var(--mut);margin-right:6px}
+details.call{border-left:2px solid var(--bd);margin:4px 0 4px 6px;padding-left:8px}
+details.call>summary{cursor:pointer;color:var(--fg)} .body{padding:4px 0 4px 10px}
+.row{padding:1px 0} .key{color:var(--mut)}
+.sel{color:var(--sel)} .addr{color:var(--addr)} .val{color:var(--val)} .role{color:var(--role)}
+.note{color:var(--mut);font-style:italic} .ok{color:var(--ok)} .bad{color:var(--bad)}
+table.al{border-collapse:collapse;margin:6px 0;font-size:12px}
+table.al th,table.al td{border:1px solid var(--bd);padding:3px 7px;text-align:left;white-space:nowrap}
+table.al th{color:#fff;background:#1b1f29} td.num{color:var(--mut)} td.sel{color:var(--sel)}
+details.raw{margin-top:6px} details.raw>summary{color:var(--mut);cursor:pointer}
+details.raw pre{white-space:pre-wrap;word-break:break-all;color:var(--mut);background:#0b0d12;border:1px solid var(--bd);border-radius:6px;padding:8px}
+.pk{color:#fff;margin:8px 0 2px;font-weight:bold} pre.cp{white-space:pre-wrap;word-break:break-all;background:#0b0d12;border:1px solid var(--bd);border-radius:6px;padding:8px;color:var(--cp)}
+.pid{color:var(--ok);font-weight:bold} a{color:var(--addr)}
+</style></head><body>
+<h1>Proposal 15 — raise proposalThreshold to 250,000 veOLAS and quorum to 10% (annotated)</h1>
+<p class="lead">Submit via <b>propose()</b> on the live GovernorOLAS (0x060D0C&hellip;251E6), which holds the Timelock
+roles. <b>2 entries</b>; every call is executed by the Timelock. Every entry has value 0. Decoded directly from
+the Forge builder's verified calldata — hover any address/selector for its label; expand nested calls.</p>
+<p class="lead">Pre-computed <span class="pid">proposalId = 3563000702947626407249966116394330391891319244018918786718598572660765109424</span></p>
+<h2>propose() inputs — copy into GovernorOLAS</h2><div class="entry"><div class="pi"><div class="pk">Targets</div><pre class="cp">["0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6","0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6"]</pre><div class="pk">Values</div><pre class="cp">[0,0]</pre><div class="pk">Calldatas</div><pre class="cp">["0xece40cc10000000000000000000000000000000000000000000034f086f3b33b68400000","0x06f3f9e6000000000000000000000000000000000000000000000000000000000000000a"]</pre><div class="pk">proposalDescription</div><pre class="cp">Raise the Olas Governor proposal threshold and quorum. This proposal sets proposalThreshold from 5,000e18 to 250,000e18 and the quorum numerator from 3 to 10. The proposal minimum has not been revisited since deployment. Raising it restricts proposal creation from twelve addresses to five at current voting power; holders below the new level regain it by increasing or extending a lock. The quorum numerator is checkpointed, so proposals already snapshotted keep the 3% bar. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u</pre><div class="pk">proposalId (pre-computed)</div><pre class="cp">3563000702947626407249966116394330391891319244018918786718598572660765109424</pre><div class="pk">descriptionHash</div><pre class="cp">0xbc86418e14715cfad78c62576109d9825e2b1b7395fb5f3a594cc64eef35f8b1</pre></div></div><h2>Other (2)</h2><div class="entry"><div class="ehead"><span class="ix">[0]</span> target = <a class="addr" href="https://etherscan.io/address/0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6#code" target="_blank" rel="noopener" title="GovernorOLAS (live) · Ethereum">0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6</a> <span class="note">// GovernorOLAS (live) · Ethereum</span> &nbsp; value = <span class="val">0</span></div><details class="call" open><summary><span class="sel" title="unknown">0xece40cc1</span> <span class="note">// unknown</span></summary><div class="body"><div class="row note">unrecognized selector</div></div></details><details class="raw"><summary>raw calldata</summary><pre>0xece40cc10000000000000000000000000000000000000000000034f086f3b33b68400000</pre></details></div><div class="entry"><div class="ehead"><span class="ix">[1]</span> target = <a class="addr" href="https://etherscan.io/address/0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6#code" target="_blank" rel="noopener" title="GovernorOLAS (live) · Ethereum">0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6</a> <span class="note">// GovernorOLAS (live) · Ethereum</span> &nbsp; value = <span class="val">0</span></div><details class="call" open><summary><span class="sel" title="unknown">0x06f3f9e6</span> <span class="note">// unknown</span></summary><div class="body"><div class="row note">unrecognized selector</div></div></details><details class="raw"><summary>raw calldata</summary><pre>0x06f3f9e6000000000000000000000000000000000000000000000000000000000000000a</pre></details></div>
+<h2>proposalId</h2>
+<div class="entry"><pre class="cp pid">3563000702947626407249966116394330391891319244018918786718598572660765109424</pre>
+<div class="note">= uint256(keccak256(abi.encode(targets, values, calldatas, keccak256(bytes(description)))))</div></div>
+</body></html>
