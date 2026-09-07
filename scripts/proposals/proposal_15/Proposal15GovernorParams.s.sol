@@ -16,13 +16,15 @@ import {Script, console2} from "forge-std/Script.sol";
 // externally owned account. Its proposer held 5,100 OLAS, just over the 5,000 veOLAS minimum,
 // which has not been revisited since deployment.
 //
-// THRESHOLD — 250,000 IS THE TOP OF A FLAT BAND. Live voting power is concentrated: the five
-// largest positions are all above 250,000 veOLAS and the sixth is below 16,000, so every
-// threshold between those two levels admits the same five addresses. Taking the top of the band
-// maximises the cost of an attempt without excluding anyone that a lower level inside the band
-// would admit. It is still a real restriction against TODAY's setting: twelve addresses clear
-// 5,000, five clear 250,000, and holders in between regain eligibility by increasing or
-// extending a lock.
+// THRESHOLD — 250,000 SITS INSIDE A FLAT BAND, DELIBERATELY BELOW ITS TOP. Live voting power is
+// concentrated: the five largest positions are 982,733 / 856,538 / 838,898 / 409,732 / 293,929
+// and the sixth is 15,880, so every threshold in (15,880 … 293,929] admits exactly the same five
+// addresses. The top of that band is 293,929, not 250,000 — the ~15% gap is deliberate headroom
+// against the continuous veOLAS decay noted below, which moves the band's edges every block, and
+// against the Bravo-cancel cap. Any point in the band excludes the same people; the choice within
+// it is about margin, not about who can propose. It is still a real restriction against TODAY's
+// setting: twelve addresses clear 5,000, five clear 250,000, and holders in between regain
+// eligibility by increasing or extending a lock.
 //
 // THE CAP THAT MATTERS. `GovernorCompatibilityBravo.cancel` is permissionless once the
 // PROPOSER's power sits below `proposalThreshold()`. A threshold above the power of the address
@@ -52,6 +54,9 @@ contract Proposal15GovernorParams is Script {
     uint256 internal constant NEW_PROPOSAL_THRESHOLD = 250_000e18;
     uint256 internal constant NEW_QUORUM_NUMERATOR = 10;
 
+    /// @dev `scripts/proposals/proposal_15/description.txt` MUST match the string built below
+    ///      byte-for-byte before submission — a single stray newline changes the proposalId.
+    ///      `test_committedArtifactsMatchTheBuilder` asserts it.
     function buildProposal()
         public
         pure
