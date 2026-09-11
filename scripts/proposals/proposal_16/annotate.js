@@ -45,7 +45,9 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const addrSpan = (a) => {
     const e = ADDR[lc(a)];
     const url = (EXPLORER[e ? e.chain : 1] || EXPLORER[1]) + a;
-    const lbl = e ? ` <span class="lbl">// ${esc(e.label)}</span>` : ` <span class="warn">// UNLABELLED — verify before voting</span>`;
+    const lbl = e
+        ? ` <span class="lbl">// ${esc(e.label)}</span>`
+        : " <span class=\"warn\">// UNLABELLED — verify before voting</span>";
     return `<a class="addr" href="${url}" target="_blank" rel="noopener">${esc(a)}</a>${lbl}`;
 };
 
