@@ -1,0 +1,82 @@
+<!doctype html><meta charset="utf-8"><title>Proposal 16 — Olas on Robinhood Chain: adopt as canonical</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--acc:#0b5;--warnc:#b00;--line:#e3e3e3;--code:#f6f6f6}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--fg:#e8e8e8;--mut:#9a9a9a;--acc:#4c9;--warnc:#f77;--line:#333;--code:#1c1c1c}}
+body{background:var(--bg);color:var(--fg);font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0 auto;padding:2rem 1.25rem;max-width:60rem}
+h1{font-size:1.35rem;margin:0 0 .4rem}
+table{border-collapse:collapse;width:100%;margin:.5rem 0 1rem}
+th,td{border-bottom:1px solid var(--line);padding:.35rem .5rem;text-align:left;vertical-align:top}
+th{width:13rem;color:var(--mut);font-weight:600;white-space:nowrap}
+code,.addr,.sel,.val{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em}
+.cd{display:block;overflow-wrap:anywhere;background:var(--code);padding:.5rem;border-radius:4px}
+.addr{color:var(--acc);text-decoration:none}.addr:hover{text-decoration:underline}
+.lbl{color:var(--mut)}.warn{color:var(--warnc);font-weight:600}
+.box{border-left:3px solid var(--warnc);background:var(--code);padding:.6rem .9rem;margin:1rem 0;border-radius:0 4px 4px 0}
+details{border:1px solid var(--line);border-radius:6px;padding:.5rem .75rem;margin:.75rem 0}
+summary{cursor:pointer;font-weight:600}
+.meta{color:var(--mut);font-size:.9em}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);padding:.75rem;border-radius:4px}
+</style>
+<h1>Proposal 16 — Olas on Robinhood Chain: adopt as canonical</h1>
+<p class="meta">Generated from <code>calldata.json</code> &mdash; the same bytes the Forge builder emits, decoded rather than re-encoded.</p>
+
+<div class="box"><strong class="warn">Address collision, expected &mdash; do not &ldquo;fix&rdquo; it.</strong><br>
+<code>0x4d30F68F&hellip;</code> (the 4663 bridge mediator) is <em>byte-identical</em> to Arbitrum One's mediator, and
+<code>0x0F336366&hellip;</code> (the verifier) is shared with the Arbitrum One route. Both are correct: on every Orbit chain
+the L2 governance sender is <code>alias(L1&nbsp;Timelock)</code>, and the aliasing rule is chain-independent, so two Orbit
+chains aliasing the same Timelock yield the same address. One verifier contract serves all Orbit chains. Only the
+<em>inbox</em> and the <em>chain Id</em> distinguish this route from Arbitrum One's.</div>
+
+<table>
+<tr><th>proposalId</th><td><code>0xe8f681809e73bf7044bc0c830f30cbd50a02ca0b56677fbef742b4a66dd4ede4</code></td></tr>
+<tr><th>proposalId (uint)</th><td><code>105372119042092151995241403804967945820583103031471339920254185171774719978980</code></td></tr>
+<tr><th>descriptionHash</th><td><code>0x0c6c2c6f9a6f27dcf1f7a14fb197e788de136f50f36d177e031713e428cc3c9d</code></td></tr>
+<tr><th>entries</th><td><span class="val">3</span> &mdash; all direct L1 calls, no bridged payload</td></tr>
+</table>
+
+<details open><summary>entry 0 &mdash; <code>setDepositProcessorChainIds(address[],uint256[])</code></summary>
+<table>
+<tr><th>target</th><td><a class="addr" href="https://etherscan.io/address/0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0" target="_blank" rel="noopener">0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0</a> <span class="lbl">// Dispenser</span></td></tr>
+<tr><th>value</th><td><span class="val">0</span></td></tr>
+<tr><th>depositProcessors[0]</th><td><a class="addr" href="https://etherscan.io/address/0xb9DfcC6155Ba4F211DCf8e6eCc9976Be11bB7a77" target="_blank" rel="noopener">0xb9DfcC6155Ba4F211DCf8e6eCc9976Be11bB7a77</a> <span class="lbl">// ArbitrumDepositProcessorL1 for 4663 (l2TargetChainId() == 4663)</span></td></tr>
+<tr><th>chainIds[0]</th><td><span class="val">4663</span> <span class="lbl">// Robinhood Chain</span></td></tr>
+<tr><th>calldata</th><td><code class="cd">0xd8bf69bf000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000b9dfcc6155ba4f211dcf8e6ecc9976be11bb7a7700000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000001237</code></td></tr>
+</table></details>
+<details open><summary>entry 1 &mdash; <code>setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[])</code></summary>
+<table>
+<tr><th>target</th><td><a class="addr" href="https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B" target="_blank" rel="noopener">0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B</a> <span class="lbl">// GuardCM</span></td></tr>
+<tr><th>value</th><td><span class="val">0</span></td></tr>
+<tr><th>bridgeMediatorL1[0]</th><td><a class="addr" href="https://etherscan.io/address/0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D" target="_blank" rel="noopener">0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D</a> <span class="lbl">// Robinhood Chain Delayed Inbox (L1 entrypoint for 4663)</span></td></tr>
+<tr><th>verifierL2[0]</th><td><a class="addr" href="https://etherscan.io/address/0x0F33636698F6607B2FDdC1e857788535914C44d4" target="_blank" rel="noopener">0x0F33636698F6607B2FDdC1e857788535914C44d4</a> <span class="lbl">// ProcessBridgedDataArbitrum (Orbit verifier — shared with Arbitrum One by design)</span></td></tr>
+<tr><th>chainId[0]</th><td><span class="val">4663</span></td></tr>
+<tr><th>bridgeMediatorL2[0]</th><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F" target="_blank" rel="noopener">0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F</a> <span class="lbl">// alias(Timelock) — 4663 bridge mediator. SAME address as Arbitrum One's by design</span></td></tr>
+<tr><th>calldata</th><td><code class="cd">0x1602c55c000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000010000000000000000000000001a07cc4bd17e0118bdb54d70990d2158abad7a2d00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000f33636698f6607b2fddc1e857788535914c44d40000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000123700000000000000000000000000000000000000000000000000000000000000010000000000000000000000004d30f68f5aa342d296d4dee4bb1cacca912da70f</code></td></tr>
+</table></details>
+<details open><summary>entry 2 &mdash; <code>setTargetSelectorChainIds(address[],bytes4[],uint256[],bool[])</code></summary>
+<table>
+<tr><th>target</th><td><a class="addr" href="https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B" target="_blank" rel="noopener">0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B</a> <span class="lbl">// GuardCM</span></td></tr>
+<tr><th>value</th><td><span class="val">0</span></td></tr>
+<tr><th>triple[0]</th><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b" target="_blank" rel="noopener">0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b</a> <span class="lbl">// ServiceManagerProxy (4663)</span><br>&nbsp;&nbsp;selector <span class="sel">0x8456cb59</span> <span class="lbl">// pause()</span><br>&nbsp;&nbsp;chainId <span class="val">4663</span>&nbsp;&nbsp;status <span class="val">true</span></td></tr>
+<tr><th>triple[1]</th><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xc40C79C275F3fA1F3f4c723755C81ED2D53A8D81" target="_blank" rel="noopener">0xc40C79C275F3fA1F3f4c723755C81ED2D53A8D81</a> <span class="lbl">// ArbitrumTargetDispenserL2 (4663)</span><br>&nbsp;&nbsp;selector <span class="sel">0x8456cb59</span> <span class="lbl">// pause()</span><br>&nbsp;&nbsp;chainId <span class="val">4663</span>&nbsp;&nbsp;status <span class="val">true</span></td></tr>
+<tr><th>triple[2]</th><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xE3607b00E75f6405248323A9417ff6b39B244b50" target="_blank" rel="noopener">0xE3607b00E75f6405248323A9417ff6b39B244b50</a> <span class="lbl">// ServiceRegistryL2 (4663)</span><br>&nbsp;&nbsp;selector <span class="sel">0x9890220b</span> <span class="lbl">// drain()</span><br>&nbsp;&nbsp;chainId <span class="val">4663</span>&nbsp;&nbsp;status <span class="val">true</span></td></tr>
+<tr><th>triple[3]</th><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x3d77596beb0f130a4415df3D2D8232B3d3D31e44" target="_blank" rel="noopener">0x3d77596beb0f130a4415df3D2D8232B3d3D31e44</a> <span class="lbl">// ServiceRegistryTokenUtility (4663)</span><br>&nbsp;&nbsp;selector <span class="sel">0xece53132</span> <span class="lbl">// drain(address)</span><br>&nbsp;&nbsp;chainId <span class="val">4663</span>&nbsp;&nbsp;status <span class="val">true</span></td></tr>
+<tr><th>calldata</th><td><code class="cd">0x5d78d4690000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000000400000000000000000000000063e66d7ad413c01a7b49c7ff4e3bb765c4e4bd1b000000000000000000000000c40c79c275f3fa1f3f4c723755c81ed2d53a8d81000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000048456cb59000000000000000000000000000000000000000000000000000000008456cb59000000000000000000000000000000000000000000000000000000009890220b00000000000000000000000000000000000000000000000000000000ece53132000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000123700000000000000000000000000000000000000000000000000000000000012370000000000000000000000000000000000000000000000000000000000001237000000000000000000000000000000000000000000000000000000000000123700000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001</code></td></tr>
+</table></details>
+
+<details><summary>propose() arrays</summary>
+<pre>targets:    [
+  "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+  "0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B",
+  "0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B"
+]
+
+values:     ["0","0","0"]
+
+calldatas:  [
+  "0xd8bf69bf000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000b9dfcc6155ba4f211dcf8e6ecc9976be11bb7a7700000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000001237",
+  "0x1602c55c000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000010000000000000000000000001a07cc4bd17e0118bdb54d70990d2158abad7a2d00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000f33636698f6607b2fddc1e857788535914c44d40000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000123700000000000000000000000000000000000000000000000000000000000000010000000000000000000000004d30f68f5aa342d296d4dee4bb1cacca912da70f",
+  "0x5d78d4690000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000000400000000000000000000000063e66d7ad413c01a7b49c7ff4e3bb765c4e4bd1b000000000000000000000000c40c79c275f3fa1f3f4c723755c81ed2d53a8d81000000000000000000000000e3607b00e75f6405248323a9417ff6b39b244b500000000000000000000000003d77596beb0f130a4415df3d2d8232b3d3d31e4400000000000000000000000000000000000000000000000000000000000000048456cb59000000000000000000000000000000000000000000000000000000008456cb59000000000000000000000000000000000000000000000000000000009890220b00000000000000000000000000000000000000000000000000000000ece53132000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000123700000000000000000000000000000000000000000000000000000000000012370000000000000000000000000000000000000000000000000000000000001237000000000000000000000000000000000000000000000000000000000000123700000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001"
+]</pre></details>
+
+<details><summary>description (must match the builder constant byte-for-byte)</summary>
+<pre>Adopt the Olas protocol instance on Robinhood Chain as canonical. A complete deployment of the Olas protocol now exists on Robinhood Chain (chain Id 4663): the service and agent registries, service management, the staking factory and verifier, the mech marketplace, and the buy-back stack are all live, their source is verified, and every contract that has an owner is already owned by this DAO through the chain's governance control point. What that deployment is not yet is part of the protocol. The protocol's L1 contracts do not recognise the chain, so no staking incentives can reach it and the community multisig cannot act on it. This proposal asks the DAO to recognise that deployment as the canonical Olas instance on Robinhood Chain, and to connect it to the protocol on L1 accordingly. It (1) registers the Robinhood Chain deposit processor with the Dispenser, so that staking incentives can be claimed for nominees on that chain; (2) registers the Robinhood Chain bridge route in the GuardCM community multisig guard by calling setBridgeMediatorL1BridgeParams, so that community multisig transactions to Robinhood Chain are verified the same way as those to Arbitrum One, which uses the same Orbit bridge-data verifier; and (3) allowlists in GuardCM exactly the selector set the community multisig already holds on the other chains: the pause selector for the Robinhood Chain service manager proxy and target dispenser, and the drain selectors for the Robinhood Chain service registry and service registry token utility. The unpause selector is deliberately excluded, because it is allowlisted on no other chain. Entries (2) and (3) are submitted together deliberately: an allowlist without bridge parameters leaves community multisig transactions failing closed, as was the case for Mode until proposal 13. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u</pre></details>
