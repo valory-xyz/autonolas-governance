@@ -1,4 +1,4 @@
-<!doctype html><meta charset="utf-8"><title>Proposal 16 — Olas on Robinhood Chain: wave 2</title>
+<!doctype html><meta charset="utf-8"><title>Proposal 16 — Olas on Robinhood Chain: adopt as canonical</title>
 <style>
 :root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--acc:#0b5;--warnc:#b00;--line:#e3e3e3;--code:#f6f6f6}
 @media(prefers-color-scheme:dark){:root{--bg:#121212;--fg:#e8e8e8;--mut:#9a9a9a;--acc:#4c9;--warnc:#f77;--line:#333;--code:#1c1c1c}}
@@ -17,7 +17,7 @@ summary{cursor:pointer;font-weight:600}
 .meta{color:var(--mut);font-size:.9em}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);padding:.75rem;border-radius:4px}
 </style>
-<h1>Proposal 16 — Olas on Robinhood Chain: wave 2</h1>
+<h1>Proposal 16 — Olas on Robinhood Chain: adopt as canonical</h1>
 <p class="meta">Generated from <code>calldata.json</code> &mdash; the same bytes the Forge builder emits, decoded rather than re-encoded.</p>
 
 <div class="box"><strong class="warn">Address collision, expected &mdash; do not &ldquo;fix&rdquo; it.</strong><br>
@@ -28,9 +28,9 @@ chains aliasing the same Timelock yield the same address. One verifier contract 
 <em>inbox</em> and the <em>chain Id</em> distinguish this route from Arbitrum One's.</div>
 
 <table>
-<tr><th>proposalId</th><td><code>0x5404dbff11349c43360d7add3424456fb93e7e98274b4bdcc8e6e9ac39a4cd0d</code></td></tr>
-<tr><th>proposalId (uint)</th><td><code>38002865028301789039396894292248350962961176402157948460612117179940815031565</code></td></tr>
-<tr><th>descriptionHash</th><td><code>0xec7083866e6168ff9b80e04f8f2b35f85524544df4c47c4cca3d365fa6e707be</code></td></tr>
+<tr><th>proposalId</th><td><code>0xe8f681809e73bf7044bc0c830f30cbd50a02ca0b56677fbef742b4a66dd4ede4</code></td></tr>
+<tr><th>proposalId (uint)</th><td><code>105372119042092151995241403804967945820583103031471339920254185171774719978980</code></td></tr>
+<tr><th>descriptionHash</th><td><code>0x0c6c2c6f9a6f27dcf1f7a14fb197e788de136f50f36d177e031713e428cc3c9d</code></td></tr>
 <tr><th>entries</th><td><span class="val">3</span> &mdash; all direct L1 calls, no bridged payload</td></tr>
 </table>
 
@@ -79,4 +79,4 @@ calldatas:  [
 ]</pre></details>
 
 <details><summary>description (must match the builder constant byte-for-byte)</summary>
-<pre>Olas on Robinhood Chain: wave 2. Wave 1 deployed the full Olas stack on Robinhood Chain (chain Id 4663) and transferred ownership of every owner-bearing contract to the chain's governance control point, so the DAO already controls the deployment. This proposal connects the L1 side. It (1) registers the Robinhood Chain deposit processor with the Dispenser, so that staking incentives can be claimed for nominees on that chain; (2) registers the Robinhood Chain bridge route in the GuardCM community multisig guard by calling setBridgeMediatorL1BridgeParams, so that community multisig transactions to Robinhood Chain are verified the same way as those to Arbitrum One, which uses the same Orbit bridge-data verifier; and (3) allowlists in GuardCM exactly the selector set the community multisig already holds on the other chains: the pause selector for the Robinhood Chain service manager proxy and target dispenser, and the drain selectors for the Robinhood Chain service registry and service registry token utility. The unpause selector is deliberately excluded, because it is allowlisted on no other chain. Entries (2) and (3) are submitted together deliberately: an allowlist without bridge parameters leaves community multisig transactions failing closed, as was the case for Mode until proposal 13. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u</pre></details>
+<pre>Adopt the Olas protocol instance on Robinhood Chain as canonical. A complete deployment of the Olas protocol now exists on Robinhood Chain (chain Id 4663): the service and agent registries, service management, the staking factory and verifier, the mech marketplace, and the buy-back stack are all live, their source is verified, and every contract that has an owner is already owned by this DAO through the chain's governance control point. What that deployment is not yet is part of the protocol. The protocol's L1 contracts do not recognise the chain, so no staking incentives can reach it and the community multisig cannot act on it. This proposal asks the DAO to recognise that deployment as the canonical Olas instance on Robinhood Chain, and to connect it to the protocol on L1 accordingly. It (1) registers the Robinhood Chain deposit processor with the Dispenser, so that staking incentives can be claimed for nominees on that chain; (2) registers the Robinhood Chain bridge route in the GuardCM community multisig guard by calling setBridgeMediatorL1BridgeParams, so that community multisig transactions to Robinhood Chain are verified the same way as those to Arbitrum One, which uses the same Orbit bridge-data verifier; and (3) allowlists in GuardCM exactly the selector set the community multisig already holds on the other chains: the pause selector for the Robinhood Chain service manager proxy and target dispenser, and the drain selectors for the Robinhood Chain service registry and service registry token utility. The unpause selector is deliberately excluded, because it is allowlisted on no other chain. Entries (2) and (3) are submitted together deliberately: an allowlist without bridge parameters leaves community multisig transactions failing closed, as was the case for Mode until proposal 13. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u</pre></details>

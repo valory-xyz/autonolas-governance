@@ -1,13 +1,14 @@
-# Proposal 16 — Olas on Robinhood Chain: wave 2
+# Proposal 16 — adopt the Olas instance on Robinhood Chain as canonical
 
-Connects the L1 side of the Robinhood Chain (4663) deployment. All three entries are **direct L1
+Asks the DAO to recognise the existing Robinhood Chain (4663) deployment as the canonical Olas instance
+on that chain, and connects it to the protocol on L1 accordingly. All three entries are **direct L1
 Timelock calls** — nothing is bridged, so every effect is observable on a mainnet fork and there is no
 destination-chain leg to simulate.
 
 **Pre-computed proposalId:**
-`0x5404dbff11349c43360d7add3424456fb93e7e98274b4bdcc8e6e9ac39a4cd0d`
+`0xe8f681809e73bf7044bc0c830f30cbd50a02ca0b56677fbef742b4a66dd4ede4`
 
-**descriptionHash:** `0xec7083866e6168ff9b80e04f8f2b35f85524544df4c47c4cca3d365fa6e707be`
+**descriptionHash:** `0x0c6c2c6f9a6f27dcf1f7a14fb197e788de136f50f36d177e031713e428cc3c9d`
 
 ## What it does
 
@@ -17,9 +18,16 @@ destination-chain leg to simulate.
 | 1 | [`GuardCM`](https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B) | `setBridgeMediatorL1BridgeParams([inbox], [verifier], [4663], [mediator])` |
 | 2 | [`GuardCM`](https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B) | `setTargetSelectorChainIds(…)` — four triples on 4663: `pause()` ×2, `drain()`, `drain(address)` |
 
-### Why now
+### What the vote is actually about
 
-Wave 1 is complete. All 28 Olas contracts on 4663 are deployed and verified on Sourcify, and on
+The deployment already exists and this DAO already owns it — every owner-bearing contract on 4663 was
+transferred to the chain's governance control point on 2026-09-11, and all 28 contracts are verified on
+Sourcify. What it is **not** yet is part of the protocol: the L1 contracts do not recognise the chain,
+so no staking incentives can reach it and the community multisig cannot act on it. This proposal is the
+DAO adopting that deployment as the canonical Olas instance on Robinhood Chain; the three calls are what
+that adoption consists of on L1.
+
+### Why now All 28 Olas contracts on 4663 are deployed and verified on Sourcify, and on
 2026-09-11 the ten owner-bearing ones were transferred to the chain's governance control point — the
 DAO already controls the deployment. What is missing is purely on L1: the Dispenser does not know the
 chain exists, and GuardCM holds no route for it.
