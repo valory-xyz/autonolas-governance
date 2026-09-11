@@ -21,6 +21,12 @@ interface IGuardCM {
     function mapBridgeMediatorL1BridgeParams(address bridgeMediatorL1)
         external view returns (address verifierL2, address bridgeMediatorL2, uint256 chainId);
     function getTargetSelectorChainId(address target, bytes4 selector, uint256 chainId) external view returns (bool);
+    function multisig() external view returns (address);
+    function checkTransaction(
+        address to, uint256 value, bytes memory data, uint8 operation,
+        uint256 safeTxGas, uint256 baseGas, uint256 gasPrice,
+        address gasToken, address payable refundReceiver, bytes memory signatures, address msgSender
+    ) external;
 }
 
 interface IDispenser {
@@ -40,6 +46,9 @@ interface IProcessor { function l2TargetChainId() external view returns (uint256
 contract Proposal16RobinhoodTest is Test, Proposal16Builder {
     address internal constant NEW_GOV = 0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6; // live GovernorOLAS
     address internal constant WVEOLAS = 0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40;
+    bytes4 internal constant SELECTOR_UNPAUSE = 0x3f4ba83a; // not granted — asserted absent
+    bytes4 internal constant CREATE_RETRYABLE_TICKET =
+        bytes4(keccak256(bytes("createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)")));
     uint8 internal constant SUCCEEDED = 4;
     uint8 internal constant EXECUTED = 7;
 
@@ -75,9 +84,15 @@ contract Proposal16RobinhoodTest is Test, Proposal16Builder {
         assertEq(c, 0, "4663 chainId already set");
 
         assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_MANAGER_PROXY, SELECTOR_PAUSE, CID_ROBINHOOD), "triple already set");
-        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_MANAGER_PROXY, SELECTOR_UNPAUSE, CID_ROBINHOOD), "triple already set");
         assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_TARGET_DISPENSER_L2, SELECTOR_PAUSE, CID_ROBINHOOD), "triple already set");
-        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_TARGET_DISPENSER_L2, SELECTOR_UNPAUSE, CID_ROBINHOOD), "triple already set");
+        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_REGISTRY_L2, SELECTOR_DRAIN, CID_ROBINHOOD), "triple already set");
+        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_REGISTRY_TOKEN_UTILITY, SELECTOR_DRAIN_TOKEN, CID_ROBINHOOD), "triple already set");
+
+        // The fleet parity this proposal's entry 2 is built on. unpause() is allowlisted on NO
+        // chain, so if any of these ever reads true the selector set here needs rethinking, not
+        // copying.
+        assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ARBITRUM_SERVICE_MANAGER_PROXY, SELECTOR_PAUSE, CID_ARBITRUM), "parity: Arbitrum pause missing");
+        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ARBITRUM_SERVICE_MANAGER_PROXY, SELECTOR_UNPAUSE, CID_ARBITRUM), "parity: Arbitrum unpause is granted");
 
         // Positive control: the Arbitrum route IS populated, so the zeros above are real zeros and
         // not a getter that silently returns nothing.
@@ -148,11 +163,110 @@ contract Proposal16RobinhoodTest is Test, Proposal16Builder {
         assertEq(m, ROBINHOOD_MEDIATOR_L2, "entry 1: wrong mediator");
         assertEq(c, CID_ROBINHOOD, "entry 1: wrong chainId");
 
-        // [2] all four triples are allowlisted for 4663.
+        // [2] the four triples are allowlisted for 4663 — and unpause() is NOT.
         assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_MANAGER_PROXY, SELECTOR_PAUSE, CID_ROBINHOOD), "entry 2: SMP.pause");
-        assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_MANAGER_PROXY, SELECTOR_UNPAUSE, CID_ROBINHOOD), "entry 2: SMP.unpause");
         assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_TARGET_DISPENSER_L2, SELECTOR_PAUSE, CID_ROBINHOOD), "entry 2: dispenser.pause");
-        assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_TARGET_DISPENSER_L2, SELECTOR_UNPAUSE, CID_ROBINHOOD), "entry 2: dispenser.unpause");
+        assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_REGISTRY_L2, SELECTOR_DRAIN, CID_ROBINHOOD), "entry 2: SR.drain()");
+        assertTrue(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_REGISTRY_TOKEN_UTILITY, SELECTOR_DRAIN_TOKEN, CID_ROBINHOOD), "entry 2: STU.drain(address)");
+
+        // The negative is the point of the review that produced this shape: granting unpause()
+        // would let the CM lift a pause on 4663 in one transaction with no vote, a power it holds
+        // on no other chain.
+        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_SERVICE_MANAGER_PROXY, SELECTOR_UNPAUSE, CID_ROBINHOOD), "entry 2: SMP.unpause must NOT be granted");
+        assertFalse(IGuardCM(GUARD_CM).getTargetSelectorChainId(ROBINHOOD_TARGET_DISPENSER_L2, SELECTOR_UNPAUSE, CID_ROBINHOOD), "entry 2: dispenser.unpause must NOT be granted");
+    }
+
+    /// @notice What the guard actually admits, not just what it stores. Modelled on proposal 13's
+    ///         CM leg: build a real community-multisig `schedule` carrying an Orbit retryable to
+    ///         4663, and show it is rejected before the proposal and accepted after.
+    ///
+    ///         This is the Mode lesson made executable. Mode spent two months with allowlist
+    ///         entries and no bridge params, where exactly this call failed closed — storage said
+    ///         yes and the guard said no.
+    function test_CM_canPause4663_onlyAfterProposal() public {
+        _fork();
+
+        address cm = IGuardCM(GUARD_CM).multisig();
+        bytes memory scheduleCall = _robinhoodCmScheduleCall(ROBINHOOD_SERVICE_MANAGER_PROXY, abi.encodeWithSignature("pause()"));
+
+        // BEFORE: no 4663 route, so the guard falls through to its L1 path and fails closed.
+        // Pinned rather than a bare expectRevert: the weight of "rejected before, accepted after"
+        // rests on this leg failing for the stated reason. chainId 1 and the createRetryableTicket
+        // selector are the evidence that the guard treated it as an L1 call, because no 4663 route
+        // existed to route it through the Orbit verifier.
+        vm.prank(cm);
+        vm.expectRevert(
+            abi.encodeWithSignature(
+                "NotAuthorized(address,bytes4,uint256)", ROBINHOOD_INBOX, CREATE_RETRYABLE_TICKET, uint256(1)
+            )
+        );
+        _checkCmTransaction(scheduleCall, cm);
+
+        _executeProposalAsTimelock();
+
+        // AFTER: the same transaction passes, for both pausable targets.
+        vm.prank(cm);
+        _checkCmTransaction(scheduleCall, cm);
+        vm.prank(cm);
+        _checkCmTransaction(
+            _robinhoodCmScheduleCall(ROBINHOOD_TARGET_DISPENSER_L2, abi.encodeWithSignature("pause()")), cm
+        );
+
+        // And unpause() is still refused, because it was never allowlisted.
+        vm.prank(cm);
+        vm.expectRevert();
+        _checkCmTransaction(
+            _robinhoodCmScheduleCall(ROBINHOOD_SERVICE_MANAGER_PROXY, abi.encodeWithSignature("unpause()")), cm
+        );
+
+        console2.log("4663 CM pause(): rejected before, accepted after; unpause() still refused");
+    }
+
+    /// @dev A community-multisig transaction scheduling `targetPayload` on `target` over 4663,
+    ///      bridged as an Orbit retryable through the Robinhood Delayed Inbox. The refund
+    ///      addresses must both be the L2 mediator or ProcessBridgedDataArbitrum rejects it.
+    function _robinhoodCmScheduleCall(address target, bytes memory targetPayload)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        bytes memory ticket = abi.encodeWithSignature(
+            "createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)",
+            target,
+            uint256(0), // l2CallValue — must be zero
+            uint256(0),
+            ROBINHOOD_MEDIATOR_L2, // excessFeeRefundAddress
+            ROBINHOOD_MEDIATOR_L2, // callValueRefundAddress
+            uint256(0),
+            uint256(0),
+            targetPayload
+        );
+        return abi.encodeWithSignature(
+            "schedule(address,uint256,bytes,bytes32,bytes32,uint256)",
+            ROBINHOOD_INBOX,
+            uint256(0),
+            ticket,
+            bytes32(0),
+            bytes32(0),
+            uint256(0)
+        );
+    }
+
+    function _checkCmTransaction(bytes memory scheduleCall, address cm) internal {
+        IGuardCM(GUARD_CM).checkTransaction(
+            TIMELOCK, 0, scheduleCall, 0, 0, 0, 0, address(0), payable(address(0)), "", cm
+        );
+    }
+
+    /// @dev Apply the proposal's own calldata as the Timelock, without the governor lifecycle.
+    function _executeProposalAsTimelock() internal {
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas,) = buildProposal();
+        vm.startPrank(TIMELOCK);
+        for (uint256 i; i < targets.length; ++i) {
+            (bool ok,) = targets[i].call{value: values[i]}(calldatas[i]);
+            require(ok, "proposal call failed");
+        }
+        vm.stopPrank();
     }
 
     /// @dev The shared verifier and shared mediator address make an accidental overwrite of the

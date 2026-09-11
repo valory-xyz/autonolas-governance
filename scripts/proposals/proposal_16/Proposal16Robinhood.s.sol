@@ -25,9 +25,21 @@ import {Script, console2} from "forge-std/Script.sol";
 //       an Arbitrum Orbit rollup, so it reuses the same ProcessBridgedDataArbitrum verifier as
 //       Arbitrum One, entered against its own Delayed Inbox.
 //
-//   [2] GuardCM.setTargetSelectorChainIds — allowlist the four pause()/unpause() triples for
-//       4663: ServiceManagerProxy and ArbitrumTargetDispenserL2. This is the fast-path
-//       containment the community multisig uses without a full governance cycle.
+//   [2] GuardCM.setTargetSelectorChainIds — allowlist the four triples 4663 needs to match the
+//       rest of the fleet: pause() on ServiceManagerProxy and ArbitrumTargetDispenserL2, and
+//       drain() / drain(address) on the two service registries.
+//
+// PARITY IS THE RULE FOR ENTRY 2, AND IT IS LOAD-BEARING. The selector set was taken from what
+// GuardCM actually holds for the other chains, not from what looked reasonable:
+//   - pause() is true on every chain for both the service manager proxy and the L2 dispenser;
+//   - unpause() is FALSE on every chain for both. It is deliberately excluded here. Granting it
+//     would let the community multisig lift a pause on 4663 in a single transaction with no
+//     vote — the CM holds the Timelock's PROPOSER_ROLE and EXECUTOR_ROLE, getMinDelay() is 0,
+//     and GuardCM is the CM Safe's guard, so this allowlist is the only constraint. An earlier
+//     revision of this proposal included unpause() and was caught in review;
+//   - drain() (0x9890220b) on ServiceRegistryL2 and drain(address) (0xece53132) on
+//     ServiceRegistryTokenUtility are true on every chain, set by proposal 11. Without them 4663
+//     would be the only chain where draining slashed funds needs a full governance cycle.
 //
 // ENTRIES 1 AND 2 MUST SHIP TOGETHER. Mode is the cautionary case: its allowlist entries were
 // backfilled in July 2026 but setBridgeMediatorL1BridgeParams was never called, leaving
@@ -80,14 +92,18 @@ abstract contract Proposal16Builder {
     address internal constant ROBINHOOD_MEDIATOR_L2 = 0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F;
     address internal constant ROBINHOOD_SERVICE_MANAGER_PROXY = 0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b;
     address internal constant ROBINHOOD_TARGET_DISPENSER_L2 = 0xc40C79C275F3fA1F3f4c723755C81ED2D53A8D81;
+    address internal constant ROBINHOOD_SERVICE_REGISTRY_L2 = 0xE3607b00E75f6405248323A9417ff6b39B244b50;
+    address internal constant ROBINHOOD_SERVICE_REGISTRY_TOKEN_UTILITY = 0x3d77596beb0f130a4415df3D2D8232B3d3D31e44;
 
     uint256 internal constant CID_ROBINHOOD = 4663;
 
     bytes4 internal constant SELECTOR_PAUSE = 0x8456cb59; // pause()
-    bytes4 internal constant SELECTOR_UNPAUSE = 0x3f4ba83a; // unpause()
+    bytes4 internal constant SELECTOR_DRAIN = 0x9890220b; // drain()
+    bytes4 internal constant SELECTOR_DRAIN_TOKEN = 0xece53132; // drain(address)
+    // unpause() = 0x3f4ba83a is deliberately NOT allowlisted — see the parity note in the header.
 
     string internal constant DESCRIPTION =
-        "Olas on Robinhood Chain: wave 2. Wave 1 deployed the full Olas stack on Robinhood Chain (chain Id 4663) and transferred ownership of every owner-bearing contract to the chain's governance control point, so the DAO already controls the deployment. This proposal connects the L1 side. It (1) registers the Robinhood Chain deposit processor with the Dispenser, so that staking incentives can be claimed for nominees on that chain; (2) registers the Robinhood Chain bridge route in the GuardCM community multisig guard by calling setBridgeMediatorL1BridgeParams, so that community multisig transactions to Robinhood Chain are verified the same way as those to Arbitrum One, which uses the same Orbit bridge-data verifier; and (3) allowlists the pause and unpause selectors for the Robinhood Chain service manager proxy and target dispenser in GuardCM, giving the community multisig the same fast-path containment it holds on the other chains. Entries (2) and (3) are submitted together deliberately: an allowlist without bridge parameters leaves community multisig transactions failing closed, as was the case for Mode until proposal 13. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
+        "Olas on Robinhood Chain: wave 2. Wave 1 deployed the full Olas stack on Robinhood Chain (chain Id 4663) and transferred ownership of every owner-bearing contract to the chain's governance control point, so the DAO already controls the deployment. This proposal connects the L1 side. It (1) registers the Robinhood Chain deposit processor with the Dispenser, so that staking incentives can be claimed for nominees on that chain; (2) registers the Robinhood Chain bridge route in the GuardCM community multisig guard by calling setBridgeMediatorL1BridgeParams, so that community multisig transactions to Robinhood Chain are verified the same way as those to Arbitrum One, which uses the same Orbit bridge-data verifier; and (3) allowlists in GuardCM exactly the selector set the community multisig already holds on the other chains: the pause selector for the Robinhood Chain service manager proxy and target dispenser, and the drain selectors for the Robinhood Chain service registry and service registry token utility. The unpause selector is deliberately excluded, because it is allowlisted on no other chain. Entries (2) and (3) are submitted together deliberately: an allowlist without bridge parameters leaves community multisig transactions failing closed, as was the case for Mode until proposal 13. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
 
     function buildProposal()
         public
@@ -138,19 +154,20 @@ abstract contract Proposal16Builder {
     }
 
     /// @dev GuardCM.setTargetSelectorChainIds — four triples, all enabled, all on 4663.
-    ///      Order is (ServiceManagerProxy, dispenser) x (pause, unpause).
+    ///      Exactly the set the other chains hold: pause() on the two pausable contracts, and the
+    ///      two drain selectors on the two registries. unpause() is excluded on purpose.
     function _guardCmRobinhoodSelectors() internal pure returns (bytes memory) {
         address[] memory targets_ = new address[](4);
         targets_[0] = ROBINHOOD_SERVICE_MANAGER_PROXY;
-        targets_[1] = ROBINHOOD_SERVICE_MANAGER_PROXY;
-        targets_[2] = ROBINHOOD_TARGET_DISPENSER_L2;
-        targets_[3] = ROBINHOOD_TARGET_DISPENSER_L2;
+        targets_[1] = ROBINHOOD_TARGET_DISPENSER_L2;
+        targets_[2] = ROBINHOOD_SERVICE_REGISTRY_L2;
+        targets_[3] = ROBINHOOD_SERVICE_REGISTRY_TOKEN_UTILITY;
 
         bytes4[] memory selectors = new bytes4[](4);
         selectors[0] = SELECTOR_PAUSE;
-        selectors[1] = SELECTOR_UNPAUSE;
-        selectors[2] = SELECTOR_PAUSE;
-        selectors[3] = SELECTOR_UNPAUSE;
+        selectors[1] = SELECTOR_PAUSE;
+        selectors[2] = SELECTOR_DRAIN;
+        selectors[3] = SELECTOR_DRAIN_TOKEN;
 
         uint256[] memory cids = new uint256[](4);
         bool[] memory statuses = new bool[](4);

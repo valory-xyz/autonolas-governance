@@ -31,6 +31,8 @@ const ADDR = {
     "0x4d30f68f5aa342d296d4dee4bb1cacca912da70f": { label: "alias(Timelock) — 4663 bridge mediator. SAME address as Arbitrum One's by design", chain: 4663 },
     "0x63e66d7ad413c01a7b49c7ff4e3bb765c4e4bd1b": { label: "ServiceManagerProxy (4663)", chain: 4663 },
     "0xc40c79c275f3fa1f3f4c723755c81ed2d53a8d81": { label: "ArbitrumTargetDispenserL2 (4663)", chain: 4663 },
+    "0xe3607b00e75f6405248323a9417ff6b39b244b50": { label: "ServiceRegistryL2 (4663)", chain: 4663 },
+    "0x3d77596beb0f130a4415df3d2d8232b3d3d31e44": { label: "ServiceRegistryTokenUtility (4663)", chain: 4663 },
 };
 
 const SELSIG = {
@@ -38,7 +40,14 @@ const SELSIG = {
     "0x1602c55c": "setBridgeMediatorL1BridgeParams(address[],address[],uint256[],address[])",
     "0x5d78d469": "setTargetSelectorChainIds(address[],bytes4[],uint256[],bool[])",
 };
-const INNER_SEL = { "0x8456cb59": "pause()", "0x3f4ba83a": "unpause()" };
+const INNER_SEL = {
+    "0x8456cb59": "pause()",
+    "0x9890220b": "drain()",
+    "0xece53132": "drain(address)",
+    // unpause() is listed so a reviewer sees it named if it ever reappears — it is allowlisted on
+    // no chain, and this proposal deliberately does not grant it.
+    "0x3f4ba83a": "unpause() — NOT granted on any chain",
+};
 const EXPLORER = { 1: "https://etherscan.io/address/", 4663: "https://robinhoodchain.blockscout.com/address/" };
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

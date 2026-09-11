@@ -5,10 +5,9 @@ Timelock calls** — nothing is bridged, so every effect is observable on a main
 destination-chain leg to simulate.
 
 **Pre-computed proposalId:**
-`62593737919851794374564726850038659676331337351142765248604965204946966280314`
-(= `0x8a62ccd8de4967a138016abc39c7f8040506ba259f202027389bd042374ff87a`)
+`0x5404dbff11349c43360d7add3424456fb93e7e98274b4bdcc8e6e9ac39a4cd0d`
 
-**descriptionHash:** `0xf9a031f3b7e49df83c87f1a00521ff03d6039fd1f48c5135a58f5af4eec6c376`
+**descriptionHash:** `0xec7083866e6168ff9b80e04f8f2b35f85524544df4c47c4cca3d365fa6e707be`
 
 ## What it does
 
@@ -16,7 +15,7 @@ destination-chain leg to simulate.
 |---|---|---|
 | 0 | [`Dispenser`](https://etherscan.io/address/0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0) | `setDepositProcessorChainIds([0xb9DfcC61…], [4663])` |
 | 1 | [`GuardCM`](https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B) | `setBridgeMediatorL1BridgeParams([inbox], [verifier], [4663], [mediator])` |
-| 2 | [`GuardCM`](https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B) | `setTargetSelectorChainIds(…)` — four `pause()`/`unpause()` triples on 4663 |
+| 2 | [`GuardCM`](https://etherscan.io/address/0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B) | `setTargetSelectorChainIds(…)` — four triples on 4663: `pause()` ×2, `drain()`, `drain(address)` |
 
 ### Why now
 
@@ -41,11 +40,29 @@ nominee reverts. The processor `0xb9DfcC6155Ba4F211DCf8e6eCc9976Be11bB7a77` repo
 Robinhood Chain is an Arbitrum Orbit rollup and reuses the same `ProcessBridgedDataArbitrum` verifier as
 Arbitrum One, keyed on its own Delayed Inbox.
 
-### 2 — allowlist the pause/unpause triples
+### 2 — allowlist exactly the selector set the other chains hold
 
-Four triples, all on 4663: `ServiceManagerProxy` and `ArbitrumTargetDispenserL2`, each with `pause()`
-(`0x8456cb59`) and `unpause()` (`0x3f4ba83a`). This is the fast-path containment the community multisig
-holds on every other chain.
+Four triples, all on 4663, taken from what GuardCM **actually** holds elsewhere rather than from what
+looked reasonable:
+
+| target | selector | on other chains |
+|---|---|---|
+| `ServiceManagerProxy` `0x63e66d7a…` | `pause()` `0x8456cb59` | `true` on all seven |
+| `ArbitrumTargetDispenserL2` `0xc40C79C2…` | `pause()` `0x8456cb59` | `true` on all seven |
+| `ServiceRegistryL2` `0xE3607b00…` | `drain()` `0x9890220b` | `true` on all seven |
+| `ServiceRegistryTokenUtility` `0x3d77596b…` | `drain(address)` `0xece53132` | `true` on all seven |
+
+**`unpause()` is deliberately excluded.** It reads `false` on every chain for both pausable targets. An
+earlier revision of this proposal granted it and was caught in review. Granting it would let the
+community multisig lift a pause on 4663 in a single transaction with no vote: the CM holds the
+Timelock's `PROPOSER_ROLE` and `EXECUTOR_ROLE`, `getMinDelay()` is `0`, and GuardCM is the CM Safe's
+guard, so this allowlist is the only constraint. The fork test asserts both `unpause` triples stay
+`false` after execution.
+
+The two `drain` selectors were added for the same parity reason, in the opposite direction: proposal 11
+set them on every chain, and without them 4663 would be the only chain where draining slashed funds
+needs a full governance cycle. Draining is not containment, so including them does not contradict the
+description.
 
 **Entries 1 and 2 must ship together.** Mode is the cautionary case: its allowlist entries were
 backfilled in July 2026 but `setBridgeMediatorL1BridgeParams` was never called, leaving `verifierL2 == 0`
@@ -84,8 +101,14 @@ forge test --match-contract Proposal16RobinhoodTest -vv
 - `test_L1_fullGovernanceLifecycle` — propose → vote → queue → execute through the **live**
   GovernorOLAS, asserting the governor assigns the same `proposalId` the artifacts publish, then
   checking all three effects and the Arbitrum non-regression.
+- `test_CM_canPause4663_onlyAfterProposal` — what the guard actually **admits**, not just what it
+  stores. Builds a real community-multisig `schedule` carrying an Orbit retryable to 4663 and runs it
+  through `GuardCM.checkTransaction`: rejected before the proposal with a pinned
+  `NotAuthorized(inbox, createRetryableTicket, 1)`, accepted after for both pausable targets, and
+  `unpause()` still refused. This is the Mode lesson made executable — Mode's storage said yes while
+  the guard said no.
 
-Both pass. `Governor.execute()` uses ~266k gas.
+All three pass. `Governor.execute()` uses ~266k gas.
 
 No Tenderly simulation is required: there is no bridged payload.
 
