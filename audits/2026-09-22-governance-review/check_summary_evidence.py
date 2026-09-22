@@ -49,7 +49,24 @@ check('Heartbeat unknown; only enabled CM module is Timelock',
 cases = evidence['tests']['recovery-tests.txt']['cases']
 check('Nine recorded recovery fork tests passed', len(cases) == 9 and all(x['result'] == 'PASS' for x in cases))
 reports = ['README.md', 'SUMMARY.md', 'EVIDENCE.md', 'onchain/AREA0.md',
-           'point-1/README.md', 'point-1/ROLES_AND_RECOVERY.md']
+           'point-1/README.md', 'point-1/ROLES_AND_RECOVERY.md', 'point-3/DEPLOYMENT.md']
+deployment = json.loads((ROOT / 'point-3/deployment-evidence.json').read_text())
+check('VoteWeighting reciprocal wiring agrees at both recorded pins',
+      len(deployment['snapshots']) == 2 and all(all(s['wiringChecks'].values()) for s in deployment['snapshots']))
+active = deployment['snapshots'][-1]['voteWeighting']
+activity = deployment['activity']['last']
+check('VoteWeighting has unpaused wiring and a successful recent Dispenser checkpoint',
+      all(s['dispenser']['paused'] == 0 for s in deployment['snapshots'])
+      and deployment['activeDispenserSource']['explorerRuntimeMatchesRpc']
+      and activity['event'] == 'CheckpointNominee' and activity['successful'] and activity['receiptLogMatched']
+      and activity['transactionTarget'].lower() == deployment['snapshots'][-1]['dispenser']['address'].lower())
+version = next(x for x in deployment['sourceResults'] if x['address'].lower() == active['address'].lower())
+check('Active VoteWeighting matches baseline and differs from revised source',
+      version['verifiedSourceMatchesPreMayBaseline'] and not version['verifiedSourceMatchesRevised']
+      and version['explorerRuntimeMatchesRpc'] and all(s['voteWeighting']['runtimeHash'] == version['runtimeHash'] for s in deployment['snapshots']))
+check('Revised deployment absence is not claimed as proven',
+      deployment['conclusion']['historicalVersionActive'] and not deployment['conclusion']['revisedVersionActive']
+      and not deployment['conclusion']['revisedDeploymentFound'] and not deployment['conclusion']['deploymentAbsenceProven'])
 missing, bad_anchors = [], []
 for name in reports:
     source = ROOT / name
@@ -63,7 +80,7 @@ for name in reports:
         except ValueError:
             relative = ''
         unpublished = relative in ['WORK_PLAN.md', 'area1_timelock_delay.md'] or (
-            relative.startswith(('data/', 'onchain/data/', 'point-1/data/', '.local-archive/'))
+            relative.startswith(('data/', 'onchain/data/', 'point-1/data/', 'point-3/data/', '.local-archive/'))
             and relative != 'point-1/data/pin.json')
         if not target.exists() or unpublished:
             missing.append({'file': name, 'link': href})
@@ -82,6 +99,10 @@ if args.check_raw:
         path = ROOT / name
         matched = path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == expected_hash
         raw_results.append({'file': name, 'matches': matched})
+    for name, expected_hash in deployment['localInputSha256'].items():
+        path = ROOT / 'point-3/data' / name
+        matched = path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == expected_hash
+        raw_results.append({'file': 'point-3/data/' + name, 'matches': matched})
     check('Local raw inputs match recorded SHA-256 hashes', all(x['matches'] for x in raw_results))
 result = {'method': 'Offline consistency check against compact recorded references; not a fresh RPC check or independent proof',
           'checks': checks, 'missing_or_unpublished_links': missing, 'unresolved_anchors': bad_anchors,

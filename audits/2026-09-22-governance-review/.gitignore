@@ -3,6 +3,7 @@
 /onchain/data/
 /point-1/data/*
 !/point-1/data/pin.json
+/point-3/data/
 /.local-archive/
 /WORK_PLAN.md
 /area1_timelock_delay.md

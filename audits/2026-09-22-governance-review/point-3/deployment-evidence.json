@@ -1,0 +1,212 @@
+{
+  "scope": "Ethereum canonical Treasury/Tokenomics/Dispenser configuration at two pinned blocks; discovery is bounded, not a proof of absence of every possible deployment",
+  "sourceSnapshot": "93901ec315eb2b1d4683aab5615ef38b071228f8",
+  "revisedSourceSha256": "34a3977480743df7a301ea1374a051d136b867100a752f30d252342108e94d3f",
+  "repositories": {
+    "autonolas-governance": {
+      "commit": "93901ec315eb2b1d4683aab5615ef38b071228f8",
+      "commitDate": "2026-09-11T17:26:11Z",
+      "configPath": "scripts/deployment/globals_mainnet.json",
+      "addresses": {
+        "veOLASAddress": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+        "wveOLASAddress": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40",
+        "treasuryAddress": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "voteWeightingAddress": "0x95418b46d5566d3d1ea62c12aea91227e566c5c1"
+      }
+    },
+    "autonolas-tokenomics": {
+      "commit": "861d08007b0131e0aa3b2df4a6dd81aaea985992",
+      "commitDate": "2026-09-21T14:16:46Z",
+      "configPath": "scripts/deployment/globals_mainnet.json",
+      "addresses": {
+        "veOLASAddress": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+        "tokenomicsProxyAddress": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "treasuryAddress": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "dispenserAddress": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+        "voteWeightingAddress": "0x95418b46d5566d3d1ea62c12aea91227e566c5c1"
+      }
+    }
+  },
+  "snapshots": [
+    {
+      "pin": {
+        "number": 26032428,
+        "hash": "0x4676a14bf8236315a34cfd31f5c308ae66553b574a3ee701db2458f26e6e4fd6",
+        "timestamp": 1790072879,
+        "observedAt": "2026-09-22T10:28:02.620Z"
+      },
+      "treasury": {
+        "address": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "runtimeBytes": 9468,
+        "runtimeHash": "0x5c127427bac28016dbb02c94a4aa02121e134ee04f81fc01ce92b390b84ef2e9",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "tokenomics": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0"
+      },
+      "tokenomics": {
+        "address": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "runtimeBytes": 220,
+        "runtimeHash": "0xf6877213155fd109da2d360a2c38bdbbe96a7c5bbf305e763d2c3eaa46a0aff8",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0"
+      },
+      "dispenser": {
+        "address": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+        "runtimeBytes": 18684,
+        "runtimeHash": "0xdf290c6b3bf6f8903a5df10cdc5843096fdc48170021739ac8d9a388f3007d3f",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "tokenomics": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "treasury": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "voteWeighting": "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1",
+        "paused": 0
+      },
+      "voteWeighting": {
+        "address": "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1",
+        "runtimeBytes": 12054,
+        "runtimeHash": "0x9b18cc0eace5e55eb3d336f336b862a822e1e323ac723d851f51283c38b4bb86",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "ve": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+        "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+        "getNumNominees": "21"
+      },
+      "wiringChecks": {
+        "treasuryAndTokenomicsDispenserAgree": true,
+        "dispenserTokenomicsMatches": true,
+        "dispenserTreasuryMatches": true,
+        "voteWeightingDispenserMatches": true,
+        "veMatchesGovernanceConfiguration": true,
+        "governanceOwnersAgree": true
+      }
+    },
+    {
+      "pin": {
+        "number": 26034116,
+        "hash": "0x97fc5a63af74e9681247b3bb39e2a95098477718b23f34215440264ab24c4d6d",
+        "timestamp": 1790093231,
+        "collectedAt": "2026-09-22T16:07:23.522Z"
+      },
+      "treasury": {
+        "address": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "runtimeBytes": 9468,
+        "runtimeHash": "0x5c127427bac28016dbb02c94a4aa02121e134ee04f81fc01ce92b390b84ef2e9",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "tokenomics": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0"
+      },
+      "tokenomics": {
+        "address": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "runtimeBytes": 220,
+        "runtimeHash": "0xf6877213155fd109da2d360a2c38bdbbe96a7c5bbf305e763d2c3eaa46a0aff8",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0"
+      },
+      "dispenser": {
+        "address": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+        "runtimeBytes": 18684,
+        "runtimeHash": "0xdf290c6b3bf6f8903a5df10cdc5843096fdc48170021739ac8d9a388f3007d3f",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "tokenomics": "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+        "treasury": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "voteWeighting": "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1",
+        "paused": 0
+      },
+      "voteWeighting": {
+        "address": "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1",
+        "runtimeBytes": 12054,
+        "runtimeHash": "0x9b18cc0eace5e55eb3d336f336b862a822e1e323ac723d851f51283c38b4bb86",
+        "owner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "ve": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+        "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+        "getNumNominees": "21"
+      },
+      "wiringChecks": {
+        "treasuryAndTokenomicsDispenserAgree": true,
+        "dispenserTokenomicsMatches": true,
+        "dispenserTreasuryMatches": true,
+        "voteWeightingDispenserMatches": true,
+        "veMatchesGovernanceConfiguration": true,
+        "governanceOwnersAgree": true
+      }
+    }
+  ],
+  "sourceResults": [
+    {
+      "address": "0x95418b46d5566d3d1ea62c12aea91227e566c5c1",
+      "name": "VoteWeighting",
+      "compiler": "0.8.25+commit.b61c2a91",
+      "optimizationRuns": 1000000,
+      "evmVersion": "cancun",
+      "verifiedSourceMatchesRevised": false,
+      "verifiedSourceMatchesPreMayBaseline": true,
+      "verifiedSourceSha256": "d5fc602cb1c3b11adb504f3cf05e22735e40924ffc151f5607430a60427c507d",
+      "explorerRuntimeMatchesRpc": true,
+      "runtimeHash": "0x9b18cc0eace5e55eb3d336f336b862a822e1e323ac723d851f51283c38b4bb86",
+      "runtimeBytes": 12054,
+      "constructorInputs": [
+        {
+          "internalType": "address",
+          "name": "_ve",
+          "type": "address"
+        }
+      ],
+      "mutableDispenserSetter": true,
+      "dispenserDeclaredImmutable": false,
+      "constructorArguments": "0x0000000000000000000000007e01a500805f8a52fad229b3015ad130a332b7b3"
+    }
+  ],
+  "activeDispenserSource": {
+    "address": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+    "name": "Dispenser",
+    "compiler": "0.8.25+commit.b61c2a91",
+    "sourceUrl": "https://eth.blockscout.com/api/v2/smart-contracts/0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+    "explorerRuntimeMatchesRpc": true,
+    "pauseEnumExcerpt": "enum Pause {\n        Unpaused,\n        DevIncentivesPaused,\n        StakingIncentivesPaused,\n        AllPaused\n    }"
+  },
+  "discovery": {
+    "method": "Current mainnet configuration files from both repositories, current on-chain wiring, and Blockscout exact contract-name search",
+    "searchUrl": "https://eth.blockscout.com/api/v2/search?q=VoteWeighting",
+    "exactNameCandidates": [
+      "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1"
+    ],
+    "nextPage": null,
+    "unverifiedDeploymentsExcluded": true
+  },
+  "conclusion": {
+    "historicalVersionActive": true,
+    "revisedVersionActive": false,
+    "revisedDeploymentFound": false,
+    "deploymentAbsenceProven": false
+  },
+  "activity": {
+    "fromBlock": 25984116,
+    "toBlock": 26034116,
+    "eventNames": [
+      "CheckpointNominee",
+      "VoteForNominee",
+      "NomineeRelativeWeightWrite"
+    ],
+    "matchingEvents": 9,
+    "eventCounts": {
+      "CheckpointNominee": 5,
+      "VoteForNominee": 4,
+      "NomineeRelativeWeightWrite": 0
+    },
+    "last": {
+      "event": "CheckpointNominee",
+      "block": 26013988,
+      "transaction": "0xe7b171eae0ec04937e9f9d310e48c94c25a728f85ef9ab80e795c7b2ffe60339",
+      "transactionTarget": "0x5650300fcbab43a0d7d02f8cb5d0f039402593f0",
+      "successful": true,
+      "receiptLogMatched": true
+    }
+  },
+  "localInputSha256": {
+    "repositories.json": "f94487e1428e9c72d6e7593028ffc4c8af555a845753d2038ad71c12417061bc",
+    "snapshots.json": "fc1a4da7e796835625fa857e2c0945636fb6f4e4cd30727809a2895b7ba52533",
+    "source-results.json": "541e041281327253d86d287fb82447bee4545690712d0f4df24f164474204553",
+    "search.json": "24391fde2b7f28ff03cd148de903c32326befe869086744d1c5c20721536d954",
+    "activity.json": "44c2c36b71d8f998a764c7da21471ea8872c4783ed7ab7479dfa170aea35e08f",
+    "source-0x95418b46d5566d3d1ea62c12aea91227e566c5c1.json": "2c657001840e97b72c0e35767d1d37bc849917fca795d368d2d44d4d92ad25b5",
+    "source-0x5650300fcbab43a0d7d02f8cb5d0f039402593f0.json": "1afb2e8a62b8c75d31c38331635d4cd8500e63e2fded0d6cdb41994b9bbee9bd"
+  }
+}

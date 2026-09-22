@@ -8,7 +8,7 @@ This review asks what changed and why, whether changes were activated, whether t
 
 The three workstreams are **(1) proposals, deployments, roles and timing; (2) GuardCM and cross-chain permissions; (3) contract changes and regressions**, including VoteWeighting and veto. External targets are examined where needed to establish governance authority and effects, without a standalone audit of their business logic.
 
-Main governance activation, roles and current parameters have been verified at the recorded block. Full cross-chain permissions, voter coverage, revised VoteWeighting/veto adoption and remaining regression reviews are open. The vulnerability register is the baseline for existing issues; the active checklist focuses further analysis on reviewed changes, claimed fixes and new evidence. Proposal-15 test weaknesses are a documented finding, not an obstacle to the independently verified execution.
+Main governance activation, roles and current parameters have been verified at the recorded block. The historical VoteWeighting is confirmed active; the revised version is not wired into the canonical system at the review block or fresh block 26,034,116. No separate revised deployment was found in the bounded discovery. Full cross-chain permissions, voter coverage, veto adoption and remaining source-fix/regression reviews are open. The vulnerability register is the baseline for existing issues; the active checklist focuses further analysis on reviewed changes, claimed fixes and new evidence. Proposal-15 test weaknesses are a documented finding, not an obstacle to the independently verified execution.
 
 ## 1. Which versions are compared?
 
@@ -35,6 +35,7 @@ The renderer uses the retained [HTML template](tag-lineage.template.html); the g
 | [SUMMARY.md](SUMMARY.md) | Current checklist and detailed review questions. |
 | [Area 0](onchain/AREA0.md) | Proposal inventory, effects and limitations. |
 | [Point 1](point-1/README.md) | Governance activation, parameters, design assessment and findings. |
+| [VoteWeighting deployment](point-3/DEPLOYMENT.md) | Active version, canonical wiring and bounded replacement discovery, with compact references and a read-only collector. |
 | [Roles and recovery](point-1/ROLES_AND_RECOVERY.md) | Role-history evidence and retained background checks of already documented findings; these are not separate open review tasks. |
 | [EVIDENCE.md](EVIDENCE.md), [evidence.json](evidence.json) | Compact source references, transaction IDs, pins, recorded results and input hashes. |
 | Collection/analysis scripts and `point-1/tests/` | How to reproduce the analysis and mechanisms. |
@@ -85,7 +86,7 @@ The baseline tag is on an audit branch. Changes it already contains may appear a
 
 ## 6. What has been verified beyond Git?
 
-[Area 0](onchain/AREA0.md) records the proposal inventory. [Point 1](point-1/README.md) records activation, parameters, source/runtime checks and reproductions. [The follow-up](point-1/ROLES_AND_RECOVERY.md) extends role history through deployment and tests conditional recovery. Each report retains its own block and coverage limits; destination-chain operation is not established by L1 execution alone.
+[Area 0](onchain/AREA0.md) records the proposal inventory. [Point 1](point-1/README.md) records activation, parameters, source/runtime checks and reproductions. [The follow-up](point-1/ROLES_AND_RECOVERY.md) extends role history through deployment and tests conditional recovery. [VoteWeighting deployment verification](point-3/DEPLOYMENT.md) identifies the historical active version at the original pin and block 26,034,116. Each report retains its own block and coverage limits; destination-chain operation is not established by L1 execution alone.
 
 ## 7. Remaining limits and how to record conclusions
 
