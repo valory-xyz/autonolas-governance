@@ -119,6 +119,8 @@ The repository's proposal ID is `45361663242668069089223946785328365668773778141
 
 ### P1-02 — Delay desynchronization blocks newly queued governance repairs
 
+**Scope status:** retained background verification of an existing vulnerability-register entry; not a new finding or a separate open task in the current checklist.
+
 **Classification:** known issue, active code exposure but dormant configuration; potentially significant governance liveness impact conditional on an approved unsafe parameter change. Registry §13 labels it Informative; that label should not be read as evidence of easy recovery.
 
 `queue()` passes `governorDelay` unchanged to the Timelock. An approved self-call raising `minDelay` above it succeeds, but subsequent queueing—including a proposal to repair `governorDelay`—reverts. The Governor setter only checks the inequality when that setter runs; it does not prevent a separate Timelock change from breaking it.
@@ -132,6 +134,8 @@ The repository's proposal ID is `45361663242668069089223946785328365668773778141
 **Recovery follow-up:** [fork tests](ROLES_AND_RECOVERY.md) now demonstrate atomic coupled updates, a repair queued before the mismatch, and CM repair after conditional guard release. The exact heartbeat is unknown at the pin; tests mock its Defeated state explicitly. Establish those operational prerequisites before treating CM recovery as available. Do not add broad CM permissions without assessing the resulting authority expansion. No universal irrecoverability claim is made.
 
 ### P1-03 — Invalid Timelock replacement remains accepted
+
+**Scope status:** retained background verification of an existing vulnerability-register entry; not a new finding or a separate open task in the current checklist.
 
 **Classification:** existing issue, registry §25 Medium; governance-authorized lockout, not an external-access exploit.
 
@@ -200,4 +204,4 @@ Collectors reuse saved, pinned responses; rerunning does not silently move the e
 
 Remaining limits: operational heartbeat/recovery prerequisites, broader Safe authority analysis, complete veOLAS holder enumeration, destination-chain verification of the extra activation calls, and exhaustive exploration of exceptional recovery paths. Deployment-to-pin role reconstruction and bounded module/guard-release checks are now covered by the [follow-up](ROLES_AND_RECOVERY.md). Event discovery depends on explorer completeness; verifying returned events against receipts does not prove no events were omitted. PR metadata was collected, not every inline discussion. The historical design PDFs were inspected as extracted text, not as rendered diagrams.
 
-**Review summary:** the principal activation and parameter changes are live and their core state transitions match the intended governance mechanisms. The main unresolved risks are conditional governance lockout and unverified operational prerequisites for recovery. The strongest newly established process gap is that the committed activation artifact does not represent the entire executed proposal.
+**Review summary:** the principal activation and parameter changes are live and their core state transitions match the intended governance mechanisms. The known configuration risks and recovery caveats above remain background evidence for the existing vulnerability register; they are not separate open work in the current checklist. The strongest newly established process gap is that the committed activation artifact does not represent the entire executed proposal.

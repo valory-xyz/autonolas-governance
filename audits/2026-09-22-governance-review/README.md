@@ -8,7 +8,7 @@ This review asks what changed and why, whether changes were activated, whether t
 
 The three workstreams are **(1) proposals, deployments, roles and timing; (2) GuardCM and cross-chain permissions; (3) contract changes and regressions**, including VoteWeighting and veto. External targets are examined where needed to establish governance authority and effects, without a standalone audit of their business logic.
 
-Main governance activation, roles and current parameters have been verified at the recorded block. Two existing configuration hazards were reproduced locally; neither was active at that block. Operational recovery, full cross-chain permissions, voter coverage, revised VoteWeighting/veto adoption and remaining regression reviews are open. Proposal-15 test weaknesses are a documented finding, not an obstacle to the independently verified execution.
+Main governance activation, roles and current parameters have been verified at the recorded block. Full cross-chain permissions, voter coverage, revised VoteWeighting/veto adoption and remaining regression reviews are open. The vulnerability register is the baseline for existing issues; the active checklist focuses further analysis on reviewed changes, claimed fixes and new evidence. Proposal-15 test weaknesses are a documented finding, not an obstacle to the independently verified execution.
 
 ## 1. Which versions are compared?
 
@@ -35,7 +35,7 @@ The renderer uses the retained [HTML template](tag-lineage.template.html); the g
 | [SUMMARY.md](SUMMARY.md) | Current checklist and detailed review questions. |
 | [Area 0](onchain/AREA0.md) | Proposal inventory, effects and limitations. |
 | [Point 1](point-1/README.md) | Governance activation, parameters, design assessment and findings. |
-| [Roles and recovery](point-1/ROLES_AND_RECOVERY.md) | Role-history reconstruction and conditional recovery tests. |
+| [Roles and recovery](point-1/ROLES_AND_RECOVERY.md) | Role-history evidence and retained background checks of already documented findings; these are not separate open review tasks. |
 | [EVIDENCE.md](EVIDENCE.md), [evidence.json](evidence.json) | Compact source references, transaction IDs, pins, recorded results and input hashes. |
 | Collection/analysis scripts and `point-1/tests/` | How to reproduce the analysis and mechanisms. |
 

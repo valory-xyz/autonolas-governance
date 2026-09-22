@@ -1,5 +1,8 @@
 # Point 1 follow-up — complete role history and lockout recovery
 
+**Scope status:** role-history results remain evidence for the active review. The two configuration cases below correspond to vulnerability-register §§13 and 25 and are retained as background verification of existing findings. Their suggested recovery follow-ups are not separate open tasks or completion requirements in the current review checklist. This scope decision does not establish that the issues are fixed or that recovery is available.
+
+
 **Evidence packaging:** this report describes the original pinned collection. Published links now lead to the [compact evidence index](../EVIDENCE.md) or original sources. Raw RPC responses, generated JSON and verbose test logs remain local/ignored; [reproduction instructions](../README.md#4-reproduction) explain how to recollect them.
 
 
