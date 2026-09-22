@@ -119,10 +119,12 @@ For a separately collected, slightly later state snapshot at block **26032428**,
 | Treasury `owner()` | Timelock |
 | OLAS `owner()` / `minter()` | Timelock / Treasury |
 
-## Items raised for the following areas
+## Follow-ups within the agreed review scope
 
-1. **Area 1.** Timelock `minDelay` is 0, so every delay guarantee rests on `governorDelay` inside the Governor. The CM holds PROPOSER and EXECUTOR on a zero-delay Timelock; GuardCM is therefore its only restriction. The Governor holding `TIMELOCK_ADMIN_ROLE` directly (and not only through the Timelock) needs a rationale.
-2. **Area 2.** The powers model must include the Timelock-as-module path on the CM. The July allowlist change (07-14) and the proposal 16 allowlist (09-18) should be diffed against the intended selector set.
-3. **Area 4.** Four proposals with no repository artifact (one cancelled) and the proposal 11 divergence need their builders located, probably in other repositories, or reconstructed from calldata. Proposal 16 executed on 09-18, after the snapshot. The README's "proposed" status should be updated.
-4. **Area 5.** None of the veto-stack contracts appear in this inventory, which is consistent with the veto stack not being deployed. That needs confirming by address once the addresses are known.
-5. **Nominee removals.** In total, 52 nominees were removed from the old VoteWeighting (32 on 07-17, then 20 on 08-01). Area 3 must account for both batches.
+- **Main governance:** use the later [point-1 results](../point-1/README.md) for role and timing checks already performed. Voting-power distribution and quorum coverage remain in the current checklist; historical questions here do not reopen completed checks.
+- **CM changes:** verify governance-relevant effects of the activation and changed route/permission proposals. Retain the July Dispenser permission, Celo and new/changed destination paths as specific questions. Reuse applicable coverage for unchanged behaviour under the [CM review boundary](../README.md#cm-review-boundary).
+- **Proposal composition:** retain the proposal-11 cross-repository composition note. Locate or reconstruct additional payloads only where needed to understand in-scope governance authority or changed effects; this is not a standalone review of external business logic or unrelated activity.
+- **Veto:** deployment and activation remain to be established in the separate veto review; absence from this inventory does not prove non-deployment.
+- **VoteWeighting:** retain both nominee-removal batches in the accounting review: 32 on July 17 and 20 on August 1, totalling 52. The reduced CM scope does not remove this follow-up.
+
+L1 execution still does not prove destination execution. Paths not independently checked must remain labelled as such; deferring unchanged integrations is a scope choice, not confirmation that they work.

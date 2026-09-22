@@ -103,7 +103,7 @@ The existence of a suitable emergency operation at the pin has **not** been esta
 
 Both cases require governance authorization. That limits reachability; it does not prove deliberate governance disruption has no motive or that operator error is the only possible trigger. Significant governance unavailability remains possible even without immediate asset extraction. This follow-up records conditions and evidence without assigning a new unconditional severity.
 
-## 6. Reproduction and remaining work
+## 6. Reproduction and deferred follow-ups
 
 ```sh
 node audits/2026-09-22-governance-review/point-1/collect_role_history.cjs
@@ -117,7 +117,12 @@ The collector reuses saved pinned responses. Fork tests require an archive-capab
 - [x] Test atomic delay prevention, pre-queued repair behavior, guarded CM rejection, and conditional released-CM recovery.
 - [x] Read heartbeat state and enumerate enabled CM modules at the pin.
 - [x] Compare documented mitigations/non-fix reasons with the reproduced behavior and preserve contradictions.
-- [ ] Establish an operational heartbeat/recovery procedure: matching proposal availability, eligibility, possible defeat, signer cooperation, timing and return to restricted operation.
-- [ ] Inventory suitable outstanding emergency operations across the full Timelock history if relying on a pre-queued recovery route.
-- [ ] Complete the broader Safe/guard authority review and production Governor replacement checklist.
-- [ ] Review other unbounded setters and remaining point-1 findings separately; these nine tests do not close the entire governance audit.
+
+**Deferred operational recommendations, not active completion requirements:**
+
+- Establish a heartbeat/recovery runbook covering the matching proposal, eligibility, possible defeat, signer cooperation, timing and return to restricted operation.
+- Inventory full-history outstanding emergency operations if an operator intends to rely on a pre-queued recovery route.
+- Complete a broader Safe authority review and production Governor replacement checklist if pursuing those operational procedures.
+- Investigate additional unsafe settings where a reviewed change or new evidence makes this necessary; the existing vulnerability register remains the baseline.
+
+These recommendations remain unresolved. The [focused CM scope](../README.md#cm-review-boundary) does not classify them as fixed or establish that emergency recovery is available. Completed tests and their limitations above are retained unchanged.

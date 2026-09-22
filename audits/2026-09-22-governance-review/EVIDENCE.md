@@ -66,6 +66,8 @@ Pinned CM modules: Timelock only. Guard restrictions are enabled; the specified 
 
 ## Guard configuration
 
+Future CM work follows the [changes-focused boundary](README.md#cm-review-boundary). Mapping prior coverage to exact versions and assumptions remains open; these recorded checks do not imply a fresh audit of unchanged Safe/bridge behaviour. Broad revalidation and operational recovery runbooks are deferred, not completed.
+
 `guardConfiguration` preserves the recorded L1 routes and target/selector permissions with their execution transaction and block. This is reconstruction from successful calls, not full live-matrix or destination-chain verification. `sensitiveGuardChecks` records the sampled rejected settings selectors. [Reconstructor](onchain/reconstruct_guard.cjs); [remaining work](SUMMARY.md#2-guardcm-and-cross-chain-permissions).
 
 - Configuration [transaction](https://etherscan.io/tx/0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168).

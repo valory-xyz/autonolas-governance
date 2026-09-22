@@ -130,6 +130,7 @@ lines += ["", "`parameterSnapshots` records before/after activation and proposal
           "Pinned CM modules: Timelock only. Guard restrictions are enabled; the specified heartbeat is unknown. "
           "Neither reproduced lockout is active. Conditional recovery tests mock a defeated heartbeat and impersonate cooperating Safe owners locally; "
           "they do not establish operational availability.", "", "## Guard configuration", "",
+          'Future CM work follows the [changes-focused boundary](README.md#cm-review-boundary). Mapping prior coverage to exact versions and assumptions remains open; these recorded checks do not imply a fresh audit of unchanged Safe/bridge behaviour. Broad revalidation and operational recovery runbooks are deferred, not completed.', "",
           "`guardConfiguration` preserves the recorded L1 routes and target/selector permissions with their execution transaction and block. "
           "This is reconstruction from successful calls, not full live-matrix or destination-chain verification. "
           "`sensitiveGuardChecks` records the sampled rejected settings selectors. "

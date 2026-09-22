@@ -16,7 +16,7 @@ Review snapshot: `93901ec315eb2b1d4683aab5615ef38b071228f8`. Tag baseline: `v1.2
 5. **The documented CM recovery route for delay desynchronization is unavailable through the current allowlist.** `Timelock.updateDelay` is not allowlisted. The follow-up demonstrates pre-queued delay repair and CM recovery conditional on guard release. The configured heartbeat is unknown at the pin, so release is not established as immediately available.
 6. **The parameter tests and explanatory artifacts have unresolved limitations.** Two of six existing proposal-15 tests fail against current mainnet because they assume the pre-execution state. A purported check of the new quorum reads the previous block's old quorum. These are validation/documentation issues, not evidence that the executed setters malfunctioned.
 
-No permissionless theft or takeover exploit is established by this review. This is a bounded assessment of point 1; it does not close the broader CM/bridge review or the full independent on-chain inventory.
+No permissionless theft or takeover exploit is established by this review. This is a bounded assessment of point 1; it does not constitute a full CM/bridge audit. Remaining CM work follows the [changes-focused boundary](../README.md#cm-review-boundary); an exhaustive independent activity inventory is not a completion requirement.
 
 ## Evidence and method
 
@@ -115,7 +115,7 @@ The repository's proposal ID is `45361663242668069089223946785328365668773778141
 
 **Why unresolved:** no explanation for the final on-chain expansion or for leaving the artifact unchanged was established in the collected PR bodies/reviews. Do not infer a reason from the mismatch alone.
 
-**Required follow-up:** preserve the submitted 22-call version alongside the original draft, bind it to the actual proposal ID and execution transaction, and validate its additional targets and destination-chain effects in areas 2/4. Full differences are in [Evidence references: analysis.json](../EVIDENCE.md#governance-activation-and-parameters), `artifacts.11.comparisons`.
+**Scoped follow-up:** retain the submitted-versus-local composition references and inspect additional payloads only where necessary to establish reviewed governance changes and their authority/effects. Destination checks follow the [focused CM scope](../SUMMARY.md#2-guardcm-and-cross-chain-permissions); there is no standalone area 4 or blanket external-target audit. Full differences are in [Evidence references: analysis.json](../EVIDENCE.md#governance-activation-and-parameters), `artifacts.11.comparisons`.
 
 ### P1-02 — Delay desynchronization blocks newly queued governance repairs
 
@@ -167,7 +167,7 @@ The other configuration hazards in registry §25 also remain relevant: an excess
 |---|---|
 | Can a non-upgradeable Governor be replaced by governance? | Yes. This is described in the original design and the role migration is verified. |
 | Can governance adjust participation parameters? | Yes. The mechanism is explicitly part of the original design. It does not specify that 250,000 and 10% are optimal or require these exact values. |
-| Can CM bypass the normal voting process for selected actions? | Yes, intentionally. Zero Timelock delay is an explicit later design decision in PR #178. The permitted scope still needs the separate GuardCM review. |
+| Can CM bypass the normal voting process for selected actions? | Yes, intentionally. Zero Timelock delay is an explicit later design decision in PR #178. Changed permissions and relevant assumptions still need the focused GuardCM review. |
 | Can CM directly change Governor-sensitive parameters? | Not through the tested direct Timelock path; `onlyGovernance` has an additional authorized-call check, and relevant settings are not in the current guard allowlist. This is not an exhaustive review of every Safe module or guard-release path. |
 | Does the delay split preserve liveness under every allowed configuration? | No. Independent setters admit a state that prevents normal queueing; this is a confirmed design constraint requiring mitigation. |
 | Does higher threshold/quorum guarantee protection from an adversarial proposal? | No. It restricts participation and raises the required voting power. Sufficient voting power still allows proposals and passage. Current large holders can individually exceed quorum. |
@@ -202,6 +202,6 @@ node audits/2026-09-22-governance-review/point-1/analyze_evidence.cjs
 
 Collectors reuse saved, pinned responses; rerunning does not silently move the evidence block. Fork tests perform only local mutations. Logs: [Evidence references: local mechanisms](../EVIDENCE.md#test-results), [Evidence references: deployed mechanisms](../EVIDENCE.md#test-results).
 
-Remaining limits: operational heartbeat/recovery prerequisites, broader Safe authority analysis, complete veOLAS holder enumeration, destination-chain verification of the extra activation calls, and exhaustive exploration of exceptional recovery paths. Deployment-to-pin role reconstruction and bounded module/guard-release checks are now covered by the [follow-up](ROLES_AND_RECOVERY.md). Event discovery depends on explorer completeness; verifying returned events against receipts does not prove no events were omitted. PR metadata was collected, not every inline discussion. The historical design PDFs were inspected as extracted text, not as rendered diagrams.
+Remaining in-scope work includes voting-power/quorum coverage and targeted destination/configuration checks for reviewed governance changes. A full Safe authority audit, operational recovery runbook and exhaustive exploration of exceptional recovery paths are deferred under the [CM boundary](../README.md#cm-review-boundary). Their absence remains a limitation, not an additional completion requirement. Deployment-to-pin role reconstruction and bounded module/guard-release checks are now covered by the [follow-up](ROLES_AND_RECOVERY.md). Event discovery depends on explorer completeness; verifying returned events against receipts does not prove no events were omitted. PR metadata was collected, not every inline discussion. The historical design PDFs were inspected as extracted text, not as rendered diagrams.
 
 **Review summary:** the principal activation and parameter changes are live and their core state transitions match the intended governance mechanisms. The known configuration risks and recovery caveats above remain background evidence for the existing vulnerability register; they are not separate open work in the current checklist. The strongest newly established process gap is that the committed activation artifact does not represent the entire executed proposal.

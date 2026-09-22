@@ -8,7 +8,17 @@ This review asks what changed and why, whether changes were activated, whether t
 
 The three workstreams are **(1) proposals, deployments, roles and timing; (2) GuardCM and cross-chain permissions; (3) contract changes and regressions**, including VoteWeighting and veto. External targets are examined where needed to establish governance authority and effects, without a standalone audit of their business logic.
 
-Main governance activation, roles and current parameters have been verified at the recorded block. The historical VoteWeighting is confirmed active; the revised version is not wired into the canonical system at the review block or fresh block 26,034,116. No separate revised deployment was found in the bounded discovery. Full cross-chain permissions, voter coverage, veto adoption and remaining source-fix/regression reviews are open. The vulnerability register is the baseline for existing issues; the active checklist focuses further analysis on reviewed changes, claimed fixes and new evidence. Proposal-15 test weaknesses are a documented finding, not an obstacle to the independently verified execution.
+Main governance activation, roles and current parameters have been verified at the recorded block. The historical VoteWeighting is confirmed active; the revised version is not wired into the canonical system at the review block or fresh block 26,034,116. No separate revised deployment was found in the bounded discovery. The focused CM change/configuration review, voter coverage, veto adoption and remaining source-fix/regression reviews are open. The vulnerability register is the baseline for existing issues; the active checklist focuses further analysis on reviewed changes, claimed fixes and new evidence. Proposal-15 test weaknesses are a documented finding, not an obstacle to the independently verified execution.
+
+### CM review boundary
+
+Review **source changes, activation, changed permissions/routes and applicable unresolved findings**. Reuse prior tests/audits for unchanged behaviour only after identifying the covered source version, relevant test cases, findings and assumptions, and checking that those assumptions still apply to the activated configuration. Record reliance on prior coverage separately from independent verification. Prior code tests do not prove a later deployment or configuration correct.
+
+The source baseline and proposal window are unchanged: the March zero-mediator check remains in scope because it follows the selected baseline. Keep targeted checks for Celo, new/changed routes, and the July L1 Dispenser permission. Check unchanged dependencies only as needed to establish those behaviours. New tests are justified by relevant changes, missing coverage or contradictory evidence.
+
+**Deferred, not completed:** a full Safe/module audit, exhaustive permission-combination tests, revalidation of every unchanged L2 integration, a general cross-chain token inventory, and a full operational recovery/migration runbook. Reopen a specific part if a reviewed change or evidence gap makes it necessary. Completed role and recovery results remain supporting evidence; deferral neither fixes known issues nor establishes recoverability.
+
+This boundary applies to CM/bridge work. VoteWeighting and veto review scopes remain unchanged. The final design still describes all governance contracts, with explicit evidence/coverage labels; describing an unchanged component does not require a fresh security audit of it. The focused checklist is in [section 2](SUMMARY.md#2-guardcm-and-cross-chain-permissions).
 
 ## 1. Which versions are compared?
 
@@ -96,4 +106,4 @@ For each change/finding, record source interval, motivation (or unknown rational
 
 Produce a concise catalogue and interaction diagram covering **all governance contracts**, including unchanged components: OLAS/veOLAS/wveOLAS, Governor/Timelock, CM Safe/guard/verifiers, cross-chain mediators, VoteWeighting and veto where applicable. Describe roles, caller/target relationships, data/value flows, voting/queue/execute/cancel paths, migration/recovery and timing. Separate governance contracts from externally governed targets.
 
-Identify each active instance by chain/address/version and link substantive claims to source and pinned evidence. Distinguish active deployment, source-only changes, planned mechanisms, retired routes and unknown states. Complete this synthesis after the three workstreams and known-issue/test review are reconciled; unknowns must remain explicit.
+Identify each active instance by chain/address/version and link substantive claims to source and pinned evidence. Distinguish active deployment, source-only changes, planned mechanisms, retired routes and unknown states. Complete this synthesis after the three workstreams and known-issue/test review are reconciled within the stated scope; label reliance on prior coverage and deferred independent verification; unknowns must remain explicit.
