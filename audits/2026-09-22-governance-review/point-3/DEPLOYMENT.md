@@ -60,7 +60,6 @@ Both repositories' current main configurations still identify the historical ins
 
 - [x] Verify which VoteWeighting instance is active and identify its source version.
 - [x] Check current published deployment records and exact-name explorer discovery for a replacement; none found within this scope.
-- [ ] Verify any separately deployed revised instance if an address or deployment transaction becomes available.
 - [ ] Review the source fixes and their regressions; distinguish verified source improvements from fixes active on-chain.
 
 The security fixes identified in the revised VoteWeighting **cannot be described as deployed fixes for the active instance**. This deployment check does not repeat the accounting audit or determine the current impact of each historical defect.

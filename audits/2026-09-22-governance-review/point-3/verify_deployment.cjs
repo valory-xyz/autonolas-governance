@@ -89,7 +89,8 @@ async function main() {
     for(const pin of [review,current]) {
         const snapshot={pin};
         snapshot.treasury=await readContract(treasury,['owner() view returns(address)','tokenomics() view returns(address)','dispenser() view returns(address)'],pin.number);
-        const tokenomicsAddress=typeof snapshot.treasury.tokenomics==='string' ? snapshot.treasury.tokenomics : tokenomics.tokenomicsProxyAddress;
+        const tokenomicsAddress=snapshot.treasury.tokenomics;
+        if(typeof tokenomicsAddress!=='string'||tokenomicsAddress===ethers.constants.AddressZero)throw Error('No active Tokenomics established');
         snapshot.tokenomics=await readContract(tokenomicsAddress,['owner() view returns(address)','dispenser() view returns(address)'],pin.number);
         const dispenser=snapshot.tokenomics.dispenser;
         if(typeof dispenser!=='string'||dispenser===ethers.constants.AddressZero)throw Error('No active Dispenser established');
