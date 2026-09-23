@@ -8,7 +8,8 @@ import {Timelock} from "../../../../contracts/Timelock.sol";
 contract GovernanceLiveReviewTest is Test {
     GovernorOLAS gov=GovernorOLAS(payable(0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6));
     Timelock tl=Timelock(payable(0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE));
-    address whale=0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97;
+    // Fork-only proposer fixture: an account whose voting power clears the live threshold and quorum.
+    address voter=0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97;
     function setUp() public {
         vm.createSelectFork(vm.envOr("REVIEW_RPC",string("https://eth.drpc.org")),26032428);
         assertEq(block.chainid,1);
@@ -20,8 +21,8 @@ contract GovernanceLiveReviewTest is Test {
     }
     function mine(uint256 count) internal {vm.roll(block.number+count);vm.warp(block.timestamp+12*count);}
     function succeed(address[] memory t,uint256[] memory v,bytes[] memory c,string memory d) internal {
-        vm.prank(whale);uint256 id=gov.propose(t,v,c,d);
-        mine(gov.votingDelay()+1);vm.prank(whale);gov.castVote(id,1);
+        vm.prank(voter);uint256 id=gov.propose(t,v,c,d);
+        mine(gov.votingDelay()+1);vm.prank(voter);gov.castVote(id,1);
         mine(gov.votingPeriod()+1);assertEq(uint256(gov.state(id)),4);
     }
     function pass(address target,bytes memory data,string memory d) internal {

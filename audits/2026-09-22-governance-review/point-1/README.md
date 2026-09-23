@@ -96,7 +96,7 @@ Two proposals were discovered, not just the one mentioned in the rationale:
 
 Exact integers, payloads, proposer addresses, deadlines, and states are in [Evidence references: proposals.json](../EVIDENCE.md#proposals) and [Evidence references: enrichment.json](../EVIDENCE.md#guard-configuration). Both voting deadlines precede proposal 15's execution. Therefore the evidence does **not** support attributing their defeat to the new threshold or quorum. Their titles are proposer-supplied descriptions, not verified descriptions of recipient safety.
 
-The first proposer's voting power is approximately **115,083.54** at the pinned block's preceding block, versus approximately **115,815.17** just before proposal 15 executed. The DAO proposer has approximately **2,360,027.75** at the pinned block, with lock end **September 2, 2027**. Those readings invalidate using the original 5,100-OLAS narrative or the test comment's January 7, 2027 lock end as current inputs. Full holder enumeration was not performed; the “twelve to five addresses” eligibility claim remains unverified for the relevant historical block.
+Proposer voting-power readings, holder enumeration and eligibility counts belong to the voting-power follow-up and are not recorded here. The rationale's original holder narrative and the test comment's lock-expiry date therefore remain unverified as current inputs.
 
 ## 2. Findings and unresolved issues
 

@@ -18,7 +18,6 @@ const addr = {
   token:require('../evidence.json').addresses.votingWrapper,
   ve:'0x7e01A500805f8A52Fad229b3015AD130A332B7b3',
   daoProposer:'0x34471096285C2B59164E20c03f6977423a450039',
-  whale:'0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97',
   zero:ethers.constants.AddressZero
 };
 const activation='0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168';
@@ -123,7 +122,7 @@ async function main(){
    row.roles[name]={};
    await Promise.all(['TIMELOCK_ADMIN_ROLE','PROPOSER_ROLE','EXECUTOR_ROLE','CANCELLER_ROLE'].map(async role=>{row.roles[name][role]=await call(addr.timelock,'hasRole(bytes32,address) view returns(bool)',[ethers.utils.id(role),address],block);}));
   }
-  const voters={daoProposer:addr.daoProposer,whale:addr.whale};
+  const voters={daoProposer:addr.daoProposer};
   const tp=proposals.find(p=>p.args.proposalId===treasuryProposal);if(tp)voters.treasuryProposer=tp.args.proposer;
   for(const [name,address] of Object.entries(voters))row.votes[name]={address,power:await call(addr.governor,'getVotes(address,uint256) view returns(uint256)',[address,block-1],block),lockedEnd:await call(addr.ve,'lockedEnd(address) view returns(uint256)',[address],block)};
   row.pastTotalSupply=await call(addr.token,'getPastTotalSupply(uint256) view returns(uint256)',[block-1],block);

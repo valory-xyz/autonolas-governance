@@ -93,12 +93,12 @@ The on-chain description adds section **(G)**: upgrades of the ServiceManager im
 
 ### Two defeated proposals targeting Treasury and the OLAS minter
 
-| Proposal | Proposer (veOLAS at head) | Calls |
+| Proposal | Proposer | Calls |
 |---|---|---|
-| "Owner migration: transfer treasury ownership from old timelock to Safe updater" | EOA `0xD4f8…5451` (≈115k) | Treasury `changeOwner(0x7b8e…561d)`, an EOA with nonce 3 |
+| "Owner migration: transfer treasury ownership from old timelock to Safe updater" | EOA `0xD4f8…5451` | Treasury `changeOwner(0x7b8e…561d)`, an EOA with nonce 3 |
 | "Treasury and token controller upgrade to Safe v2.1 module" | EOA `0x56F0…CEf5` (≈5.1k, just above the old 5k threshold) | Treasury `changeOwner(proposer)`; OLAS `changeMinter(proposer)` |
 
-Both descriptions misdescribe their effect. Each was defeated with about 5.0M veOLAS against, cast by two contract accounts (`0x3447…0039`, `0xBC21…9716`). There were no votes in favour, and the proposers did not vote. Quorum at the snapshots was about 251k veOLAS (3%). With the rules at the time, a holder of more than ~252k veOLAS could have passed such a proposal if those two voters had not voted against. Two facts show what was at stake: OLAS `minter()` is the Treasury, and Treasury `owner()` is the Timelock. These are the concrete events behind proposal 15. With the new 250k threshold, neither proposer could create a proposal today.
+Both descriptions misdescribe their effect. Each was defeated: there were no votes in favour, the Against totals exceeded the quorum in force at the time, and the proposers did not vote. Voter identities and holder voting capacity are part of the voting-power follow-up and are not recorded here. Two facts show what was at stake: OLAS `minter()` is the Treasury, and Treasury `owner()` is the Timelock. These are the concrete events behind proposal 15. With the new 250k threshold, neither proposer could create a proposal today.
 
 ## Live state at block 26032401
 

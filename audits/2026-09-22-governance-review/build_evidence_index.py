@@ -37,13 +37,16 @@ manifest = read("point-1/data/manifest.json")
 addresses = dict(manifest["addresses"])
 # This is a public voting-wrapper address, not an API credential.
 addresses["votingWrapper"] = addresses.pop("token")
+# Holder-level sample addresses are deferred to the voting-power follow-up.
+addresses.pop("whale", None)
 snapshots = []
 for row in analysis["snapshots"]:
     params = dict(row["parameters"])
     params["votingWrapper"] = params.pop("token")
     snapshots.append({"block": row["block"], "timestamp": row["timestamp"],
                       "parameters": params, "minDelay": row["minDelay"],
-                      "treasuryOwner": row["treasuryOwner"], "voterSamples": row["votes"],
+                      # Holder-level voting power is deferred to the voting-power follow-up.
+                      "treasuryOwner": row["treasuryOwner"],
                       "pastTotalSupply": row["supply"], "quorumPreviousBlock": row["quorumPreviousBlock"]})
 tests = {}
 for name in ["mechanism-tests.txt", "live-mechanism-tests-drpc.txt", "recovery-tests.txt",

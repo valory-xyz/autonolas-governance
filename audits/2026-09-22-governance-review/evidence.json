@@ -76,7 +76,6 @@
     "treasury": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
     "ve": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
     "daoProposer": "0x34471096285C2B59164E20c03f6977423a450039",
-    "whale": "0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97",
     "zero": "0x0000000000000000000000000000000000000000",
     "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
   },
@@ -540,23 +539,6 @@
       },
       "minDelay": "0",
       "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
-      "voterSamples": {
-        "daoProposer": {
-          "address": "0x34471096285C2B59164E20c03f6977423a450039",
-          "power": "511021593436834093342778",
-          "lockedEnd": "1783555200"
-        },
-        "whale": {
-          "address": "0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97",
-          "power": "0",
-          "lockedEnd": "0"
-        },
-        "treasuryProposer": {
-          "address": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
-          "power": "0",
-          "lockedEnd": "0"
-        }
-      },
       "pastTotalSupply": "3322795831849171837714748",
       "quorumPreviousBlock": "99683874955475155131442"
     },
@@ -576,23 +558,6 @@
       },
       "minDelay": "0",
       "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
-      "voterSamples": {
-        "daoProposer": {
-          "address": "0x34471096285C2B59164E20c03f6977423a450039",
-          "power": "511018580980213088776574",
-          "lockedEnd": "1783555200"
-        },
-        "whale": {
-          "address": "0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97",
-          "power": "0",
-          "lockedEnd": "0"
-        },
-        "treasuryProposer": {
-          "address": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
-          "power": "0",
-          "lockedEnd": "0"
-        }
-      },
       "pastTotalSupply": "3322784647649107647886484",
       "quorumPreviousBlock": "99683539429473229436594"
     },
@@ -612,23 +577,6 @@
       },
       "minDelay": "0",
       "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
-      "voterSamples": {
-        "daoProposer": {
-          "address": "0x34471096285C2B59164E20c03f6977423a450039",
-          "power": "2422581018518518510549196",
-          "lockedEnd": "1819843200"
-        },
-        "whale": {
-          "address": "0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97",
-          "power": "2470526223997970565185996",
-          "lockedEnd": "1820448000"
-        },
-        "treasuryProposer": {
-          "address": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
-          "power": "115815169028776579950032",
-          "lockedEnd": "1914192000"
-        }
-      },
       "pastTotalSupply": "8255378009077021900123938",
       "quorumPreviousBlock": "247661340272310657003718"
     },
@@ -648,23 +596,6 @@
       },
       "minDelay": "0",
       "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
-      "voterSamples": {
-        "daoProposer": {
-          "address": "0x34471096285C2B59164E20c03f6977423a450039",
-          "power": "2422580067224758997611604",
-          "lockedEnd": "1819843200"
-        },
-        "whale": {
-          "address": "0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97",
-          "power": "2470525272704211052248404",
-          "lockedEnd": "1820448000"
-        },
-        "treasuryProposer": {
-          "address": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
-          "power": "115815157902349639310768",
-          "lockedEnd": "1914192000"
-        }
-      },
       "pastTotalSupply": "8255374917840251982888462",
       "quorumPreviousBlock": "247661247535207559486653"
     },
@@ -684,23 +615,6 @@
       },
       "minDelay": "0",
       "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
-      "voterSamples": {
-        "daoProposer": {
-          "address": "0x34471096285C2B59164E20c03f6977423a450039",
-          "power": "2360027746067985786249644",
-          "lockedEnd": "1819843200"
-        },
-        "whale": {
-          "address": "0x063923C9b00Bd1eFb1EF5a89498538F5A1237a97",
-          "power": "2407972951547437840886444",
-          "lockedEnd": "1820448000"
-        },
-        "treasuryProposer": {
-          "address": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
-          "power": "115083539698867904506448",
-          "lockedEnd": "1914192000"
-        }
-      },
       "pastTotalSupply": "8052259755820780775710140",
       "quorumPreviousBlock": "805225975582078077571014"
     }
