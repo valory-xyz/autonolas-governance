@@ -38,7 +38,7 @@ In order to manage cross-bridge transactions via the `Timelock` contract on L2 n
 - Polygon PoS: [FxGovernorTunnel](contracts/bridges/FxGovernorTunnel.sol);
 - Gnosis: [HomeMediator](contracts/bridges/HomeMediator.sol);
 - Optimism and Base: [OptimismMessenger](contracts/bridges/OptimismMessenger.sol);
-- L2 networks without own native bridge: [WormholeMessenger](contracts/bridges/WormholeMessenger.sol);
+- L2 networks without own native bridge: [WormholeMessenger](contracts/deprecated/WormholeMessenger.sol);
 
 The functionality thereby enabled is outlined in detail here: [Cross-chain governance](docs/governace_bridge.pdf).
 
@@ -49,7 +49,7 @@ Exceptionally, some changes to the Autonolas Protocol can be executed by a commu
 - [ProcessBridgedDataGnosis](contracts/multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol)
 - [ProcessBridgedDataOptimism](contracts/multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol)
 - [ProcessBridgedDataPolygon](contracts/multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol)
-- [ProcessBridgedDataWormhole](contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol)
+- [ProcessBridgedDataWormhole](contracts/deprecated/ProcessBridgedDataWormhole.sol)
 - [VerifyBridgedData](contracts/multisigs/bridge_verifier/VerifyBridgedData.sol)
 
 The functionality enabled by this modular guard mechanism is introduced [here](docs/guardCM_modular_approach.pdf).

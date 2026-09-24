@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {VerifyBridgedData} from "./VerifyBridgedData.sol";
+import {VerifyBridgedData} from "../multisigs/bridge_verifier/VerifyBridgedData.sol";
 
 /// @dev Provided incorrect data length.
 /// @param expected Expected minimum data length.

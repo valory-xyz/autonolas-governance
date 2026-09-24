@@ -27,7 +27,7 @@ async function main() {
 
     // Test deployed WormholeMessenger address on polygonMumbai
     const wormholeMessengerAddress = "0x32837288823fA6a35BD3a2A3a5DB6770b50690a4"; // payable process on L2
-    const wormholeMessengerJSON = "artifacts/contracts/bridges/WormholeMessenger.sol/WormholeMessenger.json";
+    const wormholeMessengerJSON = "artifacts/contracts/deprecated/WormholeMessenger.sol/WormholeMessenger.json";
     contractFromJSON = fs.readFileSync(wormholeMessengerJSON, "utf8");
     let parsedFile = JSON.parse(contractFromJSON);
     const wormholeMessengerABI = parsedFile["abi"];
