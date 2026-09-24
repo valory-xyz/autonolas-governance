@@ -69,3 +69,12 @@ bbdf1f63af520cbcf4df1ba814772edb23fa1558:scripts/deployment/globals_mainnet.json
 b384a724abc63e42d374e23bfcd443bc2cad9074:scripts/proposals/proposal_11/Proposal11Activation.s.sol:generic-api-key:96
 b384a724abc63e42d374e23bfcd443bc2cad9074:scripts/proposals/proposal_11/Proposal11Activation.s.sol:generic-api-key:97
 65bda88a7711c53d86cedd5fdf756c710b03a800:scripts/proposals/proposal_16/Proposal16Robinhood.s.sol:generic-api-key:96
+
+# Public mainnet contract addresses recorded as governance-review evidence (wveOLAS, OLAS, Tokenomics proxy).
+1dd2ff2fb7a15371feea0c59f1e7fce83d45d1f6:audits/2026-09-22-governance-review/contract-matrix.json:generic-api-key:22
+1dd2ff2fb7a15371feea0c59f1e7fce83d45d1f6:audits/2026-09-22-governance-review/contract-matrix.json:generic-api-key:26
+52e2a99e068b9f255ac5bf42b9f2d17ed9f7cabc:audits/2026-09-22-governance-review/point-3/deployment-evidence.json:generic-api-key:108
+52e2a99e068b9f255ac5bf42b9f2d17ed9f7cabc:audits/2026-09-22-governance-review/point-3/deployment-evidence.json:generic-api-key:23
+52e2a99e068b9f255ac5bf42b9f2d17ed9f7cabc:audits/2026-09-22-governance-review/point-3/deployment-evidence.json:generic-api-key:43
+52e2a99e068b9f255ac5bf42b9f2d17ed9f7cabc:audits/2026-09-22-governance-review/point-3/deployment-evidence.json:generic-api-key:58
+52e2a99e068b9f255ac5bf42b9f2d17ed9f7cabc:audits/2026-09-22-governance-review/point-3/deployment-evidence.json:generic-api-key:93

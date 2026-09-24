@@ -1,0 +1,790 @@
+{
+  "method": "Source-change status from the tag lineage, deployed instances from the mainnet configuration, live pointers and code read at the point-1 pin, build metadata and verified sources from Blockscout",
+  "pin": {
+    "number": 26032428,
+    "hash": "0x4676a14bf8236315a34cfd31f5c308ae66553b574a3ee701db2458f26e6e4fd6",
+    "timestamp": 1790072879,
+    "observedAt": "2026-09-22T10:28:02.620Z"
+  },
+  "tags": [
+    "v1.2.5-post-external-audit",
+    "v1.2.5",
+    "v1.3.0-pre-external-audit"
+  ],
+  "intervals": [
+    "v1.2.5-post-external-audit→v1.2.5",
+    "v1.2.5→v1.3.0-pre-external-audit",
+    "v1.3.0-pre-external-audit→main snapshot"
+  ],
+  "pointers": {
+    "cmGuard": "0xc0b146d61e2a2c17e024477e01978d1fcf598c6b",
+    "governorTimelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+    "governorToken": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40",
+    "guardGovernor": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+    "oldGuardGovernor": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+    "wveOLASUnderlying": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+    "veOLASToken": "0x0001A500A6B18995B03f44bb040A5fFc28E45CB0",
+    "dispenserVoteWeighting": "0x95418b46d5566D3d1ea62C12Aea91227E566c5c1",
+    "timelockRoles": {
+      "governorOne": {
+        "TIMELOCK_ADMIN_ROLE": false,
+        "PROPOSER_ROLE": false,
+        "EXECUTOR_ROLE": false,
+        "CANCELLER_ROLE": false
+      },
+      "governorTwo": {
+        "TIMELOCK_ADMIN_ROLE": false,
+        "PROPOSER_ROLE": false,
+        "EXECUTOR_ROLE": false,
+        "CANCELLER_ROLE": false
+      },
+      "governor": {
+        "TIMELOCK_ADMIN_ROLE": true,
+        "PROPOSER_ROLE": true,
+        "EXECUTOR_ROLE": true,
+        "CANCELLER_ROLE": true
+      },
+      "cm": {
+        "TIMELOCK_ADMIN_ROLE": false,
+        "PROPOSER_ROLE": true,
+        "EXECUTOR_ROLE": true,
+        "CANCELLER_ROLE": false
+      }
+    },
+    "guardRoutes": {
+      "Gnosis": {
+        "l1": "0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e",
+        "verifierL2": "0xDc871b7833932D45023755C9De3786060a934c48",
+        "bridgeMediatorL2": "0x15bd56669F57192a97dF41A2aa8f4403e9491776",
+        "chainId": "100"
+      },
+      "Polygon": {
+        "l1": "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2",
+        "verifierL2": "0x133A6d318FA0C9413A70C149E7f630015044Dec3",
+        "bridgeMediatorL2": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+        "chainId": "137"
+      },
+      "Arbitrum": {
+        "l1": "0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f",
+        "verifierL2": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
+        "bridgeMediatorL2": "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F",
+        "chainId": "42161"
+      },
+      "Optimism": {
+        "l1": "0x25ace71c97B33Cc4729CF772ae268934F7ab5fA1",
+        "verifierL2": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "bridgeMediatorL2": "0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c",
+        "chainId": "10"
+      },
+      "Base": {
+        "l1": "0x866E82a600A1414e583f7F13623F1aC5d58b0Afa",
+        "verifierL2": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "bridgeMediatorL2": "0xE49CB081e8d96920C38aA7AB90cb0294ab4Bc8EA",
+        "chainId": "8453"
+      },
+      "Celo": {
+        "l1": "0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95",
+        "verifierL2": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "bridgeMediatorL2": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d",
+        "chainId": "42220"
+      },
+      "Mode": {
+        "l1": "0x95bDCA6c8EdEB69C98Bd5bd17660BaCef1298A6f",
+        "verifierL2": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "bridgeMediatorL2": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+        "chainId": "34443"
+      },
+      "Robinhood": {
+        "l1": "0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D",
+        "verifierL2": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
+        "bridgeMediatorL2": "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F",
+        "chainId": "4663"
+      }
+    },
+    "dispenser": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0"
+  },
+  "contracts": [
+    {
+      "contract": "OLAS",
+      "source": "contracts/OLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x0001A500A6B18995B03f44bb040A5fFc28E45CB0",
+      "runtimeBytes": 5479,
+      "runtimeHash": "0xcfba78486e3e9fd4b4b3a08f1078c6edcaf1d95ceb8a35dfeaf2e80929b48973",
+      "verifiedName": "OLAS",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimizationRuns": 1000000,
+      "evmVersion": "london",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "a2877ca6be4071393dbccd64780a9a5ddc1e95a76ee81a59d8f201d238c6dd34",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "veOLAS.token()=0x0001A500A6B18995B03f44bb040A5fFc28E45CB0"
+    },
+    {
+      "contract": "veOLAS",
+      "source": "contracts/veOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+      "runtimeBytes": 13972,
+      "runtimeHash": "0xee1bb02f333df8384d48031d9f497e32c9ce1697b77d77a58a458ae111685440",
+      "verifiedName": "veOLAS",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimizationRuns": 1000000,
+      "evmVersion": "london",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "7a4017502f717ea30be3ac146afb5b06c02b74259b986a4728c13103c3d21cd6",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "wveOLAS.ve()=0x7e01A500805f8A52Fad229b3015AD130A332B7b3"
+    },
+    {
+      "contract": "wveOLAS",
+      "source": "contracts/wveOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40",
+      "runtimeBytes": 6070,
+      "runtimeHash": "0xbb5c4a8f56e9a102d6a8054bc7bca6a93714db3e683c96f46213a0ac76e73f54",
+      "verifiedName": "wveOLAS",
+      "compiler": "0.8.19+commit.7dd6d404",
+      "optimizationRuns": 1000000,
+      "evmVersion": "paris",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "07c64ca65df30f1e3c61e972b797fbf7a18770cad7a15da693ba04248fa813e9",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "governor.token()=0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+    },
+    {
+      "contract": "buOLAS",
+      "source": "contracts/buOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0xb09CcF0Dbf0C178806Aaee28956c74bd66d21f73",
+      "runtimeBytes": 7523,
+      "runtimeHash": "0xde9a0b2d28cacb4b7e7065f95ed641f0460c38721a9041a19271f595e0cbbedf",
+      "verifiedName": "buOLAS",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimizationRuns": 1000000,
+      "evmVersion": "london",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "387c6f35f3e97df1e7aca21d90a68d70a8d34e1a1c59c30379ef07d2c6da6911",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "deployed; outside the governance control path",
+      "evidence": "No governance pointer read for it"
+    },
+    {
+      "contract": "Timelock",
+      "source": "contracts/Timelock.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "runtimeBytes": 9718,
+      "runtimeHash": "0xefe20003c2e8fd3be478ee5b1ba7b061dcad5da3932225f7461fb982ad8de186",
+      "verifiedName": "Timelock",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimizationRuns": 1000000,
+      "evmVersion": "london",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "e0d4888ffd4ba78c79b6b0a173c589bbae301c539978017b139270d4f75f1d79",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": false
+      },
+      "status": "active",
+      "evidence": "governor.timelock()=0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+    },
+    {
+      "contract": "GovernorOLAS (first)",
+      "source": "contracts/GovernorOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+      "runtimeBytes": 23759,
+      "runtimeHash": "0xaaf7cabbe2d9eabaf2927b851328f538eb084da84df6eb1ada926a8e15846ec2",
+      "verifiedName": "GovernorOLAS",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimizationRuns": 1000000,
+      "evmVersion": "london",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "bbb6c43e6587d79cdfb17e2cd7e8e47c8c63c1caa5cf3221bbfb61f64d06856f",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": false
+      },
+      "status": "superseded",
+      "evidence": "Holds no Timelock role at the pin"
+    },
+    {
+      "contract": "GovernorOLAS (second)",
+      "source": "contracts/GovernorOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+      "runtimeBytes": 20956,
+      "runtimeHash": "0xe42f95c79b7f6136e90c0ec44a1a393d9dd7feba937af86507e1d78da75076fc",
+      "verifiedName": "GovernorOLAS",
+      "compiler": "0.8.20+commit.a1b79de6",
+      "optimizationRuns": 750,
+      "evmVersion": "shanghai",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "14909faa797553666921d67dad304caa0f8155965f668b4aea35d4669c7846d0",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": false
+      },
+      "status": "superseded",
+      "evidence": "Holds no Timelock role at the pin"
+    },
+    {
+      "contract": "GovernorOLAS (current)",
+      "source": "contracts/GovernorOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+      "runtimeBytes": 20479,
+      "runtimeHash": "0x9564c8e07009bdcb422379d9fef2c8e8796616646e1892b9e904d04d48384314",
+      "verifiedName": "GovernorOLAS",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimizationRuns": 200,
+      "evmVersion": "prague",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "71c6f8608713ea461ea8c4401f798d15de58a967d10de07f0e18e211350684eb",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "Timelock roles held; guard.governor()=0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6"
+    },
+    {
+      "contract": "GuardCM (previous)",
+      "source": "contracts/multisigs/GuardCM.sol",
+      "sourceChangedByInterval": [
+        true,
+        true,
+        false
+      ],
+      "address": "0x7bB7998b210cFfE10ca1e41f16341Abe53f76f3a",
+      "runtimeBytes": 12139,
+      "runtimeHash": "0x636eec61f85219dd72dcc986c4ba35e0a8c4aa8e4b39e15d964518ba5d3445c4",
+      "verifiedName": "GuardCM",
+      "compiler": "0.8.23+commit.f704f362",
+      "optimizationRuns": 1000000,
+      "evmVersion": "shanghai",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "7e16a201ea19e20814b069f25300b618755ae3e806bf41c39e55ad778315eba0",
+      "matchesSourceVersions": [],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": false
+      },
+      "status": "superseded",
+      "evidence": "Not the CM guard; its governor()=0x8E84B5055492901988B831817e4Ace5275A3b401"
+    },
+    {
+      "contract": "GuardCM (current)",
+      "source": "contracts/multisigs/GuardCM.sol",
+      "sourceChangedByInterval": [
+        true,
+        true,
+        false
+      ],
+      "address": "0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B",
+      "runtimeBytes": 8331,
+      "runtimeHash": "0x15b6a4a0b7dc7c2db8bd37045d049c9a69f9ae23f5f0001ec77e3edba4e97ff0",
+      "verifiedName": "GuardCM",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimizationRuns": 200,
+      "evmVersion": "prague",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "f2c810f294d627697147ae1b85cba8448d39db4c37cd0acc50fe4d13fca66e48",
+      "matchesSourceVersions": [
+        "v1.2.5"
+      ],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "CM Safe guard slot = 0xc0b146d61e2a2c17e024477e01978d1fcf598c6b"
+    },
+    {
+      "contract": "ProcessBridgedDataGnosis",
+      "source": "contracts/multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0xDc871b7833932D45023755C9De3786060a934c48",
+      "runtimeBytes": 2421,
+      "runtimeHash": "0xb66fbdd5bd4a4fda6efd62b2e924aa25fa0261ef0e5e9d4a3fea734f3695e596",
+      "verifiedName": "ProcessBridgedDataGnosis",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimizationRuns": 200,
+      "evmVersion": "prague",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "897cb2fdd94fef7251a3781ae5f5fe97255ab6dcf7fa1121736a86c4f5de267a",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "Guard routes: Gnosis"
+    },
+    {
+      "contract": "ProcessBridgedDataPolygon",
+      "source": "contracts/multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x133A6d318FA0C9413A70C149E7f630015044Dec3",
+      "runtimeBytes": 1884,
+      "runtimeHash": "0xe50de87b9fb363c4aa9200198640e3bd16f85f4c48b53743e624629f46ef1a36",
+      "verifiedName": "ProcessBridgedDataPolygon",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimizationRuns": 200,
+      "evmVersion": "prague",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "1773e54afe581925c67411ac9e22b2528c8bd329045161f576c0c1a0d12dcd4b",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "Guard routes: Polygon"
+    },
+    {
+      "contract": "ProcessBridgedDataArbitrum",
+      "source": "contracts/multisigs/bridge_verifier/ProcessBridgedDataArbitrum.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
+      "runtimeBytes": 1996,
+      "runtimeHash": "0xc86a57ea71210760a28788d152a8ac60ec1ead47fbb18cbc4330c33c289ef65a",
+      "verifiedName": "ProcessBridgedDataArbitrum",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimizationRuns": 200,
+      "evmVersion": "prague",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "133466752a8fa7dcd1cf2dfc9f034d816244ce75b552b95455f66ba06c576d91",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "Guard routes: Arbitrum, Robinhood"
+    },
+    {
+      "contract": "ProcessBridgedDataOptimism",
+      "source": "contracts/multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+      "runtimeBytes": 2434,
+      "runtimeHash": "0x5882a76b9cb4b80a54a76cf69d1aca4a60fc84c06a1234540d40933ae29f59d7",
+      "verifiedName": "ProcessBridgedDataOptimism",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimizationRuns": 200,
+      "evmVersion": "prague",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "a3f6a61e56adcda732c2eaebd158dbf79e4fa7f7c4985bc3d83308e18b2597b3",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "active",
+      "evidence": "Guard routes: Optimism, Base, Celo, Mode"
+    },
+    {
+      "contract": "ProcessBridgedDataWormhole",
+      "source": "contracts/multisigs/bridge_verifier/ProcessBridgedDataWormhole.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": null,
+      "status": "not deployed",
+      "evidence": "No address in mainnet configuration"
+    },
+    {
+      "contract": "VoteWeighting",
+      "source": "contracts/VoteWeighting.sol",
+      "sourceChangedByInterval": [
+        false,
+        true,
+        false
+      ],
+      "address": "0x95418b46d5566d3d1ea62c12aea91227e566c5c1",
+      "runtimeBytes": 12054,
+      "runtimeHash": "0x9b18cc0eace5e55eb3d336f336b862a822e1e323ac723d851f51283c38b4bb86",
+      "verifiedName": "VoteWeighting",
+      "compiler": "0.8.25+commit.b61c2a91",
+      "optimizationRuns": 1000000,
+      "evmVersion": "cancun",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "d5fc602cb1c3b11adb504f3cf05e22735e40924ffc151f5607430a60427c507d",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5"
+      ],
+      "diffVsCheckout": {
+        "identical": false,
+        "codeIdenticalIgnoringComments": false
+      },
+      "status": "active",
+      "evidence": "dispenser.voteWeighting()=0x95418b46d5566D3d1ea62C12Aea91227E566c5c1"
+    },
+    {
+      "contract": "FxERC20RootTunnel",
+      "source": "contracts/bridges/FxERC20RootTunnel.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x1737408def992AF04b29C8Ba4BBcD7397B08c930",
+      "runtimeBytes": 9609,
+      "runtimeHash": "0x767fceb90269360a0b989a8393b2707a5cd24177b608024ad234740845b8c158",
+      "verifiedName": "FxERC20RootTunnel",
+      "compiler": "0.8.23+commit.f704f362",
+      "optimizationRuns": 1000000,
+      "evmVersion": "shanghai",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "1d8de1fab4e1ef3f1267f23e57b3f6c7d5ab59475cd7cf318ceb8304c1be974c",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "deployed; outside the governance control path",
+      "evidence": "No governance pointer read for it"
+    },
+    {
+      "contract": "BridgedERC20",
+      "source": "contracts/bridges/BridgedERC20.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x06512E620A8317da51a73690A596Aca97287b31D",
+      "runtimeBytes": 4174,
+      "runtimeHash": "0x786a3bf8f7f8745e86b1ec2ab8efde5c7567f06a21afd4d8432d71fc611c5b45",
+      "verifiedName": "BridgedERC20",
+      "compiler": "0.8.23+commit.f704f362",
+      "optimizationRuns": 1000000,
+      "evmVersion": "shanghai",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "1f17f0c3bca403cae4e1b48b8788e0a9cf2e2c77ce868e51fcec46c3995aa927",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "deployed; outside the governance control path",
+      "evidence": "No governance pointer read for it"
+    },
+    {
+      "contract": "Burner",
+      "source": "contracts/Burner.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x51eb65012ca5cEB07320c497F4151aC207FEa4E0",
+      "runtimeBytes": 738,
+      "runtimeHash": "0x49e411e2782008a100437446da192f6e2184d6a2065260d4b792949ff6b6a39a",
+      "verifiedName": "Burner",
+      "compiler": "v0.8.28+commit.7893614a",
+      "optimizationRuns": 1000000,
+      "evmVersion": "cancun",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "af93f02fa8b70a195b20226f7d3ef59ddea94673c598f18f42d06e1c10814ef7",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "deployed; outside the governance control path",
+      "evidence": "No governance pointer read for it"
+    },
+    {
+      "contract": "DeploymentFactory",
+      "source": "contracts/DeploymentFactory.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+      "runtimeBytes": 24371,
+      "runtimeHash": "0x87d191ccb12fc72dfed4acecd695ea8eeb941d01ff483849fb3ebafcc20b6913",
+      "verifiedName": "DeploymentFactory",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimizationRuns": 1000000,
+      "evmVersion": "default",
+      "explorerRuntimeMatchesRpc": true,
+      "verifiedSourceSha256": "5f7a9b6c71e68ccf47109f566fecd858c63140d3f137c379fae4eb5c77b1d3c4",
+      "matchesSourceVersions": [
+        "v1.2.5-post-external-audit",
+        "v1.2.5",
+        "v1.3.0-pre-external-audit",
+        "checkout"
+      ],
+      "diffVsCheckout": {
+        "identical": true,
+        "codeIdenticalIgnoringComments": true
+      },
+      "status": "deployed; outside the governance control path",
+      "evidence": "No governance pointer read for it"
+    },
+    {
+      "contract": "Veto Timelock",
+      "source": "contracts/Timelock.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": null,
+      "status": "not deployed",
+      "evidence": "No address in mainnet configuration"
+    },
+    {
+      "contract": "Veto Governor",
+      "source": "contracts/GovernorOLAS.sol",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "address": null,
+      "status": "not deployed",
+      "evidence": "No address in mainnet configuration"
+    }
+  ],
+  "otherChains": [
+    {
+      "contract": "FxGovernorTunnel",
+      "source": "contracts/bridges/FxGovernorTunnel.sol",
+      "chain": "Polygon",
+      "address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "HomeMediator",
+      "source": "contracts/bridges/HomeMediator.sol",
+      "chain": "Gnosis",
+      "address": "0x15bd56669F57192a97dF41A2aa8f4403e9491776",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "OptimismMessenger",
+      "source": "contracts/bridges/OptimismMessenger.sol",
+      "chain": "Optimism",
+      "address": "0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "OptimismMessenger",
+      "source": "contracts/bridges/OptimismMessenger.sol",
+      "chain": "Base",
+      "address": "0xE49CB081e8d96920C38aA7AB90cb0294ab4Bc8EA",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "OptimismMessenger",
+      "source": "contracts/bridges/OptimismMessenger.sol",
+      "chain": "Celo",
+      "address": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "OptimismMessenger",
+      "source": "contracts/bridges/OptimismMessenger.sol",
+      "chain": "Mode",
+      "address": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "FxERC20ChildTunnel",
+      "source": "contracts/bridges/FxERC20ChildTunnel.sol",
+      "chain": "Polygon",
+      "address": "0x1fe74A08ac89300B102AdCd474C721AE8764E850",
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "WormholeMessenger",
+      "source": "contracts/bridges/WormholeMessenger.sol",
+      "chain": "Wormhole route (no address in mainnet configuration)",
+      "address": null,
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    },
+    {
+      "contract": "WormholeRelayerTimelock",
+      "source": "contracts/bridges/WormholeRelayerTimelock.sol",
+      "chain": "Wormhole route (no address in mainnet configuration)",
+      "address": null,
+      "sourceChangedByInterval": [
+        false,
+        false,
+        false
+      ],
+      "note": "Not verified in this Ethereum-only collection"
+    }
+  ],
+  "limitations": [
+    "Explorer-verified source and metadata are provider-reported; runtime bytecode is compared against RPC.",
+    "Live pointers establish use at one block; they do not prove a contract is unreachable by other paths.",
+    "Addresses come from this repository configuration; an unlisted deployment would not appear.",
+    "Contracts on other chains are listed for completeness only and are not verified here."
+  ]
+}

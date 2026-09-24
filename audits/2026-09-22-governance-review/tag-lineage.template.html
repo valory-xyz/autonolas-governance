@@ -1,0 +1,113 @@
+<div id="gov-tag-lineage">
+  <style>
+    #gov-tag-lineage .lineage {display:grid;grid-template-columns:22px minmax(0,1fr);column-gap:16px;margin-top:20px}
+    #gov-tag-lineage .node-mark {width:12px;height:12px;margin:7px 0 0 5px;border-radius:50%;background:var(--viz-series-1)}
+    #gov-tag-lineage .node {padding:0 0 8px;min-width:0;overflow-wrap:anywhere}
+    #gov-tag-lineage .arrow {display:flex;justify-content:center;position:relative;color:var(--muted-foreground)}
+    #gov-tag-lineage .arrow:before {content:"";position:absolute;top:0;bottom:12px;width:1px;background:var(--border)}
+    #gov-tag-lineage .arrow:after {content:"↓";position:absolute;bottom:0;background:var(--background)}
+    #gov-tag-lineage .edge {padding:8px 0 24px;min-width:0;overflow-wrap:anywhere}
+    #gov-tag-lineage .edge ul {margin:6px 0;padding-left:20px}
+    #gov-tag-lineage .edge li {margin:5px 0}
+    #gov-tag-lineage .meta {margin-top:4px}
+    #gov-tag-lineage pre {white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
+    #gov-tag-lineage summary {cursor:pointer;margin-top:8px}
+    #gov-tag-lineage .links {display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+  </style>
+  <h2>Evoluzione dei contratti tra tag</h2>
+  <div class="viz-controls">
+    <label class="form-label">Contratto<select class="form-select" id="gov-contract"></select></label>
+    <label class="form-label">Tag iniziale<select class="form-select" id="gov-start"><option value="0">v1.2.5-post-external-audit</option><option value="1">v1.2.5</option></select></label>
+  </div>
+  <div class="text-small text-muted meta">Baseline: ultimo tag prima di maggio 2026 · tutti i delta successivi inclusi · deployment non verificato</div>
+  <div id="gov-chain" class="lineage" aria-live="polite"></div>
+  <script type="application/json" id="gov-lineage-data">__LINEAGE_DATA__</script>
+  <script>
+    (() => {
+      const root = document.getElementById('gov-tag-lineage');
+      const data = JSON.parse(root.querySelector('#gov-lineage-data').textContent);
+      const select = root.querySelector('#gov-contract');
+      const start = root.querySelector('#gov-start');
+      const chain = root.querySelector('#gov-chain');
+      const repo = 'https://github.com/valory-xyz/autonolas-governance';
+      const names = ['VoteWeighting','GovernorOLAS','GuardCM','Timelock','GovernorTimelockControl'];
+      const sorted = [...data.contracts].sort((a,b) => {
+        const rank = n => names.includes(n) ? names.indexOf(n) : 99;
+        return rank(a.name)-rank(b.name) || a.name.localeCompare(b.name);
+      });
+      for (const contract of sorted) {
+        const option = document.createElement('option');
+        option.value = contract.path; option.textContent = contract.name;
+        select.appendChild(option);
+      }
+      const add = (parent, tag, text, cls) => {
+        const el = document.createElement(tag);
+        if (text) el.textContent = text;
+        if (cls) el.className = cls;
+        parent.appendChild(el); return el;
+      };
+      const link = (parent, text, url) => {
+        const el = add(parent,'a',text); el.href=url; el.target='_blank'; el.rel='noopener noreferrer'; return el;
+      };
+      function notes(contract, index) {
+        if (index === 2) return ['Nessun nuovo commit: ultimo tag e main puntano entrambi a 93901ec.'];
+        const info=[];
+        if (!contract.edges[index].changed) info.push('Nessuna differenza nel sorgente di questo contratto.');
+        if (contract.name === 'VoteWeighting' && index === 1) info.push(
+          'removeNominee: riconcilia bias, slope e variazioni future; corregge la rimozione dell’ultimo elemento.',
+          'Checkpoint: sottrazioni protette; peso relativo limitato a 1e18; revoca ridotta alla contabilità dell’utente.',
+          'dispenser immutable nel costruttore; rimosso changeDispenser; pragma 0.8.25 → 0.8.30; corretto OwnerOnly.',
+          'Motivazione dichiarata: correggere il DoS dei checkpoint e gli errori di accounting. Richiede un nuovo deployment, non verificato qui.');
+        if (contract.name === 'GuardCM' && index === 0) info.push(
+          'setBridgeMediatorL1BridgeParams: rifiuta anche un mediatore L2 con indirizzo zero.',
+          'Cambio del 4 marzo 2026 (3e71631): incluso nella review perché successivo al tag baseline, anche se precedente a maggio.');
+        if (contract.name === 'GuardCM' && index === 1) info.push(
+          'Solo commenti: chiarita l’assunzione di riservatezza dei parametri della proposta heartbeat e lo stato “unknown proposal id”. Nessuna modifica alla logica eseguibile.',
+          'Configurazioni separate dal sorgente: proposte 13 e 16 per route Mode / Robinhood e allowlist. Stato live da verificare.');
+        if (index === 0) info.push('Build condivisa: optimizer runs 1.000.000 → 200 per il limite di dimensione del bytecode; sorgente invariato non implica bytecode invariato.');
+        if (contract.name === 'GovernorOLAS' || contract.name === 'GovernorTimelockControl' || contract.name === 'Timelock') {
+          info.push(index === 0 ? 'Operatività separata dal sorgente: attivazione Governor/Guard e migrazione ruoli dichiarate dal changelog; aggiunti script e test del sistema di veto.' : 'Proposta 15: threshold 5.000 → 250.000, quorum numerator 3 → 10. Configurazione via governance, non nuova logica Solidity; esecuzione da verificare.');
+        }
+        if (contract.name.startsWith('ProcessBridgedData') && index === 0) info.push(contract.name === 'ProcessBridgedDataWormhole' ? 'Il changelog di attivazione non include questo verificatore Wormhole fra i quattro distribuiti.' : 'Il changelog dichiara il deployment dei quattro verificatori Arbitrum, Gnosis, Optimism e Polygon durante l’attivazione.');
+        return info;
+      }
+      function render() {
+        chain.replaceChildren();
+        const contract = data.contracts.find(c => c.path === select.value);
+        const first = Number(start.value);
+        for (let i=first;i<data.nodes.length;i++) {
+          const node=data.nodes[i];
+          add(chain,'div','', 'node-mark').setAttribute('aria-hidden','true');
+          const nodeEl=add(chain,'div','', 'node');
+          link(nodeEl,node.label,repo+'/blob/'+node.sha+'/'+contract.path);
+          const date=node.tagDate ? 'Tag '+node.tagDate+' · commit '+node.commitDate : 'Commit '+node.commitDate;
+          add(nodeEl,'div',date+' · '+node.sha.slice(0,7),'text-small text-muted meta');
+          if(i===data.nodes.length-1) continue;
+          const edge=contract.edges[i];
+          add(chain,'div','', 'arrow').setAttribute('aria-hidden','true');
+          const edgeEl=add(chain,'div','', 'edge');
+          add(edgeEl,'strong',edge.changed ? (contract.name==='GuardCM'&&i===1 ? 'Commenti aggiornati' : 'Sorgente modificato') : 'Sorgente invariato');
+          const ul=add(edgeEl,'ul');
+          for (const text of notes(contract,i)) add(ul,'li',text);
+          if (edge.stats) {
+            const counts=edge.stats.split('\t');
+            add(edgeEl,'div','Diff del file: +'+counts[0]+' / −'+counts[1]+' righe','text-small text-muted');
+          }
+          if (i<2) {
+            const links=add(edgeEl,'div','', 'links');
+            link(links,'Confronto repository ↗',repo+'/compare/'+node.sha+'...'+data.nodes[i+1].sha);
+            if (edge.changed) {
+              const details=add(edgeEl,'details');
+              add(details,'summary','Diff esatto di '+contract.name);
+              add(add(details,'pre'),'code',edge.diff);
+              for (const commit of edge.commits) link(add(details,'div'),commit,repo+'/commit/'+commit.split(' ')[0]);
+            }
+          }
+        }
+      }
+      select.addEventListener('change', render);
+      start.addEventListener('change', render);
+      render();
+    })();
+  </script>
+</div>

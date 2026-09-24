@@ -1,0 +1,1907 @@
+{
+  "method": "Derived reference index from saved review evidence; not a fresh chain check or independent proof. Raw inputs are local/ignored and recollectable with the retained scripts.",
+  "sourceInventory": {
+    "tag_selection_cutoff": "2026-05-01T00:00:00+02:00",
+    "target": "93901ec315eb2b1d4683aab5615ef38b071228f8",
+    "baseline": "b5875317d0de5c9a81b89e86ec8c16f72dff0b33",
+    "baseline_tag": "v1.2.5-post-external-audit",
+    "onchain_window": {
+      "start": "2026-05-01T00:00:00+02:00",
+      "end_inclusive": "2026-09-22",
+      "selection": "proposals created in this window; related actions and earlier state as context only",
+      "timezone": "Europe/Rome"
+    },
+    "selection": "all changes after the last tag before May, through all subsequent tags to target; no commit-date exclusion",
+    "first_parent_events": 38,
+    "merged_prs": 36,
+    "nested_merged_prs": [
+      "186",
+      "190",
+      "191"
+    ],
+    "reachable_commits_in_range": 133,
+    "net_changed_paths": 129,
+    "touched_paths": 132,
+    "production_solidity_net_changes": [
+      "contracts/VoteWeighting.sol",
+      "contracts/multisigs/GuardCM.sol"
+    ],
+    "limitations": [
+      "Local Git evidence only; no independent on-chain verification.",
+      "PR numbers from merge subjects; remote discussions not collected.",
+      "merged_prs counts first-parent merges only; nested_merged_prs lists PRs merged into feature branches.",
+      "Net source diff does not measure deployment or compiler changes."
+    ]
+  },
+  "tags": [
+    {
+      "label": "v1.2.5-post-external-audit",
+      "sha": "b5875317d0de5c9a81b89e86ec8c16f72dff0b33",
+      "commitDate": "2026-03-03",
+      "tagDate": "2026-03-03"
+    },
+    {
+      "label": "v1.2.5",
+      "sha": "8ce095fec0efd935af39a89b8ae9c90e6581d1e4",
+      "commitDate": "2026-07-07",
+      "tagDate": "2026-07-07"
+    },
+    {
+      "label": "v1.3.0-pre-external-audit",
+      "sha": "93901ec315eb2b1d4683aab5615ef38b071228f8",
+      "commitDate": "2026-09-11",
+      "tagDate": "2026-09-14"
+    },
+    {
+      "label": "main \u00b7 snapshot review",
+      "sha": "93901ec315eb2b1d4683aab5615ef38b071228f8",
+      "commitDate": "2026-09-11",
+      "tagDate": null
+    }
+  ],
+  "pin": {
+    "number": 26032428,
+    "hash": "0x4676a14bf8236315a34cfd31f5c308ae66553b574a3ee701db2458f26e6e4fd6",
+    "timestamp": 1790072879,
+    "observedAt": "2026-09-22T10:28:02.620Z"
+  },
+  "addresses": {
+    "governor": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+    "oldGovernor": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+    "firstGovernor": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+    "timelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+    "cm": "0x04C06323Fe3D53Deb7364c0055E1F68458Cc2570",
+    "guard": "0xC0b146D61e2A2C17E024477E01978D1Fcf598c6B",
+    "oldGuard": "0x7bB7998b210cFfE10ca1e41f16341Abe53f76f3a",
+    "treasury": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+    "ve": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+    "daoProposer": "0x34471096285C2B59164E20c03f6977423a450039",
+    "zero": "0x0000000000000000000000000000000000000000",
+    "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+  },
+  "proposalInventory": {
+    "selection_start": "2026-05-01T00:00:00+02:00",
+    "source_to_block": 26032401,
+    "method": "Offline saved-log reconciliation; no new RPC or failed-transaction search",
+    "proposal_count": 12,
+    "outcomes": {
+      "ProposalExecuted": 9,
+      "ProposalCanceled": 1,
+      "Defeated (inferred: ended, zero For, positive Against)": 2
+    },
+    "proposals": [
+      {
+        "governor": "governorTwo",
+        "proposalId": "8871217640108518937207611538047255614811664982782591155744986646749332103486",
+        "created": "2026-06-09T09:27:59.000Z",
+        "title": "MechMarketplace protocol fee activation",
+        "call_count": 7,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-06-15T06:30:35.000Z",
+        "creation_tx": "0xbe798fec1b45f2783ec2da48c0cf651f08203de7e0b9a897ae84a89a5942b1a2",
+        "artifact_matches": [],
+        "for_votes": "615506840066606364341821",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25321119,
+            "tx": "0xefd118fc38316f810949d498791edb9a2e33213d6708111dd3b96a44bd052cba",
+            "event": "ProposalExecuted",
+            "logIndex": 0
+          }
+        ]
+      },
+      {
+        "governor": "governorTwo",
+        "proposalId": "12787157053706200851343001046637724671654439993200561198827574314576400014413",
+        "created": "2026-06-10T20:49:59.000Z",
+        "title": "Olas Governance and Community Multisig (CM) Guard activation",
+        "call_count": 22,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-06-15T10:33:11.000Z",
+        "creation_tx": "0xc787e567de0fa97b3e95f49267ec91c7662a941f2b021cb55f4442864c91f0d4",
+        "artifact_matches": [
+          {
+            "artifact": "proposal_11",
+            "description_exact": false,
+            "calls_exact": false,
+            "artifact_calls": 16,
+            "matching_call_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              15
+            ],
+            "differing_shared_indices": [
+              14
+            ],
+            "additional_onchain_indices": [
+              16,
+              17,
+              18,
+              19,
+              20,
+              21
+            ],
+            "match_basis": "exact description or candidate based on majority of same-position calls"
+          }
+        ],
+        "for_votes": "978209429221207506868496",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25322326,
+            "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+            "event": "ProposalExecuted",
+            "logIndex": 0
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "52426383346663308663205611739777129032736869493683762943904084830516542078793",
+        "created": "2026-06-23T14:13:11.000Z",
+        "title": "Olas protocol security hardening, staking nominee cleanup, and Community Multisig guard whitelist extension",
+        "call_count": 41,
+        "status": "ProposalCanceled",
+        "terminal_date": "2026-07-06T21:15:47.000Z",
+        "creation_tx": "0xa2b65cbf00e289c43f3757f68fa9a1040f035e0803af9ba5ed9f258f95c633a5",
+        "artifact_matches": [],
+        "for_votes": "294537423281582952224726",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25476121,
+            "tx": "0x259964e02c69d862df1462cbf46ab68e309622dd24aa0c995c19e9508add088b",
+            "event": "ProposalCanceled",
+            "logIndex": 93
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "6966671395720788210001898291898917190334901164683823935607224108430732011053",
+        "created": "2026-07-06T21:01:11.000Z",
+        "title": "Olas protocol security hardening and Community Multisig guard whitelist extension",
+        "call_count": 11,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-07-14T15:09:35.000Z",
+        "creation_tx": "0xd543cd06415529a021ef30be0124af31f318ed61adb604e0aae92647941184ac",
+        "artifact_matches": [],
+        "for_votes": "288932696630200405272105",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25531685,
+            "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+            "event": "ProposalExecuted",
+            "logIndex": 1591
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "99017832730121616861660807264659360326617900809553354694303371959515090762918",
+        "created": "2026-07-07T11:54:35.000Z",
+        "title": "Olas staking nominee cleanup",
+        "call_count": 32,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-07-17T17:01:59.000Z",
+        "creation_tx": "0xdbf70e9865084431138e0bb91b7904bd81014abcd8693203cfb46d695184efd2",
+        "artifact_matches": [],
+        "for_votes": "286100819203259766008709",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25553773,
+            "tx": "0xd882299c63e46f6114060588efbc54e5db024165e985139a6ed9295aee0ec6b8",
+            "event": "ProposalExecuted",
+            "logIndex": 0
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "114444441880073852265133011449819716331211044138342982360655448765431286854004",
+        "created": "2026-07-24T15:20:35.000Z",
+        "title": "Olas staking nominee cleanup, part 2",
+        "call_count": 20,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-08-01T16:37:23.000Z",
+        "creation_tx": "0x022dc3ae2563986b3d49ab22823419282f29a562f8a0b3bf4e6a9b9791dbe467",
+        "artifact_matches": [
+          {
+            "artifact": "proposal_12",
+            "description_exact": true,
+            "calls_exact": true,
+            "artifact_calls": 20,
+            "matching_call_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19
+            ],
+            "differing_shared_indices": [],
+            "additional_onchain_indices": [],
+            "match_basis": "exact description or candidate based on majority of same-position calls"
+          }
+        ],
+        "for_votes": "1126973855276509382391134",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25661268,
+            "tx": "0x51c1f94b75792d64ca915bec554f53cda89936d227503707e8e0b5b3c3fdc982",
+            "event": "ProposalExecuted",
+            "logIndex": 447
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "100619077063411664334557367612251066850008502834926962826958681194909586886778",
+        "created": "2026-09-01T15:56:11.000Z",
+        "title": "Olas cross-chain housekeeping",
+        "call_count": 3,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-09-08T12:34:11.000Z",
+        "creation_tx": "0x5f0619287426cea54134f99ae7092fe1c3c7179607a8690e4dca49e74c7566cd",
+        "artifact_matches": [
+          {
+            "artifact": "proposal_13",
+            "description_exact": true,
+            "calls_exact": true,
+            "artifact_calls": 3,
+            "matching_call_indices": [
+              0,
+              1,
+              2
+            ],
+            "differing_shared_indices": [],
+            "additional_onchain_indices": [],
+            "match_basis": "exact description or candidate based on majority of same-position calls"
+          }
+        ],
+        "for_votes": "859475361491628612088956",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25932675,
+            "tx": "0x73ee6fd73e3ecae64ad6e3f59f9803e22949435943dccd6878965e24cce888a8",
+            "event": "ProposalExecuted",
+            "logIndex": 360
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "40126612048141097336620033593318472673469120154184180144739203820830139231953",
+        "created": "2026-09-05T08:38:11.000Z",
+        "title": "Olas L2 withheld amount synchronisation",
+        "call_count": 7,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-09-12T08:31:35.000Z",
+        "creation_tx": "0x7b3be2afc8018ef3591f05938afa4c49b0f3b96c8866272b9d564318bc6439f9",
+        "artifact_matches": [
+          {
+            "artifact": "proposal_14",
+            "description_exact": true,
+            "calls_exact": true,
+            "artifact_calls": 7,
+            "matching_call_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "differing_shared_indices": [],
+            "additional_onchain_indices": [],
+            "match_basis": "exact description or candidate based on majority of same-position calls"
+          }
+        ],
+        "for_votes": "1686257502477803136832602",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25960150,
+            "tx": "0x20bf58b86a3a6f2e2e20f9b72fe04349f5afa9c2a8dab3cd75790b4cbc0076f7",
+            "event": "ProposalExecuted",
+            "logIndex": 0
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "40206354484003228084362487350961959469393498496889094972132496370956127262976",
+        "created": "2026-09-05T17:17:59.000Z",
+        "title": "Owner migration: transfer treasury ownership from old timelock to Safe updater",
+        "call_count": 1,
+        "status": "Defeated (inferred: ended, zero For, positive Against)",
+        "terminal_date": null,
+        "creation_tx": "0xe435eed3f2fe2be35a663c8f779738023f9e2cb0ae4f576fdf4d1f63dd09b524",
+        "artifact_matches": [],
+        "for_votes": "0",
+        "against_votes": "4975799172717212049184460",
+        "terminalReferences": []
+      },
+      {
+        "governor": "governor",
+        "proposalId": "65184818244999358579284341127159336724025980098339608095975141185414377614750",
+        "created": "2026-09-06T18:26:47.000Z",
+        "title": "Treasury and token controller upgrade to Safe v2",
+        "call_count": 2,
+        "status": "Defeated (inferred: ended, zero For, positive Against)",
+        "terminal_date": null,
+        "creation_tx": "0xe0dc8a1ff4f5319c9d9dbb411f8b1387ddd53d96c23f6a81e3f5e0040a53cccc",
+        "artifact_matches": [],
+        "for_votes": "0",
+        "against_votes": "4961279602820903069046960",
+        "terminalReferences": []
+      },
+      {
+        "governor": "governor",
+        "proposalId": "3563000702947626407249966116394330391891319244018918786718598572660765109424",
+        "created": "2026-09-06T19:37:11.000Z",
+        "title": "Raise the Olas Governor proposal threshold and quorum",
+        "call_count": 2,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-09-13T07:16:59.000Z",
+        "creation_tx": "0x901d039d8afb34798362e373cf0d4243db63a05923cfc207bfcd2aafe53f1a26",
+        "artifact_matches": [
+          {
+            "artifact": "proposal_15",
+            "description_exact": true,
+            "calls_exact": true,
+            "artifact_calls": 2,
+            "matching_call_indices": [
+              0,
+              1
+            ],
+            "differing_shared_indices": [],
+            "additional_onchain_indices": [],
+            "match_basis": "exact description or candidate based on majority of same-position calls"
+          }
+        ],
+        "for_votes": "4960601976988521029476666",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 25966959,
+            "tx": "0xe1d90f1cf0fa3c18c2e8328062689328e9ebbc4b50d093eebccc7668454e5d6f",
+            "event": "ProposalExecuted",
+            "logIndex": 31
+          }
+        ]
+      },
+      {
+        "governor": "governor",
+        "proposalId": "105372119042092151995241403804967945820583103031471339920254185171774719978980",
+        "created": "2026-09-11T17:41:59.000Z",
+        "title": "Adopt the Olas protocol instance on Robinhood Chain as canonical",
+        "call_count": 3,
+        "status": "ProposalExecuted",
+        "terminal_date": "2026-09-18T11:07:23.000Z",
+        "creation_tx": "0x6f709954629c247ce5e7b8ead8d4c0f263758958cfcff188e89b85c6829ae28a",
+        "artifact_matches": [
+          {
+            "artifact": "proposal_16",
+            "description_exact": true,
+            "calls_exact": true,
+            "artifact_calls": 3,
+            "matching_call_indices": [
+              0,
+              1,
+              2
+            ],
+            "differing_shared_indices": [],
+            "additional_onchain_indices": [],
+            "match_basis": "exact description or candidate based on majority of same-position calls"
+          }
+        ],
+        "for_votes": "4892527890615487036934060",
+        "against_votes": "0",
+        "terminalReferences": [
+          {
+            "block": 26003984,
+            "tx": "0x73a029f5c85ca655c73c8ecc44ec4f9a2bdaabeec2808e8afd9dabe0b9d3aaa9",
+            "event": "ProposalExecuted",
+            "logIndex": 583
+          }
+        ]
+      }
+    ],
+    "timelock_collected_window": {
+      "scheduled_calls": 148,
+      "executed_calls": 107,
+      "calls_in_cancelled_operations": 41,
+      "unresolved_collected_calls": []
+    },
+    "limitations": [
+      "Defeated status inferred from saved votes and endBlock, not a fresh state() call.",
+      "No claims about uncollected addresses, pre-window pending operations, reverted attempts or L2 completion.",
+      "Positional overlap identifies candidate artifacts; only explicit equality establishes an exact match."
+    ]
+  },
+  "artifactComparisons": {
+    "11": {
+      "localId": "45361663242668069089223946785328365668773778141285203022311518232566090656298",
+      "onchainId": "12787157053706200851343001046637724671654439993200561198827574314576400014413",
+      "recomputedOnchainId": "12787157053706200851343001046637724671654439993200561198827574314576400014413",
+      "descriptionEqual": false,
+      "localCallCount": 16,
+      "onchainCallCount": 22,
+      "creationTransaction": "0xc787e567de0fa97b3e95f49267ec91c7662a941f2b021cb55f4442864c91f0d4",
+      "differingCallIndices": [
+        14,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "execution": {
+        "block": 25322326,
+        "logIndex": 0,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "address": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+        "event": "ProposalExecuted",
+        "args": {
+          "proposalId": "12787157053706200851343001046637724671654439993200561198827574314576400014413"
+        }
+      }
+    },
+    "15": {
+      "localId": "3563000702947626407249966116394330391891319244018918786718598572660765109424",
+      "onchainId": "3563000702947626407249966116394330391891319244018918786718598572660765109424",
+      "recomputedOnchainId": "3563000702947626407249966116394330391891319244018918786718598572660765109424",
+      "descriptionEqual": true,
+      "localCallCount": 2,
+      "onchainCallCount": 2,
+      "creationTransaction": "0x901d039d8afb34798362e373cf0d4243db63a05923cfc207bfcd2aafe53f1a26",
+      "differingCallIndices": [],
+      "execution": {
+        "block": 25966959,
+        "logIndex": 31,
+        "tx": "0xe1d90f1cf0fa3c18c2e8328062689328e9ebbc4b50d093eebccc7668454e5d6f",
+        "address": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+        "event": "ProposalExecuted",
+        "args": {
+          "proposalId": "3563000702947626407249966116394330391891319244018918786718598572660765109424"
+        }
+      }
+    }
+  },
+  "parameterSnapshots": [
+    {
+      "block": 25322325,
+      "timestamp": "2026-06-15T10:32:59.000Z",
+      "parameters": {
+        "timelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "proposalThreshold": "5000000000000000000000",
+        "votingDelay": "13091",
+        "votingPeriod": "19636",
+        "governorDelay": "157092",
+        "quorumNumerator": "3",
+        "quorumDenominator": "100",
+        "COUNTING_MODE": "support=bravo&quorum=bravo",
+        "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+      },
+      "minDelay": "0",
+      "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "pastTotalSupply": "3322795831849171837714748",
+      "quorumPreviousBlock": "99683874955475155131442"
+    },
+    {
+      "block": 25322326,
+      "timestamp": "2026-06-15T10:33:11.000Z",
+      "parameters": {
+        "timelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "proposalThreshold": "5000000000000000000000",
+        "votingDelay": "13091",
+        "votingPeriod": "19636",
+        "governorDelay": "157092",
+        "quorumNumerator": "3",
+        "quorumDenominator": "100",
+        "COUNTING_MODE": "support=bravo&quorum=bravo",
+        "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+      },
+      "minDelay": "0",
+      "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "pastTotalSupply": "3322784647649107647886484",
+      "quorumPreviousBlock": "99683539429473229436594"
+    },
+    {
+      "block": 25966958,
+      "timestamp": "2026-09-13T07:16:47.000Z",
+      "parameters": {
+        "timelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "proposalThreshold": "5000000000000000000000",
+        "votingDelay": "13091",
+        "votingPeriod": "19636",
+        "governorDelay": "157092",
+        "quorumNumerator": "3",
+        "quorumDenominator": "100",
+        "COUNTING_MODE": "support=bravo&quorum=bravo",
+        "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+      },
+      "minDelay": "0",
+      "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "pastTotalSupply": "8255378009077021900123938",
+      "quorumPreviousBlock": "247661340272310657003718"
+    },
+    {
+      "block": 25966959,
+      "timestamp": "2026-09-13T07:16:59.000Z",
+      "parameters": {
+        "timelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "proposalThreshold": "250000000000000000000000",
+        "votingDelay": "13091",
+        "votingPeriod": "19636",
+        "governorDelay": "157092",
+        "quorumNumerator": "10",
+        "quorumDenominator": "100",
+        "COUNTING_MODE": "support=bravo&quorum=bravo",
+        "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+      },
+      "minDelay": "0",
+      "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "pastTotalSupply": "8255374917840251982888462",
+      "quorumPreviousBlock": "247661247535207559486653"
+    },
+    {
+      "block": 26032428,
+      "timestamp": "2026-09-22T10:27:59.000Z",
+      "parameters": {
+        "timelock": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "proposalThreshold": "250000000000000000000000",
+        "votingDelay": "13091",
+        "votingPeriod": "19636",
+        "governorDelay": "157092",
+        "quorumNumerator": "10",
+        "quorumDenominator": "100",
+        "COUNTING_MODE": "support=bravo&quorum=bravo",
+        "votingWrapper": "0x4039B809E0C0Ad04F6Fc880193366b251dDf4B40"
+      },
+      "minDelay": "0",
+      "treasuryOwner": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "pastTotalSupply": "8052259755820780775710140",
+      "quorumPreviousBlock": "805225975582078077571014"
+    }
+  ],
+  "roleHistory": {
+    "eventCount": 31,
+    "firstBlock": 15049940,
+    "deploymentBoundary": {
+      "beforeCodeEmpty": true,
+      "firstCodeBytes": 9718
+    },
+    "roles": [
+      {
+        "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+        "name": "TIMELOCK_ADMIN_ROLE",
+        "admin": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+        "adminName": "TIMELOCK_ADMIN_ROLE",
+        "holders": [
+          "0x3c1ff68f5aa342d296d4dee4bb1cacca912d95fe",
+          "0x060d0cbddfb0498d610e2ef55c01516b5b1251e6"
+        ]
+      },
+      {
+        "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+        "name": "PROPOSER_ROLE",
+        "admin": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+        "adminName": "TIMELOCK_ADMIN_ROLE",
+        "holders": [
+          "0x04c06323fe3d53deb7364c0055e1f68458cc2570",
+          "0x060d0cbddfb0498d610e2ef55c01516b5b1251e6"
+        ]
+      },
+      {
+        "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+        "name": "EXECUTOR_ROLE",
+        "admin": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+        "adminName": "TIMELOCK_ADMIN_ROLE",
+        "holders": [
+          "0x04c06323fe3d53deb7364c0055e1f68458cc2570",
+          "0x060d0cbddfb0498d610e2ef55c01516b5b1251e6"
+        ]
+      },
+      {
+        "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+        "name": "CANCELLER_ROLE",
+        "admin": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+        "adminName": "TIMELOCK_ADMIN_ROLE",
+        "holders": [
+          "0x060d0cbddfb0498d610e2ef55c01516b5b1251e6"
+        ]
+      },
+      {
+        "role": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "name": "DEFAULT_ADMIN_ROLE",
+        "admin": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "adminName": "DEFAULT_ADMIN_ROLE",
+        "holders": []
+      }
+    ],
+    "events": [
+      {
+        "block": 15049940,
+        "index": 396,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleAdminChanged",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "previousAdminRole": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "newAdminRole": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 397,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleAdminChanged",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "previousAdminRole": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "newAdminRole": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 398,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleAdminChanged",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "previousAdminRole": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "newAdminRole": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 399,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleAdminChanged",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "previousAdminRole": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "newAdminRole": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 400,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 401,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 402,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "account": "0x04C06323Fe3D53Deb7364c0055E1F68458Cc2570",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 403,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x04C06323Fe3D53Deb7364c0055E1F68458Cc2570",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15049940,
+        "index": 404,
+        "tx": "0x4223d583cf9402c379c1fe0b5d9a579a182fc9d1522d2dea31c50f076633de9b",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "account": "0x04C06323Fe3D53Deb7364c0055E1F68458Cc2570",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15050311,
+        "index": 284,
+        "tx": "0x2287b8f325bb17e05b23d609a4d96e3e2e28cc0821b437e8ace9c3dee3715548",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15050313,
+        "index": 319,
+        "tx": "0x6197e41d25c0e640a7c8ffb21db8fc30957bb8d7e384185c3c9736aa7ca0f939",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15050317,
+        "index": 152,
+        "tx": "0xb4f9401179363cc87b610a64ccade1bc122593336e4fe32d94fff6951e593002",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15050319,
+        "index": 70,
+        "tx": "0xea33c39412e8fde2883d0cc4160e1d09fc1c126af11cec80750e0a7062092d71",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 15051102,
+        "index": 165,
+        "tx": "0x3944f118feca6b61c9e8722216d33a48cdebe845607178f0f42674339b25e82b",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E",
+          "sender": "0xEB2A22b27C7Ad5eeE424Fd90b376c745E60f914E"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 990,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 992,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 994,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 996,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 998,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 1000,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 1002,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 17598156,
+        "index": 1004,
+        "tx": "0x1f693ead906ae970796abe6877fa77a85a0f1684e28d414979877e941bec0444",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 18266403,
+        "index": 366,
+        "tx": "0x2d792bb4fd1e9ab38c8b53db1d6e82993583a04abd6c6874e32797084ed469f8",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x04C06323Fe3D53Deb7364c0055E1F68458Cc2570",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 1,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 3,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "account": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 5,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "account": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 7,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleGranted",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 9,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 11,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 13,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      },
+      {
+        "block": 25322326,
+        "index": 15,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "event": "RoleRevoked",
+        "args": {
+          "role": "0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783",
+          "account": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+          "sender": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+        }
+      }
+    ],
+    "limitations": [
+      "Provider-backed reconstruction, not a cryptographic proof of log completeness. Receipts validate returned events.",
+      "Historical role replay assumes deployed AccessControl membership mutations emit the standard events; source must be checked.",
+      "State pinned to the review block; no transactions signed or broadcast."
+    ]
+  },
+  "guardState": {
+    "paused": "1",
+    "governor": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+    "governorCheckProposalId": "88250008686885504216650933897987879122244685460173810624866685274624741477673",
+    "heartbeatState": {
+      "error": "Error: {\"code\":3,\"message\":\"execution reverted: Governor: unknown proposal id\",\"data\":\"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001d476f7665726e6f723a20756e6b6e6f776e2070726f706f73616c206964000000\"}"
+    }
+  },
+  "cmModules": [
+    "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE"
+  ],
+  "guardConfiguration": {
+    "method": "Latest value observed in collected successful Timelock configuration calls",
+    "limitations": [
+      "Not an exhaustive live-state read; does not validate L2 receiver ownership, bridge delivery or target behavior."
+    ],
+    "routes": [
+      {
+        "l1": "0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e",
+        "verifier": "0xDc871b7833932D45023755C9De3786060a934c48",
+        "chainId": "100",
+        "l2": "0x15bd56669F57192a97dF41A2aa8f4403e9491776",
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "l1": "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2",
+        "verifier": "0x133A6d318FA0C9413A70C149E7f630015044Dec3",
+        "chainId": "137",
+        "l2": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "l1": "0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f",
+        "verifier": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
+        "chainId": "42161",
+        "l2": "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F",
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "l1": "0x25ace71c97B33Cc4729CF772ae268934F7ab5fA1",
+        "verifier": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "chainId": "10",
+        "l2": "0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c",
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "l1": "0x866E82a600A1414e583f7F13623F1aC5d58b0Afa",
+        "verifier": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "chainId": "8453",
+        "l2": "0xE49CB081e8d96920C38aA7AB90cb0294ab4Bc8EA",
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "l1": "0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95",
+        "verifier": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "chainId": "42220",
+        "l2": "0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d",
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "l1": "0x95bDCA6c8EdEB69C98Bd5bd17660BaCef1298A6f",
+        "verifier": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+        "chainId": "34443",
+        "l2": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+        "tx": "0x73ee6fd73e3ecae64ad6e3f59f9803e22949435943dccd6878965e24cce888a8",
+        "block": 25932675,
+        "time": "2026-09-08T12:34:11.000Z"
+      },
+      {
+        "l1": "0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D",
+        "verifier": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
+        "chainId": "4663",
+        "l2": "0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F",
+        "tx": "0x73a029f5c85ca655c73c8ecc44ec4f9a2bdaabeec2808e8afd9dabe0b9d3aaa9",
+        "block": 26003984,
+        "time": "2026-09-18T11:07:23.000Z"
+      }
+    ],
+    "permissions": [
+      {
+        "target": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+        "selector": "0x8f202bf9",
+        "signature": "drainServiceSlashedFunds()",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xfF8697d8d2998d6AA2e09B405795C6F4BEeB0C81",
+        "selector": "0x58d3ec6a",
+        "signature": "close(uint256[])",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x3Fb926116D454b95c669B6Bf2E7c3bad8d19affA",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x9338b5153AE39BB89f50468E608eD9d764B755fD",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "100",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xa45E64d13A30a51b91ae0eb182e88a40e9b18eD8",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "100",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xE3607b00E75f6405248323A9417ff6b39B244b50",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "137",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xa45E64d13A30a51b91ae0eb182e88a40e9b18eD8",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "137",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xE3607b00E75f6405248323A9417ff6b39B244b50",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "42161",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x3d77596beb0f130a4415df3D2D8232B3d3D31e44",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "42161",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x3d77596beb0f130a4415df3D2D8232B3d3D31e44",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "10",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xBb7e1D6Cb6F243D6bdE81CE92a9f2aFF7Fbe7eac",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "10",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "8453",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "8453",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0xE3607b00E75f6405248323A9417ff6b39B244b50",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "42220",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x3d77596beb0f130a4415df3D2D8232B3d3D31e44",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "42220",
+        "allowed": true,
+        "tx": "0x1ea31f9979e39a288a09aadabb1db1e4e76a124bb9f825cb07b4829bb46b0168",
+        "block": 25322326,
+        "time": "2026-06-15T10:33:11.000Z"
+      },
+      {
+        "target": "0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0",
+        "selector": "0x63096509",
+        "signature": "setPauseState(uint8)",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x94a1892D91c05D0C61c3f49F42205D2285b914c9",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x9eC9156dEF5C613B2a7D4c46C383F9B58DfcD6fE",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "1",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0xA5C7FbCCFf28441b7d250412b0Fb87AA1c8b14AD",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "10",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0xaea9ef993d8a1A164397642648DF43F053d43D85",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "10",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x068a4f0946cF8c7f9C1B58a3b5243Ac8843bf473",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "100",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x5b6c538C7b2E0b44Fa8A3B7a0532EF797b07d0E9",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "100",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0xE3e5Df46060370af5Fd37B2aA11e7dac3cCB4bd0",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "137",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x17d96ba4532fe91809326092fE4D5606A7B7a0d8",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "137",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x1262136cac6a06A782DC94eb3a3dF0b4d09FF6A6",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "8453",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x9Ec97Be9FF55ff11606ce7c589956f7Bf3D0b241",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "8453",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0xcDdD9D9ABaB36fFa882530D69c73FeE5D4001C2d",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "34443",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0xEB5638eefE289691EcE01943f768EDBF96258a80",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "34443",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "34443",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x34C895f302D0b5cf52ec0Edd3945321EB0f83dd5",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "34443",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0xD421f433e36465B3e558B1121F584ac09Fc33DF8",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "42161",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x5953f21495BD9aF1D78e87bb42AcCAA55C1e896C",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "42161",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x84B4DA67B37B1EA1dea9c7044042C1d2297b80a0",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "42220",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x4891f5894634DcD6d11644fe8E56756EF2681582",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "42220",
+        "allowed": true,
+        "tx": "0xc55428ee2f2d5aebd3b40d779474b0c0f54d819a16c8451acdc041ae9a173273",
+        "block": 25531685,
+        "time": "2026-07-14T15:09:35.000Z"
+      },
+      {
+        "target": "0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "4663",
+        "allowed": true,
+        "tx": "0x73a029f5c85ca655c73c8ecc44ec4f9a2bdaabeec2808e8afd9dabe0b9d3aaa9",
+        "block": 26003984,
+        "time": "2026-09-18T11:07:23.000Z"
+      },
+      {
+        "target": "0xc40C79C275F3fA1F3f4c723755C81ED2D53A8D81",
+        "selector": "0x8456cb59",
+        "signature": "pause()",
+        "chainId": "4663",
+        "allowed": true,
+        "tx": "0x73a029f5c85ca655c73c8ecc44ec4f9a2bdaabeec2808e8afd9dabe0b9d3aaa9",
+        "block": 26003984,
+        "time": "2026-09-18T11:07:23.000Z"
+      },
+      {
+        "target": "0xE3607b00E75f6405248323A9417ff6b39B244b50",
+        "selector": "0x9890220b",
+        "signature": "drain()",
+        "chainId": "4663",
+        "allowed": true,
+        "tx": "0x73a029f5c85ca655c73c8ecc44ec4f9a2bdaabeec2808e8afd9dabe0b9d3aaa9",
+        "block": 26003984,
+        "time": "2026-09-18T11:07:23.000Z"
+      },
+      {
+        "target": "0x3d77596beb0f130a4415df3D2D8232B3d3D31e44",
+        "selector": "0xece53132",
+        "signature": "drain(address)",
+        "chainId": "4663",
+        "allowed": true,
+        "tx": "0x73a029f5c85ca655c73c8ecc44ec4f9a2bdaabeec2808e8afd9dabe0b9d3aaa9",
+        "block": 26003984,
+        "time": "2026-09-18T11:07:23.000Z"
+      }
+    ]
+  },
+  "sourceVerification": {
+    "files": [
+      {
+        "path": "contracts/GovernorOLAS.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "contracts/utils/GovernorTimelockControl.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/access/AccessControl.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/access/IAccessControl.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/Governor.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/IGovernor.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/TimelockController.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/compatibility/IGovernorCompatibilityBravo.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/extensions/GovernorSettings.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotes.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/Address.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/Checkpoints.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/Strings.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/Timers.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/math/Math.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol",
+        "equalsCheckout": true
+      },
+      {
+        "path": "node_modules/@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol",
+        "equalsCheckout": true
+      }
+    ],
+    "explorerRuntimeMatchesRpc": true,
+    "compiledExecutableMatchesExcludingMetadataAndImmutableSlots": true,
+    "bytecodeComparisonLimit": "Compiler-declared immutable slots and CBOR metadata excluded; live token getter independently checked. Not a full constructor-byte equality claim."
+  },
+  "deploymentMetadata": {
+    "governor": {
+      "address": "0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6",
+      "bytes": 20479,
+      "hash": "0x9564c8e07009bdcb422379d9fef2c8e8796616646e1892b9e904d04d48384314",
+      "compiler": "v0.8.30+commit.73712a01",
+      "optimization": true,
+      "runs": 200,
+      "verifiedAt": "2026-05-29T11:24:06.050467Z",
+      "evmVersion": "prague",
+      "constructorArgs": "0x0000000000000000000000004039b809e0c0ad04f6fc880193366b251ddf4b400000000000000000000000003c1ff68f5aa342d296d4dee4bb1cacca912d95fe00000000000000000000000000000000000000000000000000000000000033230000000000000000000000000000000000000000000000000000000000004cb400000000000000000000000000000000000000000000010f0cf064dd59200000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000265a4",
+      "sourceChecks": [
+        {
+          "path": "contracts/GovernorOLAS.sol",
+          "equalsCheckout": true
+        },
+        {
+          "path": "contracts/utils/GovernorTimelockControl.sol",
+          "equalsCheckout": true
+        }
+      ]
+    },
+    "oldGovernor": {
+      "address": "0x8E84B5055492901988B831817e4Ace5275A3b401",
+      "bytes": 20956,
+      "hash": "0xe42f95c79b7f6136e90c0ec44a1a393d9dd7feba937af86507e1d78da75076fc",
+      "compiler": "0.8.20+commit.a1b79de6",
+      "optimization": true,
+      "runs": 750,
+      "verifiedAt": "2024-04-01T22:03:45.830942Z",
+      "evmVersion": "shanghai",
+      "constructorArgs": "0000000000000000000000004039b809e0c0ad04f6fc880193366b251ddf4b400000000000000000000000003c1ff68f5aa342d296d4dee4bb1cacca912d95fe00000000000000000000000000000000000000000000000000000000000033230000000000000000000000000000000000000000000000000000000000004cb400000000000000000000000000000000000000000000010f0cf064dd592000000000000000000000000000000000000000000000000000000000000000000003",
+      "sourceChecks": [
+        {
+          "path": "contracts/GovernorOLAS.sol",
+          "equalsCheckout": false
+        }
+      ]
+    },
+    "timelock": {
+      "address": "0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE",
+      "bytes": 9718,
+      "hash": "0xefe20003c2e8fd3be478ee5b1ba7b061dcad5da3932225f7461fb982ad8de186",
+      "compiler": "0.8.15+commit.e14f2714",
+      "optimization": true,
+      "runs": 1000000,
+      "verifiedAt": "2024-02-14T13:51:02.400172Z",
+      "evmVersion": "london",
+      "constructorArgs": null,
+      "sourceChecks": [
+        {
+          "path": "contracts/Timelock.sol",
+          "equalsCheckout": false
+        }
+      ]
+    }
+  },
+  "sensitiveGuardChecks": {
+    "updateDelay(uint256)": false,
+    "grantRole(bytes32,address)": false,
+    "setProposalThreshold(uint256)": false,
+    "updateGovernorDelay(uint256)": false
+  },
+  "proposalStateSamples": {
+    "12787157053706200851343001046637724671654439993200561198827574314576400014413": {
+      "snapshot": "25302634",
+      "deadline": "25322270",
+      "proposer": "0x34471096285C2B59164E20c03f6977423a450039",
+      "quorumAtSnapshot": "106316463061284753296643",
+      "bravo": {
+        "id": "12787157053706200851343001046637724671654439993200561198827574314576400014413",
+        "proposer": "0x34471096285C2B59164E20c03f6977423a450039",
+        "eta": "0",
+        "startBlock": "25302634",
+        "endBlock": "25322270",
+        "forVotes": "978209429221207506868496",
+        "againstVotes": "0",
+        "abstainVotes": "0",
+        "canceled": false,
+        "executed": true
+      }
+    },
+    "40206354484003228084362487350961959469393498496889094972132496370956127262976": {
+      "snapshot": "25925665",
+      "deadline": "25945301",
+      "proposer": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
+      "quorumAtSnapshot": "251839973580471615599974",
+      "bravo": {
+        "id": "40206354484003228084362487350961959469393498496889094972132496370956127262976",
+        "proposer": "0xD4f8d1AE1658926a076Cf2e52eC1ECa94C755451",
+        "eta": "0",
+        "startBlock": "25925665",
+        "endBlock": "25945301",
+        "forVotes": "0",
+        "againstVotes": "4975799172717212049184460",
+        "abstainVotes": "0",
+        "canceled": false,
+        "executed": false
+      }
+    },
+    "65184818244999358579284341127159336724025980098339608095975141185414377614750": {
+      "snapshot": "25933184",
+      "deadline": "25952820",
+      "proposer": "0x56F016a4dbBE26FE403e27d0ce1dBa56915DCEf5",
+      "quorumAtSnapshot": "250996555105979169615876",
+      "bravo": {
+        "id": "65184818244999358579284341127159336724025980098339608095975141185414377614750",
+        "proposer": "0x56F016a4dbBE26FE403e27d0ce1dBa56915DCEf5",
+        "eta": "0",
+        "startBlock": "25933184",
+        "endBlock": "25952820",
+        "forVotes": "0",
+        "againstVotes": "4961279602820903069046960",
+        "abstainVotes": "0",
+        "canceled": false,
+        "executed": false
+      }
+    },
+    "3563000702947626407249966116394330391891319244018918786718598572660765109424": {
+      "snapshot": "25933534",
+      "deadline": "25953170",
+      "proposer": "0x34471096285C2B59164E20c03f6977423a450039",
+      "quorumAtSnapshot": "250957272989252608075103",
+      "bravo": {
+        "id": "3563000702947626407249966116394330391891319244018918786718598572660765109424",
+        "proposer": "0x34471096285C2B59164E20c03f6977423a450039",
+        "eta": "0",
+        "startBlock": "25933534",
+        "endBlock": "25953170",
+        "forVotes": "4960601976988521029476666",
+        "againstVotes": "0",
+        "abstainVotes": "0",
+        "canceled": false,
+        "executed": true
+      }
+    }
+  },
+  "receiptChecks": {
+    "count": 130,
+    "allMatched": true
+  },
+  "tests": {
+    "mechanism-tests.txt": {
+      "cases": [
+        {
+          "name": "test_QuorumHistoryPreservedButNewNumeratorStartsAtExecutionBlock",
+          "result": "PASS"
+        },
+        {
+          "name": "test_RaisingTimelockDelayAlonePreventsQueueingTheRepair",
+          "result": "PASS"
+        },
+        {
+          "name": "test_ThresholdIncreaseMakesExistingQueuedProposalCancellable",
+          "result": "PASS"
+        },
+        {
+          "name": "test_TimelockIdentityAloneCannotChangeGovernorSettings",
+          "result": "PASS"
+        },
+        {
+          "name": "test_ZeroTimelockReplacementExecutesThenPreventsFurtherQueueing",
+          "result": "PASS"
+        }
+      ],
+      "summary": [
+        "Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 3.95ms (6.08ms CPU time)"
+      ]
+    },
+    "live-mechanism-tests-drpc.txt": {
+      "cases": [
+        {
+          "name": "test_LiveDelayDesyncPreventsGovernanceRepair",
+          "result": "PASS"
+        },
+        {
+          "name": "test_LiveZeroTimelockAcceptedAndRepairCannotQueue",
+          "result": "PASS"
+        }
+      ],
+      "summary": [
+        "Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 10.32s (18.03s CPU time)"
+      ]
+    },
+    "recovery-tests.txt": {
+      "cases": [
+        {
+          "name": "test_AtomicCoupledDelayUpdatePreservesGovernance",
+          "result": "PASS"
+        },
+        {
+          "name": "test_ConditionalReleasedCMCanRepairTimelockDelay",
+          "result": "PASS"
+        },
+        {
+          "name": "test_ConditionalReleasedCMCanReplaceBrokenGovernor",
+          "result": "PASS"
+        },
+        {
+          "name": "test_CurrentGuardBlocksCMRepairAndUnknownHeartbeatRelease",
+          "result": "PASS"
+        },
+        {
+          "name": "test_LiveDelayDesyncPreventsGovernanceRepair",
+          "result": "PASS"
+        },
+        {
+          "name": "test_LiveZeroTimelockAcceptedAndRepairCannotQueue",
+          "result": "PASS"
+        },
+        {
+          "name": "test_OutsiderCannotTriggerUnsafeSetters",
+          "result": "PASS"
+        },
+        {
+          "name": "test_PrequeuedGovernorRepairSurvivesRaisedMinimumDelay",
+          "result": "PASS"
+        },
+        {
+          "name": "test_PrequeuedGovernorRestoreCannotRepairZeroPointer",
+          "result": "PASS"
+        }
+      ],
+      "summary": [
+        "Suite result: ok. 9 passed; 0 failed; 0 skipped; finished in 605.77ms (48.24ms CPU time)"
+      ]
+    },
+    "proposal15-current-fork-test.txt": {
+      "cases": [
+        {
+          "name": "testBuilderBytesAndPublishedId",
+          "result": "PASS"
+        },
+        {
+          "name": "testDescriptionCarriesTheDaoSignature",
+          "result": "PASS"
+        },
+        {
+          "name": "testHostileProposalBecomesCancellable",
+          "result": "FAIL: next call did not revert as expected"
+        },
+        {
+          "name": "testLegitimateProposalStaysProtected",
+          "result": "PASS"
+        },
+        {
+          "name": "testLifecycleAndPostConditions",
+          "result": "FAIL: starting threshold: 250000000000000000000000 != 5000000000000000000000"
+        },
+        {
+          "name": "test_committedArtifactsMatchTheBuilder",
+          "result": "PASS"
+        }
+      ],
+      "summary": [
+        "Suite result: FAILED. 4 passed; 2 failed; 0 skipped; finished in 3.59s (6.10s CPU time)"
+      ]
+    }
+  },
+  "inputSha256": {
+    "data/manifest.json": "c00bd8ac00d41ec4a3f6cfeca222a0f99d3febe73f60eb5d3f835a7896115c0e",
+    "data/tag-lineage/lineage.json": "89256d06d4d553e23604f9ca7b2297943e9ac65f34d03dba8600bf6ae95e041f",
+    "onchain/data/point0_reconciliation.json": "ff6f67ba84268014bcb432b5cadbbcdecfdd36be5aef041587a6f4707e358a3c",
+    "onchain/data/timeline.json": "e2288ba1e2be5383451ca726c330922eaac057ca0ee9da87c284203f65da8eb7",
+    "onchain/data/guard_configuration_from_calls.json": "16ef14b6f2f1943db0b3c07b0b5c0cf8856a2cfb7db05792f3b4e2a507d36f86",
+    "point-1/data/role-history/result.json": "7bcfb9c5f03e1fb3755639506d42a67b7459f1deae2ca01dafa828eca4d247cb",
+    "point-1/data/role-history/events.json": "8ad42bb60ed7ee8913346c02feaa362bb2c234f75c10ef03ad63c0da065ec899",
+    "point-1/data/analysis.json": "58646f3f233cc3886f68f7c89b3586b16863362f723a864de7c4283cee848ea8",
+    "point-1/data/enrichment.json": "fa22e8caf53c943b7c77c6be83fc9b8cb5bcf635af09d49a19cbe1df119ff6c2",
+    "point-1/data/manifest.json": "0475082bdfc23c1a45715323e1d340db3ba7aba475bd4f36f5d18e598d3bdb80",
+    "point-1/data/mechanism-tests.txt": "f8cec9c42910fa4d2eb253f2e95309143349731be4182fea65d8d6a7822eaab2",
+    "point-1/data/live-mechanism-tests-drpc.txt": "0b945a9c845d823c015826eedc03453d86ec226878fb2a11947cc030ddeb6e5f",
+    "point-1/data/recovery-tests.txt": "3b2dd1040def71354b518dd1efe79fde1dde37bdbf111dd6c9b591c0aa11788f",
+    "point-1/data/proposal15-current-fork-test.txt": "a85ab1a6ac334cd5616b8c877b56534fe4f746c8c4a03f913602a75db722a96f"
+  }
+}
