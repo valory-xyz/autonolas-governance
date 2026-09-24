@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {BridgeMessenger} from "./BridgeMessenger.sol";
+import {BridgeMessenger} from "../bridges/BridgeMessenger.sol";
 
 /// @title WormholeMessenger - Smart contract for the governor bridge communication via wormhole
 /// @author Aleksandr Kuperman - <aleksandr.kuperman@valory.xyz>
