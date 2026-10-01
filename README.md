@@ -38,7 +38,7 @@ In order to manage cross-bridge transactions via the `Timelock` contract on L2 n
 - Polygon PoS: [FxGovernorTunnel](contracts/bridges/FxGovernorTunnel.sol);
 - Gnosis: [HomeMediator](contracts/bridges/HomeMediator.sol);
 - Optimism and Base: [OptimismMessenger](contracts/bridges/OptimismMessenger.sol);
-- L2 networks without own native bridge: [WormholeMessenger](contracts/deprecated/WormholeMessenger.sol);
+- (Deprecated) [WormholeMessenger](contracts/deprecated/WormholeMessenger.sol) — formerly for L2 networks without a native bridge; no current network uses it (Celo, the one such case, is now an OP-stack chain on OptimismMessenger).
 
 The functionality thereby enabled is outlined in detail here: [Cross-chain governance](docs/governace_bridge.pdf).
 
@@ -49,7 +49,7 @@ Exceptionally, some changes to the Autonolas Protocol can be executed by a commu
 - [ProcessBridgedDataGnosis](contracts/multisigs/bridge_verifier/ProcessBridgedDataGnosis.sol)
 - [ProcessBridgedDataOptimism](contracts/multisigs/bridge_verifier/ProcessBridgedDataOptimism.sol)
 - [ProcessBridgedDataPolygon](contracts/multisigs/bridge_verifier/ProcessBridgedDataPolygon.sol)
-- [ProcessBridgedDataWormhole](contracts/deprecated/ProcessBridgedDataWormhole.sol)
+- (Deprecated) [ProcessBridgedDataWormhole](contracts/deprecated/ProcessBridgedDataWormhole.sol) — retired with the Wormhole governance path above.
 - [VerifyBridgedData](contracts/multisigs/bridge_verifier/VerifyBridgedData.sol)
 
 The functionality enabled by this modular guard mechanism is introduced [here](docs/guardCM_modular_approach.pdf).
@@ -193,10 +193,11 @@ For running a test between L1 `sepolia` and L2 `sepolia`, run the test script wi
 and [`sepolia-base-sepolia` governor bridge test](scripts/deployment/bridges/optimism/test/messenger_sepolia_base_sepolia_governor.js).
 Note that the script must be run without Hardhat environment, i.e.: `node test_script.js`.
 
-#### Wormhole governance bridge
-Note that if a native bridge is not available on a specific network, the [Wormhole](https://docs.wormhole.com/wormhole/)
-message passing protocol is utilized in order to manage the data transfer between L1 and L2-s. For example, this is
-the case for the Celo network.
+#### Wormhole governance bridge (deprecated)
+This path is retired and its contracts live under `contracts/deprecated/`. It was formerly used where no native
+bridge was available — notably Celo, before Celo became an OP-stack chain and moved to the
+[OptimismMessenger](contracts/bridges/OptimismMessenger.sol) path. No current network uses the
+[Wormhole](https://docs.wormhole.com/wormhole/) governance bridge.
 
 For running a test between L1 `sepolia` and L2 `celo alfajores`, run the test script with your own credentials:
 [`sepolia-celo-alfajores` governor bridge test](scripts/deployment/bridges/wormhole/test/messenger_sepolia_celo_alfajores_governor.js).
