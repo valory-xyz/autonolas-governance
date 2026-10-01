@@ -66,9 +66,9 @@ fi
 
 vetoMinDelay=$(jq -r '.vetoMinDelay' $globals)
 
-contractName="Timelock"
+contractName="VetoTimelock"
 contractPath="contracts/$contractName.sol:$contractName"
-# Timelock ctor: (uint256 minDelay, address[] proposers, address[] executors) — admin = msg.sender.
+# VetoTimelock ctor (same as Timelock): (uint256 minDelay, address[] proposers, address[] executors) — admin = msg.sender.
 # Empty arrays are passed literally so no roles are granted at construction time.
 constructorArgs="$vetoMinDelay [] []"
 contractArgs="$contractPath --constructor-args $constructorArgs"

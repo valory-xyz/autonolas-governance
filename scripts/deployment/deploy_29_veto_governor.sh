@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deploy Veto-Governor — a redeploy of GovernorOLAS bound to Veto Timelock.
+# Deploy Veto-Governor — the restricted VetoGovernor (GovernorOLAS design, config disabled) bound to Veto Timelock.
 #
 # Configuration:
 #   token             = wveOLASAddress  — MUST be the wveOLAS WRAPPER (0x4039…), not raw
@@ -18,9 +18,9 @@
 #                       set to 0 so a passing veto executes instantly through Veto Timelock
 #                       (whose minDelay is also 0). (role-freeze section).
 #
-# Constructor sig (GovernorOLAS.sol):
+# Constructor sig (VetoGovernor.sol = GovernorOLAS args + main Timelock A):
 #   (IVotes token, TimelockController timelock, uint256 votingDelay, uint256 votingPeriod,
-#    uint256 proposalThreshold, uint256 quorumFraction, uint256 initialGovernorDelay)
+#    uint256 proposalThreshold, uint256 quorumFraction, uint256 initialGovernorDelay, address mainTimelock)
 #
 # Writes:  globals.vetoGovernorAddress
 #
@@ -78,6 +78,7 @@ vetoVotingPeriod=$(jq -r '.vetoVotingPeriod' $globals)
 vetoProposalThreshold=$(jq -r '.vetoProposalThreshold' $globals)
 vetoQuorum=$(jq -r '.vetoQuorum' $globals)
 vetoGovernorDelay=$(jq -r '.vetoGovernorDelay' $globals)
+mainTimelockAddress=$(jq -r '.timelockAddress' $globals)
 
 # Precondition: Veto Timelock must have been deployed by deploy_28.
 if [ "$vetoTimelockAddress" == "null" ] || [ -z "$vetoTimelockAddress" ]; then
@@ -111,9 +112,11 @@ if [ $(( vetoCycleSeconds + marginSeconds )) -gt $mainGovernorDelayTarget ]; the
   exit 0
 fi
 
-contractName="GovernorOLAS"
+contractName="VetoGovernor"
 contractPath="contracts/$contractName.sol:$contractName"
-constructorArgs="$wveOLASAddress $vetoTimelockAddress $vetoVotingDelay $vetoVotingPeriod $vetoProposalThreshold $vetoQuorum $vetoGovernorDelay"
+# VetoGovernor ctor adds the main Timelock (A) as the 8th argument, so the stack can reject any
+# proposal that would surrender its CANCELLER_ROLE on A.
+constructorArgs="$wveOLASAddress $vetoTimelockAddress $vetoVotingDelay $vetoVotingPeriod $vetoProposalThreshold $vetoQuorum $vetoGovernorDelay $mainTimelockAddress"
 contractArgs="$contractPath --constructor-args $constructorArgs"
 
 # Get deployer based on the ledger flag
@@ -172,7 +175,7 @@ fi
 
 # Verify contract
 if [ "$contractVerification" == "true" ]; then
-  contractParams="$vetoGovernorAddress $contractPath --constructor-args $(cast abi-encode "constructor(address,address,uint256,uint256,uint256,uint256,uint256)" $constructorArgs)"
+  contractParams="$vetoGovernorAddress $contractPath --constructor-args $(cast abi-encode "constructor(address,address,uint256,uint256,uint256,uint256,uint256,address)" $constructorArgs)"
   echo "Verification contract params: $contractParams"
 
   echo "${green}Verifying contract on Etherscan...${reset}"
