@@ -735,11 +735,15 @@ contract ForkGovernanceVetoDelay is Test {
         _vetoCancelViaB(someId, bytes32(uint256(0xD15AE42)));
         assertFalse(A.isOperation(someId), "T9: veto still cancels A ops at delay 0 (Layer 2 intact)");
 
-        // (c) Main stack unaffected: Governor still schedules on A and A still executes.
+        // (c) Main stack unaffected: Governor still schedules on A and A still executes a FRESH op.
+        // (Use a distinct salt; the 0xBAD op from step (b) was cancelled and cannot be re-executed.)
+        bytes memory okData = abi.encodeWithSelector(ITimelock.grantRole.selector, CANCELLER_ROLE, ATTACKER);
+        bytes32 okSalt = bytes32(uint256(0xC0FFEE));
+        vm.prank(GOVERNOR_A);
+        A.schedule(TIMELOCK_A, 0, okData, NO_PREDECESSOR, okSalt, D_A);
         vm.warp(block.timestamp + D_A + 1);
         vm.prank(GOVERNOR_A);
-        A.execute(TIMELOCK_A, 0, abi.encodeWithSelector(ITimelock.grantRole.selector, CANCELLER_ROLE, ATTACKER),
-            NO_PREDECESSOR, bytes32(uint256(0xBAD)));
+        A.execute(TIMELOCK_A, 0, okData, NO_PREDECESSOR, okSalt);
         assertTrue(A.hasRole(CANCELLER_ROLE, ATTACKER), "T9: main stack still executes A ops");
     }
 }
