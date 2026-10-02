@@ -2,7 +2,7 @@
 
 # Deploy Veto Timelock — the cancel-only timelock behind the Veto-Governor stack.
 #
-# Veto Timelock is a stock `contracts/Timelock.sol` (OZ v4.8.3 TimelockController subclass) with:
+# Veto Timelock is `contracts/VetoTimelock.sol` (a `Timelock` / OZ v4.8.3 TimelockController subclass whose `updateDelay` reverts `Unsupported`) with:
 #   - minDelay = 0 (from globals.vetoMinDelay)
 #   - proposers = []           (no roles granted at construction — the Veto-Governor doesn't
 #                               exist yet; PROPOSER/CANCELLER/EXECUTOR are granted by
