@@ -27,6 +27,11 @@ jobs:
       - name: Install modules
         run: yarn install
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
+
       # Run linters
       - name: Run ESLint
         run: ./node_modules/.bin/eslint . --ext .js,.jsx,.ts,.tsx
@@ -36,6 +41,14 @@ jobs:
       # Compile the code and run tests and deploy script(s)
       - name: Run tests
         run: ./node_modules/.bin/hardhat test
+
+      # Foundry suite (unit + mainnet-fork). L2-leg fork tests are excluded by path (they need
+      # per-chain archive RPCs). The mainnet fork tests read ETH_RPC_URL / ETH_RPC from the environment.
+      - name: Run foundry tests
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC: ${{ secrets.ETH_RPC_URL }}
+        run: forge test --no-match-path "test/proposals/Proposal1*L2Legs.t.sol" -vvv
 
       # Run hardhat coverage and upload codecov report
       - name: Solidity coverage summary
