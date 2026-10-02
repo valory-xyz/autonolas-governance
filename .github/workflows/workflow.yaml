@@ -42,13 +42,15 @@ jobs:
       - name: Run tests
         run: ./node_modules/.bin/hardhat test
 
-      # Foundry suite (unit + mainnet-fork). L2-leg fork tests are excluded by path (they need
-      # per-chain archive RPCs). The mainnet fork tests read ETH_RPC_URL / ETH_RPC from the environment.
+      # Foundry suite: the deploy-fresh tests under test/forge/ (unit VoteWeighting + the fork tests that
+      # redeploy their contracts on a mainnet fork, incl. the veto stack ForkGovernanceVetoDelay). The
+      # test/proposals/* tests are excluded: they replay historical governance proposals and so only pass at
+      # the block they were written against, not against a live latest fork. Reads ETH_RPC_URL / ETH_RPC.
       - name: Run foundry tests
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC: ${{ secrets.ETH_RPC_URL }}
-        run: forge test --no-match-path "test/proposals/Proposal1*L2Legs.t.sol" -vvv
+        run: forge test --match-path "test/forge/*" -vvv
 
       # Run hardhat coverage and upload codecov report
       - name: Solidity coverage summary
