@@ -22,10 +22,10 @@
 # so VT can call A.cancel(badId) — orthogonal to the CANCELLER-on-VT grant above.
 #
 # After step 5, NO account holds TIMELOCK_ADMIN_ROLE on Veto Timelock — B's role set is frozen for
-# life. Any future re-pointing requires redeploying a fresh B'. Note that `B.updateDelay(...)`
-# is `onlySelf` (role-less), so a veto vote CAN still self-disarm B by bumping its minDelay
-# above 0 (T9 residual) — recovery = redeploy B' + re-grant CANCELLER on Timelock A
-# via one main-Governor cycle.
+# life. Any future re-pointing requires redeploying a fresh B'. `VetoTimelock.updateDelay(...)` is
+# permanently disabled (reverts `Unsupported`), so the former T9 self-disarm — a veto vote bumping B's
+# minDelay above 0 — is now closed in code: B's delay is fixed at construction (0) for the life of the
+# contract. (deploy_28 must therefore deploy `VetoTimelock`, not stock `Timelock`.)
 #
 # Depends on: deploy_28_veto_timelock.sh + deploy_29_veto_governor.sh.
 

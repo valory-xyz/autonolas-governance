@@ -11,7 +11,8 @@
 #                       (13091 / 19636 blocks ≈ 4.55 d cycle). Do NOT copy the raised
 #                       Layer-1 votingDelay (72000) or the veto cycle overflows the 14 d
 #                       governorDelay window.
-#   quorum/threshold  = vetoQuorum / vetoProposalThreshold  — identical to main (3 % / 5000).
+#   quorum/threshold  = vetoQuorum / vetoProposalThreshold  — identical to main (10 % / 250000 veOLAS,
+#                       per AIP-8 and the live main Governor).
 #                       Under Bravo counting the binding constraint is For > Against; the
 #                       fresh snapshot is the veto's only edge.
 #   governorDelay     = vetoGovernorDelay  — the Veto-Governor's own queue→execute delay,
@@ -105,6 +106,17 @@ if [ "$vetoVotingDelay" != "13091" ] || [ "$vetoVotingPeriod" != "19636" ]; then
   echo "${red}    Update the pin here consciously if this is intentional, and re-check the invariant below.${reset}"
   exit 0
 fi
+
+# Pin (typo-catch): proposal threshold and quorum MUST equal the live main Governor's — 250,000 veOLAS and
+# 10% — which are also the values AIP-8 specifies and the companion tests assert. A mismatch here would make
+# the veto cheaper to trigger (or harder) than the main Governor, which the design forbids.
+vetoProposalThresholdPin="250000000000000000000000"  # 250,000 * 1e18
+vetoQuorumPin="10"                                   # 10% (numerator; denominator is 100)
+if [ "$vetoProposalThreshold" != "$vetoProposalThresholdPin" ] || [ "$vetoQuorum" != "$vetoQuorumPin" ]; then
+  echo "${red}!!! globals.vetoProposalThreshold/vetoQuorum ($vetoProposalThreshold/$vetoQuorum) != design pin${reset}"
+  echo "${red}    ($vetoProposalThresholdPin / $vetoQuorumPin = 250,000 veOLAS / 10%, matching main). Aborting.${reset}"
+  exit 0
+fi
 vetoCycleSeconds=$(( (vetoVotingDelay + vetoVotingPeriod) * 12 ))
 if [ $(( vetoCycleSeconds + marginSeconds )) -gt $mainGovernorDelayTarget ]; then
   echo "${red}!!! Veto cycle overflow: (votingDelay+votingPeriod)*12s + margin = $((vetoCycleSeconds + marginSeconds)) s${reset}"
@@ -161,6 +173,17 @@ echo "  timelock        : $vetoTimelock        (must be Veto Timelock $vetoTimel
 echo "  governorDelay   : $vetoGD              (must be $vetoGovernorDelay = 0 for instant cancels)"
 echo "  votingDelay     : $vetoVD              (must be $vetoVotingDelay — today's value, NOT raised Layer 1)"
 echo "  votingPeriod    : $vetoVP              (must be $vetoVotingPeriod)"
+
+# Fail the deployment if the deployed immutable config does not match the intended values.
+vetoPT=$(cast call --rpc-url $rpcURL $vetoGovernorAddress "proposalThreshold()(uint256)" | awk '{print $1}')
+vetoQN=$(cast call --rpc-url $rpcURL $vetoGovernorAddress "quorumNumerator()(uint256)" | awk '{print $1}')
+echo "  proposalThreshold: $vetoPT   (must be $vetoProposalThreshold = 250,000 veOLAS)"
+echo "  quorumNumerator  : $vetoQN   (must be $vetoQuorum = 10%)"
+if [ "$vetoPT" != "$vetoProposalThreshold" ] || [ "$vetoQN" != "$vetoQuorum" ]; then
+  echo "${red}!!! Deployed veto config (threshold $vetoPT / quorum $vetoQN) != intended${reset}"
+  echo "${red}    ($vetoProposalThreshold / $vetoQuorum). Do NOT proceed to deploy_30.${reset}"
+  exit 0
+fi
 
 # Cross-check F1 against the live main Governor's token()
 if [ "$mainGovernor" != "null" ] && [ -n "$mainGovernor" ]; then
