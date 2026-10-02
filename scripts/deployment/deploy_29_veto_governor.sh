@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deploy Veto-Governor — a redeploy of GovernorOLAS bound to Veto Timelock.
+# Deploy Veto-Governor — the restricted VetoGovernor (GovernorOLAS design, config disabled) bound to Veto Timelock.
 #
 # Configuration:
 #   token             = wveOLASAddress  — MUST be the wveOLAS WRAPPER (0x4039…), not raw
@@ -11,16 +11,17 @@
 #                       (13091 / 19636 blocks ≈ 4.55 d cycle). Do NOT copy the raised
 #                       Layer-1 votingDelay (72000) or the veto cycle overflows the 14 d
 #                       governorDelay window.
-#   quorum/threshold  = vetoQuorum / vetoProposalThreshold  — identical to main (3 % / 5000).
+#   quorum/threshold  = vetoQuorum / vetoProposalThreshold  — identical to main (10 % / 250000 veOLAS,
+#                       per AIP-8 and the live main Governor).
 #                       Under Bravo counting the binding constraint is For > Against; the
 #                       fresh snapshot is the veto's only edge.
 #   governorDelay     = vetoGovernorDelay  — the Veto-Governor's own queue→execute delay,
 #                       set to 0 so a passing veto executes instantly through Veto Timelock
 #                       (whose minDelay is also 0). (role-freeze section).
 #
-# Constructor sig (GovernorOLAS.sol):
+# Constructor sig (VetoGovernor.sol = GovernorOLAS args + main Timelock A):
 #   (IVotes token, TimelockController timelock, uint256 votingDelay, uint256 votingPeriod,
-#    uint256 proposalThreshold, uint256 quorumFraction, uint256 initialGovernorDelay)
+#    uint256 proposalThreshold, uint256 quorumFraction, uint256 initialGovernorDelay, address mainTimelock)
 #
 # Writes:  globals.vetoGovernorAddress
 #
@@ -78,6 +79,7 @@ vetoVotingPeriod=$(jq -r '.vetoVotingPeriod' $globals)
 vetoProposalThreshold=$(jq -r '.vetoProposalThreshold' $globals)
 vetoQuorum=$(jq -r '.vetoQuorum' $globals)
 vetoGovernorDelay=$(jq -r '.vetoGovernorDelay' $globals)
+mainTimelockAddress=$(jq -r '.timelockAddress' $globals)
 
 # Precondition: Veto Timelock must have been deployed by deploy_28.
 if [ "$vetoTimelockAddress" == "null" ] || [ -z "$vetoTimelockAddress" ]; then
@@ -104,6 +106,17 @@ if [ "$vetoVotingDelay" != "13091" ] || [ "$vetoVotingPeriod" != "19636" ]; then
   echo "${red}    Update the pin here consciously if this is intentional, and re-check the invariant below.${reset}"
   exit 0
 fi
+
+# Pin (typo-catch): proposal threshold and quorum MUST equal the live main Governor's — 250,000 veOLAS and
+# 10% — which are also the values AIP-8 specifies and the companion tests assert. A mismatch here would make
+# the veto cheaper to trigger (or harder) than the main Governor, which the design forbids.
+vetoProposalThresholdPin="250000000000000000000000"  # 250,000 * 1e18
+vetoQuorumPin="10"                                   # 10% (numerator; denominator is 100)
+if [ "$vetoProposalThreshold" != "$vetoProposalThresholdPin" ] || [ "$vetoQuorum" != "$vetoQuorumPin" ]; then
+  echo "${red}!!! globals.vetoProposalThreshold/vetoQuorum ($vetoProposalThreshold/$vetoQuorum) != design pin${reset}"
+  echo "${red}    ($vetoProposalThresholdPin / $vetoQuorumPin = 250,000 veOLAS / 10%, matching main). Aborting.${reset}"
+  exit 0
+fi
 vetoCycleSeconds=$(( (vetoVotingDelay + vetoVotingPeriod) * 12 ))
 if [ $(( vetoCycleSeconds + marginSeconds )) -gt $mainGovernorDelayTarget ]; then
   echo "${red}!!! Veto cycle overflow: (votingDelay+votingPeriod)*12s + margin = $((vetoCycleSeconds + marginSeconds)) s${reset}"
@@ -111,9 +124,11 @@ if [ $(( vetoCycleSeconds + marginSeconds )) -gt $mainGovernorDelayTarget ]; the
   exit 0
 fi
 
-contractName="GovernorOLAS"
+contractName="VetoGovernor"
 contractPath="contracts/$contractName.sol:$contractName"
-constructorArgs="$wveOLASAddress $vetoTimelockAddress $vetoVotingDelay $vetoVotingPeriod $vetoProposalThreshold $vetoQuorum $vetoGovernorDelay"
+# VetoGovernor ctor adds the main Timelock (A) as the 8th argument, so the stack can reject any
+# proposal that would surrender its CANCELLER_ROLE on A.
+constructorArgs="$wveOLASAddress $vetoTimelockAddress $vetoVotingDelay $vetoVotingPeriod $vetoProposalThreshold $vetoQuorum $vetoGovernorDelay $mainTimelockAddress"
 contractArgs="$contractPath --constructor-args $constructorArgs"
 
 # Get deployer based on the ledger flag
@@ -159,6 +174,17 @@ echo "  governorDelay   : $vetoGD              (must be $vetoGovernorDelay = 0 f
 echo "  votingDelay     : $vetoVD              (must be $vetoVotingDelay — today's value, NOT raised Layer 1)"
 echo "  votingPeriod    : $vetoVP              (must be $vetoVotingPeriod)"
 
+# Fail the deployment if the deployed immutable config does not match the intended values.
+vetoPT=$(cast call --rpc-url $rpcURL $vetoGovernorAddress "proposalThreshold()(uint256)" | awk '{print $1}')
+vetoQN=$(cast call --rpc-url $rpcURL $vetoGovernorAddress "quorumNumerator()(uint256)" | awk '{print $1}')
+echo "  proposalThreshold: $vetoPT   (must be $vetoProposalThreshold = 250,000 veOLAS)"
+echo "  quorumNumerator  : $vetoQN   (must be $vetoQuorum = 10%)"
+if [ "$vetoPT" != "$vetoProposalThreshold" ] || [ "$vetoQN" != "$vetoQuorum" ]; then
+  echo "${red}!!! Deployed veto config (threshold $vetoPT / quorum $vetoQN) != intended${reset}"
+  echo "${red}    ($vetoProposalThreshold / $vetoQuorum). Do NOT proceed to deploy_30.${reset}"
+  exit 0
+fi
+
 # Cross-check F1 against the live main Governor's token()
 if [ "$mainGovernor" != "null" ] && [ -n "$mainGovernor" ]; then
   mainToken=$(cast call --rpc-url $rpcURL $mainGovernor "token()(address)")
@@ -172,7 +198,7 @@ fi
 
 # Verify contract
 if [ "$contractVerification" == "true" ]; then
-  contractParams="$vetoGovernorAddress $contractPath --constructor-args $(cast abi-encode "constructor(address,address,uint256,uint256,uint256,uint256,uint256)" $constructorArgs)"
+  contractParams="$vetoGovernorAddress $contractPath --constructor-args $(cast abi-encode "constructor(address,address,uint256,uint256,uint256,uint256,uint256,address)" $constructorArgs)"
   echo "Verification contract params: $contractParams"
 
   echo "${green}Verifying contract on Etherscan...${reset}"

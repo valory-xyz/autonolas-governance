@@ -3,6 +3,7 @@ pragma solidity ^0.8.30;
 
 import {Test, console} from "forge-std/Test.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
+import {VetoTimelock} from "../../contracts/VetoTimelock.sol";
 
 /// @dev Minimal view / role surface of the live Timelock A used by this test.
 interface ITimelock {
@@ -137,16 +138,17 @@ contract ForkGovernanceVetoDelay is Test {
         // (b) Governor should also hold TIMELOCK_ADMIN_ROLE.
         assertTrue(A.hasRole(TIMELOCK_ADMIN_ROLE, GOVERNOR_A), "Governor holds TIMELOCK_ADMIN on A");
 
-        // Deploy Veto Timelock (stock OZ TimelockController) — iterative-wiring variant matching
-        // the production deploy scripts (scripts/deployment/deploy_28..30):
+        // Deploy Veto Timelock (VetoTimelock — Timelock with updateDelay disabled) — iterative-wiring
+        // variant matching the production deploy scripts (scripts/deployment/deploy_28..30):
         //   - minDelay = 0
         //   - proposers = [] (empty)  — production PROPOSER = deployed Veto-Governor, granted
         //                                post-deploy (see below).
         //   - executors = [] (empty)
-        //   - admin    = this contract (deployer) so we can perform the role-freeze below.
+        //   - admin    = this contract (deployer, via the Timelock base passing msg.sender) so we can
+        //                perform the role-freeze below.
         address[] memory proposers = new address[](0);
         address[] memory executors = new address[](0);
-        B = new TimelockController(0, proposers, executors, address(this));
+        B = new VetoTimelock(0, proposers, executors);
 
         // Iterative wiring. CANCELLER on VT IS granted here to match deploy_30's five-step
         // sequence. Its consumer is GovernorCompatibilityBravo.cancel(uint256) reaching
@@ -711,48 +713,33 @@ contract ForkGovernanceVetoDelay is Test {
         assertFalse(B.hasRole(PROPOSER_ROLE, ATTACKER), "post-freeze: ATTACKER did not gain PROPOSER on B");
     }
 
-    /// @notice T9 (the design notes, the design notes residual) — the veto stack's self-disarm case.
-    ///         `TimelockController.updateDelay` is `onlySelf` — it's a role-less self-call the sec 3
-    ///         freeze cannot block. A single passed veto vote executing `B.updateDelay(1)` sets
-    ///         `B.minDelay = 1`, which then makes `B.schedule(..., delay = 0)` revert
-    ///         ("delay must exceed min delay") — the veto stack's own queue path is dead.
-    ///
-    ///         This is bounded (per the design notes): only Layer 2 is disarmed. The main Governor path
-    ///         is untouched (Layer 1 votingDelay + main queue on Timelock A both keep working);
-    ///         recovery = redeploy B' + re-grant CANCELLER on A via one main-Governor cycle.
-    function test_T9_veto_stack_self_disarm_bounded_and_recoverable() public {
-        // (a) The self-disarm succeeds via a veto proposal targeting B.updateDelay(1).
-        // updateDelay is `onlySelf` — msg.sender must be B itself. B's own executeBatch invokes the
-        // target with msg.sender = B, so the call passes the onlySelf check.
+    /// @notice T9 (former residual, now closed in code): the veto stack's self-disarm case.
+    ///         `VetoTimelock.updateDelay` is permanently disabled (reverts `Unsupported`), so a veto vote
+    ///         executing `B.updateDelay(1)` can no longer bump `B.minDelay` and brick Layer 2. B's delay is
+    ///         fixed at 0 for the life of the contract, and the veto cancel path keeps working.
+    function test_T9_veto_stack_cannot_self_disarm() public {
+        // (a) The self-disarm attempt reverts. updateDelay is disabled on VetoTimelock; B's own
+        // executeBatch surfaces the inner revert as "underlying transaction reverted".
         bytes memory disarmData =
             abi.encodeWithSelector(TimelockController.updateDelay.selector, uint256(1));
         bytes32 salt = bytes32(uint256(0xD15AE41));
         vm.prank(VETO_GOVERNOR);
         B.schedule(address(B), 0, disarmData, NO_PREDECESSOR, salt, 0);
         vm.prank(VETO_GOVERNOR);
+        vm.expectRevert(bytes("TimelockController: underlying transaction reverted"));
         B.execute(address(B), 0, disarmData, NO_PREDECESSOR, salt);
-        assertEq(B.getMinDelay(), 1, "T9: B.minDelay bumped to 1 by role-less self-call (sec 3 freeze cannot block)");
+        assertEq(B.getMinDelay(), 0, "T9: VetoTimelock delay is fixed at 0; self-disarm is disabled");
 
-        // (b) Layer 2 is now bricked. Any new veto proposal targeting a cancel on A cannot schedule
-        // at delay = 0 anymore.
+        // (b) Layer 2 is intact: a fresh veto still cancels a queued A-op at delay 0.
         (bytes32 someId, ) = _schedBadOp_grantRoleToAttacker();
-        bytes memory cancelData = abi.encodeWithSelector(ITimelock.cancel.selector, someId);
-        bytes32 salt2 = bytes32(uint256(0xD15AE42));
-        vm.prank(VETO_GOVERNOR);
-        vm.expectRevert(bytes("TimelockController: insufficient delay"));
-        B.schedule(TIMELOCK_A, 0, cancelData, NO_PREDECESSOR, salt2, 0);
-        assertTrue(A.isOperationPending(someId), "T9: post-disarm, B cannot schedule a cancel; the A op stays pending");
+        _vetoCancelViaB(someId, bytes32(uint256(0xD15AE42)));
+        assertFalse(A.isOperation(someId), "T9: veto still cancels A ops at delay 0 (Layer 2 intact)");
 
-        // (c) Main stack unaffected. Governor still schedules on A; A still executes; Layer 1
-        // (votingDelay lever) still works. Verify by driving one full A-op through.
+        // (c) Main stack unaffected: Governor still schedules on A and A still executes.
         vm.warp(block.timestamp + D_A + 1);
         vm.prank(GOVERNOR_A);
         A.execute(TIMELOCK_A, 0, abi.encodeWithSelector(ITimelock.grantRole.selector, CANCELLER_ROLE, ATTACKER),
             NO_PREDECESSOR, bytes32(uint256(0xBAD)));
-        assertTrue(A.hasRole(CANCELLER_ROLE, ATTACKER), "T9: main stack still executes A ops after Layer 2 disarm");
-
-        // Recovery (redeploy B' + re-grant CANCELLER on A) is a separate main-Governor cycle. Not
-        // exercised atomically here — the point is that the disarm is bounded to Layer 2 and
-        // recoverable by governance, per the design notes.
+        assertTrue(A.hasRole(CANCELLER_ROLE, ATTACKER), "T9: main stack still executes A ops");
     }
 }

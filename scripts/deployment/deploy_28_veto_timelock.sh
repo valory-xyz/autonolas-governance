@@ -2,7 +2,7 @@
 
 # Deploy Veto Timelock — the cancel-only timelock behind the Veto-Governor stack.
 #
-# Veto Timelock is a stock `contracts/Timelock.sol` (OZ v4.8.3 TimelockController subclass) with:
+# Veto Timelock is `contracts/VetoTimelock.sol` (a `Timelock` / OZ v4.8.3 TimelockController subclass whose `updateDelay` reverts `Unsupported`) with:
 #   - minDelay = 0 (from globals.vetoMinDelay)
 #   - proposers = []           (no roles granted at construction — the Veto-Governor doesn't
 #                               exist yet; PROPOSER/CANCELLER/EXECUTOR are granted by
@@ -66,9 +66,9 @@ fi
 
 vetoMinDelay=$(jq -r '.vetoMinDelay' $globals)
 
-contractName="Timelock"
+contractName="VetoTimelock"
 contractPath="contracts/$contractName.sol:$contractName"
-# Timelock ctor: (uint256 minDelay, address[] proposers, address[] executors) — admin = msg.sender.
+# VetoTimelock ctor (same as Timelock): (uint256 minDelay, address[] proposers, address[] executors) — admin = msg.sender.
 # Empty arrays are passed literally so no roles are granted at construction time.
 constructorArgs="$vetoMinDelay [] []"
 contractArgs="$contractPath --constructor-args $constructorArgs"
