@@ -127,7 +127,7 @@ contract VetoGovernor is
 
     /// @dev True if `data` is `renounceRole(CANCELLER_ROLE, account)`.
     function _surrendersCanceller(bytes memory data, address account) private pure returns (bool) {
-        if (data.length != 68) {
+        if (data.length < 68) {
             return false;
         }
         bytes4 selector;
