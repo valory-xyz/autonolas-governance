@@ -57,13 +57,14 @@ forge test --fork-url <MAINNET_RPC> --match-contract ForkDeployGovernance -vvv
 - Polygon: `FxGovernorTunnel.sol`, `FxERC20ChildTunnel.sol`, `FxERC20RootTunnel.sol` (FxPortal)
 - Gnosis: `HomeMediator.sol` (AMB)
 - Optimism/Base: `OptimismMessenger.sol` (L1CrossDomainMessenger)
-- Wormhole (Celo, etc.): `WormholeMessenger.sol`, `WormholeRelayerTimelock.sol`
 - `BridgedERC20.sol` — Wrapped OLAS on child chains
 
 **Multisig Guard** (`contracts/multisigs/`):
 - `GuardCM.sol` — Transaction guard for community multisig, validates Timelock operations
 - `VerifyData.sol` / `VerifyBridgedData.sol` — Data verification for L1 and bridged calls
-- `ProcessBridgedData{Arbitrum,Gnosis,Optimism,Polygon,Wormhole}.sol` — Chain-specific bridge data processors
+- `ProcessBridgedData{Arbitrum,Gnosis,Optimism,Polygon}.sol` — Chain-specific bridge data processors
+
+**Deprecated** (`contracts/deprecated/`): the retired Celo Wormhole path — `WormholeMessenger.sol`, `WormholeRelayerTimelock.sol`, `ProcessBridgedDataWormhole.sol`. Kept as the source of record for deployed contracts.
 
 **Key Dependencies:** OpenZeppelin 4.8.3 (pinned), solmate (lib/ submodule), fx-portal, Gnosis Safe contracts.
 
