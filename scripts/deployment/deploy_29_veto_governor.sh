@@ -48,7 +48,7 @@ fi
 globals="$(dirname "$0")/globals_$1.json"
 if [ ! -f $globals ]; then
   echo "${red}!!! $globals is not found${reset}"
-  exit 0
+  exit 1
 fi
 
 # Read variables using jq
@@ -62,13 +62,13 @@ if [ $chainId == 1 ]; then
   API_KEY=$ALCHEMY_API_KEY_MAINNET
   if [ "$API_KEY" == "" ]; then
       echo "${red}!!! Set ALCHEMY_API_KEY_MAINNET env variable${reset}"
-      exit 0
+      exit 1
   fi
 elif [ $chainId == 11155111 ]; then
     API_KEY=$ALCHEMY_API_KEY_SEPOLIA
     if [ "$API_KEY" == "" ]; then
         echo "${red}!!! Set ALCHEMY_API_KEY_SEPOLIA env variable${reset}"
-        exit 0
+        exit 1
     fi
 fi
 
@@ -84,7 +84,7 @@ mainTimelockAddress=$(jq -r '.timelockAddress' $globals)
 # Precondition: Veto Timelock must have been deployed by deploy_28.
 if [ "$vetoTimelockAddress" == "null" ] || [ -z "$vetoTimelockAddress" ]; then
   echo "${red}!!! globals.vetoTimelockAddress is unset. Run deploy_28_veto_timelock.sh $1 first.${reset}"
-  exit 0
+  exit 1
 fi
 
 mainGovernor=$(jq -r '.governorAddress' $globals)  # used later for the F1 token cross-check
@@ -104,7 +104,7 @@ marginSeconds=86400              # 1 d slack (block-time jitter + Bravo cancel o
 if [ "$vetoVotingDelay" != "13091" ] || [ "$vetoVotingPeriod" != "19636" ]; then
   echo "${red}!!! globals.vetoVotingDelay/vetoVotingPeriod ($vetoVotingDelay/$vetoVotingPeriod) != design pin (13091/19636).${reset}"
   echo "${red}    Update the pin here consciously if this is intentional, and re-check the invariant below.${reset}"
-  exit 0
+  exit 1
 fi
 
 # Pin (typo-catch): proposal threshold and quorum MUST equal the live main Governor's — 250,000 veOLAS and
@@ -115,13 +115,13 @@ vetoQuorumPin="10"                                   # 10% (numerator; denominat
 if [ "$vetoProposalThreshold" != "$vetoProposalThresholdPin" ] || [ "$vetoQuorum" != "$vetoQuorumPin" ]; then
   echo "${red}!!! globals.vetoProposalThreshold/vetoQuorum ($vetoProposalThreshold/$vetoQuorum) != design pin${reset}"
   echo "${red}    ($vetoProposalThresholdPin / $vetoQuorumPin = 250,000 veOLAS / 10%, matching main). Aborting.${reset}"
-  exit 0
+  exit 1
 fi
 vetoCycleSeconds=$(( (vetoVotingDelay + vetoVotingPeriod) * 12 ))
 if [ $(( vetoCycleSeconds + marginSeconds )) -gt $mainGovernorDelayTarget ]; then
   echo "${red}!!! Veto cycle overflow: (votingDelay+votingPeriod)*12s + margin = $((vetoCycleSeconds + marginSeconds)) s${reset}"
   echo "${red}    > mainGovernorDelayTarget ($mainGovernorDelayTarget s = 14 d). Aborting.${reset}"
-  exit 0
+  exit 1
 fi
 
 contractName="VetoGovernor"
@@ -153,7 +153,7 @@ vetoGovernorAddress=$(echo "$deploymentOutput" | grep 'Deployed to:' | awk '{pri
 outputLength=${#vetoGovernorAddress}
 if [ $outputLength != 42 ]; then
   echo "${red}!!! The contract was not deployed...${reset}"
-  exit 0
+  exit 1
 fi
 
 # Write into globals
@@ -182,7 +182,7 @@ echo "  quorumNumerator  : $vetoQN   (must be $vetoQuorum = 10%)"
 if [ "$vetoPT" != "$vetoProposalThreshold" ] || [ "$vetoQN" != "$vetoQuorum" ]; then
   echo "${red}!!! Deployed veto config (threshold $vetoPT / quorum $vetoQN) != intended${reset}"
   echo "${red}    ($vetoProposalThreshold / $vetoQuorum). Do NOT proceed to deploy_30.${reset}"
-  exit 0
+  exit 1
 fi
 
 # Cross-check F1 against the live main Governor's token()
@@ -191,7 +191,7 @@ if [ "$mainGovernor" != "null" ] && [ -n "$mainGovernor" ]; then
   if [ "$(echo $mainToken | tr A-Z a-z)" != "$(echo $vetoToken | tr A-Z a-z)" ]; then
     echo "${red}!!! F1 VIOLATION: veto.token() ($vetoToken) != main.token() ($mainToken)${reset}"
     echo "${red}    Deployment failed the wveOLAS-wrapper check. Do NOT proceed to deploy_30.${reset}"
-    exit 0
+    exit 1
   fi
   echo "  F1 (token match): ${green}PASS${reset}"
 fi

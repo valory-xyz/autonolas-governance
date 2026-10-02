@@ -43,7 +43,7 @@ fi
 globals="$(dirname "$0")/globals_$1.json"
 if [ ! -f $globals ]; then
   echo "${red}!!! $globals is not found${reset}"
-  exit 0
+  exit 1
 fi
 
 useLedger=$(jq -r '.useLedger' $globals)
@@ -55,13 +55,13 @@ if [ $chainId == 1 ]; then
   API_KEY=$ALCHEMY_API_KEY_MAINNET
   if [ "$API_KEY" == "" ]; then
       echo "${red}!!! Set ALCHEMY_API_KEY_MAINNET env variable${reset}"
-      exit 0
+      exit 1
   fi
 elif [ $chainId == 11155111 ]; then
     API_KEY=$ALCHEMY_API_KEY_SEPOLIA
     if [ "$API_KEY" == "" ]; then
         echo "${red}!!! Set ALCHEMY_API_KEY_SEPOLIA env variable${reset}"
-        exit 0
+        exit 1
     fi
 fi
 
@@ -71,11 +71,11 @@ rpcURL="$networkURL$API_KEY"
 
 if [ "$vetoTimelockAddress" == "null" ] || [ -z "$vetoTimelockAddress" ]; then
   echo "${red}!!! globals.vetoTimelockAddress is unset. Run deploy_28 first.${reset}"
-  exit 0
+  exit 1
 fi
 if [ "$vetoGovernorAddress" == "null" ] || [ -z "$vetoGovernorAddress" ]; then
   echo "${red}!!! globals.vetoGovernorAddress is unset. Run deploy_29 first.${reset}"
-  exit 0
+  exit 1
 fi
 
 if [ "$useLedger" == "true" ]; then
@@ -101,7 +101,7 @@ deployerHasAdmin=$(cast call --rpc-url $rpcURL $vetoTimelockAddress "hasRole(byt
 if [ "$deployerHasAdmin" != "true" ]; then
   echo "${red}!!! deployer does NOT hold TIMELOCK_ADMIN_ROLE on Veto Timelock.${reset}"
   echo "${red}    The freeze already ran or the deployer changed. Abort.${reset}"
-  exit 0
+  exit 1
 fi
 
 send() {

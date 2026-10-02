@@ -36,7 +36,7 @@ wormholeL1TokenBridgeAddress=$(jq -r '.wormholeL1TokenBridgeAddress' $globals)
 refundChainId=$(jq -r '.refundChainId' $globals)
 
 contractName="WormholeRelayerTimelock"
-contractPath="contracts/bridges/$contractName.sol:$contractName"
+contractPath="contracts/deprecated/$contractName.sol:$contractName"
 constructorArgs="$timelockAddress $wormholeL1CoreAddress $wormholeL1MessageRelayerAddress $wormholeL1TokenBridgeAddress $refundChainId"
 contractArgs="$contractPath --constructor-args $constructorArgs"
 
