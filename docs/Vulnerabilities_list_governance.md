@@ -819,7 +819,7 @@ This is intended under the documented "each L2 verifier has a unique association
 
 **Severity:** Informative
 
-Location: `bridges/WormholeMessenger.sol` (single `sourceGovernor` state variable; authentication around lines 88–95).
+Location: `deprecated/WormholeMessenger.sol` (single `sourceGovernor` state variable; authentication around lines 88–95).
 
 `WormholeMessenger` authenticates against a single `sourceGovernor`, which cannot match two distinct L1 sender identities (a direct path and a mediated path) simultaneously. Correspondingly the matching verifier accepts only the direct-relayer signatures. Discovered in the internal20 manual re-audit.
 
