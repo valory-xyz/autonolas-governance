@@ -5,12 +5,13 @@ import "forge-std/Test.sol";
 import {OLAS} from "../../contracts/OLAS.sol";
 import {veOLAS} from "../../contracts/veOLAS.sol";
 import {VoteWeighting, OwnerOnly, NomineeDoesNotExist, NomineeNotRemoved, ZeroValue} from "../../contracts/VoteWeighting.sol";
+import {MockDispenser} from "../../contracts/test/MockDispenser.sol";
 
 /// @title VoteWeightingTest - Unit tests for the VoteWeighting security-redeploy fixes
 /// @dev Deploys the real OLAS + veOLAS + VoteWeighting stack locally (deterministic, no fork).
 ///      Covers findings #8 (removeNominee accounting DoS), #11 (OwnerOnly arg order), #18
-///      (relative-weight clamp), #19 (last-element swap guard), #20 (revoke checkpoint drift) and #26 (catch-up
-///      cursor fast-forward past the 250-week horizon).
+///      (relative-weight clamp), #19 (last-element swap guard), #20 (revoke checkpoint drift), #26 (catch-up
+///      cursor fast-forward past the 250-week horizon) and #27 / tokenomics #42 (nominee registration checks).
 ///      Run: forge test --match-contract VoteWeightingTest -vvv
 contract VoteWeightingTest is Test {
     uint256 internal constant WEEK = 604_800;
@@ -693,5 +694,71 @@ contract VoteWeightingTest is Test {
         (uint256 w, ) = vw.nomineeRelativeWeight(_b32(n3), CHAIN_ID, next);
         assertEq(w, 1e18, "n3 holds the whole weight");
         assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), next, "n3 cursor at the next boundary");
+    }
+
+    // ----------------------------------------------------------------------------------------------
+    // #27 / tokenomics #42 - nominee registration checks through the dispenser
+    // ----------------------------------------------------------------------------------------------
+
+    uint256 internal constant FOREIGN_CHAIN_ID = 10;
+
+    function _vwWithDispenser() internal returns (VoteWeighting vwd, MockDispenser md) {
+        md = new MockDispenser();
+        vwd = new VoteWeighting(address(ve), address(md));
+    }
+
+    /// @dev EVM and non-EVM chains without a deposit processor are rejected.
+    function test_AddNominee_NoDepositProcessor_Reverts() public {
+        (VoteWeighting vwd, ) = _vwWithDispenser();
+
+        vm.expectRevert(abi.encodeWithSignature("NoDepositProcessor(uint256)", FOREIGN_CHAIN_ID));
+        vwd.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+
+        uint256 nonEvmChainId = vwd.MAX_EVM_CHAIN_ID() + 1;
+        vm.expectRevert(abi.encodeWithSignature("NoDepositProcessor(uint256)", nonEvmChainId));
+        vwd.addNomineeNonEVM(keccak256("non-EVM target"), nonEvmChainId);
+    }
+
+    /// @dev EVM and non-EVM chains with a deposit processor are accepted. Passes before and after the change.
+    function test_AddNominee_WithDepositProcessor_Succeeds() public {
+        (VoteWeighting vwd, MockDispenser md) = _vwWithDispenser();
+        uint256 nonEvmChainId = vwd.MAX_EVM_CHAIN_ID() + 1;
+        md.setDepositProcessor(FOREIGN_CHAIN_ID, address(0xD10));
+        md.setDepositProcessor(nonEvmChainId, address(0xD11));
+
+        vwd.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+        vwd.addNomineeNonEVM(keccak256("non-EVM target"), nonEvmChainId);
+        assertEq(md.addCount(), 2, "both nominees added through the dispenser");
+    }
+
+    /// @dev The retainer is rejected under another chain Id, with that chain configured so only the retainer check can
+    ///      fire.
+    function test_AddNominee_RetainerOnForeignChain_Reverts() public {
+        (VoteWeighting vwd, MockDispenser md) = _vwWithDispenser();
+        md.setRetainer(_b32(n2));
+        md.setDepositProcessor(FOREIGN_CHAIN_ID, address(0xD10));
+
+        vm.expectRevert(abi.encodeWithSignature("RetainerOnForeignChain(bytes32,uint256)", _b32(n2), FOREIGN_CHAIN_ID));
+        vwd.addNomineeEVM(n2, FOREIGN_CHAIN_ID);
+
+        // Any other account on that chain is fine
+        vwd.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+    }
+
+    /// @dev The retainer on this chain is accepted. Passes before and after the change.
+    function test_AddNominee_RetainerOnOwnChain_Succeeds() public {
+        (VoteWeighting vwd, MockDispenser md) = _vwWithDispenser();
+        md.setRetainer(_b32(n2));
+        md.setDepositProcessor(block.chainid, address(0xD12));
+
+        vwd.addNomineeEVM(n2, block.chainid);
+        assertEq(md.addCount(), 1, "retainer added on its own chain");
+    }
+
+    /// @dev Without a dispenser there are no registration checks. Passes before and after the change.
+    function test_AddNominee_NoDispenser_SkipsChecks() public {
+        vw.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+        vw.addNomineeNonEVM(keccak256("non-EVM target"), vw.MAX_EVM_CHAIN_ID() + 1);
+        assertEq(vw.getNumNominees(), 2, "both added");
     }
 }

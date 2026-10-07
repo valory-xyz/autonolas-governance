@@ -2,6 +2,8 @@
 pragma solidity ^0.8.30;
 
 // Dispenser interface
+// Note: the dispenser is an immutable here, bound to the Dispenser proxy, so every Dispenser implementation behind it must
+// keep the mapChainIdDepositProcessors() and retainer() getters that _addNominee reads.
 interface IDispenser {
     /// @dev Records nominee addition in dispenser.
     /// @param nomineeHash Nominee hash.
@@ -10,6 +12,15 @@ interface IDispenser {
     /// @dev Records nominee removal.
     /// @param nomineeHash Nominee hash.
     function removeNominee(bytes32 nomineeHash) external;
+
+    /// @dev Gets the deposit processor registered for a chain Id.
+    /// @param chainId Chain Id.
+    /// @return Deposit processor address, zero if the chain is not supported.
+    function mapChainIdDepositProcessors(uint256 chainId) external view returns (address);
+
+    /// @dev Gets the retainer account.
+    /// @return Retainer account in bytes32 form.
+    function retainer() external view returns (bytes32);
 }
 
 // veOLAS interface
@@ -103,6 +114,15 @@ error NomineeNotRemoved(bytes32 account, uint256 chainId);
 /// @param account Nominee account address.
 /// @param chainId Nominee chain Id.
 error NomineeRemoved(bytes32 account, uint256 chainId);
+
+/// @dev The dispenser has no deposit processor for the nominee chain Id.
+/// @param chainId Chain Id.
+error NoDepositProcessor(uint256 chainId);
+
+/// @dev The retainer can only be a nominee on this chain.
+/// @param account Retainer account.
+/// @param chainId Provided chain Id.
+error RetainerOnForeignChain(bytes32 account, uint256 chainId);
 
 // Point struct
 struct Point {
@@ -336,6 +356,20 @@ contract VoteWeighting {
             revert NomineeRemoved(nominee.account, nominee.chainId);
         }
 
+        // With a dispenser, only nominees it can serve are accepted
+        address localDispenser = dispenser;
+        if (localDispenser != address(0)) {
+            // The chain must have a deposit processor, or its staking incentives could never be delivered
+            if (IDispenser(localDispenser).mapChainIdDepositProcessors(nominee.chainId) == address(0)) {
+                revert NoDepositProcessor(nominee.chainId);
+            }
+
+            // The retainer is only ever retained on this chain, so it must not be a nominee under another chain Id
+            if (nominee.account == IDispenser(localDispenser).retainer() && nominee.chainId != block.chainid) {
+                revert RetainerOnForeignChain(nominee.account, nominee.chainId);
+            }
+        }
+
         uint256 id = setNominees.length;
         mapNomineeIds[nomineeHash] = id;
         // Push the nominee into the list
@@ -345,7 +379,6 @@ contract VoteWeighting {
         timeWeight[nomineeHash] = nextTime;
 
         // Enable nominee in dispenser, if applicable
-        address localDispenser = dispenser;
         if (localDispenser != address(0)) {
             IDispenser(localDispenser).addNominee(nomineeHash);
         }
