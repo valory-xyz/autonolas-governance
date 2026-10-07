@@ -556,6 +556,42 @@ contract VoteWeightingTest is Test {
         assertEq(vw.timeSum(), _nextBoundary(), "cursor at the next weekly boundary");
     }
 
+    /// @dev One second before the nominee horizon, the ordinary walk still reaches the next weekly boundary.
+    ///      Passes before and after the fix; the sum is checkpointed separately so only the nominee is stale.
+    function test_NomineeCursor_JustInsideHorizon_AdvancesNormally() public {
+        vw.addNomineeEVM(n3, CHAIN_ID);
+        uint256 cursor = vw.timeWeight(_hash(n3, CHAIN_ID));
+        for (uint256 i = 0; i < 5; ++i) {
+            vm.warp(block.timestamp + 50 * WEEK);
+            vw.checkpoint();
+        }
+        vm.warp(cursor + HORIZON - 1);
+
+        vw.checkpointNominee(_b32(n3), CHAIN_ID);
+
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), cursor + HORIZON, "last walkable week");
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), _nextBoundary(), "next weekly boundary");
+    }
+
+    /// @dev One second after the nominee horizon, fast-forward must reach the next boundary with a zero point.
+    function test_NomineeCursor_PastHorizon_FastForwards() public {
+        vw.addNomineeEVM(n3, CHAIN_ID);
+        uint256 cursor = vw.timeWeight(_hash(n3, CHAIN_ID));
+        for (uint256 i = 0; i < 5; ++i) {
+            vm.warp(block.timestamp + 50 * WEEK);
+            vw.checkpoint();
+        }
+        vm.warp(cursor + HORIZON + 1);
+
+        vw.checkpointNominee(_b32(n3), CHAIN_ID);
+
+        uint256 next = _nextBoundary();
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), next, "next weekly boundary");
+        (uint256 bias, uint256 slope) = _weightPoint(n3, next);
+        assertEq(bias, 0, "zero bias");
+        assertEq(slope, 0, "zero slope");
+    }
+
     /// @dev The per-nominee cursor at the horizon, with the sum cursor kept fresh by regular checkpoints.
     function test_NomineeCursor_AtHorizon_FastForwards() public {
         vw.addNomineeEVM(n3, CHAIN_ID);
