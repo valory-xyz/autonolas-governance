@@ -253,6 +253,22 @@ contract VoteWeighting {
                 timeSum = t;
             }
         }
+
+        // Fast-forward past a gap beyond the catch-up horizon. The walk persists the cursor only once it passes
+        // block.timestamp and covers at most MAX_NUM_WEEKS weeks, so once block.timestamp is MAX_NUM_WEEKS weeks or
+        // more past the cursor, the cursor would never move again and every later call would replay the same window.
+        // Move it to the next weekly boundary, where a complete walk would have stopped, with a zero point.
+        // Zero is correct for this implementation operating from a consistent starting state (a fresh deployment):
+        // every vote and nominee update checkpoints here first, so a cursor this far behind means nothing has been added
+        // since that checkpoint, and all contributions it represents have expired, as veOLAS locks last at most
+        // 4 * 365 days (~208.6 weeks) < MAX_NUM_WEEKS. It does not repair accounting corrupted beforehand.
+        if (t <= block.timestamp) {
+            t = (block.timestamp / WEEK + 1) * WEEK;
+            pt = Point(0, 0);
+            pointsSum[t] = pt;
+            timeSum = t;
+        }
+
         return pt.bias;
     }
 
@@ -294,6 +310,15 @@ contract VoteWeighting {
                 timeWeight[nomineeHash] = t;
             }
         }
+
+        // Fast-forward past a gap beyond the catch-up horizon, as in _getSum
+        if (t <= block.timestamp) {
+            t = (block.timestamp / WEEK + 1) * WEEK;
+            pt = Point(0, 0);
+            pointsWeight[nomineeHash][t] = pt;
+            timeWeight[nomineeHash] = t;
+        }
+
         return pt.bias;
     }
 
