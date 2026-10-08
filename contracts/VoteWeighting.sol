@@ -2,6 +2,8 @@
 pragma solidity ^0.8.30;
 
 // Dispenser interface
+// Note: the dispenser is an immutable here, bound to the Dispenser proxy, so every Dispenser implementation behind it must
+// keep the mapChainIdDepositProcessors() and retainer() getters that _addNominee reads.
 interface IDispenser {
     /// @dev Records nominee addition in dispenser.
     /// @param nomineeHash Nominee hash.
@@ -10,6 +12,15 @@ interface IDispenser {
     /// @dev Records nominee removal.
     /// @param nomineeHash Nominee hash.
     function removeNominee(bytes32 nomineeHash) external;
+
+    /// @dev Gets the deposit processor registered for a chain Id.
+    /// @param chainId Chain Id.
+    /// @return Deposit processor address, zero if the chain is not supported.
+    function mapChainIdDepositProcessors(uint256 chainId) external view returns (address);
+
+    /// @dev Gets the retainer account.
+    /// @return Retainer account in bytes32 form.
+    function retainer() external view returns (bytes32);
 }
 
 // veOLAS interface
@@ -103,6 +114,15 @@ error NomineeNotRemoved(bytes32 account, uint256 chainId);
 /// @param account Nominee account address.
 /// @param chainId Nominee chain Id.
 error NomineeRemoved(bytes32 account, uint256 chainId);
+
+/// @dev The dispenser has no deposit processor for the nominee chain Id.
+/// @param chainId Chain Id.
+error NoDepositProcessor(uint256 chainId);
+
+/// @dev The retainer can only be a nominee on this chain.
+/// @param account Retainer account.
+/// @param chainId Provided chain Id.
+error RetainerOnForeignChain(bytes32 account, uint256 chainId);
 
 // Point struct
 struct Point {
@@ -253,6 +273,22 @@ contract VoteWeighting {
                 timeSum = t;
             }
         }
+
+        // Fast-forward past a gap beyond the catch-up horizon. The walk persists the cursor only once it passes
+        // block.timestamp and covers at most MAX_NUM_WEEKS weeks, so once block.timestamp is MAX_NUM_WEEKS weeks or
+        // more past the cursor, the cursor would never move again and every later call would replay the same window.
+        // Move it to the next weekly boundary, where a complete walk would have stopped, with a zero point.
+        // Zero is correct for this implementation operating from a consistent starting state (a fresh deployment):
+        // every vote and nominee update checkpoints here first, so a cursor this far behind means nothing has been added
+        // since that checkpoint, and all contributions it represents have expired, as veOLAS locks last at most
+        // 4 * 365 days (~208.6 weeks) < MAX_NUM_WEEKS. It does not repair accounting corrupted beforehand.
+        if (t <= block.timestamp) {
+            t = (block.timestamp / WEEK + 1) * WEEK;
+            pt = Point(0, 0);
+            pointsSum[t] = pt;
+            timeSum = t;
+        }
+
         return pt.bias;
     }
 
@@ -294,6 +330,15 @@ contract VoteWeighting {
                 timeWeight[nomineeHash] = t;
             }
         }
+
+        // Fast-forward past a gap beyond the catch-up horizon, as in _getSum
+        if (t <= block.timestamp) {
+            t = (block.timestamp / WEEK + 1) * WEEK;
+            pt = Point(0, 0);
+            pointsWeight[nomineeHash][t] = pt;
+            timeWeight[nomineeHash] = t;
+        }
+
         return pt.bias;
     }
 
@@ -311,6 +356,20 @@ contract VoteWeighting {
             revert NomineeRemoved(nominee.account, nominee.chainId);
         }
 
+        // With a dispenser, only nominees it can serve are accepted
+        address localDispenser = dispenser;
+        if (localDispenser != address(0)) {
+            // The chain must have a deposit processor, or its staking incentives could never be delivered
+            if (IDispenser(localDispenser).mapChainIdDepositProcessors(nominee.chainId) == address(0)) {
+                revert NoDepositProcessor(nominee.chainId);
+            }
+
+            // The retainer is only ever retained on this chain, so it must not be a nominee under another chain Id
+            if (nominee.account == IDispenser(localDispenser).retainer() && nominee.chainId != block.chainid) {
+                revert RetainerOnForeignChain(nominee.account, nominee.chainId);
+            }
+        }
+
         uint256 id = setNominees.length;
         mapNomineeIds[nomineeHash] = id;
         // Push the nominee into the list
@@ -320,7 +379,6 @@ contract VoteWeighting {
         timeWeight[nomineeHash] = nextTime;
 
         // Enable nominee in dispenser, if applicable
-        address localDispenser = dispenser;
         if (localDispenser != address(0)) {
             IDispenser(localDispenser).addNominee(nomineeHash);
         }
