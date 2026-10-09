@@ -4,6 +4,11 @@ pragma solidity ^0.8.23;
 import {FxBaseRootTunnel} from "../../lib/fx-portal/contracts/tunnel/FxBaseRootTunnel.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 
+/// @dev Only `owner` has a privilege, but the `sender` was provided.
+/// @param sender Sender address.
+/// @param owner Required sender address as an owner.
+error OwnerOnly(address sender, address owner);
+
 /// @dev Provided zero address.
 error ZeroAddress();
 
@@ -29,6 +34,8 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
     address public immutable childToken;
     // Root token address
     address public immutable rootToken;
+    // Contract owner, the only account allowed to set the child tunnel
+    address public immutable owner;
 
     /// @dev FxERC20RootTunnel constructor.
     /// @param _checkpointManager Checkpoint manager contract.
@@ -46,6 +53,25 @@ contract FxERC20RootTunnel is FxBaseRootTunnel {
 
         childToken = _childToken;
         rootToken = _rootToken;
+        owner = msg.sender;
+    }
+
+    /// @dev Sets the child tunnel address, only once.
+    /// @notice The inherited FxBaseRootTunnel setter is callable by anyone, so it is restricted to the owner.
+    /// @param _fxChildTunnel FxERC20ChildTunnel address on L2.
+    function setFxChildTunnel(address _fxChildTunnel) public override {
+        // Check for the contract ownership
+        if (msg.sender != owner) {
+            revert OwnerOnly(msg.sender, owner);
+        }
+
+        // Check for the zero address
+        if (_fxChildTunnel == address(0)) {
+            revert ZeroAddress();
+        }
+
+        // The base contract reverts if the child tunnel is already set
+        super.setFxChildTunnel(_fxChildTunnel);
     }
 
     /// @dev Withdraws bridged tokens on L1 in order to obtain their original version on L2.
