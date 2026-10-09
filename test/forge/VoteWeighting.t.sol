@@ -5,11 +5,13 @@ import "forge-std/Test.sol";
 import {OLAS} from "../../contracts/OLAS.sol";
 import {veOLAS} from "../../contracts/veOLAS.sol";
 import {VoteWeighting, OwnerOnly, NomineeDoesNotExist, NomineeNotRemoved, ZeroValue} from "../../contracts/VoteWeighting.sol";
+import {MockDispenser} from "../../contracts/test/MockDispenser.sol";
 
 /// @title VoteWeightingTest - Unit tests for the VoteWeighting security-redeploy fixes
 /// @dev Deploys the real OLAS + veOLAS + VoteWeighting stack locally (deterministic, no fork).
 ///      Covers findings #8 (removeNominee accounting DoS), #11 (OwnerOnly arg order), #18
-///      (relative-weight clamp), #19 (last-element swap guard) and #20 (revoke checkpoint drift).
+///      (relative-weight clamp), #19 (last-element swap guard), #20 (revoke checkpoint drift), #26 (catch-up
+///      cursor fast-forward past the 250-week horizon) and #27 / tokenomics #42 (nominee registration checks).
 ///      Run: forge test --match-contract VoteWeightingTest -vvv
 contract VoteWeightingTest is Test {
     uint256 internal constant WEEK = 604_800;
@@ -484,5 +486,315 @@ contract VoteWeightingTest is Test {
     function test_RemoveNominee_NonExistent_Reverts() public {
         vm.expectRevert(abi.encodeWithSelector(NomineeDoesNotExist.selector, _b32(n1), CHAIN_ID));
         vw.removeNominee(_b32(n1), CHAIN_ID);
+    }
+
+    // ----------------------------------------------------------------------------------------------
+    // #26 - catch-up cursors fast-forward past the 250-week horizon
+    // ----------------------------------------------------------------------------------------------
+
+    uint256 internal constant HORIZON = 250 * WEEK;
+
+    function _nextBoundary() internal view returns (uint256) {
+        return (block.timestamp / WEEK + 1) * WEEK;
+    }
+
+    function _sumPoint(uint256 time) internal view returns (uint256 bias, uint256 slope) {
+        (bias, slope) = vw.pointsSum(time);
+    }
+
+    function _weightPoint(address nominee, uint256 time) internal view returns (uint256 bias, uint256 slope) {
+        (bias, slope) = vw.pointsWeight(_hash(nominee, CHAIN_ID), time);
+    }
+
+    /// @dev Expected (bias, slope) one vote contributes at nextTime, as voteForNomineeWeights computes it.
+    function _contribution(address user, uint256 weight, uint256 nextTime)
+        internal
+        view
+        returns (uint256 bias, uint256 slope)
+    {
+        slope = uint256(uint128(ve.getLastUserPoint(user).slope)) * weight / MAX_WEIGHT;
+        bias = slope * (ve.lockedEnd(user) - nextTime);
+    }
+
+    /// @dev The walk reaches the cursor + 250 weeks at most, so a timestamp one second short of that still advances
+    ///      the cursor normally. Passes before and after the fix.
+    function test_SumCursor_JustInsideHorizon_AdvancesNormally() public {
+        uint256 cursor = vw.timeSum();
+        vm.warp(cursor + HORIZON - 1);
+
+        vw.checkpoint();
+
+        assertEq(vw.timeSum(), cursor + HORIZON, "cursor reaches the last walkable week");
+        assertEq(vw.timeSum(), _nextBoundary(), "which is the next weekly boundary");
+    }
+
+    /// @dev Exactly 250 weeks past the cursor the walk reaches block.timestamp but cannot pass it: the cursor must
+    ///      still move, to the next weekly boundary, with a zero point, and stay consistent on repeated checkpoints.
+    function test_SumCursor_AtHorizon_FastForwards() public {
+        uint256 cursor = vw.timeSum();
+        vm.warp(cursor + HORIZON);
+
+        vw.checkpoint();
+
+        uint256 next = _nextBoundary();
+        assertEq(vw.timeSum(), next, "cursor at the next weekly boundary");
+        (uint256 bias, uint256 slope) = _sumPoint(next);
+        assertEq(bias, 0, "zero bias");
+        assertEq(slope, 0, "zero slope");
+
+        vw.checkpoint();
+        assertEq(vw.timeSum(), next, "repeated checkpoint keeps the cursor");
+    }
+
+    /// @dev One second past the horizon behaves like the boundary.
+    function test_SumCursor_PastHorizon_FastForwards() public {
+        uint256 cursor = vw.timeSum();
+        vm.warp(cursor + HORIZON + 1);
+
+        vw.checkpoint();
+
+        assertEq(vw.timeSum(), _nextBoundary(), "cursor at the next weekly boundary");
+    }
+
+    /// @dev One second before the nominee horizon, the ordinary walk still reaches the next weekly boundary.
+    ///      Passes before and after the fix; the sum is checkpointed separately so only the nominee is stale.
+    function test_NomineeCursor_JustInsideHorizon_AdvancesNormally() public {
+        vw.addNomineeEVM(n3, CHAIN_ID);
+        uint256 cursor = vw.timeWeight(_hash(n3, CHAIN_ID));
+        for (uint256 i = 0; i < 5; ++i) {
+            vm.warp(block.timestamp + 50 * WEEK);
+            vw.checkpoint();
+        }
+        vm.warp(cursor + HORIZON - 1);
+
+        vw.checkpointNominee(_b32(n3), CHAIN_ID);
+
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), cursor + HORIZON, "last walkable week");
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), _nextBoundary(), "next weekly boundary");
+    }
+
+    /// @dev One second after the nominee horizon, fast-forward must reach the next boundary with a zero point.
+    function test_NomineeCursor_PastHorizon_FastForwards() public {
+        vw.addNomineeEVM(n3, CHAIN_ID);
+        uint256 cursor = vw.timeWeight(_hash(n3, CHAIN_ID));
+        for (uint256 i = 0; i < 5; ++i) {
+            vm.warp(block.timestamp + 50 * WEEK);
+            vw.checkpoint();
+        }
+        vm.warp(cursor + HORIZON + 1);
+
+        vw.checkpointNominee(_b32(n3), CHAIN_ID);
+
+        uint256 next = _nextBoundary();
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), next, "next weekly boundary");
+        (uint256 bias, uint256 slope) = _weightPoint(n3, next);
+        assertEq(bias, 0, "zero bias");
+        assertEq(slope, 0, "zero slope");
+    }
+
+    /// @dev The per-nominee cursor at the horizon, with the sum cursor kept fresh by regular checkpoints.
+    function test_NomineeCursor_AtHorizon_FastForwards() public {
+        vw.addNomineeEVM(n3, CHAIN_ID);
+        uint256 cursor = vw.timeWeight(_hash(n3, CHAIN_ID));
+
+        // Keep the sum fresh; nobody touches n3
+        for (uint256 i = 0; i < 5; ++i) {
+            vm.warp(block.timestamp + 50 * WEEK);
+            vw.checkpoint();
+        }
+        vm.warp(cursor + HORIZON);
+
+        vw.checkpointNominee(_b32(n3), CHAIN_ID);
+
+        uint256 next = _nextBoundary();
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), next, "nominee cursor at the next weekly boundary");
+        (uint256 bias, uint256 slope) = _weightPoint(n3, next);
+        assertEq(bias, 0, "zero bias");
+        assertEq(slope, 0, "zero slope");
+    }
+
+    /// @dev Batch-votes 50/50 for n1 and n2 as `user`.
+    function _batchVoteHalfHalf(address user) internal {
+        bytes32[] memory accounts = new bytes32[](2);
+        accounts[0] = _b32(n1);
+        accounts[1] = _b32(n2);
+        uint256[] memory chainIds = new uint256[](2);
+        chainIds[0] = CHAIN_ID;
+        chainIds[1] = CHAIN_ID;
+        uint256[] memory weights = new uint256[](2);
+        weights[0] = MAX_WEIGHT / 2;
+        weights[1] = MAX_WEIGHT / 2;
+        vm.prank(user);
+        vw.voteForNomineeWeightsBatch(accounts, chainIds, weights);
+    }
+
+    /// @dev Relative weights are half each and the points match one contribution per nominee.
+    function _assertHalfHalfAccounting(uint256 next, uint256 expectedBias, uint256 expectedSlope) internal view {
+        (uint256 w1, ) = vw.nomineeRelativeWeight(_b32(n1), CHAIN_ID, next);
+        (uint256 w2, ) = vw.nomineeRelativeWeight(_b32(n2), CHAIN_ID, next);
+        assertEq(w1, 0.5e18, "n1 holds half");
+        assertEq(w2, 0.5e18, "n2 holds half");
+        assertLe(w1 + w2, 1e18, "relative weights sum to at most 1e18");
+
+        (uint256 sumBias, uint256 sumSlope) = _sumPoint(next);
+        assertEq(sumBias, 2 * expectedBias, "aggregate bias is both contributions");
+        assertEq(sumSlope, 2 * expectedSlope, "aggregate slope is both contributions");
+        (uint256 b1, uint256 s1) = _weightPoint(n1, next);
+        (uint256 b2, uint256 s2) = _weightPoint(n2, next);
+        assertEq(b1, expectedBias, "n1 bias");
+        assertEq(s1, expectedSlope, "n1 slope");
+        assertEq(b2, expectedBias, "n2 bias");
+        assertEq(s2, expectedSlope, "n2 slope");
+    }
+
+    /// @dev Both cursors are at `next`, and a repeated checkpoint keeps the points.
+    function _assertCursorsAndRepeatCheckpoint(uint256 next) internal {
+        assertEq(vw.timeSum(), next, "sum cursor at the next boundary");
+        assertEq(vw.timeWeight(_hash(n1, CHAIN_ID)), next, "n1 cursor at the next boundary");
+        assertEq(vw.timeWeight(_hash(n2, CHAIN_ID)), next, "n2 cursor at the next boundary");
+
+        (uint256 sumBias, uint256 sumSlope) = _sumPoint(next);
+        (uint256 b1, uint256 s1) = _weightPoint(n1, next);
+        vw.checkpoint();
+        vw.checkpointNominee(_b32(n1), CHAIN_ID);
+        (uint256 sumBiasAgain, uint256 sumSlopeAgain) = _sumPoint(next);
+        (uint256 b1Again, uint256 s1Again) = _weightPoint(n1, next);
+        assertEq(sumBiasAgain, sumBias, "aggregate bias preserved");
+        assertEq(sumSlopeAgain, sumSlope, "aggregate slope preserved");
+        assertEq(b1Again, b1, "n1 bias preserved");
+        assertEq(s1Again, s1, "n1 slope preserved");
+        assertEq(vw.timeSum(), next, "repeated checkpoint keeps the sum cursor");
+    }
+
+    /// @dev After a gap beyond the horizon with no checkpoint at all, a 50/50 batch vote must leave consistent
+    ///      accounting: each nominee holds half, the aggregate is the sum of the two contributions, repeated
+    ///      checkpoints keep it, and checkpoints written before the gap are untouched. Before the fix the second vote
+    ///      overwrites the aggregate with its own contribution, so each nominee reads a relative weight of 1e18.
+    function test_GapBeyondHorizon_BatchVote_ConsistentAccounting() public {
+        vw.addNomineeEVM(n1, CHAIN_ID);
+        vw.addNomineeEVM(n2, CHAIN_ID);
+
+        // Activity before the gap leaves a non-zero historical checkpoint
+        _lock(alice, 1_000 ether, MAXTIME);
+        _vote(alice, n1, CHAIN_ID, MAX_WEIGHT);
+        uint256 historicalTime = vw.timeSum();
+        (uint256 historicalBias, uint256 historicalSlope) = _sumPoint(historicalTime);
+        assertGt(historicalBias, 0, "historical checkpoint is non-zero");
+
+        // No checkpoint of any kind for 300 weeks, then a 50/50 batch vote
+        vm.warp(block.timestamp + 300 * WEEK);
+        _lock(carol, 1_000 ether, MAXTIME);
+        _batchVoteHalfHalf(carol);
+
+        uint256 next = _nextBoundary();
+        (uint256 expectedBias, uint256 expectedSlope) = _contribution(carol, MAX_WEIGHT / 2, next);
+        assertGt(expectedBias, 0, "non-zero contribution");
+
+        _assertHalfHalfAccounting(next, expectedBias, expectedSlope);
+        _assertCursorsAndRepeatCheckpoint(next);
+
+        // The historical checkpoint written before the gap is intact
+        (uint256 hb, uint256 hs) = _sumPoint(historicalTime);
+        assertEq(hb, historicalBias, "historical bias intact");
+        assertEq(hs, historicalSlope, "historical slope intact");
+    }
+
+    /// @dev A nominee left without a checkpoint beyond the horizon while the sum stays fresh: alice votes for it, then
+    ///      bob casts a zero vote for it. The zero vote must succeed and must not erase alice's contribution. Before the
+    ///      fix the stale nominee cursor makes the zero vote overwrite the nominee point with zero while the aggregate
+    ///      keeps alice's bias.
+    function test_NomineeGapBeyondHorizon_ZeroVoteDoesNotEraseOtherVoter() public {
+        vw.addNomineeEVM(n3, CHAIN_ID);
+
+        // Keep the sum fresh for 300 weeks; nobody touches n3
+        for (uint256 i = 0; i < 6; ++i) {
+            vm.warp(block.timestamp + 50 * WEEK);
+            vw.checkpoint();
+        }
+
+        _lock(alice, 1_000 ether, MAXTIME);
+        _lock(bob, 1_000 ether, MAXTIME);
+        _vote(alice, n3, CHAIN_ID, MAX_WEIGHT);
+        uint256 next = _nextBoundary();
+        (uint256 expectedBias, uint256 expectedSlope) = _contribution(alice, MAX_WEIGHT, next);
+
+        // The zero vote succeeds
+        _vote(bob, n3, CHAIN_ID, 0);
+
+        // ...and alice's contribution survives it
+        (uint256 bias, uint256 slope) = _weightPoint(n3, next);
+        assertEq(bias, expectedBias, "alice's bias preserved");
+        assertEq(slope, expectedSlope, "alice's slope preserved");
+        (uint256 sumBias, ) = _sumPoint(next);
+        assertEq(sumBias, expectedBias, "aggregate holds alice's bias");
+        (uint256 w, ) = vw.nomineeRelativeWeight(_b32(n3), CHAIN_ID, next);
+        assertEq(w, 1e18, "n3 holds the whole weight");
+        assertEq(vw.timeWeight(_hash(n3, CHAIN_ID)), next, "n3 cursor at the next boundary");
+    }
+
+    // ----------------------------------------------------------------------------------------------
+    // #27 / tokenomics #42 - nominee registration checks through the dispenser
+    // ----------------------------------------------------------------------------------------------
+
+    uint256 internal constant FOREIGN_CHAIN_ID = 10;
+
+    function _vwWithDispenser() internal returns (VoteWeighting vwd, MockDispenser md) {
+        md = new MockDispenser();
+        vwd = new VoteWeighting(address(ve), address(md));
+    }
+
+    /// @dev EVM and non-EVM chains without a deposit processor are rejected.
+    function test_AddNominee_NoDepositProcessor_Reverts() public {
+        (VoteWeighting vwd, ) = _vwWithDispenser();
+
+        vm.expectRevert(abi.encodeWithSignature("NoDepositProcessor(uint256)", FOREIGN_CHAIN_ID));
+        vwd.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+
+        uint256 nonEvmChainId = vwd.MAX_EVM_CHAIN_ID() + 1;
+        vm.expectRevert(abi.encodeWithSignature("NoDepositProcessor(uint256)", nonEvmChainId));
+        vwd.addNomineeNonEVM(keccak256("non-EVM target"), nonEvmChainId);
+    }
+
+    /// @dev EVM and non-EVM chains with a deposit processor are accepted. Passes before and after the change.
+    function test_AddNominee_WithDepositProcessor_Succeeds() public {
+        (VoteWeighting vwd, MockDispenser md) = _vwWithDispenser();
+        uint256 nonEvmChainId = vwd.MAX_EVM_CHAIN_ID() + 1;
+        md.setDepositProcessor(FOREIGN_CHAIN_ID, address(0xD10));
+        md.setDepositProcessor(nonEvmChainId, address(0xD11));
+
+        vwd.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+        vwd.addNomineeNonEVM(keccak256("non-EVM target"), nonEvmChainId);
+        assertEq(md.addCount(), 2, "both nominees added through the dispenser");
+    }
+
+    /// @dev The retainer is rejected under another chain Id, with that chain configured so only the retainer check can
+    ///      fire.
+    function test_AddNominee_RetainerOnForeignChain_Reverts() public {
+        (VoteWeighting vwd, MockDispenser md) = _vwWithDispenser();
+        md.setRetainer(_b32(n2));
+        md.setDepositProcessor(FOREIGN_CHAIN_ID, address(0xD10));
+
+        vm.expectRevert(abi.encodeWithSignature("RetainerOnForeignChain(bytes32,uint256)", _b32(n2), FOREIGN_CHAIN_ID));
+        vwd.addNomineeEVM(n2, FOREIGN_CHAIN_ID);
+
+        // Any other account on that chain is fine
+        vwd.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+    }
+
+    /// @dev The retainer on this chain is accepted. Passes before and after the change.
+    function test_AddNominee_RetainerOnOwnChain_Succeeds() public {
+        (VoteWeighting vwd, MockDispenser md) = _vwWithDispenser();
+        md.setRetainer(_b32(n2));
+        md.setDepositProcessor(block.chainid, address(0xD12));
+
+        vwd.addNomineeEVM(n2, block.chainid);
+        assertEq(md.addCount(), 1, "retainer added on its own chain");
+    }
+
+    /// @dev Without a dispenser there are no registration checks. Passes before and after the change.
+    function test_AddNominee_NoDispenser_SkipsChecks() public {
+        vw.addNomineeEVM(n1, FOREIGN_CHAIN_ID);
+        vw.addNomineeNonEVM(keccak256("non-EVM target"), vw.MAX_EVM_CHAIN_ID() + 1);
+        assertEq(vw.getNumNominees(), 2, "both added");
     }
 }

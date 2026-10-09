@@ -4,11 +4,23 @@ pragma solidity ^0.8.30;
 /// @title MockDispenser - Minimal dispenser stand-in for VoteWeighting tests.
 /// @dev Records addNominee / removeNominee calls and can be toggled to revert on either,
 ///      so tests can exercise the VoteWeighting dispenser-call paths with an immutable dispenser.
+///      Exposes the Dispenser getters VoteWeighting reads on addNominee: a chain has no deposit processor
+///      until one is set, as on the real Dispenser.
 contract MockDispenser {
     uint256 public addCount;
     uint256 public removeCount;
     bool public revertOnAdd;
     bool public revertOnRemove;
+    bytes32 public retainer;
+    mapping(uint256 => address) public mapChainIdDepositProcessors;
+
+    function setDepositProcessor(uint256 chainId, address depositProcessor) external {
+        mapChainIdDepositProcessors[chainId] = depositProcessor;
+    }
+
+    function setRetainer(bytes32 value) external {
+        retainer = value;
+    }
 
     function setRevertOnAdd(bool value) external {
         revertOnAdd = value;
