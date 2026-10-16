@@ -546,6 +546,48 @@ contract VoteWeightingTest is Test {
         assertEq(vw.timeSum(), next, "repeated checkpoint keeps the cursor");
     }
 
+    /// @dev Even a maximum-duration contribution expires within the ordinary walk, before fast-forward.
+    function test_MaxLock_FinalWalkPointsZeroBeforeFastForward() public {
+        vw.addNomineeEVM(n1, CHAIN_ID);
+        _lock(alice, 1_000 ether, MAXTIME);
+        _vote(alice, n1, CHAIN_ID, MAX_WEIGHT);
+
+        uint256 sumCursor = vw.timeSum();
+        uint256 nomineeCursor = vw.timeWeight(_hash(n1, CHAIN_ID));
+        (uint256 initialSumBias, uint256 initialSumSlope) = _sumPoint(sumCursor);
+        (uint256 initialWeightBias, uint256 initialWeightSlope) = _weightPoint(n1, nomineeCursor);
+        assertGt(initialSumBias, 0, "initial aggregate bias");
+        assertGt(initialSumSlope, 0, "initial aggregate slope");
+        assertGt(initialWeightBias, 0, "initial nominee bias");
+        assertGt(initialWeightSlope, 0, "initial nominee slope");
+
+        uint256 lastSumWeek = sumCursor + HORIZON;
+        uint256 lastNomineeWeek = nomineeCursor + HORIZON;
+        uint256 laterWeek = lastSumWeek > lastNomineeWeek ? lastSumWeek : lastNomineeWeek;
+        vm.warp(laterWeek + WEEK);
+        vw.checkpointNominee(_b32(n1), CHAIN_ID);
+
+        // These slots are written by the weekly walks, not by the fast-forward assignments.
+        (uint256 sumBias, uint256 sumSlope) = _sumPoint(lastSumWeek);
+        (uint256 weightBias, uint256 weightSlope) = _weightPoint(n1, lastNomineeWeek);
+        assertEq(sumBias, 0, "aggregate bias expired before jump");
+        assertEq(sumSlope, 0, "aggregate slope expired before jump");
+        assertEq(weightBias, 0, "nominee bias expired before jump");
+        assertEq(weightSlope, 0, "nominee slope expired before jump");
+
+        uint256 next = _nextBoundary();
+        assertGt(next, lastSumWeek, "aggregate destination beyond final walked week");
+        assertGt(next, lastNomineeWeek, "nominee destination beyond final walked week");
+        assertEq(vw.timeSum(), next, "aggregate cursor fast-forwarded");
+        assertEq(vw.timeWeight(_hash(n1, CHAIN_ID)), next, "nominee cursor fast-forwarded");
+        (sumBias, sumSlope) = _sumPoint(next);
+        (weightBias, weightSlope) = _weightPoint(n1, next);
+        assertEq(sumBias, 0, "aggregate destination bias");
+        assertEq(sumSlope, 0, "aggregate destination slope");
+        assertEq(weightBias, 0, "nominee destination bias");
+        assertEq(weightSlope, 0, "nominee destination slope");
+    }
+
     /// @dev One second past the horizon behaves like the boundary.
     function test_SumCursor_PastHorizon_FastForwards() public {
         uint256 cursor = vw.timeSum();
@@ -697,6 +739,30 @@ contract VoteWeightingTest is Test {
         (uint256 hb, uint256 hs) = _sumPoint(historicalTime);
         assertEq(hb, historicalBias, "historical bias intact");
         assertEq(hs, historicalSlope, "historical slope intact");
+    }
+
+    /// @dev Only the aggregate cursor is stale: nominees are registered after the inactivity gap.
+    function test_GapBeyondHorizon_FreshNominees_BatchVote_ConsistentAccounting() public {
+        uint256 staleSumCursor = vw.timeSum();
+        vm.warp(staleSumCursor + HORIZON + WEEK);
+
+        vw.addNomineeEVM(n1, CHAIN_ID);
+        vw.addNomineeEVM(n2, CHAIN_ID);
+        uint256 next = _nextBoundary();
+        assertEq(vw.timeSum(), staleSumCursor, "registration leaves aggregate cursor stale");
+        assertEq(vw.timeWeight(_hash(n1, CHAIN_ID)), next, "n1 starts fresh");
+        assertEq(vw.timeWeight(_hash(n2, CHAIN_ID)), next, "n2 starts fresh");
+
+        _lock(carol, 1_000 ether, MAXTIME);
+        _batchVoteHalfHalf(carol);
+
+        (uint256 expectedBias, uint256 expectedSlope) = _contribution(carol, MAX_WEIGHT / 2, next);
+        assertGt(expectedBias, 0, "non-zero contribution");
+        _assertHalfHalfAccounting(next, expectedBias, expectedSlope);
+        (uint256 w1, ) = vw.nomineeRelativeWeight(_b32(n1), CHAIN_ID, next);
+        (uint256 w2, ) = vw.nomineeRelativeWeight(_b32(n2), CHAIN_ID, next);
+        assertEq(w1 + w2, 1e18, "relative weights sum to one");
+        _assertCursorsAndRepeatCheckpoint(next);
     }
 
     /// @dev A nominee left without a checkpoint beyond the horizon while the sum stays fresh: alice votes for it, then
