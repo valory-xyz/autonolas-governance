@@ -116,6 +116,47 @@ contract VetoGovernorExecuteTest is Test {
         assertEq(counter.count(), 0, "nothing executed");
     }
 
+    /// @dev The Bravo execute overload must enforce the same local queue guard.
+    function test_bravoExecute_neverQueued_identicalBatchReadyOnTimelock_reverts() public {
+        uint256 proposalId = _proposeAndPass();
+        bytes32 descriptionHash = keccak256(bytes(DESCRIPTION));
+        bytes32 operationId = timelock.hashOperationBatch(targets, values, calldatas, 0, descriptionHash);
+
+        vm.prank(OTHER_PROPOSER);
+        timelock.scheduleBatch(targets, values, calldatas, 0, descriptionHash, GOVERNOR_DELAY);
+        vm.warp(timelock.getTimestamp(operationId));
+        assertTrue(timelock.isOperationReady(operationId), "matching operation ready");
+        assertEq(governor.proposalEta(proposalId), 0, "no local queue record");
+
+        vm.expectRevert(abi.encodeWithSignature("NotQueued(uint256)", proposalId));
+        governor.execute(proposalId);
+
+        assertEq(counter.count(), 0, "nothing executed");
+        assertTrue(timelock.isOperationReady(operationId), "operation remains ready");
+        assertEq(uint256(governor.state(proposalId)), uint256(IGovernor.ProposalState.Succeeded), "still Succeeded");
+    }
+
+    /// @dev Both Bravo overloads route a normally queued proposal through the guard successfully.
+    function test_bravoQueueAndExecute_queuedProposal_executes() public {
+        uint256 proposalId = _proposeAndPass();
+        bytes32 operationId = timelock.hashOperationBatch(
+            targets, values, calldatas, 0, keccak256(bytes(DESCRIPTION))
+        );
+        uint256 expectedEta = block.timestamp + GOVERNOR_DELAY;
+
+        governor.queue(proposalId);
+        assertEq(uint256(governor.state(proposalId)), uint256(IGovernor.ProposalState.Queued), "Queued");
+        assertEq(governor.proposalEta(proposalId), expectedEta, "local queue ETA");
+        assertEq(timelock.getTimestamp(operationId), expectedEta, "matching timelock ETA");
+
+        vm.warp(expectedEta);
+        governor.execute(proposalId);
+
+        assertEq(counter.count(), 1, "executed");
+        assertTrue(timelock.isOperationDone(operationId), "operation done");
+        assertEq(uint256(governor.state(proposalId)), uint256(IGovernor.ProposalState.Executed), "Executed");
+    }
+
     /// @dev A Succeeded proposal that was never queued cannot execute at all.
     function test_execute_neverQueued_reverts() public {
         uint256 proposalId = _proposeAndPass();
