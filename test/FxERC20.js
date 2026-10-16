@@ -121,6 +121,130 @@ describe("FxERC20", function () {
         });
     });
 
+    context("Child tunnel setter", async function () {
+        let freshRootTunnel;
+
+        beforeEach(async function () {
+            // Root tunnel with no child tunnel set yet, as right after its deployment
+            const FxERC20RootTunnel = await ethers.getContractFactory("FxERC20RootTunnel");
+            freshRootTunnel = await FxERC20RootTunnel.deploy(deployer.address, fxRootMock.address,
+                childToken.address, rootToken.address);
+            await freshRootTunnel.deployed();
+        });
+
+        it("The deployer is the owner", async function () {
+            expect(await freshRootTunnel.owner()).to.equal(deployer.address);
+            expect(await freshRootTunnel.fxChildTunnel()).to.equal(AddressZero);
+        });
+
+        it("Should fail when the child tunnel is set not by the owner", async function () {
+            const account = signers[1];
+
+            await expect(
+                freshRootTunnel.connect(account).setFxChildTunnel(account.address)
+            ).to.be.revertedWithCustomError(freshRootTunnel, "OwnerOnly");
+
+            // The child tunnel stays unset, so the owner can still set it
+            expect(await freshRootTunnel.fxChildTunnel()).to.equal(AddressZero);
+            await freshRootTunnel.connect(deployer).setFxChildTunnel(fxERC20ChildTunnel.address);
+            expect(await freshRootTunnel.fxChildTunnel()).to.equal(fxERC20ChildTunnel.address);
+        });
+
+        it("Should fail when the child tunnel is set to the zero address", async function () {
+            await expect(
+                freshRootTunnel.connect(deployer).setFxChildTunnel(AddressZero)
+            ).to.be.revertedWithCustomError(freshRootTunnel, "ZeroAddress");
+
+            // The rejected attempt does not prevent the initialization
+            expect(await freshRootTunnel.fxChildTunnel()).to.equal(AddressZero);
+            await freshRootTunnel.connect(deployer).setFxChildTunnel(fxERC20ChildTunnel.address);
+            expect(await freshRootTunnel.fxChildTunnel()).to.equal(fxERC20ChildTunnel.address);
+        });
+
+        it("Should fail when the child tunnel is set twice", async function () {
+            await freshRootTunnel.connect(deployer).setFxChildTunnel(fxERC20ChildTunnel.address);
+
+            // The owner cannot set the same address again
+            await expect(
+                freshRootTunnel.connect(deployer).setFxChildTunnel(fxERC20ChildTunnel.address)
+            ).to.be.revertedWith("FxBaseRootTunnel: CHILD_TUNNEL_ALREADY_SET");
+
+            // The owner cannot change it either
+            await expect(
+                freshRootTunnel.connect(deployer).setFxChildTunnel(signers[1].address)
+            ).to.be.revertedWith("FxBaseRootTunnel: CHILD_TUNNEL_ALREADY_SET");
+
+            // Not by the owner, the ownership check comes first
+            await expect(
+                freshRootTunnel.connect(signers[1]).setFxChildTunnel(signers[1].address)
+            ).to.be.revertedWithCustomError(freshRootTunnel, "OwnerOnly");
+
+            expect(await freshRootTunnel.fxChildTunnel()).to.equal(fxERC20ChildTunnel.address);
+        });
+    });
+
+    context("Root tunnel setter", async function () {
+        let freshChildTunnel;
+
+        beforeEach(async function () {
+            // Child tunnel with no root tunnel set yet, as right after its deployment
+            const FxERC20ChildTunnel = await ethers.getContractFactory("FxERC20ChildTunnel");
+            freshChildTunnel = await FxERC20ChildTunnel.deploy(fxRootMock.address, childToken.address,
+                rootToken.address);
+            await freshChildTunnel.deployed();
+        });
+
+        it("The deployer is the owner", async function () {
+            expect(await freshChildTunnel.owner()).to.equal(deployer.address);
+            expect(await freshChildTunnel.fxRootTunnel()).to.equal(AddressZero);
+        });
+
+        it("Should fail when the root tunnel is set not by the owner", async function () {
+            const account = signers[1];
+
+            await expect(
+                freshChildTunnel.connect(account).setFxRootTunnel(account.address)
+            ).to.be.revertedWithCustomError(freshChildTunnel, "OwnerOnly");
+
+            // The root tunnel stays unset, so the owner can still set it
+            expect(await freshChildTunnel.fxRootTunnel()).to.equal(AddressZero);
+            await freshChildTunnel.connect(deployer).setFxRootTunnel(fxERC20RootTunnel.address);
+            expect(await freshChildTunnel.fxRootTunnel()).to.equal(fxERC20RootTunnel.address);
+        });
+
+        it("Should fail when the root tunnel is set to the zero address", async function () {
+            await expect(
+                freshChildTunnel.connect(deployer).setFxRootTunnel(AddressZero)
+            ).to.be.revertedWithCustomError(freshChildTunnel, "ZeroAddress");
+
+            // The rejected attempt does not prevent the initialization
+            expect(await freshChildTunnel.fxRootTunnel()).to.equal(AddressZero);
+            await freshChildTunnel.connect(deployer).setFxRootTunnel(fxERC20RootTunnel.address);
+            expect(await freshChildTunnel.fxRootTunnel()).to.equal(fxERC20RootTunnel.address);
+        });
+
+        it("Should fail when the root tunnel is set twice", async function () {
+            await freshChildTunnel.connect(deployer).setFxRootTunnel(fxERC20RootTunnel.address);
+
+            // The owner cannot set the same address again
+            await expect(
+                freshChildTunnel.connect(deployer).setFxRootTunnel(fxERC20RootTunnel.address)
+            ).to.be.revertedWith("FxBaseChildTunnel: ROOT_TUNNEL_ALREADY_SET");
+
+            // The owner cannot change it either
+            await expect(
+                freshChildTunnel.connect(deployer).setFxRootTunnel(signers[1].address)
+            ).to.be.revertedWith("FxBaseChildTunnel: ROOT_TUNNEL_ALREADY_SET");
+
+            // Not by the owner, the ownership check comes first
+            await expect(
+                freshChildTunnel.connect(signers[1]).setFxRootTunnel(signers[1].address)
+            ).to.be.revertedWithCustomError(freshChildTunnel, "OwnerOnly");
+
+            expect(await freshChildTunnel.fxRootTunnel()).to.equal(fxERC20RootTunnel.address);
+        });
+    });
+
     context("Deposit and withdraw ERC20 tokens", async function () {
         it("Should fail when trying to call from incorrect contract addresses", async function () {
             // signers[1].address as a sender is incorrect, must be deployer.address (aka FxChild in the setup)

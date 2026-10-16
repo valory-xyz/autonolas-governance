@@ -23,6 +23,10 @@ error ZeroAddress();
 /// @param index Index of the offending action.
 error ForbiddenAction(uint256 index);
 
+/// @dev The proposal has not been queued through this Governor.
+/// @param proposalId Proposal Id.
+error NotQueued(uint256 proposalId);
+
 /// @title VetoGovernor - Restricted, cancel-only Governor for the veto stack.
 /// @author Valory AG
 /// @dev The GovernorOLAS design (OpenZeppelin v4.8.3) with its configuration surface removed. It is a
@@ -31,7 +35,8 @@ error ForbiddenAction(uint256 index);
 ///         proposal, and a proposal cannot surrender its cancellation role on the main Timelock.
 ///         - `setVotingDelay`, `setVotingPeriod`, `setProposalThreshold`, `updateQuorumNumerator`,
 ///           `updateGovernorDelay`, `updateTimelock` and `relay` are permanently disabled;
-///         - `propose` rejects `renounceRole(CANCELLER_ROLE, <veto timelock>)` on the main Timelock.
+///         - `propose` rejects `renounceRole(CANCELLER_ROLE, <veto timelock>)` on the main Timelock;
+///         - `execute` only runs a proposal this Governor queued itself.
 contract VetoGovernor is
     Governor,
     GovernorSettings,
@@ -165,6 +170,13 @@ contract VetoGovernor is
         bytes[] memory calldatas,
         bytes32 descriptionHash
     ) internal override(Governor, GovernorTimelockControl) {
+        // The timelock operation is keyed by the batch and its description hash, not by the proposal, so a Succeeded
+        // proposal that was never queued here could otherwise execute an identical batch scheduled on the timelock by
+        // another proposer. Only a proposal with its own queue record may execute.
+        if (proposalEta(proposalId) == 0) {
+            revert NotQueued(proposalId);
+        }
+
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 

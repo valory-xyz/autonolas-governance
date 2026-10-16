@@ -719,6 +719,9 @@ describe("Vote Weighting veOLAS", function () {
             await vwd.deployed();
             expect(await vwd.dispenser()).to.equal(mockDispenser.address);
 
+            // The nominee chain needs a deposit processor on the dispenser
+            await mockDispenser.setDepositProcessor(chainId, signers[2].address);
+
             // Adding a nominee forwards the call to the dispenser
             const nominee = signers[1].address;
             await vwd.addNomineeEVM(nominee, chainId);
@@ -750,6 +753,9 @@ describe("Vote Weighting veOLAS", function () {
 
             const vwd = await VoteWeighting.deploy(ve.address, mockDispenser.address);
             await vwd.deployed();
+
+            // The nominee chain needs a deposit processor on the dispenser
+            await mockDispenser.setDepositProcessor(chainId, signers[2].address);
 
             const nominee = signers[1].address;
             await vwd.addNomineeEVM(nominee, chainId);
