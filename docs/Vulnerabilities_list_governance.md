@@ -32,6 +32,7 @@
 | 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
 | 27 | [Nominees can be added for chains that cannot receive incentives](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) | Informative |
 | 28 | [GuardCM does not constrain the value a Timelock schedule carries](#28-guardcm-does-not-constrain-the-value-a-timelock-schedule-carries) | Informative |
+| 29 | [GuardCM authorization is at function-selector granularity](#29-guardcm-authorization-is-at-function-selector-granularity) | Informational |
 
 ## Involved contracts and level of the bugs
 
@@ -1032,3 +1033,18 @@ and require `msg.value == 0` on the multisig-to-Timelock transaction. That is co
 allowlist, in which no target legitimately needs value. Should a bridge route ever need one, bind it
 instead to an explicit per-target maximum, require equality between the scheduled value, the envelope's
 permitted value and the packed inner values, and reject any unallocated remainder at the L2 messenger.
+
+### 29. GuardCM authorization is at function-selector granularity
+
+**Severity:** Informational
+**Source:** internal review
+
+GuardCM authorizes calls by target, function selector, and chain ID. Its allowlist does not restrict argument
+values.
+
+When an administrative function uses arguments to select between different operations, allowlisting that
+function grants every operation it accepts. Function-level authorization therefore cannot express a narrower
+permission than the target interface provides.
+
+**Configuration guidance.** Where governance intends to delegate only one direction of an operation, use a
+dedicated entry point for that direction and allowlist only its selector.
