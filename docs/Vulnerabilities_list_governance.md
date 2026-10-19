@@ -27,12 +27,13 @@
 | 21 | [GuardCM mapBridgeMediatorL1BridgeParams keyed by L1 address only](#21-guardcm-mapbridgemediatorl1bridgeparams-keyed-by-l1-address-only) | Informative |
 | 22 | [WormholeMessenger single sourceGovernor authentication](#22-wormholemessenger-single-sourcegovernor-authentication) | Informative |
 | 23 | [Timelock deployer-EOA admin bootstrap window](#23-timelock-deployer-eoa-admin-bootstrap-window) | Informative |
-| 24 | [FxERC20RootTunnel setFxChildTunnel is a permissionless one-shot](#24-fxerc20roottunnel-setfxchildtunnel-is-a-permissionless-one-shot) | Informative |
+| 24 | [FxERC20 tunnel pairing setters are permissionless one-shots](#24-fxerc20-tunnel-pairing-setters-are-permissionless-one-shots) | Informative |
 | 25 | [Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance](#25-unbounded-governor-settings-and-unchecked-timelock-replacement-can-permanently-brick-governance) | Medium |
 | 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
 | 27 | [Nominees can be added for chains that cannot receive incentives](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) | Informative |
 | 28 | [GuardCM does not constrain the value a Timelock schedule carries](#28-guardcm-does-not-constrain-the-value-a-timelock-schedule-carries) | Informative |
 | 29 | [GuardCM authorization is at function-selector granularity](#29-guardcm-authorization-is-at-function-selector-granularity) | Informational |
+| 30 | [GovernorOLAS can execute a matching ready operation without its own queue record](#30-governorolas-can-execute-a-matching-ready-operation-without-its-own-queue-record) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -848,21 +849,27 @@ Location: `Timelock.sol` (constructor, passing `msg.sender` as the OZ v4.8 `Time
 
 **Fix on redeploy.** Pass `address(0)` as the 4th ctor arg to fully remove the bootstrap window, and grant `TIMELOCK_ADMIN_ROLE` to the intended admin (e.g., the Timelock itself) via a separate post-deploy call under a bootstrap key. This removes the deployer-EOA bootstrap window entirely.
 
-### 24. `FxERC20RootTunnel` `setFxChildTunnel` is a permissionless one-shot
+<a id="24-fxerc20roottunnel-setfxchildtunnel-is-a-permissionless-one-shot"></a>
+
+### 24. FxERC20 tunnel pairing setters are permissionless one-shots
 
 **Severity:** Informative
 
-Location: `FxERC20RootTunnel` inherits from `fx-portal`'s `FxBaseRootTunnel`, which exposes `setFxChildTunnel(address)` — permissionless, callable exactly once.
+Before [PR #245](https://github.com/valory-xyz/autonolas-governance/pull/245), `FxERC20RootTunnel.setFxChildTunnel(address)` and `FxERC20ChildTunnel.setFxRootTunnel(address)` inherited permissionless pairing setters, each callable once.
 
-`FxBaseRootTunnel.setFxChildTunnel` is permissionless: whoever calls it first pins the L2 emitter for the token bridge. A front-run before the deployer would pin the L2 emitter to an attacker contract, enabling **mint-without-lock on L1** for the bridged token. Discovered in the internal20 manual re-audit.
+An account that initialized either pairing before the deployer could bind that end of the token bridge to an attacker-controlled counterpart. On the root side, this could enable minting bridged tokens on L1 without the corresponding lock on L2. Both inherited setters were noted in `audits/internal18`; the root-side finding was also recorded in the internal20 review.
 
-**Dormancy status.** The window is deploy-time only; the live `FxERC20RootTunnel` already has its child tunnel set. Any subsequent call reverts (the base contract enforces the one-shot). The window is closed on the live contract.
+**Live deployment.** The live tunnels are already paired, so their initialization windows are closed. Subsequent pairing calls revert. PR #245 changes the source for future deployments; it does not redeploy or modify the live tunnels.
 
-**Why this is not fixed.** The tunnel is deployed and inherits from `fx-portal`'s base; overriding `setFxChildTunnel` would need a redeploy of the tunnel.
+**Fixed in source for future deployments.** PR #245 overrides both setters. Each setter:
 
-**Mitigation / guidance for redeployment operators.** Any future `FxERC20RootTunnel` redeploy must call `setFxChildTunnel` in the same transaction as (or immediately after) deployment — atomically wrapped in a deployer script — to close the front-run window. The dormancy on the current deployment does not carry over.
+- Requires the deploying account, stored as immutable `owner`.
+- Rejects the zero address.
+- Preserves one-time initialization.
 
-**Fix on redeploy.** Override `setFxChildTunnel` with `onlyOwner`, or set it in the constructor along with the L1 checkpoint manager / state sender addresses. Either removes the front-run window entirely.
+The root setter uses the base contract's one-time check. The child setter repeats that check because its base setter is `external` and cannot be called through `super`.
+
+The deploying account cannot change the pairing after initialization. Deployment scripts must initialize each end from its deploying account with the intended counterpart.
 
 ### 25. Unbounded Governor settings and unchecked Timelock replacement can permanently brick governance
 
@@ -920,80 +927,42 @@ Medium records.
 
 **Severity:** Informative
 
-`_getSum()` walks at most `MAX_NUM_WEEKS = 250` weeks per call and persists its cursor **only** when it
-reaches a week beyond the present:
+Before [PR #245](https://github.com/valory-xyz/autonolas-governance/pull/245), `_getSum()` and `_getWeight()` walked at most `MAX_NUM_WEEKS = 250` weeks per call and persisted their cursors only when the walk reached a weekly boundary strictly after `block.timestamp`.
 
-```solidity
-uint256 t = timeSum;
-for (uint256 i = 0; i < MAX_NUM_WEEKS; i++) {
-    if (t > block.timestamp) break;
-    t += WEEK;
-    ...
-    pointsSum[t] = pt;
-    if (t > block.timestamp) {
-        timeSum = t;          // the only write
-    }
-}
-```
+If a cursor was **250 weeks or more** behind the current timestamp, the walk exhausted its iterations without passing the present. The stored cursor remained unchanged, so subsequent calls replayed the same window instead of completing catch-up.
 
-If `timeSum` is more than 250 weeks behind `block.timestamp`, the loop exhausts all 250 iterations without
-`t` ever passing the present, so `timeSum` is never written. The next call re-reads the same stale cursor
-and replays the same window: each call performs work, none of it advances the cursor, and the contract stays
-pinned. `_getWeight()` has the same shape for the per-nominee `timeWeight`.
+This affected both the aggregate cursor, `timeSum`, and each nominee's `timeWeight`. A nominee's cursor could become stale even while regular aggregate checkpoints kept `timeSum` current. The condition therefore did not require inactivity across the whole protocol.
 
-Once pinned, the aggregate is stale for every consumer that reads it. The consequences compound rather than
-stand alone — a stalled aggregate slot can be overwritten and re-read, relative weights derived from it
-over-allocate against a stale total, and a dormant nominee cursor can be advanced by a permissionless
-zero-value vote. All of these follow from the cursor, not from separate defects.
+**Severity rationale.** Reaching the condition required the affected cursor to remain uncheckpointed for at least 250 weeks. Checkpointing the aggregate and the relevant nominees before that horizon prevented it.
 
-**The precondition is what sets the severity, and the constant documents it as an assumption:**
+**Fixed in source for redeployment.** PR #245 adds a fast-forward to both functions. If the cursor remains at or behind `block.timestamp` after the bounded walk, the function writes `Point(0, 0)` at the next weekly boundary and moves the cursor there.
 
-```solidity
-// The number corresponds to more than four years timeframe
-// It is enough to have at least one vote while veOLAS value is greater than zero
-// In practice it is unlikely that there is no single checkpoint for the maximum amount of weeks
-```
+This relies on consistent starting accounting: relevant updates checkpoint first, and the maximum veOLAS lock duration is shorter than 250 weeks, so contributions represented by the stale point have expired. It does not repair previously corrupted accounting.
 
-250 weeks is roughly **4.8 years**. Reaching the stuck state requires no checkpoint of any kind for that
-entire period. Checkpointing is permissionless and is driven by ordinary reward claims, so the gap implies a
-protocol with no claims and no votes for nearly five years. The consequences are severe; the entry condition
-is a dormant protocol.
-
-**Related.** Item 8 documents a *different* defect in the same function — a permanent checkpoint DoS from
-phantom slopes left by expired locks. That one reverts the walk; this one completes the walk without
-advancing. They are independent, and a fix for either does not address the other.
-
-**Mitigation.** Persist the cursor unconditionally at the end of the walk rather than only on reaching a
-future week, so that a long gap is closed incrementally across successive calls instead of being replayed.
-Operationally, any checkpoint activity at all — a vote, a reward claim, a manual `checkpoint()` — keeps the
-cursor current and prevents the state from being reachable.
+VoteWeighting is immutable; the source fix does not update the live deployment. Item 8 describes a separate accounting defect; this cursor fix does not resolve it.
 
 ### 27. Nominees can be added for chains that cannot receive incentives
 
-**Severity**: Low
-**Source**: internal review
+**Severity:** Informative
 
-`VoteWeighting.addNomineeEVM` validates the shape of a chain id but not whether that chain can actually be
-paid:
+**Source:** Internal review
 
-```solidity
-if (account == address(0)) { revert ZeroAddress(); }
-if (chainId == 0) { revert ZeroValue(); }
-if (chainId > MAX_EVM_CHAIN_ID) { revert Overflow(chainId, MAX_EVM_CHAIN_ID); }
-```
+Before [PR #245](https://github.com/valory-xyz/autonolas-governance/pull/245), VoteWeighting allowed permissionless nominee registration without checking whether the nominee's chain had a configured deposit processor.
 
-There is no check against the deposit-processor map the incentive path relies on. Registration is
-permissionless, so a nominee can be added for a chain with no configured processor and voted into
-`pointsSum` like any other. When a claim is later attempted for it, the incentive path dereferences the
-zero processor and reverts.
+A nominee on an unsupported chain could receive voting weight, but its incentives could not be delivered. A claim including that nominee reverted on L1 before dispatch. The caller could omit it and claim for other nominees. Weight allocated to the unsupported nominee remained unclaimable and diluted the relative weights of other nominees, at the cost of the voter's own voting power.
 
-**The revert happens on L1, before anything is dispatched, in a call whose targets the caller supplies** —
-so the caller simply omits that nominee and claims the rest. Nothing is denied to anyone else and no funds
-move. What remains is that weight directed at such a nominee is unclaimable and dilutes the nominees that
-can be paid, which costs the voter their own voting power to arrange. Rejecting unsupported chain ids at
-registration closes it at the cheapest point.
+**Fixed in source for redeployment.** PR #245 adds two checks to the shared `_addNominee` helper, covering EVM and non-EVM registration when a dispenser is configured:
 
-At the time of writing every live nominee is on a chain with a configured processor.
+- Revert `NoDepositProcessor(chainId)` if the dispenser's processor address for that chain is zero.
+- Revert `RetainerOnForeignChain(account, chainId)` if the nominee matches the dispenser's retainer but uses a chain id other than `block.chainid`.
+
+Both checks are skipped when the dispenser address is zero.
+
+The processor check verifies that a nonzero address is configured; it does not establish that the processor is functional or correctly configured. These checks apply at registration and do not continuously validate later configuration changes.
+
+Configure deposit processors before registering nominees. Dispenser implementations must retain the `mapChainIdDepositProcessors` and `retainer` getters.
+
+VoteWeighting is immutable; the source fix does not update the live deployment.
 
 ### 28. GuardCM does not constrain the value a Timelock schedule carries
 
@@ -1048,3 +1017,24 @@ permission than the target interface provides.
 
 **Configuration guidance.** Where governance intends to delegate only one direction of an operation, use a
 dedicated entry point for that direction and allowlist only its selector.
+
+### 30. GovernorOLAS can execute a matching ready operation without its own queue record
+
+**Severity:** Informative
+
+Location: `GovernorOLAS`, through `contracts/utils/GovernorTimelockControl.sol`, functions `queue` and `_execute`.
+
+The assessed live GovernorOLAS is `0x060D0CBdDFb0498d610E2EF55C01516B5B1251E6` on Ethereum.
+
+`_execute` forwards a batch to `Timelock.executeBatch` without checking the proposal’s local queue record. The timelock operation id depends on the targets, values, calldatas, predecessor (zero here), and salt (the proposal description hash), rather than the identity of the Governor that queued it.
+
+A proposal passed by the DAO can therefore execute without its own Governor queue step and delay if an identical timelock operation is already ready. The timelock’s readiness and predecessor checks still apply; passing a vote alone is insufficient.
+
+There are two distinct routes:
+
+- **CM-scheduled operation.** The community multisig schedules the matching operation. This requires CM authorization and the active GuardCM scheduling checks. It does not expand the CM’s scheduling allowlist or existing execution authority.
+- **Old-Governor operation.** An old Governor leaves a matching operation ready on the shared timelock. Once the proposal passes on the current Governor, any caller can invoke execution without new CM cooperation. Revoking the old Governor’s roles does not cancel its scheduled operations. The operation need not satisfy today’s CM scheduling allowlist: GuardCM restricts CM scheduling, not execution of an exact ready operation.
+
+**Mitigation / replacement.** Reassess outstanding operations and proposer/executor roles before Governor or timelock migrations or role changes. Include a local queue-record guard in the next GovernorOLAS replacement; the live Governor is immutable. [PR #245](https://github.com/valory-xyz/autonolas-governance/pull/245) adds this guard to VetoGovernor, not live GovernorOLAS.
+
+**Severity rationale.** An arbitrary caller cannot authorize a new batch: execution requires a passed DAO proposal and an identical ready timelock operation.
