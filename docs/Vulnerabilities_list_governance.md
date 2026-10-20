@@ -857,7 +857,7 @@ Location: `Timelock.sol` (constructor, passing `msg.sender` as the OZ v4.8 `Time
 
 Before [PR #245](https://github.com/valory-xyz/autonolas-governance/pull/245), `FxERC20RootTunnel.setFxChildTunnel(address)` and `FxERC20ChildTunnel.setFxRootTunnel(address)` inherited permissionless pairing setters, each callable once.
 
-An account that initialized either pairing before the deployer could bind that end of the token bridge to an attacker-controlled counterpart. On the root side, this could enable minting bridged tokens on L1 without the corresponding lock on L2. Both inherited setters were noted in `audits/internal18`; the root-side finding was also recorded in the internal20 review.
+An account that initialized either pairing before the deployer could bind that end of the token bridge to an attacker-controlled counterpart. On the root side, this could enable minting bridged tokens on L1 without the corresponding lock on L2. On the child side, an attacker-controlled root pairing could release locked L2 tokens without a corresponding L1 burn. Because the pairing is permanent, later deposits could be exposed even if the tunnel held no tokens during initialization. Both inherited setters were noted in `audits/internal18`; the root-side finding was also recorded in the internal20 review.
 
 **Live deployment.** The live tunnels are already paired, so their initialization windows are closed. Subsequent pairing calls revert. PR #245 changes the source for future deployments; it does not redeploy or modify the live tunnels.
 
@@ -939,7 +939,9 @@ This affected both the aggregate cursor, `timeSum`, and each nominee's `timeWeig
 
 This relies on consistent starting accounting: relevant updates checkpoint first, and the maximum veOLAS lock duration is shorter than 250 weeks, so contributions represented by the stale point have expired. It does not repair previously corrupted accounting.
 
-VoteWeighting is immutable; the source fix does not update the live deployment. Item 8 describes a separate accounting defect; this cursor fix does not resolve it.
+VoteWeighting is immutable; the source fix does not update the live deployment.
+
+Item 8 describes the separate `removeNominee` slope and `changesSum` accounting defect, which can revert the checkpoint walk or a later removal. The cursor defect completes the walk without advancing its cursor. The two defects are independent.
 
 ### 27. Nominees can be added for chains that cannot receive incentives
 
@@ -1013,7 +1015,7 @@ values.
 
 When an administrative function uses arguments to select between different operations, allowlisting that
 function grants every operation it accepts. Function-level authorization therefore cannot express a narrower
-permission than the target interface provides.
+permission than the selected function provides.
 
 **Configuration guidance.** Where governance intends to delegate only one direction of an operation, use a
 dedicated entry point for that direction and allowlist only its selector.
