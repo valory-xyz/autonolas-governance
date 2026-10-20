@@ -32,7 +32,7 @@
 | 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
 | 27 | [Nominees can be added for chains that cannot receive incentives](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) | Informative |
 | 28 | [GuardCM does not constrain the value a Timelock schedule carries](#28-guardcm-does-not-constrain-the-value-a-timelock-schedule-carries) | Informative |
-| 29 | [GuardCM authorization is at function-selector granularity](#29-guardcm-authorization-is-at-function-selector-granularity) | Informational |
+| 29 | [GuardCM authorization is at function-selector granularity](#29-guardcm-authorization-is-at-function-selector-granularity) | Informative |
 | 30 | [GovernorOLAS can execute a matching ready operation without its own queue record](#30-governorolas-can-execute-a-matching-ready-operation-without-its-own-queue-record) | Informative |
 
 ## Involved contracts and level of the bugs
@@ -1005,7 +1005,7 @@ permitted value and the packed inner values, and reject any unallocated remainde
 
 ### 29. GuardCM authorization is at function-selector granularity
 
-**Severity:** Informational
+**Severity:** Informative
 **Source:** internal review
 
 GuardCM authorizes calls by target, function selector, and chain ID. Its allowlist does not restrict argument
@@ -1021,6 +1021,8 @@ dedicated entry point for that direction and allowlist only its selector.
 ### 30. GovernorOLAS can execute a matching ready operation without its own queue record
 
 **Severity:** Informative
+
+**Source:** internal review
 
 Location: `GovernorOLAS`, through `contracts/utils/GovernorTimelockControl.sol`, functions `queue` and `_execute`.
 
