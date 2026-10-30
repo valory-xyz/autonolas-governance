@@ -10,20 +10,15 @@
 #                   deployment's case: for the tokenomics wiring a zero here would permanently
 #                   brick the Dispenser link, so a missing/zero dispenserAddress is a hard error.
 #
-# PREREQUISITE — refresh globals.dispenserAddress before every run:
-#   globals_<network>.json has no dispenserAddress key on purpose. Before deploying, add it and set
-#   it to the CURRENT LIVE Dispenser address from the autonolas-tokenomics repo's
-#   globals_<network>.json. WHICH KEY holds that address depends on whether the proxied-Dispenser
-#   migration has happened yet:
-#     - BEFORE the migration (today): the live Dispenser is the plain `dispenserAddress` key.
-#     - AFTER the migration (once deploy_07b_dispenser_proxy.sh has run there): the live Dispenser
-#       is `dispenserProxyAddress`, and from that point `dispenserAddress` in that repo means the
-#       Dispenser IMPLEMENTATION behind the proxy — NEVER copy that one here.
-#   Whenever new Dispenser contracts are deployed there this value changes and MUST be re-copied
-#   before VoteWeighting is deployed: VoteWeighting binds the dispenser immutably, so a wrong or
-#   stale address can only be fixed by redeploying VoteWeighting.
-#   Cross-repo runbook (the same handoff from the tokenomics side, step 9):
-#   https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md
+# PREREQUISITE — deploy and audit the new Dispenser implementation/proxy in tokenomics first.
+# Copy tokenomics globals.dispenserProxyAddress to governance globals.dispenserAddress, and
+# tokenomics globals.dispenserAddress to governance globals.dispenserImplementationAddress.
+# The latter is the expected reviewed implementation for the proxy-slot check, not a ctor argument.
+# This flow requires the new proxy even before the old system is replaced. A wrong immutable
+# binding can only be fixed by redeploying VoteWeighting.
+# After deployment, copy voteWeightingAddress back to tokenomics globals for later manager wiring.
+# Cross-repo runbook:
+# https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md
 #
 # Writes:  globals.voteWeightingAddress  (overwrites any previous VoteWeighting address)
 
@@ -79,35 +74,38 @@ if [ "$veOLASAddress" == "null" ] || [ -z "$veOLASAddress" ]; then
   exit 0
 fi
 
-# Dispenser is immutable and must be a real, non-zero address for this deployment. The zero
-# address is a valid ctor input for a standalone VoteWeighting, but here it would silently
-# brick the Dispenser wiring with no recovery but redeployment — so refuse it loudly.
-dispenserAddress=$(jq -r '.dispenserAddress' $globals)
-if [ "$dispenserAddress" == "null" ] || [ -z "$dispenserAddress" ] || [ "$dispenserAddress" == "0x0000000000000000000000000000000000000000" ]; then
-  echo "${red}!!! dispenserAddress is not set (or is the zero address) in $globals${reset}"
-  echo "${red}    VoteWeighting binds the dispenser immutably; refusing to deploy with no dispenser.${reset}"
-  echo "${red}    Copy the LIVE Dispenser address from the autonolas-tokenomics globals_$1.json into${reset}"
-  echo "${red}    dispenserAddress here: key 'dispenserAddress' before the proxied-Dispenser migration,${reset}"
-  echo "${red}    key 'dispenserProxyAddress' after it (then their 'dispenserAddress' is the${reset}"
-  echo "${red}    implementation — never copy that). Re-check after every new Dispenser deployment.${reset}"
+# Validate both the constructor target and the expected implementation before any broadcast.
+dispenserAddress=$(jq -r '.dispenserAddress' "$globals")
+dispenserImplementationAddress=$(jq -r '.dispenserImplementationAddress' "$globals")
+for address in "$veOLASAddress" "$dispenserAddress" "$dispenserImplementationAddress"; do
+  if [[ ! "$address" =~ ^0x[0-9a-fA-F]{40}$ ]] || [[ "$address" == "0x0000000000000000000000000000000000000000" ]]; then
+    echo "${red}!!! veOLASAddress, dispenserAddress and dispenserImplementationAddress must be nonzero addresses${reset}"
+    exit 1
+  fi
+done
+
+rpcURL="$networkURL$API_KEY"
+if ! rpcChainId=$(cast chain-id --rpc-url "$rpcURL" 2>/dev/null) || [ "$rpcChainId" != "$chainId" ]; then
+  echo "${red}!!! RPC chain ID does not match globals.chainId${reset}"
   exit 1
 fi
 
-rpcURL="$networkURL$API_KEY"
+# A nonzero owner alone does not distinguish the proxy from an initialized implementation.
+# Read the DispenserProxy slot (keccak256("PROXY_DISPENSER")) and compare its full stored word.
+dispenserSlot=0x8bd249c73459f2c50400ebdc57436101fc7d9a76908baf1ba5be362b47b48f83
+expectedSlot="0x000000000000000000000000${dispenserImplementationAddress:2}"
+if ! actualSlot=$(cast storage --rpc-url "$rpcURL" "$dispenserAddress" "$dispenserSlot" 2>/dev/null) || \
+   [ "$(echo "$actualSlot" | tr '[:upper:]' '[:lower:]')" != "$(echo "$expectedSlot" | tr '[:upper:]' '[:lower:]')" ]; then
+  echo "${red}!!! Dispenser proxy implementation mismatch: expected=$expectedSlot, observed=${actualSlot:-unavailable}${reset}"
+  exit 1
+fi
+if ! implementationCode=$(cast code --rpc-url "$rpcURL" "$dispenserImplementationAddress" 2>/dev/null) || \
+   [ -z "$implementationCode" ] || [ "$implementationCode" == "0x" ]; then
+  echo "${red}!!! Expected Dispenser implementation has no readable contract code${reset}"
+  exit 1
+fi
 
-# Pre-flight on the dispenser BEFORE deploying: the post-deploy asserts below can only report a
-# wrong dispenser, they cannot undo it (immutable), so the cheap checks that can prevent the
-# mistake belong here.
-#   1. It must be a contract at all — an EOA / empty address would brick the link silently.
-#   2. owner() must be non-zero. This is what separates a live Dispenser from the Dispenser
-#      IMPLEMENTATION address: the implementation's constructor sets immutables only, its owner
-#      lives in initialize() which the DispenserProxy constructor delegatecalls — so a bare
-#      implementation reads owner() == 0, while both the pre-migration live Dispenser and the
-#      post-migration DispenserProxy read a real owner.
-# Note: voteWeighting() is NOT usable as a check here — a freshly deployed DispenserProxy is
-# initialized with voteWeighting == 0 by design (this contract does not exist yet and binds the
-# proxy), so it is printed for information only.
-dispenserCode=$(cast code --rpc-url $rpcURL $dispenserAddress)
+dispenserCode=$(cast code --rpc-url "$rpcURL" "$dispenserAddress") || exit 1
 if [ "$dispenserCode" == "0x" ] || [ -z "$dispenserCode" ]; then
   echo "${red}!!! dispenserAddress $dispenserAddress has no contract code on chain $chainId${reset}"
   exit 1
@@ -116,8 +114,7 @@ fi
 dispenserOwner=$(cast call --rpc-url $rpcURL $dispenserAddress "owner()(address)" 2>/dev/null)
 if [ -z "$dispenserOwner" ] || [ "$dispenserOwner" == "0x0000000000000000000000000000000000000000" ]; then
   echo "${red}!!! dispenserAddress $dispenserAddress reads owner() == 0 (or has no owner())${reset}"
-  echo "${red}    This looks like a Dispenser IMPLEMENTATION rather than the live Dispenser /${reset}"
-  echo "${red}    DispenserProxy. Binding it here is immutable and unrecoverable — refusing to deploy.${reset}"
+  echo "${red}    The Dispenser proxy must be initialized before deploying VoteWeighting.${reset}"
   exit 1
 fi
 
@@ -135,7 +132,6 @@ if [ "$useLedger" == "true" ]; then
   walletArgs="-l --mnemonic-derivation-path $derivationPath"
   deployer=$(cast wallet address $walletArgs)
 else
-  echo "Using PRIVATE_KEY: ${PRIVATE_KEY:0:6}..."
   walletArgs="--private-key $PRIVATE_KEY"
   deployer=$(cast wallet address $walletArgs)
 fi
