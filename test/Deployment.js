@@ -1,4 +1,4 @@
-/*global describe, context, beforeEach, it*/
+/*global describe, context, beforeEach, it, process, __dirname*/
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -420,5 +420,131 @@ describe("Deployment", function () {
             // Verify governorTwo address roles
             await checkTimelockRoles(timelock, governorTwo.address, [true, true, true, true]);
         });
+    });
+});
+
+// Script guards use isolated fake tools: no RPC, signing keys or broadcast is available.
+describe("VoteWeighting deployment checks", function () {
+    const fs = require("fs");
+    const os = require("os");
+    const path = require("path");
+    const {spawnSync} = require("child_process");
+    const {checkVoteWeighting} = require("../scripts/audit_chains/audit_contracts_setup");
+    const proxy = "0x" + "11".repeat(20);
+    const implementation = "0x" + "22".repeat(20);
+    const owner = "0x" + "33".repeat(20);
+    const ve = "0x" + "44".repeat(20);
+    const deployed = "0x" + "55".repeat(20);
+
+    function runDeployment(mode, changeGlobals = () => {}) {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vw-deployment-"));
+        try {
+            const script = path.join(dir, "deploy_23_vote_weighting.sh");
+            fs.copyFileSync(path.join(__dirname, "../scripts/deployment/deploy_23_vote_weighting.sh"), script);
+            const globals = {chainId: "31337", networkURL: "http://invalid.example", contractVerification: false,
+                useLedger: true, derivationPath: "test", veOLASAddress: ve, dispenserAddress: proxy,
+                dispenserImplementationAddress: implementation};
+            changeGlobals(globals);
+            fs.writeFileSync(path.join(dir, "globals_local.json"), JSON.stringify(globals));
+            const tool = (name, contents) => fs.writeFileSync(path.join(dir, name), contents, {mode: 0o755});
+            tool("tput", "#!/bin/bash\nexit 0\n");
+            tool("cast", `#!/bin/bash
+case "$1" in
+  chain-id) if [ "$MODE" = wrong_chain ]; then echo 1; else echo 31337; fi ;;
+  storage)
+    [ "\${@: -1}" = 0x8bd249c73459f2c50400ebdc57436101fc7d9a76908baf1ba5be362b47b48f83 ] || exit 2
+    case "$MODE" in
+      unreadable_slot) exit 1 ;;
+      initialized_implementation) echo 0x${"00".repeat(32)} ;;
+      wrong_implementation) echo 0x${"00".repeat(12)}${owner.slice(2)} ;;
+      *) echo 0x${"00".repeat(12)}${implementation.slice(2)} ;;
+    esac ;;
+  code)
+    if { [ "$MODE" = empty_implementation ] && [ "\${@: -1}" = ${implementation} ]; } ||
+       { [ "$MODE" = empty_proxy ] && [ "\${@: -1}" = ${proxy} ]; }; then echo 0x; else echo 0x6000; fi ;;
+  wallet) echo ${owner} ;;
+  call)
+    case "\${@: -1}" in
+      'owner()(address)') if [ "$MODE" = uninitialized ]; then echo 0x${"00".repeat(20)}; else echo ${owner}; fi ;;
+      'voteWeighting()(address)') echo 0x${"00".repeat(20)} ;;
+      've()(address)') echo ${ve} ;;
+      'dispenser()(address)') echo ${proxy} ;;
+      *) exit 2 ;;
+    esac ;;
+  *) exit 2 ;;
+esac
+`);
+            tool("forge", `#!/bin/bash
+[ "$1" = create ] || exit 2
+printf '%s\\n' "$@" > "$CALL_LOG"
+echo 'Deployed to: ${deployed}'
+`);
+            const log = path.join(dir, "broadcast");
+            const result = spawnSync("bash", [script, "local"], {encoding: "utf8", timeout: 15000,
+                env: {PATH: dir + path.delimiter + process.env.PATH, MODE: mode, CALL_LOG: log, ETHERSCAN_API_KEY: "test"}});
+            if (result.error) throw result.error;
+            return {status: result.status, output: result.stdout + result.stderr,
+                broadcast: fs.existsSync(log) ? fs.readFileSync(log, "utf8") : ""};
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    }
+
+    it("accepts an initialized proxy with the reviewed implementation and zero VoteWeighting", function () {
+        const result = runDeployment("valid");
+        expect(result.status, result.output).to.equal(0);
+        expect(result.broadcast).to.include("--constructor-args\n" + ve + "\n" + proxy);
+    });
+    for (const mode of ["initialized_implementation", "wrong_implementation", "unreadable_slot", "empty_implementation",
+        "empty_proxy", "uninitialized", "wrong_chain"]) {
+        it("rejects " + mode + " before broadcasting", function () {
+            const result = runDeployment(mode);
+            expect(result.status, result.output).not.to.equal(0);
+            expect(result.broadcast).to.equal("");
+        });
+    }
+    for (const value of [undefined, "invalid", ethers.constants.AddressZero]) {
+        it("rejects a missing/invalid/zero expected implementation: " + value, function () {
+            const result = runDeployment("valid", globals => { globals.dispenserImplementationAddress = value; });
+            expect(result.status).not.to.equal(0);
+            expect(result.broadcast).to.equal("");
+        });
+    }
+
+    async function auditBinding(expected, expectedOwner) {
+        const [signer, veAccount, dispenserAccount] = await ethers.getSigners();
+        const factory = await ethers.getContractFactory("VoteWeighting");
+        const vw = await factory.deploy(veAccount.address, dispenserAccount.address);
+        await vw.deployed();
+        const errors = [];
+        const logs = [];
+        const originalError = console.error;
+        const originalLog = console.log;
+        console.error = error => errors.push(error);
+        console.log = message => logs.push(message);
+        try {
+            await checkVoteWeighting(1, ethers.provider,
+                {veOLASAddress: veAccount.address, dispenserAddress: expected || dispenserAccount.address,
+                    timelockAddress: expectedOwner || signer.address},
+                [{name: "VoteWeighting", address: vw.address, artifact: "artifacts/contracts/VoteWeighting.sol/VoteWeighting.json"}],
+                "VoteWeighting", "VoteWeighting test");
+        } finally {
+            console.error = originalError;
+            console.log = originalLog;
+        }
+        return {errors, logs, dispenser: dispenserAccount.address};
+    }
+    it("audits matching immutable Dispenser binding without a mismatch", async function () {
+        const result = await auditBinding();
+        expect(result.errors).to.deep.equal([]);
+        expect(result.logs.some(line => line.includes("ERROR:"))).to.equal(false);
+    });
+    it("reports expected/observed Dispenser and owner mismatches independently", async function () {
+        const result = await auditBinding(proxy, implementation);
+        expect(result.errors).to.have.length(2);
+        expect(result.errors[0].expected).to.equal(proxy);
+        expect(result.errors[0].actual).to.equal(result.dispenser);
+        expect(result.logs.some(line => line.includes("function: dispenser()"))).to.equal(true);
+        expect(result.logs.some(line => line.includes("function: owner()"))).to.equal(true);
     });
 });

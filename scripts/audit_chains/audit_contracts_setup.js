@@ -362,6 +362,13 @@ async function checkVoteWeighting(chainId, provider, globalsInstance, configCont
     const ve = await vw.ve();
     customExpect(ve, globalsInstance["veOLASAddress"], log + ", function: ve()");
 
+    // Use an explicit ABI: older archived VoteWeighting ABIs may not contain dispenser().
+    await runCheck(log + ", function: dispenser()", async () => {
+        const binding = new ethers.Contract(vw.address, ["function dispenser() view returns (address)"], provider);
+        const dispenser = await binding.dispenser();
+        customExpect(norm(dispenser), norm(globalsInstance["dispenserAddress"]), log + ", function: dispenser()");
+    });
+
     // owner + CSV
     const ownerInfo = await checkOwner(chainId, vw, globalsInstance, log);
     recordOwnershipRow(chainId, contractName, vw.address, ownerInfo);
@@ -735,17 +742,21 @@ async function main() {
     // ################################# /VERIFY CONTRACTS SETUP #################################
 }
 
-main()
-    .then(() => {
-        if (bytecodeMismatchFound || checkAbortedFound) {
-            console.error("AUDIT FAILED: see FAIL / ERROR lines above"
-                + (bytecodeMismatchFound ? " (Tier-1 bytecode length mismatch)" : "")
-                + (checkAbortedFound ? " (aborted contract check)" : "") + ".");
+if (require.main === module) {
+    main()
+        .then(() => {
+            if (bytecodeMismatchFound || checkAbortedFound) {
+                console.error("AUDIT FAILED: see FAIL / ERROR lines above"
+                    + (bytecodeMismatchFound ? " (Tier-1 bytecode length mismatch)" : "")
+                    + (checkAbortedFound ? " (aborted contract check)" : "") + ".");
+                process.exit(1);
+            }
+            process.exit(0);
+        })
+        .catch((error) => {
+            console.error(error);
             process.exit(1);
-        }
-        process.exit(0);
-    })
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
+        });
+}
+
+module.exports = { checkVoteWeighting };

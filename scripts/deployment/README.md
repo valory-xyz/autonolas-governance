@@ -80,43 +80,27 @@ forge build
 Export the original-Etherscan `ETHERSCAN_API_KEY` (used by `forge verify-contract`) and the
 `ALCHEMY_API_KEY_MAINNET` key the script appends to `networkURL`.
 
-### REQUIRED before deploying — set `dispenserAddress`
+### Required before deploying — identify the Dispenser proxy and implementation
 
-`scripts/deployment/globals_mainnet.json` has **no `dispenserAddress` key**, and
-`deploy_23_vote_weighting.sh` aborts on a missing/zero value by design. Add it, set to the
-**current live Dispenser** address from the
-[autonolas-tokenomics](https://github.com/valory-xyz/autonolas-tokenomics) repo's
-`scripts/deployment/globals_<network>.json`.
+This shell flow uses the **new Dispenser proxy**, even while the old Dispenser remains active.
+Deploy and audit the implementation/proxy in
+[autonolas-tokenomics](https://github.com/valory-xyz/autonolas-tokenomics) first. Manually copy:
 
-**Which key holds that address depends on whether the proxied-Dispenser migration has happened
-yet** — and the meaning of `dispenserAddress` on the tokenomics side flips at that point:
+| Tokenomics `scripts/deployment/globals_mainnet.json` | Governance `scripts/deployment/globals_mainnet.json` |
+|---|---|
+| `dispenserProxyAddress` | `dispenserAddress` — VoteWeighting constructor argument |
+| `dispenserAddress` | `dispenserImplementationAddress` — expected reviewed implementation, used only for validation |
 
-| State of the tokenomics repo | Live Dispenser = key | Do **not** copy |
-|---|---|---|
-| Before the migration (**today**) | `dispenserAddress` | — (`dispenserProxyAddress` does not exist yet) |
-| After `deploy_07b_dispenser_proxy.sh` has run | `dispenserProxyAddress` (the `DispenserProxy`) | `dispenserAddress` — from then on it is the Dispenser **implementation** |
+Neither governance key is prefilled. Check both values against the audited deployment; do not copy the
+implementation into governance's `dispenserAddress`. VoteWeighting's binding is immutable.
+The shell script checks the RPC chain, contract code, the proxy's `PROXY_DISPENSER` storage slot against
+`dispenserImplementationAddress`, and a nonzero proxy owner before broadcasting. A nonzero owner alone
+is insufficient: a standalone implementation may have been initialized. These identity checks do not
+replace the tokenomics audit of the reviewed implementation and proxy configuration.
 
-Copying the implementation address post-migration binds VoteWeighting to a contract with no
-live state, and is only fixable by redeploying VoteWeighting. The cross-repo handoff is
-described from the tokenomics side in its
-[Dispenser migration runbook](https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md)
-(step 9 deploys VoteWeighting against the step-8 proxy).
-
-Re-check the value on **every** run: whenever new Dispenser contracts are deployed, the live
-address changes, and VoteWeighting stores the dispenser as an **immutable**.
-
-```bash
-# in autonolas-governance, with <liveDispenser> copied from the tokenomics globals per the table above
-jq '.dispenserAddress = "<liveDispenser>"' scripts/deployment/globals_mainnet.json > tmp \
-  && mv tmp scripts/deployment/globals_mainnet.json
-```
-
-Before broadcasting, the script pre-flights the address: it must have contract code, and it must
-read a non-zero `owner()` — a bare Dispenser implementation reads `owner() == 0`, because the
-implementation constructor sets immutables only and `initialize()` is delegatecalled by the
-`DispenserProxy` constructor. `voteWeighting()` is printed but not asserted: a freshly deployed
-proxy is initialized with `voteWeighting == 0` on purpose (VoteWeighting does not exist yet — it
-binds the proxy), so it cannot discriminate.
+A fresh proxy has `voteWeighting() == 0`; this is expected and does not prevent VoteWeighting deployment.
+Use the shell command below for this flow; the legacy Hardhat deployment helper does not perform these
+proxy checks.
 
 ### Deploy
 
@@ -130,6 +114,34 @@ VoteWeighting address), asserts the deployed `ve()` / `dispenser()` / `owner()` 
 expected values, and verifies the contract on Etherscan (plus Blockscout when `blockscoutURL`
 is set). The post-deploy asserts only *report* a wrong immutable — the pre-flight is what can
 still prevent it.
+
+### After deployment — audit and hand back the VoteWeighting address
+
+Update the `VoteWeighting` entry in `docs/configuration.json` with the deployed address and its matching
+artifact, then run the existing read-only chain audit:
+
+```bash
+node scripts/audit_chains/audit_contracts_setup.js
+```
+
+It compares VoteWeighting's immutable `ve()` and `dispenser()` with governance globals and retains the
+owner/code checks. Before ownership handover, the deployer-versus-Timelock owner mismatch is expected;
+the immutable bindings must already match. Missing/incorrect bindings are reported using the existing
+audit reporting; inspect those findings as well as the exit status. No governance call can repair them.
+
+Manually copy governance's `voteWeightingAddress` into tokenomics'
+`scripts/deployment/globals_mainnet.json` under the same key. This is needed for the later
+`script_dispenser_change_managers.sh` or governance payload calling
+`newDispenserProxy.changeManagers(address(0), newVoteWeighting)`, not for deploying the Dispenser proxy.
+Confirm explorer verification and the audit findings before ownership handover and activation.
+See the [tokenomics migration runbook](https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md)
+for subsequent wiring; this configuration handoff performs no activation.
+
+Focused local regression (fake deployment tools and a local audit fixture; no live transactions):
+
+```bash
+npx hardhat test test/Deployment.js --grep "VoteWeighting deployment checks"
+```
 
 ### Push back the changes
 
