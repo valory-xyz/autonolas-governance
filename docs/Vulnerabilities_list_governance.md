@@ -32,6 +32,7 @@
 | 26 | [VoteWeighting catch-up cursors do not advance across a multi-year gap](#26-voteweighting-catch-up-cursors-do-not-advance-across-a-multi-year-gap) | Informative |
 | 27 | [Nominees can be added for chains that cannot receive incentives](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) | Informative |
 | 28 | [GuardCM does not constrain the value a Timelock schedule carries](#28-guardcm-does-not-constrain-the-value-a-timelock-schedule-carries) | Informative |
+| 29 | [VoteWeighting relative weight at an exact weekly boundary includes the next period's votes](#29-voteweighting-relative-weight-at-an-exact-weekly-boundary-includes-the-next-periods-votes) | Informative |
 | 29 | [GuardCM authorization is at function-selector granularity](#29-guardcm-authorization-is-at-function-selector-granularity) | Informative |
 | 30 | [GovernorOLAS can execute a matching ready operation without its own queue record](#30-governorolas-can-execute-a-matching-ready-operation-without-its-own-queue-record) | Informative |
 
@@ -1042,3 +1043,51 @@ There are two distinct routes:
 **Mitigation / replacement.** Reassess outstanding operations and proposer/executor roles before Governor or timelock migrations or role changes. Include a local queue-record guard in the next GovernorOLAS replacement; the live Governor is immutable. [PR #245](https://github.com/valory-xyz/autonolas-governance/pull/245) adds this guard to VetoGovernor, not live GovernorOLAS.
 
 **Severity rationale.** An arbitrary caller cannot authorize a new batch: execution requires a passed DAO proposal and an identical ready timelock operation.
+
+### 29. `VoteWeighting` relative weight at an exact weekly boundary includes the next period's votes
+
+**Severity:** Informative
+
+`VoteWeighting._nomineeRelativeWeight(account, chainId, time)` floors its query to the start of the week:
+
+```solidity
+uint256 t = time / WEEK * WEEK;
+```
+
+while a cast vote is scheduled to take effect at the *next* week start:
+
+```solidity
+uint256 nextTime = (block.timestamp + WEEK) / WEEK * WEEK;
+```
+
+The Dispenser reads a settled tokenomics epoch's relative weight at that epoch's end timestamp and relies on
+the week-floor to exclude votes that belong to the following period — as its own comment states (*"Epoch
+endTime is used to get the weights info, since otherwise there is a risk of having votes accounted for from
+the next epoch"*):
+
+```solidity
+uint256 endTime = ITokenomics(tokenomics).getEpochEndTime(epoch);
+(uint256 stakingWeight, ) = IVoteWeighting(voteWeighting).nomineeRelativeWeight(target, chainId, endTime);
+```
+
+The half-open convention holds for every `endTime` except one: when `endTime` is itself an exact multiple of
+`WEEK`, the floor is a no-op (`floor(W) == W`), so the query samples the weekly point `W` that already
+contains the votes scheduled to take effect at `W`. Those next-period votes are then counted toward the
+epoch that *ended* at `W`. An eligible staking target can thereby receive a share of the just-ended epoch's
+allocation that it should only have earned in the next period. The effect is bounded by the voter's relative
+weight at `W` and the target's configured emissions cap; it redistributes a single epoch's allocation and
+moves no principal beyond that.
+
+**The precondition is what sets the severity.** The boundary requires a tokenomics epoch to settle in a
+block whose `block.timestamp` is an exact multiple of `WEEK` (604800 seconds). On Ethereum mainnet under
+proof-of-stake the execution block timestamp equals the canonical beacon slot time, which is congruent to a
+fixed, nonzero value modulo the 12-second slot interval; a `WEEK` multiple is congruent to zero modulo 12
+seconds, so the two can never coincide and the boundary cannot occur in any valid mainnet block. A proposer
+cannot substitute a non-canonical timestamp. The condition is therefore not reachable on the mainnet
+deployment, and the epoch minimum length (30 days) never naturally aligns to a week boundary either.
+
+**Mitigation.** Adopt an explicit exclusive-endpoint convention for the settled-epoch weight query — query
+at `endTime - 1`, or exclude the exact right endpoint inside `_nomineeRelativeWeight` — applied consistently
+to every weight-query site so that a target's weight and the denominator cannot diverge at the boundary. A
+settled epoch always has a nonzero end time, so `endTime - 1` is safe and is a no-op away from the boundary.
+This is only relevant to a deployment whose block timestamps can be week-aligned.
