@@ -511,6 +511,84 @@ echo 'Deployed to: ${deployed}'
         });
     }
 
+    function runHandover(mode, changeGlobals = () => {}) {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vw-owner-"));
+        try {
+            const script = path.join(dir, "script_vote_weighting_change_owner.sh");
+            fs.copyFileSync(path.join(__dirname, "../scripts/deployment/script_vote_weighting_change_owner.sh"), script);
+            const globals = {chainId: 31337, networkURL: "http://invalid.example", useLedger: mode !== "private_key",
+                derivationPath: "test", voteWeightingAddress: deployed, timelockAddress: implementation};
+            changeGlobals(globals);
+            fs.writeFileSync(path.join(dir, "globals_local.json"), JSON.stringify(globals));
+            fs.writeFileSync(path.join(dir, "cast"), `#!/bin/bash
+case "$1" in
+  chain-id) if [ "$MODE" = wrong_chain ]; then echo 1; else echo 31337; fi ;;
+  code)
+    if { [ "$MODE" = empty_timelock ] && [ "\${@: -1}" = ${implementation} ]; } ||
+       { [ "$MODE" = empty_vw ] && [ "\${@: -1}" = ${deployed} ]; }; then echo 0x; else echo 0x6000; fi ;;
+  wallet) if [ "$MODE" = wrong_signer ]; then echo ${ve}; else echo ${owner}; fi ;;
+  call)
+    [ "$MODE" != unreadable_owner ] || exit 1
+    if [ "$MODE" = already_owned ] || { [ -f "$CALL_LOG" ] && [ "$MODE" != wrong_readback ]; }; then
+      echo ${implementation}
+    else echo ${owner}; fi ;;
+  send)
+    printf '%s\\n' "$@" > "$CALL_LOG"
+    [ "$MODE" != send_error ] || exit 1
+    if [ "$MODE" = reverted ]; then status=0x0; else status=0x1; fi
+    echo "{\\"status\\":\\"$status\\",\\"transactionHash\\":\\"0x${"aa".repeat(32)}\\"}" ;;
+  *) exit 2 ;;
+esac
+`, {mode: 0o755});
+            const log = path.join(dir, "broadcast");
+            const result = spawnSync("bash", [script, "local"], {encoding: "utf8", timeout: 15000,
+                env: {PATH: dir + path.delimiter + process.env.PATH, MODE: mode, CALL_LOG: log, PRIVATE_KEY: "test-only-key"}});
+            if (result.error) throw result.error;
+            return {status: result.status, output: result.stdout + result.stderr,
+                broadcast: fs.existsSync(log) ? fs.readFileSync(log, "utf8") : ""};
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    }
+    for (const mode of ["ledger", "private_key"]) {
+        it("hands over VoteWeighting using " + mode + " and verifies the owner", function () {
+            const result = runHandover(mode);
+            expect(result.status, result.output).to.equal(0);
+            expect(result.broadcast).to.include(deployed + "\nchangeOwner(address)\n" + implementation);
+            expect(result.broadcast).to.include("--confirmations\n1\n--json");
+            expect(result.broadcast).to.include(mode === "ledger" ? "-l\n--mnemonic-derivation-path\ntest" : "--private-key\ntest-only-key");
+            expect(result.output).to.include("Owner verified: " + implementation);
+            expect(result.output).not.to.include("test-only-key");
+        });
+    }
+    it("does not send an ownership transaction when Timelock already owns VoteWeighting", function () {
+        const result = runHandover("already_owned");
+        expect(result.status, result.output).to.equal(0);
+        expect(result.broadcast).to.equal("");
+    });
+    for (const mode of ["wrong_chain", "empty_timelock", "empty_vw", "wrong_signer", "unreadable_owner"]) {
+        it("stops ownership handover before broadcasting: " + mode, function () {
+            const result = runHandover(mode);
+            expect(result.status, result.output).not.to.equal(0);
+            expect(result.broadcast).to.equal("");
+        });
+    }
+    for (const value of [undefined, "invalid", ethers.constants.AddressZero]) {
+        it("rejects a missing/invalid/zero handover destination: " + value, function () {
+            const result = runHandover("ledger", globals => { globals.timelockAddress = value; });
+            expect(result.status).not.to.equal(0);
+            expect(result.broadcast).to.equal("");
+        });
+    }
+    for (const mode of ["send_error", "reverted", "wrong_readback"]) {
+        it("does not report ownership handover success: " + mode, function () {
+            const result = runHandover(mode);
+            expect(result.status, result.output).not.to.equal(0);
+            expect(result.broadcast).not.to.equal("");
+            expect(result.output).not.to.include("Owner verified:");
+        });
+    }
+
     async function auditBinding(expected, expectedOwner) {
         const [signer, veAccount, dispenserAccount] = await ethers.getSigners();
         const factory = await ethers.getContractFactory("VoteWeighting");

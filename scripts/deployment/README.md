@@ -137,6 +137,25 @@ Confirm explorer verification and the audit findings before ownership handover a
 See the [tokenomics migration runbook](https://github.com/valory-xyz/autonolas-tokenomics/blob/main/docs/dispenser_migration_runbook_public.md)
 for subsequent wiring; this configuration handoff performs no activation.
 
+### VoteWeighting ownership handover
+
+**Only transfer ownership after the deployment audit and explorer verification have been reviewed and every
+unexpected finding resolved.** Confirm the immutable bindings and the intended `timelockAddress`, then complete
+the address handoff above. `deploy_23_vote_weighting.sh` does not transfer ownership.
+
+While the deployer still owns VoteWeighting, run from the repository root:
+
+```bash
+bash scripts/deployment/script_vote_weighting_change_owner.sh mainnet
+```
+
+The script reads `voteWeightingAddress`, `timelockAddress` and the chain/wallet settings from the network globals.
+It checks the RPC chain, code at both addresses and that the signer is the current owner, calls
+`changeOwner(timelockAddress)`, waits for a successful receipt, and verifies `owner()` against the Timelock.
+It supports the same Ledger or `PRIVATE_KEY` signing choice as deployment. No DAO proposal is needed for this
+transfer while the deployer owns the contract. An already-matching owner causes no transaction.
+Rerun the read-only audit afterwards; the owner mismatch must disappear. This transfer does not activate tokenomics.
+
 Focused local regression (fake deployment tools and a local audit fixture; no live transactions):
 
 ```bash
