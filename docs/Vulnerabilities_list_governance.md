@@ -35,6 +35,7 @@
 | 29 | [VoteWeighting relative weight at an exact weekly boundary includes the next period's votes](#29-voteweighting-relative-weight-at-an-exact-weekly-boundary-includes-the-next-periods-votes) | Informative |
 | 29 | [GuardCM authorization is at function-selector granularity](#29-guardcm-authorization-is-at-function-selector-granularity) | Informative |
 | 30 | [GovernorOLAS can execute a matching ready operation without its own queue record](#30-governorolas-can-execute-a-matching-ready-operation-without-its-own-queue-record) | Informative |
+| 31 | [Staking votes to non-instance or disabled targets](#31-staking-votes-to-non-instance-or-disabled-targets) | Informative |
 
 ## Involved contracts and level of the bugs
 
@@ -1091,3 +1092,36 @@ at `endTime - 1`, or exclude the exact right endpoint inside `_nomineeRelativeWe
 to every weight-query site so that a target's weight and the denominator cannot diverge at the boundary. A
 settled epoch always has a nonzero end time, so `endTime - 1` is safe and is a no-op away from the boundary.
 This is only relevant to a deployment whose block timestamps can be week-aligned.
+
+### 31. Staking votes to non-instance or disabled targets
+
+**Severity:** Informative
+
+**Source:** internal review
+
+Permissionless nomination allows votes to target addresses that are not registered staking instances.
+A registered instance may also be disabled after nomination.
+
+These votes can remain in the voting totals and dilute other nominees' relative shares. On Ethereum,
+a positive staking payout to such a target is rejected by `EthereumDepositProcessor`. The claim reverts,
+so the affected claim cursor does not advance and neither the payout nor any inflation refund in that
+transaction is processed. Allocations can remain unminted and unrecycled while the target remains
+ineligible. This does not transfer or withdraw existing user funds. The caller can omit the target from
+a batch and claim for healthy nominees separately.
+
+Voters can redirect their votes after the voting delay. Governance can remove nominees through
+VoteWeighting's owner-controlled removal process. Removal is restricted near epoch end and takes effect
+at a weekly boundary; it does not recover historical allocations. Before using removal on an existing
+deployment, account for the risks described in items [8](#8-removenominee-function) and
+[19](#19-voteweighting-removenominee-last-element-guard-mismatch). Removal is terminal for that
+address/chain pair, even if its factory registration is later re-enabled; it does not prevent nomination
+of a different address. An instance that remains nominated may become claimable again if its recorded
+deployer re-enables it; factory ownership alone does not grant that permission.
+
+This behavior is accepted as a residual of permissionless nomination; no settlement contract change is
+selected for it. L2 retains its existing withholding behavior for rejected new allocations and its existing
+treatment of previously validated queued allocations.
+
+Item [27](#27-nominees-can-be-added-for-chains-that-cannot-receive-incentives) covers the separate
+chain-processor registration check. A configured processor does not establish that a nominee is an
+eligible staking instance.
