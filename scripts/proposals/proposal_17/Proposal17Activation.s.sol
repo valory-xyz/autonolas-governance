@@ -103,7 +103,7 @@ contract Proposal17Activation is Script {
     function pk(Call memory c) internal pure returns (bytes memory) {
         return abi.encodePacked(c.target, uint96(0), uint32(c.data.length), c.data);
     }
-    function packAll(Call[] memory cs) internal pure returns (bytes memory out) {
+    function packAll(Call[] memory cs) public pure returns (bytes memory out) {
         for (uint256 i; i < cs.length; ++i) out = bytes.concat(out, pk(cs[i]));
     }
     function gnosisMsg(Call[] memory cs) internal pure returns (bytes memory) {
@@ -242,6 +242,20 @@ contract Proposal17Activation is Script {
             rCalls(0x94a1892D91c05D0C61c3f49F42205D2285b914c9, 0x20F1586730261c5842715Ad3c5563Ecef19E0B2b,
                    0x48b6af7B12C71f09e2fC8aF4855De4Ff54e775cA, 0x48BE9146eBe74Af8f9BbC42A0EB68B484AC8Df31, 0x46C0D07F55d4F9B5Eed2Fc9680B5953e5fd7b461),
             sCalls(0x4503b79d468e81Ad2d4bd6Db991810da269bA777, 0x3A8867A5A31c5E26e6b8c740c1E1Aa920802d4BA, 0x0Dc23eEf3bC64CF3cbd8f9329B57AE4C4f28d5d2));
+    }
+
+    // Per-chain inner call list (for destination-leg tests). Mediator chains pack these into one
+    // message; Arbitrum/Robinhood deliver each as its own retryable to the target.
+    function chainCalls(uint256 chainId) public pure returns (Call[] memory) {
+        if (chainId == 100) return callsGnosis();
+        if (chainId == 137) return callsPolygon();
+        if (chainId == 10) return callsOptimism();
+        if (chainId == 8453) return callsBase();
+        if (chainId == 42220) return callsCelo();
+        if (chainId == 34443) return callsMode();
+        if (chainId == 42161) return callsArbitrum();
+        if (chainId == 4663) return callsRobinhood();
+        revert("unknown chain");
     }
 
     // ================= assembly =================

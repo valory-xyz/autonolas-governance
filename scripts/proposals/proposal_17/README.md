@@ -77,7 +77,10 @@ independently. Acceptable intermediate states and recovery:
 
 ```bash
 forge test --match-contract Proposal17Emit -vv                 # emit 28 entries + proposalId + descriptionHash
-ETH_RPC_URL=<mainnet-rpc> forge test --match-contract Proposal17ForkL1 -vv   # L1 execution + Inbox-fee fork test
+ETH_RPC_URL=<rpc> forge test --match-contract Proposal17ForkL1 -vv      # L1 execution + Inbox-fee fork test
+ETH_RPC_URL=<rpc> forge test --match-contract Proposal17GovernorGas -vv # gas through the live Governor.execute
+# destination legs (public RPC defaults; override per chain to avoid rate limits):
+OPTIMISM_RPC=<rpc> POLYGON_RPC=<rpc> forge test --match-contract Proposal17L2Legs -vv
 ```
 
 `Proposal17Activation.s.sol` is the single source of truth; `calldata.json` holds the copyable
@@ -86,14 +89,19 @@ breakdown with full addresses, decoded calls and the copyable arrays.
 
 ## Validation status
 
-- [x] Builder compiles; emit test asserts 28 entries; all inner-call + bridge selectors verified.
-- [x] **L1 execution fork test** — funds the Timelock from the EOA, executes all 28 actions at the
-      50 gwei ceiling (no revert → both Inbox submission fees hold), and asserts the Ethereum end
-      state. Execution gas ≈ 2.04M (one bundle fits comfortably under the cap).
-- [ ] **Per-L2 destination simulation** — Tenderly on each bridged leg; Mode via a destination Forge
-      fork test (Tenderly lacks Mode).
-- [ ] **Arbitrum/Robinhood retryable redemption + refunds** — end-to-end ticket redemption and
-      excess-fee refund to the L2 alias under the configured gas/fee limits.
+- [x] Builder compiles; emit test asserts 28 entries; all inner-call and bridge selectors verified.
+- [x] **L1 execution fork test** (`Proposal17ForkL1`) — funds the Timelock from the EOA, executes all 28
+      actions at the 50 gwei ceiling (no revert → both Inbox submission fees hold), asserts the Ethereum
+      end state.
+- [x] **Governor.execute gas** (`Proposal17GovernorGas`) — measured through the live GovernorOLAS
+      lifecycle with the final payload: **2,092,685 gas** (well under the 16,777,216 per-tx cap); state
+      reaches EXECUTED.
+- [x] **Per-L2 destination fork tests** (`Proposal17L2Legs`) — all 8 legs pass on destination-chain
+      forks: simulated bridge delivery to each mediator (Gnosis AMB, Polygon FxPortal, OP-stack
+      Optimism/Base/Celo/Mode) and aliased-Timelock delivery for Arbitrum/Robinhood retryables, each
+      asserting that every inner call took effect (derived from the proposal's own calldata).
+- [ ] **End-to-end retryable redemption + refunds** on Arbitrum and Robinhood — inherently post-submission
+      (actual L2 ticket redemption and excess-fee refund to the L2 alias).
 
 ## Not included
 
