@@ -3,8 +3,8 @@ pragma solidity ^0.8.30;
 
 import {Script, console2} from "forge-std/Script.sol";
 
-// PROPOSAL 17 — Phase-4 activation: Marketplace (M), ServiceManager + Safe wrapper (R_1),
-// StakingToken allowlist (S). Activation of contracts already deployed and on-chain-checked.
+// PROPOSAL 17 — activation of implementations already deployed and on-chain-checked
+// (autonolas-marketplace PR 211, autonolas-registries PR 343). No new contract code.
 //
 // Routing:
 //   - Ethereum: direct Timelock calls.
@@ -16,12 +16,12 @@ import {Script, console2} from "forge-std/Script.sol";
 //     so each call is its own retryable ticket straight to the target.
 //
 // Per chain the inner calls are:
-//   M:   mktProxy.changeImplementation(newImpl); mktProxy.setMechFactoryStatuses([new..,old..],[true..,false..])
-//   R_1: smProxy.changeImplementation(newSM); SR.changeMultisigPermission(newWrapper,true);
-//        SR.changeMultisigPermission(oldWrapper,false)   [enable before disable]
-//   S:   verifier.changeStakingLimits(1e22,2592000,44,3e18); verifier.setImplementationsStatuses([newST,oldST],[true,false],true)
-// Mode carries no M (no mech marketplace on Mode).
-contract Proposal17Phase4Activation is Script {
+//   Marketplace:    mktProxy.changeImplementation(newImpl); mktProxy.setMechFactoryStatuses([new..,old..],[true..,false..])
+//   ServiceManager: smProxy.changeImplementation(newSM); SR.changeMultisigPermission(newWrapper,true);
+//                   SR.changeMultisigPermission(oldWrapper,false)   [enable before disable]
+//   StakingToken:   verifier.changeStakingLimits(1e22,2592000,44,3e18); verifier.setImplementationsStatuses([newST,oldST],[true,false],true)
+// Mode carries no Marketplace calls (no mech marketplace on Mode).
+contract Proposal17Activation is Script {
     struct Call { address target; bytes data; }
 
     // ---- L1 Timelock + bridge entrypoints ----
@@ -60,7 +60,7 @@ contract Proposal17Phase4Activation is Script {
     uint256 internal constant LIM_APY       = 3000000000000000000; // 3e18
 
     string internal constant DESCRIPTION =
-        "Olas Phase-4 activation. Activates implementations already deployed and recorded in autonolas-marketplace PR 211 and autonolas-registries PR 343, with no new contract code. (M) Across eight chains, upgrades each MechMarketplace proxy to implementation 1.2.0 and switches factory permissions to enable the new native and USDC fixed-price mech factories and disable the superseded ones, OLAS factories remaining disabled. (R_1) Across nine chains, upgrades each ServiceManager proxy to implementation 1.3.0 and, in each service registry, enables the new GnosisSafeMultisig wrapper and disables the old one. (S) Across nine chains, sets the staking verifier numServicesLimit to 44 (other limits unchanged) and allowlists StakingToken 0.4.0 while disabling the superseded token implementation, StakingNativeToken excluded. Ethereum calls are direct Timelock calls; Gnosis, Polygon, Optimism, Base, Celo and Mode are bridged to their governance mediators; Arbitrum and Robinhood are delivered as retryable tickets to the targets owned by the Timelock's L2 alias. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
+        "Olas protocol maintenance across nine chains, activating implementations already deployed on-chain and independently verified, with no new contract code. On eight chains, each MechMarketplace proxy is upgraded to implementation 1.2.0 and its factory permissions are switched to enable the new native and USDC fixed-price mech factories and disable the superseded ones, OLAS factories remaining disabled. On nine chains, each ServiceManager proxy is upgraded to implementation 1.3.0 and, in each service registry, the new GnosisSafeMultisig wrapper is enabled and the old one disabled. On nine chains, each staking verifier numServicesLimit is set to 44 with the other limits unchanged, and StakingToken 0.4.0 is allowlisted while the superseded token implementation is disabled, StakingNativeToken excluded. Ethereum calls are direct Timelock calls; Gnosis, Polygon, Optimism, Base, Celo and Mode are bridged to their governance mediators; Arbitrum and Robinhood are delivered as retryable tickets to the targets owned by the Timelock's L2 alias. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
 
     // ================= inner-call encoders =================
     function cImpl(address impl) internal pure returns (bytes memory) {
@@ -118,13 +118,13 @@ contract Proposal17Phase4Activation is Script {
     }
 
     // ================= per-chain call lists =================
-    // Marketplace (M): returns 2 calls (changeImpl + setMechFactoryStatuses). hasUsdc=false -> 2-factory switch.
+    // Marketplace: returns 2 calls (changeImpl + setMechFactoryStatuses). hasUsdc=false -> 2-factory switch.
     function mCalls(address mkt, address newImpl, bytes memory factorySwitch) internal pure returns (Call[] memory cs) {
         cs = new Call[](2);
         cs[0] = Call(mkt, cImpl(newImpl));
         cs[1] = Call(mkt, factorySwitch);
     }
-    // ServiceManager (R_1): 3 calls.
+    // ServiceManager: 3 calls.
     function rCalls(address smProxy, address newSM, address sr, address newW, address oldW)
         internal pure returns (Call[] memory cs)
     {
@@ -133,7 +133,7 @@ contract Proposal17Phase4Activation is Script {
         cs[1] = Call(sr, cPerm(newW, true));
         cs[2] = Call(sr, cPerm(oldW, false));
     }
-    // StakingToken (S): 2 calls.
+    // StakingToken: 2 calls.
     function sCalls(address verifier, address newST, address oldST) internal pure returns (Call[] memory cs) {
         cs = new Call[](2);
         cs[0] = Call(verifier, cLimits());

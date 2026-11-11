@@ -2,13 +2,13 @@
 pragma solidity ^0.8.30;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {Proposal17Phase4Activation} from "../../scripts/proposals/proposal_17/Proposal17Phase4Activation.s.sol";
+import {Proposal17Activation} from "../../scripts/proposals/proposal_17/Proposal17Activation.s.sol";
 
 contract Proposal17Emit is Test {
-    Proposal17Phase4Activation internal p;
+    Proposal17Activation internal p;
 
     function setUp() public {
-        p = new Proposal17Phase4Activation();
+        p = new Proposal17Activation();
     }
 
     function test_emit() public view {
