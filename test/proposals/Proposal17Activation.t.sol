@@ -14,7 +14,7 @@ contract Proposal17Emit is Test {
     function test_emit() public view {
         (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
             p.buildProposal();
-        assertEq(targets.length, 27, "expected 27 entries");
+        assertEq(targets.length, 28, "expected 28 entries");
         uint256 totalValue;
         for (uint256 i; i < targets.length; ++i) {
             console2.log("---- entry", i);

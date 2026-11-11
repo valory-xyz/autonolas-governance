@@ -46,12 +46,16 @@ contract Proposal17Activation is Script {
     // as msg.sender and both refund addresses.
     address internal constant TL_ALIAS = 0x4d30F68F5AA342d296d4deE4bB1Cacca912dA70F;
 
-    // ---- gas params (match proposals 11/13/14) ----
+    // ---- gas params ----
     uint32  internal constant OP_MIN_GAS   = 2_000_000;
     uint256 internal constant AMB_GAS      = 2_000_000;
-    uint256 internal constant ARB_MAX_SUBMISSION_COST = 81_360_000_000_000; // 1808 * 45 gwei
-    uint256 internal constant ARB_GAS_LIMIT           = 300_000;
-    uint256 internal constant ARB_MAX_FEE_PER_GAS     = 0.05 gwei;
+    uint256 internal constant ARB_GAS_LIMIT       = 300_000;
+    uint256 internal constant ARB_MAX_FEE_PER_GAS = 0.05 gwei;
+    // Arbitrum/Robinhood retryable submission fee is sized PER CALL from its calldata length at an
+    // L1 base-fee ceiling: required = (1400 + 6*len) * baseFee (Nitro AbsInbox). Execution must occur
+    // while L1 base fee <= ARB_BASEFEE_CEILING, or either Inbox reverts the whole execution. Excess
+    // is refunded to the aliased Timelock on L2.
+    uint256 internal constant ARB_BASEFEE_CEILING = 50 gwei;
 
     // ---- staking limits (live values; only numServices changes 100 -> 44) ----
     uint256 internal constant LIM_MIN_DEP   = 10000000000000000000000; // 1e22
@@ -60,7 +64,7 @@ contract Proposal17Activation is Script {
     uint256 internal constant LIM_APY       = 3000000000000000000; // 3e18
 
     string internal constant DESCRIPTION =
-        "Olas protocol maintenance across nine chains, activating implementations already deployed on-chain and independently verified, with no new contract code. On eight chains, each MechMarketplace proxy is upgraded to implementation 1.2.0 and its factory permissions are switched to enable the new native and USDC fixed-price mech factories and disable the superseded ones, OLAS factories remaining disabled. On nine chains, each ServiceManager proxy is upgraded to implementation 1.3.0 and, in each service registry, the new GnosisSafeMultisig wrapper is enabled and the old one disabled. On nine chains, each staking verifier numServicesLimit is set to 44 with the other limits unchanged, and StakingToken 0.4.0 is allowlisted while the superseded token implementation is disabled, StakingNativeToken excluded. Ethereum calls are direct Timelock calls; Gnosis, Polygon, Optimism, Base, Celo and Mode are bridged to their governance mediators; Arbitrum and Robinhood are delivered as retryable tickets to the targets owned by the Timelock's L2 alias. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
+        "Olas protocol maintenance across nine chains, activating implementations already deployed on-chain and independently verified, with no new contract code. On eight chains, each MechMarketplace proxy is upgraded to implementation 1.2.0 and its factory permissions are switched to enable the new native and USDC fixed-price mech factories and disable the superseded ones, OLAS factories remaining disabled. On nine chains, each ServiceManager proxy is upgraded to implementation 1.3.0 and, in each service registry, the new GnosisSafeMultisig wrapper is enabled and superseded wrappers disabled. On nine chains, each staking verifier numServicesLimit is set to 44 with the other limits unchanged, and StakingToken 0.4.0 is allowlisted while the superseded token implementation is disabled, StakingNativeToken excluded. Ethereum calls are direct Timelock calls; Gnosis, Polygon, Optimism, Base, Celo and Mode are bridged to their governance mediators; Arbitrum and Robinhood are delivered as retryable tickets to the targets owned by the Timelock's L2 alias. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
 
     // ================= inner-call encoders =================
     function cImpl(address impl) internal pure returns (bytes memory) {
@@ -88,6 +92,11 @@ contract Proposal17Activation is Script {
         bool[] memory st = new bool[](2); st[0] = true; st[1] = false;
         return abi.encodeWithSignature("setImplementationsStatuses(address[],bool[],bool)", im, st, true);
     }
+    function cStatuses3(address newImpl, address old1, address old2) internal pure returns (bytes memory) {
+        address[] memory im = new address[](3); im[0] = newImpl; im[1] = old1; im[2] = old2;
+        bool[] memory st = new bool[](3); st[0] = true; st[1] = false; st[2] = false;
+        return abi.encodeWithSignature("setImplementationsStatuses(address[],bool[],bool)", im, st, true);
+    }
 
     // ================= bridge wrappers =================
     // Packed buffer tuple the mediators unpack: (target, uint96 value, uint32 len, data).
@@ -108,13 +117,16 @@ contract Proposal17Activation is Script {
         bytes memory inner = abi.encodeWithSignature("processMessageFromSource(bytes)", packAll(cs));
         return abi.encodeWithSignature("sendMessage(address,bytes,uint32)", messenger, inner, OP_MIN_GAS);
     }
-    function arbTicketValue() public pure returns (uint256) {
-        return ARB_MAX_SUBMISSION_COST + ARB_GAS_LIMIT * ARB_MAX_FEE_PER_GAS;
+    function arbSubmissionCost(uint256 dataLen) public pure returns (uint256) {
+        return (1400 + 6 * dataLen) * ARB_BASEFEE_CEILING;
+    }
+    function arbTicketValue(Call memory c) public pure returns (uint256) {
+        return arbSubmissionCost(c.data.length) + ARB_GAS_LIMIT * ARB_MAX_FEE_PER_GAS;
     }
     function arbTicket(Call memory c) internal pure returns (bytes memory) {
         return abi.encodeWithSignature(
             "createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)",
-            c.target, uint256(0), ARB_MAX_SUBMISSION_COST, TL_ALIAS, TL_ALIAS, ARB_GAS_LIMIT, ARB_MAX_FEE_PER_GAS, c.data);
+            c.target, uint256(0), arbSubmissionCost(c.data.length), TL_ALIAS, TL_ALIAS, ARB_GAS_LIMIT, ARB_MAX_FEE_PER_GAS, c.data);
     }
 
     // ================= per-chain call lists =================
@@ -138,6 +150,11 @@ contract Proposal17Activation is Script {
         cs = new Call[](2);
         cs[0] = Call(verifier, cLimits());
         cs[1] = Call(verifier, cStatuses(newST, oldST));
+    }
+    function sCalls3(address verifier, address newST, address old1, address old2) internal pure returns (Call[] memory cs) {
+        cs = new Call[](2);
+        cs[0] = Call(verifier, cLimits());
+        cs[1] = Call(verifier, cStatuses3(newST, old1, old2));
     }
 
     function concat(Call[] memory a, Call[] memory b) internal pure returns (Call[] memory out) {
@@ -189,7 +206,7 @@ contract Proposal17Activation is Script {
                    cFactories4(0x0a9a74274b1C30845aF98683Ca7F843795f6DFA6, 0x16184FcF1940dFb8aA5Eba7E1effefAd49c733F5, 0xDd1252c5a75be568B5E6e50bA542680b38dbd68f, 0xE3e5Df46060370af5Fd37B2aA11e7dac3cCB4bd0)),
             rCalls(0x84B4DA67B37B1EA1dea9c7044042C1d2297b80a0, 0x7beD01f8482fF686F025628e7780ca6C1f0559fc,
                    0xE3607b00E75f6405248323A9417ff6b39B244b50, 0xaaFBeef195BDAb1Bb6f3Dc9cEbA875Cd72499230, 0xD421f433e36465B3e558B1121F584ac09Fc33DF8),
-            sCalls(0x4aba1Cf7a39a51D75cBa789f5f21cf4882162519, 0xf78b3C22A204Da5d9a0B080C5D3d695AF4918886, 0xe1E1B286EbE95b39F785d8069f2248ae9C41b7a9));
+            sCalls3(0x4aba1Cf7a39a51D75cBa789f5f21cf4882162519, 0xf78b3C22A204Da5d9a0B080C5D3d695AF4918886, 0xe1E1B286EbE95b39F785d8069f2248ae9C41b7a9, 0xd2ff4Cf0927c3cFbF3BB27391044dBaf6f4ca7b9));
     }
     function callsMode() internal pure returns (Call[] memory) { // no marketplace on Mode
         return concat(
@@ -206,12 +223,15 @@ contract Proposal17Activation is Script {
             sCalls(0x7Fd1F4b764fA41d19fe3f63C85d12bf64d2bbf68, 0x887A511e3DfE4dDa77c0b1783c01d9920351A83D, 0x04b0007b2aFb398015B76e5f22993a1fddF83644));
     }
     function callsRobinhood() internal pure returns (Call[] memory) {
-        return concat3(
+        Call[] memory adapter = new Call[](1);
+        // revoke the deprecated same-address Safe adapter on the Robinhood service registry
+        adapter[0] = Call(0xE3607b00E75f6405248323A9417ff6b39B244b50, cPerm(0xFbBEc0C8b13B38a9aC0499694A69a10204c5E2aB, false));
+        return concat(adapter, concat3(
             mCalls(0xa45E64d13A30a51b91ae0eb182e88a40e9b18eD8, 0xA5C7FbCCFf28441b7d250412b0Fb87AA1c8b14AD,
                    cFactories4(0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d, 0x24F792D51b398928459Dfbb4181bDb4D5d2CD472, 0x04b0007b2aFb398015B76e5f22993a1fddF83644, 0x7Fd1F4b764fA41d19fe3f63C85d12bf64d2bbf68)),
             rCalls(0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b, 0x379451B13e4900C7005Bf57467770b2EE4e62a86,
                    0xE3607b00E75f6405248323A9417ff6b39B244b50, 0x22bE6fDcd3e29851B29b512F714C328A00A96B83, 0xBb7e1D6Cb6F243D6bdE81CE92a9f2aFF7Fbe7eac),
-            sCalls(0x75D529FAe220bC8db714F0202193726b46881B76, 0x5add592ce0a1B5DceCebB5Dcac086Cd9F9e3eA5C, 0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c));
+            sCalls(0x75D529FAe220bC8db714F0202193726b46881B76, 0x5add592ce0a1B5DceCebB5Dcac086Cd9F9e3eA5C, 0x87c511c8aE3fAF0063b3F3CF9C6ab96c4AA5C60c)));
     }
 
     // Ethereum L1 direct calls (7).
@@ -233,7 +253,7 @@ contract Proposal17Activation is Script {
         Call[] memory eth = callsEthereum();            // 7 direct
         Call[] memory arb = callsArbitrum();            // 7 retryables
         Call[] memory rh  = callsRobinhood();           // 7 retryables
-        uint256 n = eth.length + 6 + arb.length + rh.length; // 7 + 6 mediator msgs + 7 + 7 = 27
+        uint256 n = eth.length + 6 + arb.length + rh.length; // 7 + 6 mediator + 7 + 8 = 28
         targets = new address[](n);
         values = new uint256[](n);
         calldatas = new bytes[](n);
@@ -250,11 +270,10 @@ contract Proposal17Activation is Script {
         targets[k] = CELO_L1CDM;     calldatas[k] = opMsg(CELO_MESSENGER, callsCelo());        ++k;
         targets[k] = MODE_L1CDM;     calldatas[k] = opMsg(MODE_MESSENGER, callsMode());        ++k;
 
-        // Arbitrum retryables (value-carrying)
-        uint256 tv = arbTicketValue();
-        for (uint256 i; i < arb.length; ++i) { targets[k] = ARBITRUM_INBOX; values[k] = tv; calldatas[k] = arbTicket(arb[i]); ++k; }
+        // Arbitrum retryables (value-carrying; per-call submission fee)
+        for (uint256 i; i < arb.length; ++i) { targets[k] = ARBITRUM_INBOX; values[k] = arbTicketValue(arb[i]); calldatas[k] = arbTicket(arb[i]); ++k; }
         // Robinhood retryables
-        for (uint256 i; i < rh.length; ++i) { targets[k] = ROBINHOOD_INBOX; values[k] = tv; calldatas[k] = arbTicket(rh[i]); ++k; }
+        for (uint256 i; i < rh.length; ++i) { targets[k] = ROBINHOOD_INBOX; values[k] = arbTicketValue(rh[i]); calldatas[k] = arbTicket(rh[i]); ++k; }
 
         description = DESCRIPTION;
     }

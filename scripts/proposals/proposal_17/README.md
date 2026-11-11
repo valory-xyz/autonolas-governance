@@ -7,17 +7,23 @@ contract code** — every target is already live; this proposal only flips proxy
 allowlist/permission entries.
 
 **Pre-computed proposalId:**
-`32711718276225339996367009471891002262818557070323413596666025688182344427560`
-(= `0x48522d2a4c1b4e2943d9461bb55a4fd8453a374b375db4644fec1e74c338a828`)
+`800828120181505465882162548520110504832833383217755599275808806715811518961`
+(= `0x01c540ade3e498b3c0aa1e2aa9cfd0de1f861153ba73d8bf88efcbd72fb159f1`)
 
-**descriptionHash:** `0x247167a5a4c70f47086152698e0679d94215e44b3e47fd49c23759877ffe8eca`
+**descriptionHash:** `0x2c993df6c6f3923fdfd1064c99f29c009f1fe6292dc8681ecc84ee341723bacc`
+(`description.txt` matches the builder's `DESCRIPTION` byte-for-byte — no trailing newline — so
+hashing the file reproduces this id.)
 
-**Total ETH value:** `1349040000000000` wei (≈0.00135 ETH) — the 14 Arbitrum/Robinhood retryable
-tickets (`96360000000000` wei each). The Timelock must hold at least this balance at execution.
+**Total ETH value:** `1907400000000000` wei (≈0.0019 ETH) — the 15 Arbitrum/Robinhood retryable
+tickets, each with a **per-call** submission fee.
 
-> The on-chain description (`description.txt`) is deliberately kept to the facts of the calls and does
-> not reference release phases, internal groupings or GitHub PRs. It matches the builder's
-> `DESCRIPTION` byte-for-byte, so the proposalId is reproducible.
+## Execution funding
+
+The Timelock holds no ETH. **The deployer EOA transfers the exact total (`1907400000000000` wei) to
+the Timelock before `Governor.execute`.** Each retryable's submission fee is sized per call at an L1
+base-fee ceiling of **50 gwei** (`(1400 + 6·len)·50 gwei`); any excess is refunded to the Timelock's
+L2 alias. **Execution must occur while L1 base fee ≤ 50 gwei**, or either Inbox reverts the whole
+execution. The L1 fork test funds the Timelock and runs all 28 actions at exactly 50 gwei.
 
 ## What it does
 
@@ -26,48 +32,68 @@ tickets (`96360000000000` wei each). The Timelock must hold at least this balanc
   superseded ones (OLAS factories stay disabled).
 - **ServiceManager + Safe wrapper (9 chains):** each `ServiceManager` proxy → `changeImplementation`
   (1.2.0 → 1.3.0); each service registry → `changeMultisigPermission(newWrapper, true)` then
-  `changeMultisigPermission(oldWrapper, false)` (enable before disable).
+  `changeMultisigPermission(oldWrapper, false)`. **Robinhood also** revokes the deprecated
+  same-address Safe adapter (`0xFbBEc0C8…2aB`).
 - **StakingToken (9 chains):** each `StakingVerifier` → `changeStakingLimits(1e22, 2592000, 44, 3e18)`
-  (only `numServicesLimit` changes, 100 → 44) + `setImplementationsStatuses([new0.4.0, superseded],
-  [true, false], true)` (StakingNativeToken excluded).
+  (only `numServicesLimit` changes, 100 → 44) + `setImplementationsStatuses` allowlisting 0.4.0 and
+  disabling the superseded implementation(s) (StakingNativeToken excluded). **Celo** disables two
+  superseded impls (0.2.0 `0xe1E1…b7a9` and 0.3.0 `0xd2ff4Cf0…ca7b9`); every other chain has one.
 
-## Routing (27 top-level entries)
+The complete superseded set was derived by replaying each verifier's `ImplementationsWhitelistUpdated`
+events: all chains enable only their 0.2.0; Celo also had 0.3.0.
+
+## Routing (28 top-level entries)
 
 | Entries | Chain(s) | Route |
 |---|---|---|
 | 0–6 | Ethereum | direct Timelock calls |
-| 7 | Gnosis | AMB → HomeMediator (`requireToPassMessage` → `processMessageFromForeign`, packed multicall) |
-| 8 | Polygon | FxRoot → FxGovernorTunnel (`sendMessageToChild`, packed multicall) |
-| 9–12 | Optimism, Base, Celo, Mode | OP-stack `sendMessage` → `processMessageFromSource` (packed multicall; Mode carries ServiceManager + StakingToken calls only) |
-| 13–19 | Arbitrum | 7 retryable tickets straight to each target (owner = aliased Timelock, no mediator) |
-| 20–26 | Robinhood | 7 retryable tickets straight to each target (4663 Inbox) |
+| 7 | Gnosis | AMB → HomeMediator (packed multicall) |
+| 8 | Polygon | FxRoot → FxGovernorTunnel (packed multicall) |
+| 9–12 | Optimism, Base, Celo, Mode | OP-stack `sendMessage` → `processMessageFromSource` (packed multicall; Mode carries ServiceManager + StakingToken only) |
+| 13–19 | Arbitrum | 7 retryable tickets straight to each target |
+| 20–27 | Robinhood | 8 retryable tickets (incl. the Safe-adapter revocation) |
 
-Mediator chains pack all of that chain's inner calls into **one** message (executed atomically on the
-destination). Arbitrum and Robinhood have **no mediator** — their targets are owned directly by the
-L2 alias of the L1 Timelock (`applyL1ToL2Alias(Timelock) = 0x4d30…da70f`, codesize 0 on both chains),
-so each inner call is its own retryable ticket, enable-before-disable ordered; the wrapper
-enable/disable are therefore **not atomic** on those two chains (accepted; one vote).
+Mediator chains pack all of that chain's calls into **one** atomic message. Arbitrum and Robinhood
+have no mediator — their targets are owned directly by the L2 alias of the L1 Timelock
+(`applyL1ToL2Alias(Timelock) = 0x4d30…da70f`, codesize 0), so each call is its own retryable ticket,
+enable-before-disable ordered, and **not atomic** on those two chains.
+
+## Partial-execution states and recovery (Arbitrum / Robinhood)
+
+The L1 `execute` creates all retryable tickets atomically; only their **L2 redemption** can fail
+independently. Acceptable intermediate states and recovery:
+
+- **A wrapper-enable ticket redeems but a later ticket does not:** the new wrapper is live; re-submit
+  the failed ticket (manual redemption on the destination) — no state is lost.
+- **A wrapper-disable ticket fails after the enable redeemed:** both old and new wrappers are briefly
+  enabled (safe); re-submit the disable ticket.
+- **A `changeStakingLimits` ticket redeems but `setImplementationsStatuses` does not** (or vice-versa):
+  the verifier temporarily has the new limit but the 0.4.0 allowlist is not yet applied, or vice
+  versa; re-submit the failed ticket. No instance creation depends on an intermediate state.
+- A failed ticket is always re-executable by redeeming it on the destination; nothing requires
+  re-running the L1 proposal.
 
 ## Build / inspect
 
 ```bash
-forge test --match-contract Proposal17Emit -vv   # emits all 27 entries + proposalId + descriptionHash
+forge test --match-contract Proposal17Emit -vv                 # emit 28 entries + proposalId + descriptionHash
+ETH_RPC_URL=<mainnet-rpc> forge test --match-contract Proposal17ForkL1 -vv   # L1 execution + Inbox-fee fork test
 ```
 
-The builder `Proposal17Activation.s.sol` is the single source of truth; `description.txt` matches its
-`DESCRIPTION` byte-for-byte.
+`Proposal17Activation.s.sol` is the single source of truth; `calldata.json` holds the copyable
+`propose()` inputs (targets/values/calldatas); `proposal_17.html` is the annotated, self-contained
+breakdown with full addresses, decoded calls and the copyable arrays.
 
 ## Validation status
 
-- [x] Builder compiles; emit test asserts 27 entries; all inner-call and bridge selectors verified
-      against proposals 13/14 (`0xdc8601b3` AMB, `0xb4720477` FxChild, `0x3dbb202b` OP sendMessage,
-      `0x679b6ded` retryable; `0xd3042d2b`/`0xcd9e30d9` mediator entrypoints).
-- [ ] **L1 Timelock fork test** (`test/proposals/`) — execute on a mainnet fork, assert the L1 effects
-      (proxy versions + factory statuses + wrapper permissions + verifier limits/statuses), and measure
-      the combined L1 execute gas.
-- [ ] **Per-L2 destination validation** — Tenderly simulation of each bridged message (Mode via a
-      destination Forge fork test, as Tenderly lacks Mode).
-- [ ] **Retryable gas re-check on Robinhood** — 4663 basefee vs the Arbitrum-tuned parameters.
+- [x] Builder compiles; emit test asserts 28 entries; all inner-call + bridge selectors verified.
+- [x] **L1 execution fork test** — funds the Timelock from the EOA, executes all 28 actions at the
+      50 gwei ceiling (no revert → both Inbox submission fees hold), and asserts the Ethereum end
+      state. Execution gas ≈ 2.04M (one bundle fits comfortably under the cap).
+- [ ] **Per-L2 destination simulation** — Tenderly on each bridged leg; Mode via a destination Forge
+      fork test (Tenderly lacks Mode).
+- [ ] **Arbitrum/Robinhood retryable redemption + refunds** — end-to-end ticket redemption and
+      excess-fee refund to the L2 alias under the configured gas/fee limits.
 
 ## Not included
 
