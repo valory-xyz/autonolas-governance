@@ -47,7 +47,7 @@
   "checkpointManagerAddress": "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287",
   "fxERC20RootTunnelAddress": "0x1737408def992AF04b29C8Ba4BBcD7397B08c930",
   "fxERC20ChildTunnelAddress": "0x1fe74A08ac89300B102AdCd474C721AE8764E850",
-  "voteWeightingAddress": "0x95418b46d5566d3d1ea62c12aea91227e566c5c1",
+  "voteWeightingAddress": "0xe8748e2CE2a4621425499bd26Aa8EF95Cf0C0730",
   "burnerAddress": "0x51eb65012ca5cEB07320c497F4151aC207FEa4E0",
   "wormholeL1CoreAddress": "0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B",
   "wormholeL1MessageRelayerAddress": "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911",
@@ -69,5 +69,8 @@
   "processBridgedDataGnosisAddress": "0xDc871b7833932D45023755C9De3786060a934c48",
   "processBridgedDataPolygonAddress": "0x133A6d318FA0C9413A70C149E7f630015044Dec3",
   "processBridgedDataArbitrumAddress": "0x0F33636698F6607B2FDdC1e857788535914C44d4",
-  "processBridgedDataOptimismAddress": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5"
+  "processBridgedDataOptimismAddress": "0xdCAFcCcC7bA0b7185A472d9d068FDe0AF4313Fb5",
+  "veAddress": "0x7e01A500805f8A52Fad229b3015AD130A332B7b3",
+  "dispenserAddress": "0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D",
+  "dispenserImplementationAddress": "0x6f44B0Ab54f0cD5854A21a9e71C78c4F7cDf28f7"
 }
