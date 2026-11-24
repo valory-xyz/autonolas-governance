@@ -45,5 +45,5 @@ ETH_RPC_URL=<rpc>  forge test --match-contract Proposal18ForkL1 -vv
 CELO_RPC_URL=<rpc> forge test --match-contract Proposal18Celo -vv
 [PASS] test_celo_revoke_fromBuilder()
   wrapper mapMultisigs: true -> false
-  celo delivery gas used: 32844 of forwarded budget: 2000000   (payload + budget derived from the builder)
+  celo delivery gas used: 32601 of forwarded budget: 2000000   (outer route+selector validated; builder `inner` bytes delivered unchanged)
 ```

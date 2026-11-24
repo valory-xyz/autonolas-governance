@@ -24,8 +24,11 @@ interface IRegistry {
 contract Proposal18Celo is Test {
     address constant TIMELOCK  = 0x3C1fF68f5aa342D296d4DEe4Bb1cACCA912D95fE;
     address constant OP_L2_XDM = 0x4200000000000000000000000000000000000007; // L2CrossDomainMessenger predeploy
+    address constant L1_CDM    = 0x1AC1181fc4e4F877963680587AEAa2C90D7EbB95; // Celo L1 cross-domain messenger (entry 2 target)
+    address constant MEDIATOR  = 0xC14E191A64a7FB0e5790a8a0B9a58683dFFce04d; // Celo governance mediator
     address constant REGISTRY  = 0xE3607b00E75f6405248323A9417ff6b39B244b50;
     address constant WRAPPER   = 0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b;
+    bytes4  constant SEND_MESSAGE_SEL = 0x3dbb202b; // sendMessage(address,bytes,uint32)
     // Pinned for reproducibility; override with CELO_FORK_BLOCK. Recorded in TEST_RECORD.md.
     uint256 constant CELO_FORK_BLOCK = 83626048;
 
@@ -44,21 +47,28 @@ contract Proposal18Celo is Test {
     }
 
     function test_celo_revoke_fromBuilder() public {
-        // Derive mediator, delivered payload and forwarded gas from the proposal's entry 2.
-        (, , bytes[] memory c, ) = p.buildProposal();
+        (address[] memory tg, , bytes[] memory c, ) = p.buildProposal();
+
+        // Validate the OUTER route + selector of entry 2 (not just the inner payload).
+        assertEq(tg[2], L1_CDM, "entry 2 not routed via the Celo L1 cross-domain messenger");
+        assertEq(bytes4(c[2]), SEND_MESSAGE_SEL, "entry 2 outer selector is not sendMessage");
+
         (address mediator, bytes memory inner, uint32 gasForwarded) =
             abi.decode(_args(c[2]), (address, bytes, uint32));
-        bytes memory payload = abi.decode(_args(inner), (bytes));
+        assertEq(mediator, MEDIATOR, "sendMessage does not target the Celo mediator");
 
         assertTrue(IRegistry(REGISTRY).mapMultisigs(WRAPPER), "wrapper not currently permitted");
 
-        // Deliver as the L2 messenger, with the L1 source == Timelock (the mediator's sourceGovernor).
+        // Deliver the builder's `inner` bytes UNCHANGED (selector included) as the L2 messenger, with the L1
+        // source == Timelock. Delivering unchanged — rather than decoding and re-wrapping the payload —
+        // exercises the real inner selector, so a wrong selector in the builder makes this revert.
         vm.mockCall(OP_L2_XDM, abi.encodeWithSignature("xDomainMessageSender()"), abi.encode(TIMELOCK));
         vm.prank(OP_L2_XDM);
         uint256 g0 = gasleft();
-        IMediator(mediator).processMessageFromSource(payload);
+        (bool ok, ) = mediator.call(inner);
         uint256 used = g0 - gasleft();
 
+        assertTrue(ok, "delivery of the builder's inner bytes reverted");
         assertFalse(IRegistry(REGISTRY).mapMultisigs(WRAPPER), "wrapper permission not revoked");
         assertLt(used, gasForwarded, "delivery exceeds the forwarded gas budget the proposal sizes");
         console2.log("celo delivery gas used:", used, "of forwarded budget:", gasForwarded);

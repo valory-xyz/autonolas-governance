@@ -19,7 +19,8 @@ Three Governor actions, all **value 0** (no prefund required).
 forge script scripts/proposals/proposal_18/Proposal18.s.sol:Proposal18 --sig "run()"
 
 # 2) Assert the committed artifacts AGREE with the builder (no RPC): calldata.json + description.txt ==
-#    builder, and the recomputed proposalId/descriptionHash == the committed constants
+#    builder (same entry count, so an appended action is caught), and the recomputed
+#    proposalId/descriptionHash == the committed constants
 forge test --match-contract Proposal18Artifacts -vv
 
 # 3) Regenerate the decoded HTML from calldata.json and confirm it is byte-identical to the committed file
@@ -38,7 +39,7 @@ CELO_RPC_URL=<rpc> forge test --match-contract Proposal18Celo   -vv   # simulate
 ```
 
 - **`Proposal18ForkL1`** asserts, pre→post: Dispenser `paused() 0 → 2`; GuardCM `pause()` on the new proxy `false → true`; GuardCM `setPauseState(uint8)` on the old Dispenser `true → false` (the revoke).
-- **`Proposal18Celo`** derives the delivered payload **and** the forwarded-gas budget from the builder's entry 2 (not hardcoded), delivers it through the mediator, and asserts the wrapper permission is revoked and that delivery (≈33k gas) fits the forwarded budget (2,000,000).
+- **`Proposal18Celo`** validates the outer route+selector of entry 2 (target is the Celo L1 messenger, selector is `sendMessage`), then delivers the builder's `inner` bytes **unchanged** (selector included, so a wrong inner selector reverts) with the forwarded-gas budget read from the same entry, and asserts the wrapper permission is revoked and that delivery (≈33k gas) fits the budget (2,000,000). Nothing is hardcoded or re-wrapped.
 
 Pinned fork blocks, hashes, commands and results are in [`TEST_RECORD.md`](./TEST_RECORD.md). (The CI workflow excludes `test/proposals/*`, so these results travel with the proposal.)
 
