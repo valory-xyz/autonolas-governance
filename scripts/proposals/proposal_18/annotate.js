@@ -34,6 +34,7 @@ const SELSIG = {
 };
 const INNER_SEL = {
     "0x8456cb59": "pause()",
+    "0x63096509": "setPauseState(uint8)",
     "0x82694b1d": "changeMultisigPermission(address,bool)",
 };
 const PAUSE_STATE = { "0": "Unpaused", "1": "DevIncentivesPaused", "2": "StakingIncentivesPaused", "3": "AllPaused" };
@@ -76,7 +77,7 @@ function decodeEntry(e) {
             rows.push([
                 `row[${i}]`,
                 `${addrSpan(decoded[0][i])}<br>&nbsp;&nbsp;selector <span class="sel">${esc(s)}</span> <span class="lbl">// ${esc(INNER_SEL[s] || "UNKNOWN")}</span>` +
-                `<br>&nbsp;&nbsp;chainId <span class="val">${decoded[2][i].toString()}</span>&nbsp;&nbsp;status <span class="val">${decoded[3][i]}</span> <span class="lbl">// grant</span>`,
+                `<br>&nbsp;&nbsp;chainId <span class="val">${decoded[2][i].toString()}</span>&nbsp;&nbsp;status <span class="val">${decoded[3][i]}</span> <span class="lbl">// ${decoded[3][i] ? "grant" : "revoke"}</span>`,
             ]);
         }
     } else if (sel === "0x3dbb202b") {
@@ -147,10 +148,12 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);padding:.
 <h1>${esc(title)}</h1>
 <p class="meta">Generated from <code>calldata.json</code> &mdash; the same bytes the Forge builder emits, decoded rather than re-encoded.</p>
 
-<div class="box">Entries 0 and 1 are <strong>direct Ethereum</strong> Timelock calls (pause the Dispenser's staking-incentive
-distribution; grant the community-multisig guard the <code>pause()</code> selector on the Dispenser proxy). Entry 2 is
-<strong>bridged to Celo</strong> through the OP-stack cross-domain messenger and executed by the Celo governance mediator
-(revoke a superseded service-creation wrapper permission). Total ETH value is <strong>0</strong>.</div>
+<div class="box">Entries 0 and 1 are <strong>direct Ethereum</strong> Timelock calls: (0) pause the Dispenser's staking-incentive
+distribution; (1) one atomic GuardCM update that grants the community-multisig guard the <code>pause()</code> selector on the
+new Dispenser proxy <em>and</em> revokes its <code>setPauseState(uint8)</code> selector on the old Dispenser, so the community
+multisig cannot reopen the paused claim path. Entry 2 is <strong>bridged to Celo</strong> through the OP-stack cross-domain
+messenger and executed by the Celo governance mediator (revoke a superseded service-creation wrapper permission). Total ETH
+value is <strong>0</strong>.</div>
 
 <table>
 <tr><th>proposalId</th><td><code>${proposalId}</code></td></tr>

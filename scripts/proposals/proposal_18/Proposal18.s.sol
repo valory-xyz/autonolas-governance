@@ -3,11 +3,13 @@ pragma solidity ^0.8.25;
 
 import {Script, console2} from "forge-std/Script.sol";
 
-/// @title Proposal 18 — protocol maintenance (dispenser pause, guard pause-row, Celo wrapper revoke)
+/// @title Proposal 18 — protocol maintenance (dispenser pause, guard pause-row, old guard revoke, Celo wrapper revoke)
 /// @dev Three Governor actions, all value 0:
 ///      a) Ethereum, direct: Dispenser(0x5650300f).setPauseState(StakingIncentivesPaused=2).
-///      b) Ethereum, direct: GuardCM.setTargetSelectorChainIds — allow the CM to call pause() on the
-///         Dispenser proxy 0x78Bd94F4 (chainId 1).
+///      b) Ethereum, direct: GuardCM.setTargetSelectorChainIds — two rows, atomic:
+///         row 0: GRANT  the CM pause() on the Dispenser proxy 0x78Bd94F4 (chainId 1);
+///         row 1: REVOKE the CM setPauseState(uint8) on the old Dispenser 0x5650300f (chainId 1), so the
+///                CM cannot reopen the paused staking-incentive claim path after (a).
 ///      c) Celo, bridged (OP-stack): ServiceRegistryL2.changeMultisigPermission(legacy wrapper, false).
 contract Proposal18 is Script {
     struct Call {
@@ -26,11 +28,12 @@ contract Proposal18 is Script {
     address internal constant CELO_REGISTRY = 0xE3607b00E75f6405248323A9417ff6b39B244b50; // ServiceRegistryL2
     address internal constant LEGACY_WRAPPER = 0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b;
 
-    bytes4  internal constant PAUSE_SELECTOR = 0x8456cb59; // pause()
-    uint32  internal constant OP_MIN_GAS     = 2_000_000;
+    bytes4  internal constant PAUSE_SELECTOR       = 0x8456cb59; // pause()
+    bytes4  internal constant SET_PAUSE_SELECTOR   = 0x63096509; // setPauseState(uint8)
+    uint32  internal constant OP_MIN_GAS           = 2_000_000;
 
     string internal constant DESCRIPTION =
-        "Olas protocol maintenance on two chains. On Ethereum the Dispenser at 0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0 has its staking-incentive distribution paused (setPauseState to the staking-incentives-paused state), and the community-multisig guard GuardCM is granted permission to call the pause entry point of the Dispenser proxy at 0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D on Ethereum. On Celo a superseded GnosisSafe service-creation wrapper at 0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b has its permission revoked in the service registry. The Ethereum calls are direct Timelock calls; the Celo call is bridged to its governance mediator. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
+        "Olas protocol maintenance on two chains. On Ethereum the Dispenser at 0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0 has its staking-incentive distribution paused (setPauseState to the staking-incentives-paused state); the community-multisig guard GuardCM is granted permission to call the pause entry point of the Dispenser proxy at 0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D on Ethereum; and the community-multisig guard's existing permission to call the set-pause-state entry point of the Dispenser at 0x5650300fCBab43A0D7D02F8Cb5d0f039402593f0 on Ethereum is revoked, so that the community multisig cannot reopen the paused staking-incentive claim path. On Celo a superseded GnosisSafe service-creation wrapper at 0x63e66d7ad413C01A7b49C7FF4e3Bb765C4E4bd1b has its permission revoked in the service registry. The Ethereum calls are direct Timelock calls; the Celo call is bridged to its governance mediator. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u";
 
     // Packed buffer tuple the mediator unpacks: (target, uint96 value, uint32 len, data).
     function pk(Call memory c) internal pure returns (bytes memory) {
@@ -57,11 +60,13 @@ contract Proposal18 is Script {
         targets[0] = OLD_DISPENSER;
         calldatas[0] = abi.encodeWithSignature("setPauseState(uint8)", uint8(2));
 
-        // b) GuardCM: allow CM to call pause() on the new proxy (chainId 1)
-        address[] memory gT = new address[](1); gT[0] = NEW_PROXY;
-        bytes4[] memory gS = new bytes4[](1); gS[0] = PAUSE_SELECTOR;
-        uint256[] memory gC = new uint256[](1); gC[0] = 1;
-        bool[] memory gB = new bool[](1); gB[0] = true;
+        // b) GuardCM, atomic two-row update:
+        //    row 0: GRANT  CM pause() on the new proxy (chainId 1)
+        //    row 1: REVOKE CM setPauseState(uint8) on the old Dispenser (chainId 1)
+        address[] memory gT = new address[](2); gT[0] = NEW_PROXY;      gT[1] = OLD_DISPENSER;
+        bytes4[] memory gS = new bytes4[](2);  gS[0] = PAUSE_SELECTOR;  gS[1] = SET_PAUSE_SELECTOR;
+        uint256[] memory gC = new uint256[](2); gC[0] = 1;             gC[1] = 1;
+        bool[] memory gB = new bool[](2);       gB[0] = true;          gB[1] = false;
         targets[1] = GUARDCM;
         calldatas[1] = abi.encodeWithSignature(
             "setTargetSelectorChainIds(address[],bytes4[],uint256[],bool[])", gT, gS, gC, gB
