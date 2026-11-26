@@ -1,0 +1,79 @@
+<!doctype html><meta charset="utf-8"><title>Proposal 20 — protocol maintenance</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--acc:#0b5;--warnc:#b00;--line:#e3e3e3;--code:#f6f6f6}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--fg:#e8e8e8;--mut:#9a9a9a;--acc:#4c9;--warnc:#f77;--line:#333;--code:#1c1c1c}}
+body{background:var(--bg);color:var(--fg);font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0 auto;padding:2rem 1.25rem;max-width:60rem}
+h1{font-size:1.35rem;margin:0 0 .4rem}
+table{border-collapse:collapse;width:100%;margin:.5rem 0 1rem}
+th,td{border-bottom:1px solid var(--line);padding:.35rem .5rem;text-align:left;vertical-align:top}
+th{width:13rem;color:var(--mut);font-weight:600;white-space:nowrap}
+code,.addr,.sel,.val{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em}
+.cd{display:block;overflow-wrap:anywhere;background:var(--code);padding:.5rem;border-radius:4px}
+.addr{color:var(--acc);text-decoration:none}.addr:hover{text-decoration:underline}
+.lbl{color:var(--mut)}.warn{color:var(--warnc);font-weight:600}
+.box{border-left:3px solid var(--acc);background:var(--code);padding:.6rem .9rem;margin:1rem 0;border-radius:0 4px 4px 0}
+details{border:1px solid var(--line);border-radius:6px;padding:.5rem .75rem;margin:.75rem 0}
+summary{cursor:pointer;font-weight:600}
+.meta{color:var(--mut);font-size:.9em}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);padding:.75rem;border-radius:4px}
+</style>
+<h1>Proposal 20 — protocol maintenance</h1>
+<p class="meta">Generated from <code>calldata.json</code> &mdash; the same bytes the Forge builder emits, decoded rather than re-encoded.</p>
+
+<div class="box">All three entries are <strong>direct Ethereum</strong> Timelock calls: (0) set the Tokenomics contract's
+dispenser manager to the Dispenser proxy <code>0x78Bd94F4…</code>; (1) set the Treasury contract's dispenser manager to
+the same proxy (which authorises it for treasury withdrawals); (2) set that Dispenser proxy's pause state to
+<code>Unpaused</code>. In entries 0 and 1 the other manager arguments are passed as zero, so the setter leaves them
+unchanged. Total ETH value is <strong>0</strong>.</div>
+
+<table>
+<tr><th>proposalId</th><td><code>0x054aae970098f66ac399a88faf6f5181848ed56798c5bdb3a728160640a6ca59</code></td></tr>
+<tr><th>proposalId (uint)</th><td><code>2393515900589145830207388592812870764885857690351162816547584312800742656601</code></td></tr>
+<tr><th>descriptionHash</th><td><code>0xc40673405bffa67856fedaeaa6728fa7526bdc161666d8a7f1d6a7426dc888f0</code></td></tr>
+<tr><th>entries</th><td><span class="val">3</span> &mdash; 3 direct L1</td></tr>
+<tr><th>total value</th><td><span class="val">0</span> wei</td></tr>
+</table>
+
+<details open><summary>entry 0 &mdash; <code>changeManagers(address,address,address)</code></summary>
+<table>
+<tr><th>target</th><td><a class="addr" href="https://etherscan.io/address/0xc096362fa6f4A4B1a9ea68b1043416f3381ce300" target="_blank" rel="noopener">0xc096362fa6f4A4B1a9ea68b1043416f3381ce300</a> <span class="lbl">// Tokenomics (Ethereum)</span></td></tr>
+<tr><th>value</th><td><span class="val">0</span></td></tr>
+<tr><th>treasury</th><td><span class="val">0x0000000000000000000000000000000000000000</span> <span class="lbl">// unchanged (zero)</span></td></tr>
+<tr><th>depository</th><td><span class="val">0x0000000000000000000000000000000000000000</span> <span class="lbl">// unchanged (zero)</span></td></tr>
+<tr><th>dispenser</th><td><a class="addr" href="https://etherscan.io/address/0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D" target="_blank" rel="noopener">0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D</a> <span class="lbl">// Dispenser proxy (Ethereum)</span> <span class="lbl">// set</span></td></tr>
+<tr><th>calldata</th><td><code class="cd">0xd52977930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000078bd94f48cae623cc74828ecbfebe3bdf428d83d</code></td></tr>
+</table></details>
+<details open><summary>entry 1 &mdash; <code>changeManagers(address,address,address)</code></summary>
+<table>
+<tr><th>target</th><td><a class="addr" href="https://etherscan.io/address/0xa0DA53447C0f6C4987964d8463da7e6628B30f82" target="_blank" rel="noopener">0xa0DA53447C0f6C4987964d8463da7e6628B30f82</a> <span class="lbl">// Treasury (Ethereum)</span></td></tr>
+<tr><th>value</th><td><span class="val">0</span></td></tr>
+<tr><th>tokenomics</th><td><span class="val">0x0000000000000000000000000000000000000000</span> <span class="lbl">// unchanged (zero)</span></td></tr>
+<tr><th>depository</th><td><span class="val">0x0000000000000000000000000000000000000000</span> <span class="lbl">// unchanged (zero)</span></td></tr>
+<tr><th>dispenser</th><td><a class="addr" href="https://etherscan.io/address/0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D" target="_blank" rel="noopener">0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D</a> <span class="lbl">// Dispenser proxy (Ethereum)</span> <span class="lbl">// set</span></td></tr>
+<tr><th>calldata</th><td><code class="cd">0xd52977930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000078bd94f48cae623cc74828ecbfebe3bdf428d83d</code></td></tr>
+</table></details>
+<details open><summary>entry 2 &mdash; <code>setPauseState(uint8)</code></summary>
+<table>
+<tr><th>target</th><td><a class="addr" href="https://etherscan.io/address/0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D" target="_blank" rel="noopener">0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D</a> <span class="lbl">// Dispenser proxy (Ethereum)</span></td></tr>
+<tr><th>value</th><td><span class="val">0</span></td></tr>
+<tr><th>pauseState</th><td><span class="val">0</span> <span class="lbl">// Unpaused</span></td></tr>
+<tr><th>calldata</th><td><code class="cd">0x630965090000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+</table></details>
+
+<details><summary>propose() arrays</summary>
+<pre>targets:    [
+  "0xc096362fa6f4A4B1a9ea68b1043416f3381ce300",
+  "0xa0DA53447C0f6C4987964d8463da7e6628B30f82",
+  "0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D"
+]
+
+values:     ["0","0","0"]
+
+calldatas:  [
+  "0xd52977930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000078bd94f48cae623cc74828ecbfebe3bdf428d83d",
+  "0xd52977930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000078bd94f48cae623cc74828ecbfebe3bdf428d83d",
+  "0x630965090000000000000000000000000000000000000000000000000000000000000000"
+]</pre></details>
+
+<details><summary>description (must match the builder constant byte-for-byte)</summary>
+<pre>Olas protocol maintenance on Ethereum. The dispenser manager of the Tokenomics contract at 0xc096362fa6f4A4B1a9ea68b1043416f3381ce300 is set to the Dispenser proxy at 0x78Bd94F48CAe623CC74828eCbFEBE3bDF428D83D; the dispenser manager of the Treasury contract at 0xa0DA53447C0f6C4987964d8463da7e6628B30f82 is set to the same Dispenser proxy; and that Dispenser proxy has its pause state set to unpaused. All three are direct Timelock calls on Ethereum, each carrying no value. In accordance with Autonolas DAO Constitution at ipfs://bafybeibrhz6hnxsxcbv7dkzerq4chssotexb276pidzwclbytzj7m4t47u</pre></details>
